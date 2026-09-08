@@ -16,7 +16,6 @@ sys.path.append("../../..")
 
 from sharegpt4v import share4v_val_dataset, share4v_train_dataset
 from model import longclip
-from eval.classification.cifar.smartcifar10 import eval_smartcifar10
 from torch.utils.data.distributed import DistributedSampler
 from scheduler import cosine_lr
 import argparse
