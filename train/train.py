@@ -101,6 +101,7 @@ class CLIP_Clean_Train():
 			if step < start_iter:
 				continue
 			if self.args.max_steps is not None and step >= self.args.max_steps:
+				self.max_steps_reached = True
 				break
 			with torch.no_grad():
 				texts = longclip.tokenize(texts, truncate=True).cuda()
@@ -222,6 +223,9 @@ class CLIP_Clean_Train():
 				print(result_dict)
 				msg = 'Epoch: %d, COCO-Short: %s' % (epoch, str(result_dict))
 				self.metric_manager.log(msg)
+
+			if getattr(self, 'max_steps_reached', False):
+				break
 
 import torch.distributed as dist
 
