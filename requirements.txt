@@ -1,0 +1,25 @@
+# Phase 0 environment for the official SmartCLIP baseline (python 3.10)
+# Install: conda create -n said-smartclip python=3.10 -y
+#          conda run -n said-smartclip pip install -r requirements.txt
+#
+# PyTorch matched to the server driver (CUDA 12.4):
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.5.1
+torchvision
+
+# model/longclip.py imports pkg_resources, removed in setuptools >= 81
+setuptools<81
+
+# SmartCLIP / LongCLIP / OpenAI CLIP dependencies
+numpy
+pillow
+ftfy
+regex
+tqdm
+packaging
+git+https://github.com/openai/CLIP.git
+
+# training / evaluation extras
+pycocotools
+tensorboard
+opencv-python-headless

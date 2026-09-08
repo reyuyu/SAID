@@ -81,3 +81,9 @@ If you find our work helpful for your research, please consider giving a citatio
 
 ## Acknowledgements
 Our code is heavily borrowed from [LongCLIP](https://github.com/beichenzbc/Long-CLIP/tree/main).
+
+## Phase 0 reproduction (SAID)
+
+Environment setup, data layout, multi-GPU notes and the verified smoke-test results for
+reproducing this official baseline on the SAID server are documented in
+[`docs/phase0_reproduction.md`](docs/phase0_reproduction.md).
