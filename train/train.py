@@ -100,6 +100,8 @@ class CLIP_Clean_Train():
 			step = num_batches_per_epoch * epoch + i
 			if step < start_iter:
 				continue
+			if self.args.max_steps is not None and step >= self.args.max_steps:
+				break
 			with torch.no_grad():
 				texts = longclip.tokenize(texts, truncate=True).cuda()
 			self.scheduler(step)
@@ -296,6 +298,7 @@ if __name__ == "__main__":
 		help="resume training from checkpoint."
 	)
 	parser.add_argument("--download-root", default=None, help="CLIP Base Model download root")
+	parser.add_argument('--max_steps', default=None, type=int, help='debug: early-stop after N training iterations (None = official full training)')
 	args = parser.parse_args()
 	if args.base_model == 'L14':
 		args.base_model = 'ViT-L/14'
