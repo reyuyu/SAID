@@ -136,7 +136,8 @@ def eval_coco(model, preprocess):
     model.eval()
 
 
-    coco = CocoCaptions(root="../datasets/coco/val2017/", annFile="../datasets/coco/annotations/captions_val2017.json",
+    coco_root = os.environ.get('COCO_DATA_ROOT', '../datasets/coco/')
+    coco = CocoCaptions(root=os.path.join(coco_root, 'val2017/'), annFile=os.path.join(coco_root, 'annotations/captions_val2017.json'),
                         transform=None)
 
     dataloader = torch.utils.data.DataLoader(coco, batch_size=1000, shuffle=False, num_workers=4, drop_last=False)

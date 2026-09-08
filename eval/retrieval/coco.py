@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append('../..')
 from model import longclip
@@ -17,7 +18,8 @@ model.eval()
 model.eval()
 
 
-coco = CocoCaptions(root="../../datasets/coco/val2017/", annFile="../../datasets/coco/annotations/captions_val2017.json", transform=None)
+coco_root = os.environ.get('COCO_DATA_ROOT', '../../datasets/coco/')
+coco = CocoCaptions(root=os.path.join(coco_root, 'val2017/'), annFile=os.path.join(coco_root, 'annotations/captions_val2017.json'), transform=None)
 
 image_features = []
 text_features = []
