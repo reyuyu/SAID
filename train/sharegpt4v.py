@@ -10,9 +10,9 @@ import numpy as np
 import random
 from torchvision.utils import save_image
 
-data4v_root = '../datasets/ShareGPT4V/'
-json_name = 'share-captioner_coco_lcs_sam_1246k_1107.json'
-image_root = '../datasets/ShareGPT4V/'
+data4v_root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V/')
+json_name = os.environ.get('SHARE4V_JSON', 'share-captioner_coco_lcs_sam_1246k_1107.json')
+image_root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V/')
 
 class share4v_train_dataset(data.Dataset):
     def __init__(self, data4v_root=data4v_root, json_name=json_name, image_root=image_root):
