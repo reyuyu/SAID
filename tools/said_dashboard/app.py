@@ -87,7 +87,11 @@ def _render(attn, image, scale_max, mode):
 
 
 def main():
-    page = st.sidebar.radio('Page', ['Said attention', 'Semantic Grounding Audit', 'Local Semantic Evidence'])
+    page = st.sidebar.radio('Page', ['Said attention', 'Semantic Grounding Audit', 'Local Semantic Evidence', 'Local-Evidence Router'])
+    if page == 'Local-Evidence Router':
+        from local_router_page import main as local_router_main
+        local_router_main()
+        return
     if page == 'Local Semantic Evidence':
         from local_evidence_page import main as local_evidence_main
         local_evidence_main()
