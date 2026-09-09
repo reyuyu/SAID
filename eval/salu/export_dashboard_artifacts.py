@@ -4,7 +4,7 @@ Reads: SALU checkpoints, the fixed diagnostic set, ShareGPT4V validation caption
 Writes: outputs/salu_dashboard/{manifest.json, metrics.json, <tag>/...}
 
 Per checkpoint / sample it stores
-    sampleXX_image.png            (original image thumbnail, written once)
+    sampleXX_image.png            (model-input crop, written for every checkpoint)
     sampleXX_{own,shuffled,short,long}.npy   (14x14 Said attention)
 and per checkpoint it stores aggregate metrics (attention entropy / effective
 patch count / own-vs-shuffled JSD / z_s cosine / route + evidence identification /
@@ -120,7 +120,6 @@ def main():
         json.dump(manifest, fp, indent=2, sort_keys=True)
 
     metrics = {'checkpoints': {}, 'variants': VARIANTS}
-    wrote_images = False
 
     for tag, ckpt_path in checkpoints:
         clip_model, _ = longclip.load_from_clip('ViT-B/16', device='cpu')
@@ -154,10 +153,10 @@ def main():
                 _, p_fp32 = model.clip.encode_image_with_patches(image)
             pf_bf16.append(p_bf16[0].float())
             pf_fp32.append(p_fp32[0].float())
-            if not wrote_images:
-                from PIL import Image
-                Image.fromarray(denormalize(image_tensor)).save(
-                    os.path.join(tag_dir, 'sample%02d_image.png' % i))
+            # Each checkpoint directory must satisfy the dashboard loader contract.
+            from PIL import Image
+            Image.fromarray(denormalize(image_tensor)).save(
+                os.path.join(tag_dir, 'sample%02d_image.png' % i))
 
         for i in range(args.num_samples):
             entry = {'image_id': captions[str(i)]['image_id'], 'attention': {}, 'zs': {}}
@@ -244,7 +243,6 @@ def main():
             json.dump(per_sample, fp, indent=2, sort_keys=True)
         print('EXPORTED %s (step %s) ratio=%.3f route_top1=%.4f evidence_top1=%.4f' % (
             tag, step, metrics['checkpoints'][tag]['caption_conditioning_ratio'], route_top1, evidence_top1), flush=True)
-        wrote_images = True
 
     with open(os.path.join(args.output_dir, 'metrics.json'), 'w') as fp:
         json.dump(metrics, fp, indent=2, sort_keys=True)

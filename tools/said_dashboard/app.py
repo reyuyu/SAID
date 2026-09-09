@@ -20,6 +20,7 @@ import os
 import sys
 
 import numpy as np
+from PIL import Image
 import pandas as pd
 import streamlit as st
 
@@ -79,7 +80,7 @@ def _sample_metrics(root, tag):
 def _render(attn, image, scale_max, mode):
     if mode == 'heatmap':
         return heatmap_rgb(attn, scale_max=scale_max)
-    return overlay_rgb(image, attn, scale_max=scale_max)
+    return overlay_rgb(Image.fromarray(image), attn, scale_max=scale_max)
 
 
 def main():
@@ -199,4 +200,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except ArtifactError as exc:
+        st.error(str(exc))
+        st.info('The selected sample or checkpoint is incomplete. Select another one or re-export its artifacts.')

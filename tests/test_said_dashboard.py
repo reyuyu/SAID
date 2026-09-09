@@ -171,3 +171,30 @@ def test_dashboard_app_does_not_load_checkpoints():
     source = open(os.path.join(DASHBOARD_DIR, 'app.py')).read()
     assert 'torch.load' not in source
     assert 'longclip' not in source
+
+
+@pytest.mark.parametrize('mode', ['overlay', 'heatmap'])
+def test_app_switches_samples_and_checkpoints(artifact_root, monkeypatch, mode):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv('SAID_DASHBOARD_ROOT', artifact_root)
+    app = AppTest.from_file(os.path.join(DASHBOARD_DIR, 'app.py')).run()
+    assert not app.exception
+    app.sidebar.radio[0].set_value(mode)
+    for tag in TAGS:
+        for index in SAMPLES:
+            app.sidebar.selectbox[0].set_value(tag)
+            app.sidebar.selectbox[1].set_value(index)
+            app.run()
+            assert not app.exception
+            assert not app.error
+            assert app.subheader[-1].value == 'Route identification'
+
+
+@pytest.mark.parametrize('missing', ['final/sample00_image.png', 'initial/sample00_own.npy'])
+def test_app_reports_incomplete_sample_without_traceback(artifact_root, monkeypatch, missing):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv('SAID_DASHBOARD_ROOT', artifact_root)
+    os.unlink(os.path.join(artifact_root, missing))
+    app = AppTest.from_file(os.path.join(DASHBOARD_DIR, 'app.py')).run()
+    assert not app.exception
+    assert any('missing artifact' in error.value and missing in error.value for error in app.error)
