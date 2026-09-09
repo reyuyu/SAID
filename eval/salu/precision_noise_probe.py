@@ -47,6 +47,7 @@ def attention(model, patch_features, text_feature):
 def main():
     parser = argparse.ArgumentParser(description='Said attention precision-noise floor (bf16 vs fp32)')
     parser.add_argument('--checkpoint', default='runs_salu/phase21/salu_said_only_last.pt')
+    parser.add_argument('--tag', default='final')
     parser.add_argument('--num_samples', type=int, default=64)
     parser.add_argument('--diagnostics_dir', default='outputs/salu_grounding')
     parser.add_argument('--output_dir', default='outputs/salu_grounding')
@@ -77,6 +78,7 @@ def main():
         jsds.append(js_divergence(a_bf16, a_fp32))
 
     result = {
+        'tag': args.tag,
         'num_samples': args.num_samples,
         'checkpoint': args.checkpoint,
         'precision_noise_floor': {
@@ -98,7 +100,7 @@ def main():
                 / max(1e-12, result['precision_noise_floor']['mean_js_divergence'])
             ),
         }
-    out_path = os.path.join(args.output_dir, 'precision_noise_probe.json')
+    out_path = os.path.join(args.output_dir, 'precision_noise_probe_%s.json' % args.tag)
     with open(out_path, 'w') as fp:
         json.dump(result, fp, indent=2, sort_keys=True)
     print('PRECISION_NOISE ' + json.dumps(result, sort_keys=True), flush=True)
