@@ -84,3 +84,36 @@ sidebar).
   does. The noise floor itself depends on how sharp the attention is, so read it
   together with the absolute JSD values.
 * The dashboard is diagnostic only: it never feeds back into training or loss.
+
+## 5. Semantic Grounding Audit (Phase 2.3)
+
+Choose **Semantic Grounding Audit** in the Page control of this same app.
+No second server or checkpoint loading is needed. Export the frozen-model
+evaluation first using [the audit guide](../../docs/phase23_grounding_audit.md).
+The default artifact root is `outputs/semantic_grounding`; set
+`SEMANTIC_GROUNDING_ROOT` or the sidebar input to select a different completed
+run, such as `outputs/semantic_grounding_small`.
+
+The page includes:
+
+* Overall pointing, mass, area-adjusted gain, distractor and switching scores
+  for all four model variants.
+* A failure browser filtered by ranking model, correct/wrong pointing,
+  negative localization margin, or top 50 failures/successes. Sort by GT mass,
+  mass gain or localization margin; unavailable margins sort last.
+* Image and annotated phrase selectors, complete query text, sentence context,
+  official categories, target boxes and crop-retention fraction.
+* Four side-by-side heatmaps with a shared colour scale by default, explicit
+  target boxes and top-patch center crosses. The difference map compares the
+  Phase 2.2 Router with the direct attention from that same backbone.
+* Same-image phrase switching with A/B selectors, each target's boxes, all
+  four cross-masses and switch margin. The two maps share a scale. Green is
+  the active target, cyan the other target, red the peak patch center.
+* Category breakdown and target/other-object/background peak counts.
+
+Only JSON, PNG and NPY artifacts are read. Missing files produce a clear
+message; incomplete runs are not presented as completed evaluation results.
+
+```bash
+python -m pytest tests/test_grounding_dashboard.py tests/test_said_dashboard.py -q
+```

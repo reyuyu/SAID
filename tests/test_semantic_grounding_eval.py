@@ -145,3 +145,24 @@ def test_switch_groups_select_distinct_spatial_entities():
                  phrase('b', '1', 'man', [0, 0, 30, 30]),
                  phrase('c', '2', 'a dog', [150, 150, 200, 200])]}]
     assert switching_groups(records)[0]['phrase_ids'] == ['b', 'c']
+
+
+def test_native_clip_patch_extraction_preserves_spatial_order():
+    from clip.model import CLIP
+    from eval.salu.semantic_grounding_eval import native_clip_patches
+    model = CLIP(embed_dim=32, image_resolution=224, vision_layers=1,
+                 vision_width=64, vision_patch_size=16, context_length=77,
+                 vocab_size=100, transformer_width=64, transformer_heads=1,
+                 transformer_layers=1).float().eval()
+    captured = []
+    handle = model.visual.transformer.register_forward_hook(lambda module, inputs, out: captured.append(out.detach()))
+    image = torch.randn(2, 3, 224, 224)
+    with torch.no_grad():
+        global_feature = model.encode_image(image)
+        sequence = captured[-1].permute(1, 0, 2)
+        expected = model.visual.ln_post(sequence[:, 1:]) @ model.visual.proj
+        actual = native_clip_patches(model, image)
+        torch.testing.assert_close(actual, expected)
+        assert actual.shape == (2, 196, 32)
+        torch.testing.assert_close(model.visual.ln_post(sequence[:, 0]) @ model.visual.proj, global_feature)
+    handle.remove()

@@ -179,7 +179,7 @@ def test_app_switches_samples_and_checkpoints(artifact_root, monkeypatch, mode):
     monkeypatch.setenv('SAID_DASHBOARD_ROOT', artifact_root)
     app = AppTest.from_file(os.path.join(DASHBOARD_DIR, 'app.py')).run()
     assert not app.exception
-    app.sidebar.radio[0].set_value(mode)
+    app.sidebar.radio[1].set_value(mode)
     for tag in TAGS:
         for index in SAMPLES:
             app.sidebar.selectbox[0].set_value(tag)

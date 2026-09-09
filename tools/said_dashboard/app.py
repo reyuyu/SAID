@@ -25,6 +25,9 @@ import pandas as pd
 import streamlit as st
 
 DASHBOARD_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(os.path.dirname(DASHBOARD_DIR))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
 if DASHBOARD_DIR not in sys.path:
     sys.path.insert(0, DASHBOARD_DIR)
 
@@ -84,6 +87,11 @@ def _render(attn, image, scale_max, mode):
 
 
 def main():
+    page = st.sidebar.radio('Page', ['Said attention', 'Semantic Grounding Audit'])
+    if page == 'Semantic Grounding Audit':
+        from grounding_page import main as grounding_main
+        grounding_main()
+        return
     st.title('Said attention dashboard')
     st.caption('Read-only view of precomputed artifacts. The dashboard never loads a checkpoint or runs the model.')
 
