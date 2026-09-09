@@ -152,8 +152,12 @@ class SALUModel(nn.Module):
         fp32_master_weights: bool = True,
         said_loss_mode: str = 'identifiable',
         pair_chunk_size: Optional[int] = 64,
+        said_feature_source: str = 'residual',
     ):
         super().__init__()
+        if said_feature_source not in ('residual', 'attention_delta'):
+            raise ValueError('said_feature_source must be residual or attention_delta')
+        self.said_feature_source = said_feature_source
         if said_loss_mode not in ('positive', 'identifiable'):
             raise ValueError("said_loss_mode must be 'positive' or 'identifiable', got %r" % (said_loss_mode,))
         self.clip = clip_model
@@ -185,6 +189,14 @@ class SALUModel(nn.Module):
     def encode_image_with_patches(self, image: torch.Tensor, use_checkpoint: bool = False):
         return self.clip.encode_image_with_patches(image, use_checkpoint=use_checkpoint)
 
+    def encode_image_with_local_evidence(self, image: torch.Tensor, use_checkpoint: bool = False):
+        return self.clip.encode_image_with_local_evidence(image, use_checkpoint=use_checkpoint)
+
+    def encode_router_input(self, images: torch.Tensor):
+        if self.said_feature_source == 'attention_delta':
+            return self.clip.encode_image_with_local_evidence(images)
+        return self.clip.encode_image_with_patches(images)
+
     @property
     def logit_scale(self) -> torch.Tensor:
         return self.clip.logit_scale
@@ -208,7 +220,7 @@ class SALUModel(nn.Module):
         lambda_global: float = 1.0,
         lambda_said: float = 1.0,
     ) -> Dict[str, torch.Tensor]:
-        z_global, patch_features = self.clip.encode_image_with_patches(images)
+        z_global, patch_features = self.encode_router_input(images)
         text_features = self.clip.encode_text(texts)
 
         z_g = F.normalize(z_global, dim=-1)
@@ -265,6 +277,7 @@ class SALUModel(nn.Module):
                 'said_attention_max': attn.max(dim=-1).values.mean(),
                 'said_attention_min': attn.min(dim=-1).values.mean(),
                 'said_feature_norm': z_s_own.detach().float().norm(dim=-1).mean(),
+                'router_input_feature_norm': patch_features.detach().float().norm(dim=-1).mean(),
                 'global_feature_norm': z_g.detach().float().norm(dim=-1).mean(),
             }
         return out
@@ -275,5 +288,5 @@ class SALUModel(nn.Module):
         )
 
     def extra_repr(self) -> str:
-        return 'tau_said=%g, said_loss_mode=%s, pair_chunk_size=%s' % (
-            self.tau_said, self.said_loss_mode, self.pair_chunk_size)
+        return 'tau_said=%g, said_loss_mode=%s, pair_chunk_size=%s, said_feature_source=%s' % (
+            self.tau_said, self.said_loss_mode, self.pair_chunk_size, self.said_feature_source)

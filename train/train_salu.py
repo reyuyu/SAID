@@ -33,6 +33,7 @@ Example (4 GPUs, 676K no-SAM subset)::
         --save_at 200,400
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -55,6 +56,7 @@ from model import longclip  # noqa: E402
 from model.salu_model import SALUModel  # noqa: E402
 from sharegpt4v import share4v_train_dataset  # noqa: E402
 from train_utils import eval_coco  # noqa: E402  (standard CLIP retrieval evaluation)
+from salu_reproducibility import seed_everything, seed_worker, state_digest, update_caption_digest
 
 
 def _load_baseline_setup_distributed():
@@ -146,9 +148,12 @@ def save_checkpoint(path, ddp_model, optimizer, scaler, step, epoch, args, base_
     torch.save(ddp_model.module.clip.state_dict(), clip_path)
 
 
-def main():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description='Phase 2 Said-only training')
     parser.add_argument('--base_model', default='B16', help='B16 or L14')
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--said_feature_source', choices=['residual', 'attention_delta'], default='residual')
+    parser.add_argument('--save_initial', action='store_true', help='save model and args before training')
     parser.add_argument('--batch_size', type=int, default=256, help='batch per GPU')
     parser.add_argument('--epochs', type=int, default=3)
     parser.add_argument('--max_steps', type=int, default=None,
@@ -178,7 +183,11 @@ def main():
     parser.add_argument('--resume', default=None, help='SALU checkpoint to resume from')
     parser.add_argument('--eval_coco', action='store_true',
                         help='run standard CLIP COCO retrieval evaluation at the end (rank 0)')
-    args = parser.parse_args()
+    return parser.parse_args(argv)
+
+
+def main():
+    args = parse_args()
 
     if args.base_model == 'B16':
         args.base_model = 'ViT-B/16'
@@ -190,12 +199,14 @@ def main():
     device = torch.device('cuda', local_rank)
     torch.cuda.set_device(device)
     world_size = dist.get_world_size()
+    seed_everything(args.seed)
 
     clip_model, preprocess = longclip.load_from_clip(
         args.base_model, device='cpu', download_root=args.download_root, args=args
     )
     salu = SALUModel(clip_model, tau_said=args.tau_said, said_loss_mode=args.said_loss_mode,
-                     pair_chunk_size=(args.pair_chunk_size or None))
+                     pair_chunk_size=(args.pair_chunk_size or None), said_feature_source=args.said_feature_source)
+    initial_digest = state_digest(salu.state_dict())
     salu = salu.to(device)
     ddp_model = DDP(salu, device_ids=[local_rank], find_unused_parameters=True)
 
@@ -217,7 +228,8 @@ def main():
               flush=True)
 
     train_set = share4v_train_dataset()
-    sampler = DistributedSampler(train_set, shuffle=True)
+    sampler = DistributedSampler(train_set, shuffle=True, seed=args.seed)
+    loader_generator = torch.Generator().manual_seed(args.seed + rank)
     loader = DataLoader(
         train_set,
         batch_size=args.batch_size,
@@ -225,6 +237,8 @@ def main():
         num_workers=args.num_workers,
         pin_memory=True,
         drop_last=True,
+        worker_init_fn=seed_worker,
+        generator=loader_generator,
     )
     steps_per_epoch = len(loader)
     total_steps = args.max_steps if args.max_steps is not None else args.epochs * steps_per_epoch
@@ -233,6 +247,8 @@ def main():
     start_step, start_epoch = 0, 0
     if args.resume:
         ckpt = torch.load(args.resume, map_location='cpu', weights_only=False)
+        if ckpt.get('args', {}).get('said_feature_source', 'residual') != args.said_feature_source:
+            raise ValueError('resume checkpoint feature source differs from CLI')
         ddp_model.module.load_state_dict(ckpt['model'])
         optimizer.load_state_dict(ckpt['optimizer'])
         if 'scaler' in ckpt and ckpt['scaler']:
@@ -243,6 +259,12 @@ def main():
             print('resumed from %s at step %d epoch %d' % (args.resume, start_step, start_epoch), flush=True)
 
     log_path = os.path.join(args.output_dir, 'salu_log.jsonl')
+    caption_digest = hashlib.sha256()
+    sampler_digest = hashlib.sha256()
+    if rank == 0 and args.save_initial and not args.resume:
+        torch.save({'model': salu.state_dict(), 'args': vars(args), 'step': 0,
+                    'phase': 'phase2.5-local-evidence-router'},
+                   os.path.join(args.output_dir, 'salu_initial.pt'))
     ddp_model.train()
     step = start_step
     stopped = False
@@ -252,6 +274,7 @@ def main():
 
     for epoch in range(start_epoch, args.epochs):
         sampler.set_epoch(epoch)
+        sampler_digest.update(torch.tensor(list(sampler), dtype=torch.int64).numpy().tobytes())
         for images, texts in loader:
             t_wall0 = time.time()
             if args.max_steps is not None and step >= args.max_steps:
@@ -259,6 +282,7 @@ def main():
                 break
 
             images = images.to(device, non_blocking=True)
+            update_caption_digest(caption_digest, texts)
             text_tokens = longclip.tokenize(texts, truncate=True).to(device)
 
             scale_factor = set_lrs(optimizer, base_lrs, step, args.warmup_length, total_steps)
@@ -281,10 +305,11 @@ def main():
                 (args.max_steps is not None and step == args.max_steps - 1)
                 or (args.max_steps is None and step == total_steps - 1)
             )
-            if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step):
+            if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step or step + 1 in save_at):
                 throughput = summarize_throughput(global_batch, compute_times, wall_times)
                 record = {
                     'step': step,
+                    'completed_steps': step + 1,
                     'epoch': epoch,
                     'lr_scale': scale_factor,
                     'backbone_lr': optimizer.param_groups[0]['lr'],
@@ -303,6 +328,7 @@ def main():
                     'said_attention_max': float(out['said_attention_max']),
                     'said_attention_min': float(out['said_attention_min']),
                     'said_feature_norm': float(out['said_feature_norm']),
+                    'router_input_feature_norm': float(out['router_input_feature_norm']),
                     'global_feature_norm': float(out['global_feature_norm']),
                 }
                 record.update(throughput)
@@ -343,6 +369,12 @@ def main():
                 json.dump(result, fp, indent=2, sort_keys=True)
 
     if dist.is_initialized():
+        audit = {'rank': rank, 'seed': args.seed, 'initial_state_sha256': initial_digest,
+                 'sampler_order_sha256': sampler_digest.hexdigest(),
+                 'caption_stream_sha256': caption_digest.hexdigest(),
+                 'steps': step, 'dataset_size': len(train_set)}
+        with open(os.path.join(args.output_dir, 'reproducibility_rank%d.json' % rank), 'w') as fp:
+            json.dump(audit, fp, indent=2, sort_keys=True)
         dist.barrier()
         dist.destroy_process_group()
 
