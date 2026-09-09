@@ -37,10 +37,10 @@ def test_local_page_selectors_and_all_views(local_fixture,monkeypatch):
  app.sidebar.radio[0].set_value('Local Semantic Evidence').run()
  assert not app.exception and not app.error
  assert len(app.tabs)==5
- for label,value in [('Layer',11),('Stage','attention_delta'),('Phrase','1')]:
+ for label,value in [('层',11),('特征阶段','attention_delta'),('短语','1')]:
   next(s for s in app.selectbox if s.label==label).set_value(value).run()
   assert not app.exception and not app.error
- assert any('NOT corrected attention' in w.value for w in app.warning)
+ assert any('不代表修正后的注意力' in w.value for w in app.warning)
 
 def test_local_page_missing_artifact_is_controlled(local_fixture,monkeypatch):
  from streamlit.testing.v1 import AppTest

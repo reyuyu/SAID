@@ -52,7 +52,7 @@ from data import (  # noqa: E402
     samples,
 )
 
-st.set_page_config(page_title='Said attention dashboard', layout='wide')
+st.set_page_config(page_title='表征平衡监控', layout='wide')
 
 
 @st.cache_data(show_spinner=False)
@@ -87,7 +87,22 @@ def _render(attn, image, scale_max, mode):
 
 
 def main():
-    page = st.sidebar.radio('Page', ['Said attention', 'Semantic Grounding Audit', 'Local Semantic Evidence', 'Local-Evidence Router'])
+    from representation_balance_page import style
+    style()
+    pages = {'表征平衡监控': '表征平衡监控', '训练状态': '训练状态',
+             'Said attention': '历史：Said 注意力',
+             'Semantic Grounding Audit': '历史：语义定位审计',
+             'Local Semantic Evidence': '历史：局部语义证据',
+             'Local-Evidence Router': '历史：Local-Evidence Router'}
+    page = st.sidebar.radio('页面导航', list(pages), format_func=pages.get)
+    if page == '表征平衡监控':
+        from representation_balance_page import main as balance_main
+        balance_main()
+        return
+    if page == '训练状态':
+        from representation_balance_page import training_main
+        training_main()
+        return
     if page == 'Local-Evidence Router':
         from local_router_page import main as local_router_main
         local_router_main()
@@ -100,15 +115,15 @@ def main():
         from grounding_page import main as grounding_main
         grounding_main()
         return
-    st.title('Said attention dashboard')
-    st.caption('Read-only view of precomputed artifacts. The dashboard never loads a checkpoint or runs the model.')
+    st.title('历史：Said 注意力')
+    st.caption('历史机制分析：只读离线诊断文件，不加载模型或重新推理。')
 
-    root = st.sidebar.text_input('artifact root', os.environ.get('SAID_DASHBOARD_ROOT', 'outputs/salu_dashboard'))
+    root = st.sidebar.text_input('历史注意力诊断目录', os.environ.get('SAID_DASHBOARD_ROOT', 'outputs/salu_dashboard'))
     try:
         manifest = _manifest(root)
         metrics = _metrics(root)
     except ArtifactError as exc:
-        st.error(str(exc))
+        st.error('历史诊断文件不可用：' + str(exc))
         st.info('Run: python eval/salu/export_dashboard_artifacts.py --checkpoints ... --output_dir %s' % root)
         return
 
@@ -116,26 +131,26 @@ def main():
     sample_entries = samples(manifest)
     indices = [entry['index'] for entry in sample_entries]
 
-    st.sidebar.header('Selection')
-    tag = st.sidebar.selectbox('checkpoint', tags, index=len(tags) - 1)
+    st.sidebar.header('样本选择')
+    tag = st.sidebar.selectbox('模型阶段', tags, index=len(tags) - 1)
     index = st.sidebar.selectbox(
-        'sample', indices,
+        '样本', indices,
         format_func=lambda i: 'sample %02d  (%s)' % (i, sample_meta(manifest, i).get('image_id', '?')),
     )
-    variant_a = st.sidebar.selectbox('caption A', VARIANTS, index=0)
-    variant_b = st.sidebar.selectbox('caption B', VARIANTS, index=1)
-    mode = st.sidebar.radio('display mode', ('heatmap', 'overlay'), index=1)
-    shared_scale = st.sidebar.checkbox('shared colour scale (recommended)', value=True)
-    st.sidebar.header('Evolution')
-    evolution_variant = st.sidebar.selectbox('evolution caption', VARIANTS, index=0)
-    evolution_tags = st.sidebar.multiselect('evolution checkpoints', tags, default=tags)
+    variant_a = st.sidebar.selectbox('文本 A', VARIANTS, index=0)
+    variant_b = st.sidebar.selectbox('文本 B', VARIANTS, index=1)
+    mode = st.sidebar.radio('显示方式', ('heatmap', 'overlay'), index=1)
+    shared_scale = st.sidebar.checkbox('共享颜色范围（推荐）', value=True)
+    st.sidebar.header('训练演化')
+    evolution_variant = st.sidebar.selectbox('演化对比文本', VARIANTS, index=0)
+    evolution_tags = st.sidebar.multiselect('演化对比阶段', tags, default=tags)
 
     meta = sample_meta(manifest, index)
     image = _image(root, tag, index)
     attn_a = _attn(root, tag, index, variant_a)
     attn_b = _attn(root, tag, index, variant_b)
 
-    st.subheader('Image and captions')
+    st.subheader('图像与文本')
     col_img, col_caps = st.columns([1, 2])
     with col_img:
         st.image(image, caption='%s (%s)' % (meta.get('image_id', ''), tag), width=320)
@@ -143,10 +158,10 @@ def main():
         for variant in VARIANTS:
             st.markdown('**%s** — %s' % (variant, caption_for(manifest, index, variant)))
 
-    st.subheader('Same image / different caption')
+    st.subheader('同图像、不同文本')
     scale = max(attn_a.max(), attn_b.max()) if shared_scale else None
     cols = st.columns(4)
-    cols[0].image(image, caption='original', width=320)
+    cols[0].image(image, caption='原图', width=320)
     cols[1].image(_render(attn_a, image, scale, mode), caption='A: %s' % variant_a, width=320)
     cols[2].image(_render(attn_b, image, scale, mode), caption='B: %s' % variant_b, width=320)
     diff = difference_map(attn_a, attn_b)
@@ -164,11 +179,11 @@ def main():
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric('JSD(A, B)', '%.6f' % js_divergence(attn_a, attn_b))
-    m2.metric('mean |A - B|', '%.6f' % float(diff.mean()))
-    m3.metric('z_s cosine(A, B)', '%.5f' % zs_cos)
-    m4.metric('caption-conditioning ratio', '%.2f' % entry['caption_conditioning_ratio'])
+    m2.metric('平均 |A − B|', '%.6f' % float(diff.mean()))
+    m3.metric('Said 表征余弦相似度', '%.5f' % zs_cos)
+    m4.metric('文本条件化比值', '%.2f' % entry['caption_conditioning_ratio'])
 
-    st.subheader('Attention evolution (shared colour scale)')
+    st.subheader('注意力演化（共享颜色范围）')
     evo_tags = evolution_tags or tags
     evo_maps = {t: _attn(root, t, index, evolution_variant) for t in evo_tags}
     evo_scale = max(m.max() for m in evo_maps.values())
@@ -180,38 +195,38 @@ def main():
         col.caption('entropy %.3f | eff patches %.1f | max %.4f' % (
             stats['entropy'], stats['effective_patch_count'], stats['max']))
 
-    st.subheader('Metric evolution')
+    st.subheader('指标演化')
     series = metric_series(metrics)
     frame = pd.DataFrame(series).set_index('checkpoint')
     left, right = st.columns(2)
     left.line_chart(frame[['attention_entropy', 'effective_patch_count']])
-    left.caption('attention sharpening (entropy down, effective patch count down)')
+    left.caption('注意力集中程度：熵与有效 patch 数')
     right.line_chart(frame[['caption_shuffle_jsd', 'precision_noise_jsd']])
-    right.caption('caption-induced JSD vs bf16/fp32 precision-noise JSD')
+    right.caption('文本变化 JSD 与 bf16/fp32 精度噪声 JSD')
     left2, right2 = st.columns(2)
     left2.line_chart(frame[['route_top1_acc', 'evidence_top1_acc']])
-    left2.caption('route / evidence identification top-1 accuracy (64-way)')
+    left2.caption('路由与证据识别 Top-1（64 个候选）')
     right2.line_chart(frame[['conditioning_ratio', 'zs_cosine']])
-    right2.caption('caption-conditioning ratio and own-vs-shuffled z_s cosine')
+    right2.caption('文本条件化比值与正确/打乱文本的 Said 余弦相似度')
 
-    st.subheader('Precision noise panel')
+    st.subheader('精度噪声诊断')
     n1, n2, n3 = st.columns(3)
-    n1.metric('caption change JSD', '%.6f' % entry['caption_shuffle']['mean_js_divergence'])
-    n2.metric('precision noise JSD', '%.6f' % entry['precision_noise']['mean_js_divergence'])
-    n3.metric('ratio', '%.2f' % entry['caption_conditioning_ratio'])
+    n1.metric('文本变化 JSD', '%.6f' % entry['caption_shuffle']['mean_js_divergence'])
+    n2.metric('精度噪声 JSD', '%.6f' % entry['precision_noise']['mean_js_divergence'])
+    n3.metric('比值', '%.2f' % entry['caption_conditioning_ratio'])
     st.caption('A ratio above 1 (ideally above 2) means the attention change caused by swapping the caption '
                'is larger than the bf16/fp32 numerical noise floor.')
 
-    st.subheader('Route identification')
+    st.subheader('路由识别')
     r1, r2, r3, r4 = st.columns(4)
-    r1.metric('route top-1 acc', '%.4f' % entry['route_identification']['top1_acc'])
-    r2.metric('route margin', '%.4f' % entry['route_identification']['margin'])
-    r3.metric('evidence top-1 acc', '%.4f' % entry['evidence_identification']['top1_acc'])
-    r4.metric('evidence margin', '%.4f' % entry['evidence_identification']['margin'])
+    r1.metric('路由 Top-1', '%.4f' % entry['route_identification']['top1_acc'])
+    r2.metric('路由 Margin', '%.4f' % entry['route_identification']['margin'])
+    r3.metric('证据 Top-1', '%.4f' % entry['evidence_identification']['top1_acc'])
+    r4.metric('证据 Margin', '%.4f' % entry['evidence_identification']['margin'])
     st.caption('chance = 1 / %d = %.4f' % (manifest.get('num_samples', 0),
                                            1.0 / max(1, manifest.get('num_samples', 1))))
 
-    with st.expander('per-checkpoint metrics (raw json)'):
+    with st.expander('当前阶段原始指标（JSON）'):
         st.json(entry)
 
 
@@ -219,5 +234,5 @@ if __name__ == '__main__':
     try:
         main()
     except ArtifactError as exc:
-        st.error(str(exc))
-        st.info('The selected sample or checkpoint is incomplete. Select another one or re-export its artifacts.')
+        st.error('历史诊断文件不可用：' + str(exc))
+        st.info('当前样本或模型阶段的诊断文件不完整，请切换样本或重新导出。')

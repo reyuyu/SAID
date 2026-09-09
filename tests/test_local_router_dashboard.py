@@ -30,8 +30,8 @@ def test_four_way_page_and_missing_image(tmp_path,monkeypatch):
     app.sidebar.radio[0].set_value('Local-Evidence Router').run()
     assert not app.error and not app.exception
     assert len(app.dataframe)==3
-    next(s for s in app.selectbox if s.label=='Query phrase').set_value('1').run()
-    next(s for s in app.selectbox if s.label=='Checkpoint').set_value('initial').run()
+    next(s for s in app.selectbox if s.label=='查询短语').set_value('1').run()
+    next(s for s in app.selectbox if s.label=='模型阶段').set_value('initial').run()
     assert not app.error and not app.exception
     (tmp_path/'images/image.png').unlink()
     # The crop loader is intentionally uncached, so disappearance is actionable.

@@ -66,15 +66,15 @@ def test_grounding_page_phrase_switch_and_filter(grounding_root, monkeypatch):
     app = AppTest.from_file(str(ROOT/'tools/said_dashboard/app.py')).run()
     app.sidebar.radio[0].set_value('Semantic Grounding Audit').run()
     assert not app.exception and not app.error
-    assert any(s.value == 'Same-image phrase switching' for s in app.subheader)
+    assert any(s.value == '同图像短语切换' for s in app.subheader)
     def select(label, value):
         next(s for s in app.selectbox if s.label == label).set_value(value).run()
         assert not app.exception and not app.error
-    select('target phrase', 'p1')
-    select('Phrase A', 'p1')
-    select('switching model', 'phase22_direct')
-    select('case filter', 'Wrong pointing')
-    assert next(s for s in app.selectbox if s.label == 'target phrase').value == 'p1'
+    select('目标短语', 'p1')
+    select('短语 A', 'p1')
+    select('切换实验模型', 'phase22_direct')
+    select('样本筛选', 'Wrong pointing')
+    assert next(s for s in app.selectbox if s.label == '目标短语').value == 'p1'
 
 
 def test_grounding_page_missing_image_is_actionable(grounding_root, monkeypatch):
