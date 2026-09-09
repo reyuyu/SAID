@@ -224,7 +224,15 @@ class VisionTransformer(nn.Module):
 		self.ln_post = LayerNorm(width)
 		self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
 
-	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False):
+	def forward_with_local_evidence(self, x: torch.Tensor, use_checkpoint=False):
+		"""Return the unchanged global output and differentiable final attention evidence."""
+		if use_checkpoint:
+			raise NotImplementedError('local evidence does not support use_checkpoint=True')
+		return self.forward(x, return_local_evidence=True)
+
+	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False, return_local_evidence=False):
+		if return_local_evidence and (use_checkpoint or return_patches):
+			raise ValueError('local evidence requires its separate non-checkpoint interface')
 		x = self.conv1(x)  # shape = [*, width, grid, grid]
 		x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
 		x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -235,7 +243,15 @@ class VisionTransformer(nn.Module):
 		x = self.ln_pre(x)
 
 		x = x.permute(1, 0, 2)  # NLD -> LND
-		if use_checkpoint:
+		if return_local_evidence:
+			blocks = self.transformer.resblocks
+			for block in blocks[:-1]:
+				x = block(x)
+			last = blocks[-1]
+			attention_delta = last.attention(last.ln_1(x))
+			x = x + attention_delta
+			x = x + last.mlp(last.ln_2(x))
+		elif use_checkpoint:
 			x = checkpoint.checkpoint(self.transformer, x)
 		else:
 			x = self.transformer(x)
@@ -244,6 +260,11 @@ class VisionTransformer(nn.Module):
 		global_feature = self.ln_post(x[:, 0, :])
 		if self.proj is not None:
 			global_feature = global_feature @ self.proj
+		if return_local_evidence:
+			local_features = self.ln_post(attention_delta.permute(1, 0, 2)[:, 1:, :])
+			if self.proj is not None:
+				local_features = local_features @ self.proj
+			return global_feature, local_features
 		if not return_patches:
 			return global_feature
 
@@ -416,6 +437,11 @@ class CLIP(nn.Module):
 				'encode_image_with_patches currently supports VisionTransformer only'
 			)
 		return self.visual(image.type(self.dtype), use_checkpoint=use_checkpoint, return_patches=True)
+
+	def encode_image_with_local_evidence(self, image, use_checkpoint=False):
+		if not isinstance(self.visual, VisionTransformer):
+			raise NotImplementedError('local evidence supports VisionTransformer only')
+		return self.visual.forward_with_local_evidence(image.type(self.dtype), use_checkpoint=use_checkpoint)
 
 	def encode_text_with_checkpoint(self, text):
 		x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
