@@ -224,7 +224,7 @@ class VisionTransformer(nn.Module):
 		self.ln_post = LayerNorm(width)
 		self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
 
-	def forward(self, x: torch.Tensor, use_checkpoint=False):
+	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False):
 		x = self.conv1(x)  # shape = [*, width, grid, grid]
 		x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
 		x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -241,11 +241,16 @@ class VisionTransformer(nn.Module):
 			x = self.transformer(x)
 		x = x.permute(1, 0, 2)  # LND -> NLD
 
-		x = self.ln_post(x[:, 0, :])
+		global_feature = self.ln_post(x[:, 0, :])
 		if self.proj is not None:
-			x = x @ self.proj
+			global_feature = global_feature @ self.proj
+		if not return_patches:
+			return global_feature
 
-		return x
+		patch_features = self.ln_post(x[:, 1:, :])
+		if self.proj is not None:
+			patch_features = patch_features @ self.proj
+		return global_feature, patch_features
 
 
 class AttentionPool(nn.Module):
@@ -404,6 +409,13 @@ class CLIP(nn.Module):
 
 	def encode_image_with_checkpoint(self, image):
 		return self.visual(image.type(self.dtype), use_checkpoint=True)
+
+	def encode_image_with_patches(self, image, use_checkpoint=False):
+		if not isinstance(self.visual, VisionTransformer):
+			raise NotImplementedError(
+				'encode_image_with_patches currently supports VisionTransformer only'
+			)
+		return self.visual(image.type(self.dtype), use_checkpoint=use_checkpoint, return_patches=True)
 
 	def encode_text_with_checkpoint(self, text):
 		x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
