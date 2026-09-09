@@ -6,6 +6,17 @@ SAID server, what was verified, and what is still missing. No new algorithm
 this phase — the code is the official SmartCLIP baseline plus the small,
 backwards-compatible changes listed at the bottom.
 
+## Status
+
+* **Phase 0 infrastructure/smoke reproduction: completed** - environment, data pipeline,
+  OpenAI CLIP ViT-B/16 initialisation, 4-GPU training smoke, checkpoint save/reload and
+  the COCO retrieval evaluation were all verified on the server.
+* **Full 1.246M SmartCLIP training reproduction: blocked by missing SAM subset** - the
+  official ShareGPT4V-PT mixture needs 570,486 SAM images that are currently not
+  obtainable, so no full-dataset training run has been performed in this phase. The
+  verified smoke runs use an official-format subset JSON (676,415 COCO + LLaVA records),
+  which is **not** the full official training set.
+
 ## 1. Baseline provenance
 
 | item | value |
@@ -20,7 +31,9 @@ backwards-compatible changes listed at the bottom.
 
 * Ubuntu 22.04.4 LTS (container devbox), kernel 4.18
 * 4 × NVIDIA A800-SXM4-80GB (79.33 GiB usable each), driver 535.129.03, CUDA 12.4
-* conda env `said-smartclip`: Python 3.10, PyTorch 2.5.1+cu124, torchvision, openai `clip`
+* conda env `said-smartclip`: Python 3.10, PyTorch 2.5.1+cu124, torchvision 0.20.1+cu124,
+  openai `clip` @ `d05afc436d78f1c48dc0dbf8e5980a9d471f35f6` (full list:
+  `docs/environment_freeze.txt`)
 * `setuptools<81` is required: `model/longclip.py` imports `pkg_resources`, which was
   removed from setuptools 83.
 * Create the environment with:
@@ -113,9 +126,13 @@ model, preprocess = longclip.load('<ckpt.pt>', device='cuda')
 
 ## 6. Verified smoke results (2026-09-09)
 
-Run: 4 x A800-80GB, `--max_steps=120` (plus a 250-step run), official-format subset
-JSON without SAM (676,415 COCO+LLaVA records), batch 256/GPU, accumulation 1 ->
-effective batch 1024.
+Run: 4 x A800-80GB, `--max_steps=120` (plus a 250-step run), on an official-format
+**subset** JSON containing COCO + LLaVA records only (676,415 records) because the SAM
+images are missing; batch 256/GPU, accumulation 1 -> effective batch 1024.
+
+This is the **Phase 0 infrastructure/smoke reproduction: completed** result. It is NOT
+the full 1.246 M official training run, which is **blocked by the missing SAM subset**
+(see Status above and section 7).
 
 | check | result |
 | --- | --- |
@@ -142,8 +159,8 @@ These numbers come from a smoke checkpoint on a data subset; they are not paper 
   `hdtech/SA-1B`, `DavidNguyen/ShareGPT4V-Sam`) do not contain this contiguous id
   slice in matching file names. Therefore the smoke run used an **official-format
   subset JSON** (COCO + LLaVA records only, 676,415 records) at
-  `datasets/ShareGPT4V/debug/share4v_smoke_nosam.json`. A full 1.246 M reproduction
-  needs the SAM images.
+  `datasets/ShareGPT4V/debug/share4v_smoke_nosam.json`. Therefore
+  **Full 1.246M SmartCLIP training reproduction: blocked by missing SAM subset**.
 * Upstream behaviour kept as-is: every DDP rank creates its own `runs/<id>_...`
   directory and TensorBoard writer, and `get_run_id()` races across ranks, so a
   4-GPU run produces four run directories (rank 0 writes `loss.txt` / `metric.txt`).
@@ -160,6 +177,8 @@ These numbers come from a smoke checkpoint on a data subset; they are not paper 
 | `train/sharegpt4v.py` | `SHARE4V_DATA_ROOT` / `SHARE4V_JSON` env overrides | data lives outside the repo; defaults unchanged |
 | `train/train_utils.py` | `COCO_DATA_ROOT` env override in `eval_coco` | same |
 | `eval/retrieval/coco.py` | `COCO_DATA_ROOT` env override | same |
-| `requirements.txt` | pinned deps | reproducible environment |
+| `train/sharegpt4v.py` | `os.path.join` instead of string concatenation | `SHARE4V_DATA_ROOT` works with or without a trailing `/` |
+| `requirements.txt` | pinned `torchvision==0.20.1` and CLIP commit `d05afc4...` | exact reproducible environment |
+| `docs/environment_freeze.txt` | `pip freeze` of the working env | full environment record |
 
 Caption sampling, loss, optimizer, model and DDP logic are **untouched**.

@@ -20,7 +20,7 @@ class share4v_train_dataset(data.Dataset):
         self.json_name = json_name
         self.image_root = image_root
         self.total_len = 1000
-        with open(data4v_root + json_name, 'r', encoding='utf8') as fp:
+        with open(os.path.join(data4v_root, json_name), 'r', encoding='utf8') as fp:
             self.json_data = json.load(fp)[self.total_len:]
         _, self.preprocess = clip.load("ViT-L/14")
         del _
@@ -33,7 +33,7 @@ class share4v_train_dataset(data.Dataset):
         caption = self.json_data[index]['conversations'][1]['value']
         caption = caption.replace("\n", " ")
         num_sentences = len(caption.split(". "))
-        image_name = self.image_root + self.json_data[index]['image']
+        image_name = os.path.join(self.image_root, self.json_data[index]['image'])
         image = Image.open(image_name).convert('RGB')
         image_tensor = self.preprocess(image)
         use_caption = '. '.join(caption.split(". ")[:random.randint(1, num_sentences)])
@@ -46,7 +46,7 @@ class share4v_val_dataset(data.Dataset):
         self.json_name = json_name
         self.image_root = image_root
         self.total_len = 1000
-        with open(data4v_root + json_name, 'r', encoding='utf8') as fp:
+        with open(os.path.join(data4v_root, json_name), 'r', encoding='utf8') as fp:
             self.json_data = json.load(fp)[:self.total_len]
         _, self.preprocess = clip.load("ViT-L/14")
         del _
@@ -57,7 +57,7 @@ class share4v_val_dataset(data.Dataset):
     def __getitem__(self, index):
         caption = self.json_data[index]['conversations'][1]['value']
         caption = caption.replace("\n", " ")
-        image_name = self.image_root + self.json_data[index]['image']
+        image_name = os.path.join(self.image_root, self.json_data[index]['image'])
         image = Image.open(image_name)
         image_tensor = self.preprocess(image)
         return image_tensor, caption
