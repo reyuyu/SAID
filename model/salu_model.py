@@ -32,6 +32,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .salu_modules import SaidRouter
+from .representation_metrics import batch_representation_gaps
 
 
 def gather_features_with_grad(features: torch.Tensor) -> torch.Tensor:
@@ -280,6 +281,7 @@ class SALUModel(nn.Module):
                 'router_input_feature_norm': patch_features.detach().float().norm(dim=-1).mean(),
                 'global_feature_norm': z_g.detach().float().norm(dim=-1).mean(),
             }
+            out.update(batch_representation_gaps(z_g, z_s_own, t))
         return out
 
     def forward(self, images, texts, lambda_global: float = 1.0, lambda_said: float = 1.0):

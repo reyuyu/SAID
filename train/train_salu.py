@@ -332,6 +332,10 @@ def main():
                     'global_feature_norm': float(out['global_feature_norm']),
                 }
                 record.update(throughput)
+                for key in ('pair_gap_full', 'pair_gap_said', 'balancing_gain',
+                            'relative_balancing_gain'):
+                    record[key] = float(out[key])
+                record['representation_gap_scope'] = 'rank0_local_training_batch'
                 record['sec_per_step_avg'] = throughput['compute_sec_per_step']  # legacy alias (compute-only)
                 with open(log_path, 'a') as fp:
                     fp.write(json.dumps(record, sort_keys=True) + '\n')
