@@ -106,9 +106,9 @@ def spatial_sweep(root, output, include_shifts=False):
             peak = transformed.reshape(len(keys), -1).argmax(1)
             point = centres[np.arange(len(keys)), peak]
             mass = np.sum(transformed*coverage, axis=(1,2))
-            row = {'model': variant, 'transform': name, 'phrases': len(keys),
-                   'pointing': float(point.mean()), 'gt_mass': float(mass.mean()),
-                   'gt_area_fraction': float(area.mean()), 'mass_gain': float((mass-area).mean()),
+            row = {'model': variant, 'transform': name, 'all_phrase_count': len(keys),
+                   'all_phrase_pointing': float(point.mean()), 'all_phrase_gt_mass': float(mass.mean()),
+                   'all_phrase_gt_area_fraction': float(area.mean()), 'all_phrase_mass_gain': float((mass-area).mean()),
                    'pointing_delta': float(point.mean()-base_point.mean()),
                    'mass_delta': float((mass-base_mass).mean()),
                    'changed_to_correct': int(np.sum(point & ~base_point)),
@@ -126,12 +126,13 @@ def spatial_sweep(root, output, include_shifts=False):
             shuf_point = np.concatenate([centres[pair_j, pair_maps_i.reshape(len(pair_i),-1).argmax(1)],
                                          centres[pair_i, pair_maps_j.reshape(len(pair_j),-1).argmax(1)]])
             row.update({'pair_count': len(pair_i),
-                        'shuffled_pointing': float(np.concatenate([true_peak_i*0, true_peak_j*0]).mean()) if False else float(shuf_point.mean()),
-                        'true_pair_pointing': float(np.concatenate([true_peak_i, true_peak_j]).mean()),
-                        'semantic_pointing_excess': float(np.concatenate([true_peak_i, true_peak_j]).mean()-shuf_point.mean()),
-                        'shuffled_mass': float(np.mean(np.concatenate([shuf_i, shuf_j]))),
-                        'true_pair_mass': float(np.mean(np.concatenate([true_i, true_j]))),
-                        'semantic_mass_excess': float(np.mean(np.concatenate([true_i-shuf_i, true_j-shuf_j]))),
+                        'pair_query_count': 2*len(pair_i),
+                        'pair_shuffled_pointing': float(shuf_point.mean()),
+                        'pair_true_pointing': float(np.concatenate([true_peak_i, true_peak_j]).mean()),
+                        'pair_semantic_pointing_excess': float(np.concatenate([true_peak_i, true_peak_j]).mean()-shuf_point.mean()),
+                        'pair_shuffled_mass': float(np.mean(np.concatenate([shuf_i, shuf_j]))),
+                        'pair_true_mass': float(np.mean(np.concatenate([true_i, true_j]))),
+                        'pair_semantic_mass_excess': float(np.mean(np.concatenate([true_i-shuf_i, true_j-shuf_j]))),
                         'aggregate_pearson': float(np.corrcoef(transformed.mean(0).ravel(), mean_gt.ravel())[0,1]),
                         'aggregate_spearman': spearman(transformed.mean(0).ravel(), mean_gt.ravel())})
             records.append(row)

@@ -1,4 +1,6 @@
-# Phase 2.3.1 Grounding Sanity Probe: stopped at D4 gate
+# Phase 2.3.1 Grounding Sanity Probe: initial D4 gate record
+
+> Superseded by [the completed root-cause audit](phase231_root_cause.md). Decision D: no implementation coordinate bug found. The stop below records an earlier phase of investigation, not the current conclusion.
 
 **Status: STOP — possible spatial mapping bug. No model inference or training was started in this phase.**
 
@@ -99,23 +101,6 @@ The new Grounding Sanity Probe dashboard page is deferred by the immediate STOP 
 
 ## Conclusion
 
-## Review update: true-target versus shuffled-target control
+## Review update: clarified denominators and root cause
 
-The follow-up control reused the deterministic 1,837 same-image, spatially separated phrase pairs from the full audit. For each pair the same permutation was applied to every model and transform. The table reports pair-averaged semantic excess (`true - shuffled`).
-
-| Model | Identity raw pointing | Identity shuffled pointing | Identity semantic pointing excess | Identity semantic mass excess | Rotate180 raw pointing | Rotate180 shuffled pointing | Rotate180 semantic pointing excess | Rotate180 semantic mass excess |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Initial direct | 23.37% | 14.92% | -0.02150 | -0.01422 | 32.15% | 16.98% | +0.02014 | +0.00443 |
-| Phase 2.1 Router | 25.67% | 15.30% | -0.00245 | -0.00323 | 31.65% | 18.10% | +0.01742 | +0.00238 |
-| Phase 2.2 Router | 29.65% | 20.85% | -0.05199 | -0.02652 | 30.24% | 17.12% | +0.00599 | +0.00616 |
-| Phase 2.2 direct | 23.24% | 14.83% | -0.01715 | -0.02003 | 30.75% | 17.69% | +0.00490 | +0.00511 |
-
-`rotate180` is the only common D4 transform that makes semantic mass excess positive for all four variants, and it also makes semantic pointing excess positive for all four. This is evidence for a shared global spatial mapping issue in the saved attention-to-GT coordinate convention. The magnitude is modest and does not establish whether the cause is an array orientation, crop coordinate convention, or another common transform; the original identity benchmark remains the official result until reviewed. No orientation was changed automatically.
-
-The complete v2 artifact also ran the requested no-wrap, renormalized ±2 shift sweep. No single offset improved semantic mass excess consistently across all variants: best offsets were `(-2,+2)`, `(+2,+2)`, `(-2,-2)`, and `(-2,-2)` for A–D respectively, and all remained negative for at least one model. This reinforces that the common D4 signal is distinct from a generic local offset.
-
-Spatial priors: mean GT area fraction is 0.319635 and the empirical uniform patch-center pointing baseline is 0.320884. The v2 artifact stores mean attention maps, peak histograms, Pearson/Spearman correlations for every model × D4 transform, and the full D4/shift table at `outputs/grounding_sanity_probe_v2/`.
-
-**STOP condition remains active.** Prompt templates, checkpoint trajectory, saved-NPY checkpoint recomputation, preprocess roundtrip, convolution patch-order probe, identity-router equality, router geometry correlation, dashboard extension and all training are deferred. The 3-epoch decision is **no** until the shared spatial convention is reviewed and fixed in a later authorized change.
-
-No router, q/k, initialization, loss, supervision or training changes were made. Stop for Review.
+The complete paired table and current conclusion are in [phase231_root_cause.md](phase231_root_cause.md). All-phrase metrics use 14,334 phrases; true/shuffled/excess metrics use the same 3,674 directed observations from 1,837 pairs. Existing numerical results are unchanged. The earlier claim of a confirmed global mapping issue is withdrawn: saved/live, crop, EXIF, patch order and identity-router checks pass; the 180-degree signal already exists in live pre-softmax patch scores. Formal heatmaps remain unrotated.
