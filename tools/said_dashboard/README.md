@@ -20,6 +20,18 @@ python eval/salu/export_dashboard_artifacts.py \
 
 Artifacts (git-ignored):
 
+Every checkpoint directory is self-contained: it contains every sample image
+as well as its four attention maps. Images are the model-input crops, so the
+14x14 maps align with them. The exporter writes images for every checkpoint,
+including on a clean export; copying old images is not required.
+
+The export-to-loader integration test uses two checkpoints and checks both
+images and all caption attention variants:
+
+```bash
+python -m pytest tests/test_dashboard_export.py tests/test_said_dashboard.py -q
+```
+
 ```text
 outputs/salu_dashboard/
 ├── manifest.json              # checkpoints, 64 sample indices/image ids, captions, permutation
