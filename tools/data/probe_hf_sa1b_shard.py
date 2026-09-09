@@ -1,6 +1,7 @@
 """Probe one SA-1B WebDataset tar without extracting it."""
 import argparse
 from collections import Counter
+import hashlib
 import io
 import json
 import re
@@ -75,6 +76,7 @@ def probe_tar(tar_path, required, sample_limit=1000):
     duplicate_keys = sorted(k for k, n in keys.items() if n > 1)
     return {'member_count': len(members), 'image_member_count': len(image_members),
             'auxiliary_member_count': len(members) - len(image_members),
+            'image_extension_counts': dict(Counter(Path(m.name).suffix.lower() for m in image_members)),
             'image_key_count': len(shard_keys), 'duplicate_key_count': len(duplicate_keys),
             'duplicate_keys': duplicate_keys[:50], 'key_examples': sorted(shard_keys)[:50],
             'required_sam_count': len(required), 'intersection_count': len(matched),
@@ -82,9 +84,11 @@ def probe_tar(tar_path, required, sample_limit=1000):
             'matched_examples': matched[:50], 'hf_only_examples': sorted(shard_keys - set(required))[:50],
             'decode_checked': len(selected), 'decode_success': len(decoded),
             'decode_failed': len(failed), 'decode_errors': errors[:50],
+            'format_counts': dict(Counter(v['format'] for v in resolutions)),
+            'mode_counts': dict(Counter(v['mode'] for v in resolutions)),
             'resolution_summary': resolution_summary(resolutions),
             'id_compatibility': 'PASS' if len(matched) > 0 else 'FAIL',
-            'image_source_confidence': 'UNKNOWN',
+            'image_source_confidence': 'MEDIUM' if matched and len(resolutions) > 1 else 'UNKNOWN',
             'recommendation': 'NEEDS_REVIEW'}
 
 
@@ -95,9 +99,14 @@ def main():
     args = parser.parse_args()
     required = required_sam_ids(args.json)
     result = probe_tar(args.tar_path, required)
+    digest = hashlib.sha256()
+    with args.tar_path.open('rb') as stream:
+        for block in iter(lambda: stream.read(8 * 1024 * 1024), b''):
+            digest.update(block)
     result.update(repo='hanlincs/InternVL-SA1B-Caption-WebDataset',
                   revision='4cdaea026f51899bb88d24d423121d2106a943ba',
-                  shard='data/sa_000000.tar', file_size=args.tar_path.stat().st_size)
+                  shard='data/sa_000000.tar', file_size=args.tar_path.stat().st_size,
+                  sha256=digest.hexdigest())
     args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / 'hf_sa1b_probe.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     (args.output_dir / 'hf_sa1b_probe.md').write_text('# Hugging Face SA-1B 单 shard probe\n\n```json\n' + json.dumps(result, ensure_ascii=False, indent=2) + '\n```\n', encoding='utf-8')
