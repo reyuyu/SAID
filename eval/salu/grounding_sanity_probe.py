@@ -13,6 +13,13 @@ D4_NAMES = ('identity', 'horizontal_flip', 'vertical_flip', 'transpose',
             'rotate90', 'rotate180', 'rotate270', 'transpose_plus_flip')
 
 
+def spearman(a, b):
+    a, b = np.asarray(a), np.asarray(b)
+    ra = np.argsort(np.argsort(a, kind='mergesort'), kind='mergesort')
+    rb = np.argsort(np.argsort(b, kind='mergesort'), kind='mergesort')
+    return float(np.corrcoef(ra, rb)[0, 1])
+
+
 def d4_transform(a, name):
     """Eight distinct square symmetries on the final two axes.
 
@@ -72,7 +79,18 @@ def spatial_sweep(root, output, include_shifts=False):
         centres.append(points)
     coverage, centres = np.stack(coverage), np.stack(centres)
     area = coverage.mean(axis=(1, 2))
+    # Reuse the deterministic same-image pairs from the completed audit as the
+    # within-image shuffled-target control. Each pair uses the same permutation
+    # for every model and transform.
+    switching = json.loads((root/'switching.json').read_text())['phase22_router']
+    pair_ids = [(x['phrase_a'], x['phrase_b']) for x in switching]
+    key_index = {key:i for i,key in enumerate(keys)}
+    pair_ids = [(a,b) for a,b in pair_ids if a in key_index and b in key_index]
+    pair_i = np.array([key_index[a] for a,b in pair_ids], dtype=np.int64)
+    pair_j = np.array([key_index[b] for a,b in pair_ids], dtype=np.int64)
+    pair_cov_i, pair_cov_j = coverage[pair_i], coverage[pair_j]
     records = []
+    mean_gt = coverage.mean(0)
     for variant in manifest['variants']:
         maps = np.stack([np.load(root/'attention'/variant/(key+'.npy')) for key in keys]).astype(np.float64)
         if maps.shape != coverage.shape or not np.isfinite(maps).all() or np.any(maps < 0):
@@ -95,6 +113,27 @@ def spatial_sweep(root, output, include_shifts=False):
                    'mass_delta': float((mass-base_mass).mean()),
                    'changed_to_correct': int(np.sum(point & ~base_point)),
                    'changed_to_wrong': int(np.sum(~point & base_point))}
+            # Pairwise true-vs-shuffled excess. A and B are the same image and
+            # spatially separated by construction; no random permutation is
+            # sampled, so this control is exactly reproducible.
+            pair_maps_i, pair_maps_j = transformed[pair_i], transformed[pair_j]
+            true_i = np.sum(pair_maps_i*pair_cov_i, axis=(1,2))
+            true_j = np.sum(pair_maps_j*pair_cov_j, axis=(1,2))
+            shuf_i = np.sum(pair_maps_i*pair_cov_j, axis=(1,2))
+            shuf_j = np.sum(pair_maps_j*pair_cov_i, axis=(1,2))
+            true_peak_i = centres[pair_i, pair_maps_i.reshape(len(pair_i),-1).argmax(1)]
+            true_peak_j = centres[pair_j, pair_maps_j.reshape(len(pair_j),-1).argmax(1)]
+            shuf_point = np.concatenate([centres[pair_j, pair_maps_i.reshape(len(pair_i),-1).argmax(1)],
+                                         centres[pair_i, pair_maps_j.reshape(len(pair_j),-1).argmax(1)]])
+            row.update({'pair_count': len(pair_i),
+                        'shuffled_pointing': float(np.concatenate([true_peak_i*0, true_peak_j*0]).mean()) if False else float(shuf_point.mean()),
+                        'true_pair_pointing': float(np.concatenate([true_peak_i, true_peak_j]).mean()),
+                        'semantic_pointing_excess': float(np.concatenate([true_peak_i, true_peak_j]).mean()-shuf_point.mean()),
+                        'shuffled_mass': float(np.mean(np.concatenate([shuf_i, shuf_j]))),
+                        'true_pair_mass': float(np.mean(np.concatenate([true_i, true_j]))),
+                        'semantic_mass_excess': float(np.mean(np.concatenate([true_i-shuf_i, true_j-shuf_j]))),
+                        'aggregate_pearson': float(np.corrcoef(transformed.mean(0).ravel(), mean_gt.ravel())[0,1]),
+                        'aggregate_spearman': spearman(transformed.mean(0).ravel(), mean_gt.ravel())})
             records.append(row)
         print(variant, 'complete', flush=True)
     result = {'source': root.name, 'source_code_commit': manifest['code_commit'],
