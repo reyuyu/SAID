@@ -65,10 +65,12 @@ def pca_chart(pca, name):
                     for i, (x, y) in enumerate(points[group]))
     axes = {'x': alt.X('横坐标:Q', title='主成分 1', scale=alt.Scale(domain=pca['axis_limits']['x'], nice=False)),
             'y': alt.Y('纵坐标:Q', title='主成分 2', scale=alt.Scale(domain=pca['axis_limits']['y'], nice=False))}
-    color = alt.Color('模态:N', scale=alt.Scale(domain=['视觉表征', '文本表征'], range=['#3677bc', '#e68a32']), title=None)
+    color = alt.Color('模态:N', scale=alt.Scale(domain=['视觉表征', '文本表征'], range=['#3677bc', '#e68a32']),
+                      title=None, legend=alt.Legend(orient='bottom'))
     dots = alt.Chart(pd.DataFrame(rows)).mark_point(filled=True, opacity=.42, size=19).encode(
         **axes, color=color,
-        shape=alt.Shape('模态:N', scale=alt.Scale(domain=['视觉表征', '文本表征'], range=['circle', 'triangle-up']), title=None),
+        shape=alt.Shape('模态:N', scale=alt.Scale(domain=['视觉表征', '文本表征'], range=['circle', 'triangle-up']),
+                        title=None, legend=alt.Legend(orient='bottom')),
         tooltip=['模态:N', '固定样本序号:Q'])
     ellipse_rows = []
     center_rows = []
@@ -80,20 +82,22 @@ def pca_chart(pca, name):
     ellipses = alt.Chart(pd.DataFrame(ellipse_rows)).mark_line(strokeDash=[5, 3], opacity=.8).encode(
         **axes, color=color, order='顺序:Q')
     centroids = alt.Chart(pd.DataFrame(center_rows)).mark_point(shape='cross', size=150, strokeWidth=2).encode(
-        **axes, color=color, tooltip=['中心:N'])
+        **axes, color=color, tooltip=['中心:N'],
+        shape=alt.Shape('中心:N', title=None, scale=alt.Scale(domain=['视觉中心', '文本中心'], range=['cross', 'cross']),
+                        legend=alt.Legend(orient='bottom')))
     pairs = [{'横坐标': points[name][i][0], '纵坐标': points[name][i][1],
               '文本横坐标': points['text'][i][0], '文本纵坐标': points['text'][i][1]}
              for i in pca['paired_line_indices']]
     lines = alt.Chart(pd.DataFrame(pairs)).mark_rule(color='#8c96a0', opacity=.18).encode(
         **axes, x2='文本横坐标:Q', y2='文本纵坐标:Q')
-    return lines + dots + ellipses + centroids
+    return (lines + dots + ellipses + centroids).resolve_scale(shape='independent')
 
 
 def line_chart(rows, x, y, series, order=None):
     return alt.Chart(pd.DataFrame(rows)).mark_line(point=True).encode(
         x=alt.X(x + (':O' if order else ':Q'), sort=order, title=x),
         y=alt.Y(y + ':Q', scale=alt.Scale(zero=False), title=y),
-        color=alt.Color(series + ':N', title=None),
+        color=alt.Color(series + ':N', title=None, legend=alt.Legend(orient='bottom')),
         tooltip=[x, series, alt.Tooltip(y + ':Q', format='.5f')])
 
 

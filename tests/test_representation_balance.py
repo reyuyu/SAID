@@ -104,3 +104,92 @@ def test_joint_basis_shared_axes_and_original_dimension():
     assert result['paired_line_indices'] == list(range(30))
     assert modality_metrics(arrays[0], arrays[3])['dimension'] == 8
     assert joint_pca(*arrays) == result
+
+
+def make_dashboard_artifacts(root):
+    rng = np.random.default_rng(4)
+    base, full, said, text = [rng.normal(size=(8, 6)) for _ in range(4)]
+    metrics = gap_comparison(base, full, said, text, full)
+    pca = joint_pca(base, full, said, text)
+    levels = [{'level': level, 'n': 8, **{k: metrics[k] for k in ('base', 'full', 'said')},
+               'balancing_gain': metrics['balancing_gain'], 'mean_used_tokens': 20,
+               'truncated_count': 0} for level in DETAIL_LEVELS]
+    summary = {'status': 'complete', 'n': 8, 'checkpoints': {}}
+    for tag, step in [('initial', 0), ('step100', 100), ('final', 659)]:
+        write_json(root / tag / 'gap_metrics.json', metrics)
+        write_json(root / tag / 'caption_detail.json', {'levels': levels})
+        write_json(root / tag / 'pca.json', pca)
+        summary['checkpoints'][tag] = {'step': step, 'epoch': 0, 'training': {},
+                                        'metrics': metrics, 'coco': None}
+    write_json(root / 'summary.json', summary)
+    write_json(root / 'batch_history.json', {'note': '独立 smoke', 'run': 'test',
+               'records': [{'step': 9, 'completed_steps': 10, 'epoch': 0,
+                            'pair_gap_full': .6, 'pair_gap_said': .7,
+                            'balancing_gain': -.1, 'relative_balancing_gain': -1/6}]})
+
+
+def test_chinese_default_without_heatmaps_and_missing_coco(tmp_path, monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    root = Path(__file__).resolve().parents[1]
+    make_dashboard_artifacts(tmp_path)
+    monkeypatch.setenv('REPRESENTATION_BALANCE_ROOT', str(tmp_path))
+    monkeypatch.setenv('SAID_DASHBOARD_ROOT', str(tmp_path / 'nonexistent_heatmaps'))
+    app = AppTest.from_file(str(root / 'tools/said_dashboard/app.py')).run(timeout=30)
+    assert app.sidebar.radio[0].value == '表征平衡监控'
+    assert app.title[0].value == '表征平衡监控'
+    for tag in ('initial', 'step100', 'final'):
+        app.sidebar.selectbox[0].set_value(tag).run(timeout=30)
+        assert not app.exception and not app.error and not app.warning
+        assert any(x.value == '当前 checkpoint 尚未运行 COCO Retrieval 评估。' for x in app.info)
+    assert len(app.get('vega_lite_chart')) == 8
+    app.sidebar.radio[0].set_value('训练状态').run(timeout=30)
+    assert not app.exception and not app.error
+    assert app.title[0].value == '训练状态'
+    assert any('训练 Batch 诊断' in x.value for x in app.caption)
+
+
+def test_missing_balance_artifact_is_friendly(tmp_path, monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    root = Path(__file__).resolve().parents[1]
+    monkeypatch.setenv('REPRESENTATION_BALANCE_ROOT', str(tmp_path))
+    app = AppTest.from_file(str(root / 'tools/said_dashboard/app.py')).run(timeout=30)
+    assert not app.exception and not app.error
+    assert any('表征诊断暂不可用' in x.value for x in app.warning)
+
+
+def test_production_default_legacy_strict_load_and_ablation():
+    import inspect
+    from model.salu_model import SALUModel
+    from tests.test_local_evidence_router import TinyCLIP
+    assert inspect.signature(SALUModel).parameters['said_feature_source'].default == 'residual'
+    for source in ('residual', 'attention_delta'):
+        model = SALUModel(TinyCLIP(), said_feature_source=source)
+        # Metadata-free old state dict has no diagnostic parameters or buffers.
+        state = model.state_dict()
+        restored = SALUModel(TinyCLIP(), said_feature_source=source)
+        result = restored.load_state_dict(state, strict=True)
+        assert not result.missing_keys and not result.unexpected_keys
+        with torch.no_grad():
+            global_features, patches = restored.encode_router_input(torch.randn(2, 3, 32, 32))
+        assert global_features.shape[0] == patches.shape[0] == 2
+
+
+def test_dashboard_artifact_only_and_font_fallback():
+    root = Path(__file__).resolve().parents[1]
+    source = (root / 'tools/said_dashboard/representation_balance_page.py').read_text(encoding='utf-8')
+    assert 'import torch' not in source and 'torch.load' not in source
+    for font in ('Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'Arial Unicode MS', 'sans-serif'):
+        assert font in source
+
+
+def test_pca_rendering_uses_artifact_axes_and_independent_centroid_symbols():
+    from tools.said_dashboard.representation_balance_page import pca_chart
+    rng = np.random.default_rng(9)
+    arrays = [rng.normal(size=(8, 6)) for _ in range(4)]
+    pca = joint_pca(*arrays)
+    for name in ('base', 'full', 'said'):
+        spec = pca_chart(pca, name).to_dict()
+        assert spec['resolve']['scale']['shape'] == 'independent'
+        for layer in spec['layer']:
+            for axis in ('x', 'y'):
+                assert layer['encoding'][axis]['scale']['domain'] == pca['axis_limits'][axis]
