@@ -1,22 +1,28 @@
-"""SALU model wrapper -- Phase 2 "Align the Said" (Said-only).
+"""SALU model wrapper -- Said-only training.
 
-Wraps an existing SmartCLIP / LongCLIP model and adds the caption-conditioned
-Said router. Standard inference (retrieval, zero-shot) is *unchanged*: it
-delegates to the wrapped CLIP model and never uses the Said router.
+Two Said objectives are supported (``said_loss_mode``):
 
-Training objective of this phase (and only this phase)::
+``positive`` (Phase 2, kept as an ablation)
+    z_s = Said(I_i, C_i); symmetric InfoNCE between gathered z_s and gathered t.
+    Diagnostic finding (Phase 2.1): this objective collapses to generic image
+    saliency -- own-vs-shuffled caption attention JSD ~0.013, below the bf16/fp32
+    precision noise floor, because the negative captions never re-enter the router.
 
-    L_total = lambda_global * L_global + lambda_said * L_said
+``identifiable`` (Phase 2.2, default)
+    Every (image i, caption j) pair is routed, and the *scoring* text is always the
+    image's own caption::
 
-with two symmetric InfoNCE terms. No prototype bank, no unsaid explorer, no
-sparsity / entropy / overlap / reconstruction / completeness losses.
+        route_score[i, j]    = scale * cos(z_pair[i, j], t_i)   # routing caption varies
+        evidence_score[i, j] = scale * cos(z_pair[j, i], t_i)   # routing image varies
 
-Notes
------
-* ``z_s`` is a *training-time conditional* visual representation produced from
-  ``image_i`` and ``caption_i``; it is never used for standard inference.
-* ``mask_net`` (SmartCLIP) is kept for checkpoint compatibility but is frozen and
-  never used here.
+    with ``L_said = 0.5 * (CE(route_score) + CE(evidence_score))``.
+    If the router ignores the caption, every z_pair[i, j] is identical and
+    route_score has identical rows, so L_route cannot fall below log(B). This
+    directly penalises caption-independent (saliency) routing.
+
+Standard inference (retrieval / zero-shot) still delegates to the wrapped CLIP
+model and never uses the Said router. No prototype bank, no unsaid explorer, no
+sparsity / entropy / overlap / reconstruction term.
 """
 from typing import Dict, Optional
 
@@ -67,6 +73,61 @@ def contrastive_loss(
     return 0.5 * (loss_i + loss_t)
 
 
+def identifiable_said_loss(
+    z_pair: torch.Tensor,
+    text_features: torch.Tensor,
+    logit_scale: torch.Tensor,
+) -> Dict[str, torch.Tensor]:
+    """Same-image route identification + cross-image evidence identification.
+
+    Args:
+        z_pair: [B, B, D] L2-normalised Said features, ``z_pair[i, j]`` = image i
+            routed by caption j.
+        text_features: [B, D] L2-normalised captions of the local batch.
+        logit_scale: scalar tensor.
+
+    Returns:
+        dict with ``loss_route``, ``loss_evidence``, ``loss_said`` and the
+        detached diagnostics ``route_top1_acc``, ``evidence_top1_acc``,
+        ``route_margin``, ``evidence_margin``.
+    """
+    if z_pair.dim() != 3 or z_pair.shape[0] != z_pair.shape[1]:
+        raise ValueError('z_pair must be [B, B, D], got %r' % (tuple(z_pair.shape),))
+    batch = z_pair.shape[0]
+    if batch < 2:
+        raise ValueError('identifiable Said loss needs batch >= 2, got %d' % batch)
+    labels = torch.arange(batch, device=z_pair.device)
+
+    # routing caption varies, scoring text fixed to t_i
+    route_score = logit_scale * torch.einsum('ijd,id->ij', z_pair, text_features)
+    # routing image varies, scoring text fixed to t_i
+    evidence_score = logit_scale * torch.einsum('jid,id->ij', z_pair, text_features)
+
+    loss_route = F.cross_entropy(route_score, labels)
+    loss_evidence = F.cross_entropy(evidence_score, labels)
+    loss_said = 0.5 * (loss_route + loss_evidence)
+
+    with torch.no_grad():
+        def _stats(score):
+            top1 = (score.argmax(dim=1) == labels).float().mean()
+            diag = score.diagonal()
+            off_diag_mean = (score.sum(dim=1) - diag) / float(batch - 1)
+            return top1, (diag - off_diag_mean).mean()
+
+        route_top1, route_margin = _stats(route_score)
+        evidence_top1, evidence_margin = _stats(evidence_score)
+
+    return {
+        'loss_route': loss_route,
+        'loss_evidence': loss_evidence,
+        'loss_said': loss_said,
+        'route_top1_acc': route_top1,
+        'evidence_top1_acc': evidence_top1,
+        'route_margin': route_margin,
+        'evidence_margin': evidence_margin,
+    }
+
+
 class SALUModel(nn.Module):
     """Said-only wrapper around a CLIP / SmartCLIP model.
 
@@ -76,6 +137,10 @@ class SALUModel(nn.Module):
         tau_said: Said softmax temperature.
         dim: router feature dimension; defaults to the CLIP embedding dim.
         freeze_mask_net: freeze SmartCLIP's ``mask_net`` (kept, never trained).
+        fp32_master_weights: cast the wrapped CLIP weights to fp32 (see note below).
+        said_loss_mode: ``identifiable`` (default) or ``positive``.
+        pair_chunk_size: caption candidates per chunk for pairwise routing
+            (``None`` = all at once; numerically identical).
     """
 
     def __init__(
@@ -85,10 +150,14 @@ class SALUModel(nn.Module):
         dim: Optional[int] = None,
         freeze_mask_net: bool = True,
         fp32_master_weights: bool = True,
+        said_loss_mode: str = 'identifiable',
+        pair_chunk_size: Optional[int] = 64,
     ):
         super().__init__()
+        if said_loss_mode not in ('positive', 'identifiable'):
+            raise ValueError("said_loss_mode must be 'positive' or 'identifiable', got %r" % (said_loss_mode,))
         self.clip = clip_model
-        # SmartCLIP/OpenAI CLIP weights are stored as fp16 by `convert_weights`.
+        # SmartCLIP/OpenAI CLIP weights are stored as fp16 by ``convert_weights``.
         # fp16 gradient buffers overflow under GradScaler, so SALU training keeps
         # fp32 master weights and relies on autocast for mixed precision.
         if fp32_master_weights:
@@ -97,6 +166,8 @@ class SALUModel(nn.Module):
             dim = int(clip_model.text_projection.shape[1])
         self.said_router = SaidRouter(dim=dim, tau_said=tau_said)
         self.tau_said = float(tau_said)
+        self.said_loss_mode = said_loss_mode
+        self.pair_chunk_size = pair_chunk_size
 
         if freeze_mask_net and hasattr(self.clip, 'mask_net'):
             for param in self.clip.mask_net.parameters():
@@ -128,7 +199,7 @@ class SALUModel(nn.Module):
         return [p for p in self.parameters() if p.requires_grad and id(p) not in head_ids]
 
     # ------------------------------------------------------------------ #
-    # training-time Said-only objective
+    # training-time Said objective
     # ------------------------------------------------------------------ #
     def forward_train(
         self,
@@ -143,29 +214,57 @@ class SALUModel(nn.Module):
         z_g = F.normalize(z_global, dim=-1)
         t = F.normalize(text_features, dim=-1)
 
-        A_s, z_s = self.said_router(t, patch_features)
+        # own-caption attention: diagnostics for every mode, and the whole
+        # objective in 'positive' mode
+        A_own, z_s_own = self.said_router(t, patch_features)
 
         scale = self.clip.logit_scale.exp().clamp(max=100)
-        z_g_all = gather_features_with_grad(z_g)
-        t_all = gather_features_with_grad(t)
-        z_s_all = gather_features_with_grad(z_s)
+        loss_global = contrastive_loss(
+            gather_features_with_grad(z_g), gather_features_with_grad(t), scale
+        )
 
-        loss_global = contrastive_loss(z_g_all, t_all, scale)
-        loss_said = contrastive_loss(z_s_all, t_all, scale)
+        zero = torch.zeros((), device=images.device, dtype=loss_global.dtype)
+        if self.said_loss_mode == 'identifiable':
+            z_pair, _ = self.said_router.route_pairwise(
+                t, patch_features, chunk_size=self.pair_chunk_size
+            )
+            said = identifiable_said_loss(z_pair, t, scale)
+            loss_route = said['loss_route']
+            loss_evidence = said['loss_evidence']
+            loss_said = said['loss_said']
+            route_top1 = said['route_top1_acc']
+            evidence_top1 = said['evidence_top1_acc']
+            route_margin = said['route_margin']
+            evidence_margin = said['evidence_margin']
+        else:  # 'positive' -- Phase 2 ablation, unchanged
+            z_s_all = gather_features_with_grad(z_s_own)
+            t_all = gather_features_with_grad(t)
+            loss_said = contrastive_loss(z_s_all, t_all, scale)
+            loss_route = zero
+            loss_evidence = zero
+            route_top1 = evidence_top1 = zero
+            route_margin = evidence_margin = zero
+
         loss_total = lambda_global * loss_global + lambda_said * loss_said
 
         with torch.no_grad():
-            attn = A_s.detach().float()
+            attn = A_own.detach().float()
             entropy = SaidRouter.attention_entropy(attn)
             out = {
                 'loss_global': loss_global,
                 'loss_said': loss_said,
                 'loss_total': loss_total,
+                'loss_route': loss_route.detach(),
+                'loss_evidence': loss_evidence.detach(),
+                'route_top1_acc': route_top1.detach(),
+                'evidence_top1_acc': evidence_top1.detach(),
+                'route_margin': route_margin.detach(),
+                'evidence_margin': evidence_margin.detach(),
                 'said_attention_entropy': entropy.mean(),
                 'said_effective_patch_count': entropy.exp().mean(),
                 'said_attention_max': attn.max(dim=-1).values.mean(),
                 'said_attention_min': attn.min(dim=-1).values.mean(),
-                'said_feature_norm': z_s.detach().float().norm(dim=-1).mean(),
+                'said_feature_norm': z_s_own.detach().float().norm(dim=-1).mean(),
                 'global_feature_norm': z_g.detach().float().norm(dim=-1).mean(),
             }
         return out
@@ -176,4 +275,5 @@ class SALUModel(nn.Module):
         )
 
     def extra_repr(self) -> str:
-        return 'tau_said=%g' % self.tau_said
+        return 'tau_said=%g, said_loss_mode=%s, pair_chunk_size=%s' % (
+            self.tau_said, self.said_loss_mode, self.pair_chunk_size)

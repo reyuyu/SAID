@@ -40,6 +40,8 @@ def main():
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--base_model', default='B16')
     parser.add_argument('--tau_said', type=float, default=0.07)
+    parser.add_argument('--said_loss_mode', default='identifiable', choices=['positive', 'identifiable'])
+    parser.add_argument('--pair_chunk_size', type=int, default=64)
     parser.add_argument('--lambda_global', type=float, default=1.0)
     parser.add_argument('--lambda_said', type=float, default=1.0)
     parser.add_argument('--backbone_lr', type=float, default=1e-6)
@@ -55,7 +57,8 @@ def main():
     torch.manual_seed(0)
 
     clip_model, _ = longclip.load_from_clip(args.base_model, device='cpu')
-    salu = SALUModel(clip_model, tau_said=args.tau_said).to(device)
+    salu = SALUModel(clip_model, tau_said=args.tau_said, said_loss_mode=args.said_loss_mode,
+                     pair_chunk_size=(args.pair_chunk_size or None)).to(device)
     salu.train()
     print('weight_dtype', salu.clip.visual.conv1.weight.dtype, 'amp_dtype', args.amp_dtype, flush=True)
 
@@ -86,7 +89,8 @@ def main():
         scaler.unscale_(optimizer)  # inspect true (unscaled) gradients
 
     losses = {k: float(out[k].detach()) for k in (
-        'loss_global', 'loss_said', 'loss_total',
+        'loss_global', 'loss_said', 'loss_total', 'loss_route', 'loss_evidence',
+        'route_top1_acc', 'evidence_top1_acc', 'route_margin', 'evidence_margin',
         'said_attention_entropy', 'said_effective_patch_count',
         'said_attention_max', 'said_attention_min', 'said_feature_norm')}
 

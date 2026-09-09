@@ -158,6 +158,10 @@ def main():
     parser.add_argument('--lambda_global', type=float, default=1.0)
     parser.add_argument('--lambda_said', type=float, default=1.0)
     parser.add_argument('--tau_said', type=float, default=0.07)
+    parser.add_argument('--said_loss_mode', default='identifiable', choices=['positive', 'identifiable'],
+                        help='positive = Phase 2 ablation; identifiable = Phase 2.2 routing objective')
+    parser.add_argument('--pair_chunk_size', type=int, default=64,
+                        help='caption candidates per chunk for pairwise routing (0 = all at once)')
     parser.add_argument('--weight_decay', type=float, default=1e-2)
     parser.add_argument('--warmup_length', type=int, default=200)
     parser.add_argument('--output_dir', default='runs_salu')
@@ -190,7 +194,8 @@ def main():
     clip_model, preprocess = longclip.load_from_clip(
         args.base_model, device='cpu', download_root=args.download_root, args=args
     )
-    salu = SALUModel(clip_model, tau_said=args.tau_said)
+    salu = SALUModel(clip_model, tau_said=args.tau_said, said_loss_mode=args.said_loss_mode,
+                     pair_chunk_size=(args.pair_chunk_size or None))
     salu = salu.to(device)
     ddp_model = DDP(salu, device_ids=[local_rank], find_unused_parameters=True)
 
@@ -286,6 +291,12 @@ def main():
                     'head_lr': optimizer.param_groups[1]['lr'],
                     'loss_global': float(out['loss_global'].detach()),
                     'loss_said': float(out['loss_said'].detach()),
+                    'loss_route': float(out['loss_route'].detach()),
+                    'loss_evidence': float(out['loss_evidence'].detach()),
+                    'route_top1_acc': float(out['route_top1_acc'].detach()),
+                    'evidence_top1_acc': float(out['evidence_top1_acc'].detach()),
+                    'route_margin': float(out['route_margin'].detach()),
+                    'evidence_margin': float(out['evidence_margin'].detach()),
                     'loss_total': float(out['loss_total'].detach()),
                     'said_attention_entropy': float(out['said_attention_entropy']),
                     'said_effective_patch_count': float(out['said_effective_patch_count']),
