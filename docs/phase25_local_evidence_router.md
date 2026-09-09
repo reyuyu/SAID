@@ -79,8 +79,7 @@ python -m eval.salu.local_router_coco --coco_root "$COCO_DATA_ROOT"
 Both final arms get the same standard COCO val2017 5,000-image / 25,000-caption
 retrieval evaluation, with fp32 standard encode_image and encode_text only. Local
 inference is explicitly guarded against accidental use. Report both directions'
-R@1/5/10. Dataset overlap with training may limit interpretation; this comparison
-assesses relative standard utility and does not claim an uncontaminated test.
+R@1/5/10 to assess relative standard utility under the same evaluation protocol.
 
 All evaluation artifacts live under outputs/local_evidence_router and are excluded
 from git. Evaluators refuse an existing manifest to prevent accidental mixed runs.
@@ -93,3 +92,62 @@ prototype or unsaid component is introduced. Heatmaps are caption-conditioned
 evidence maps or token weighting, not segmentation masks. Final interpretation
 must distinguish source geometry from learned projection distortion and backbone
 fine-tuning effects. Stop for review after reporting results.
+
+## Completed result
+
+See [the complete measured tables](phase25_local_evidence_router_results.md).
+Both 659-step arms completed. Every rank has identical initial-state, sampler-order
+and actual caption-stream hashes across arms; initial parameter tensors also
+compare bitwise equal. The only argument differences are feature source and
+output directory. All 38,160 small attention maps pass saved-logit reconstruction.
+
+The best-supported classification is **B: good local evidence, but learned free
+q/k projections substantially distort its geometry**. This is qualified rather
+than a claim that the router has zero semantic information: its final paired
+semantic excess is positive and much better than residual routing.
+
+On the fixed small sample, attention-delta direct pointing improves from 64.15%
+to 72.69%, mass gain from +0.024277 to +0.075119, and semantic excess from
++0.018517 to +0.036780. Thus the evidence contradicts case C for this run.
+The attention-delta router reaches only 39.41% pointing and -0.001668 mass gain,
+although semantic excess/switch remain +0.028151 (residual router: -0.028177).
+Target>distractor is 52.09% versus 47.97% for residual router and 55.43% for
+attention-delta direct. The final router's negative mass gain fails the predefined
+full gate. No full Flickr grounding benchmark was run and no earlier checkpoint
+was substituted after seeing the trajectory.
+
+Across the fixed 5,000-phrase geometry diagnostic, attention-delta router/direct
+Spearman is -0.179125 and top5 overlap is 7.516%. Higher agreement accompanies
+higher router mass gain: Pearson +0.532418, Spearman +0.528367. The bottom/top
+correlation quartiles have mean mass gains -0.031980 / +0.050243. This supports
+the geometry-distortion interpretation without proving a unique training cause.
+
+Both arms become caption-dependent. Final minibatch route accuracy is reported
+in the measured tables with chance 1/256; it is not a held-out grounding metric.
+COCO I2T R@1 changes 58.54% -> 58.22%, and T2I R@1 40.172% -> 39.516%.
+These are modest observed declines, not a statistical equivalence claim.
+
+## Numerical audit detail
+
+Real ViT-B/16 production extraction versus Phase 2.4 diagnostic extraction on
+the same weights and input has max absolute difference **0**. The new global
+output, standard global/patch APIs and residual forward_train versus the actual
+pre-merge source also have max difference **0**. Old Phase 2.2 strict loading
+passes; the full SALU parameter count remains 153,513,474.
+
+A separate comparison with Phase 2.4's *native OpenAI* initial logits initially
+rejected an overstrict cross-framework 1e-6 equality assumption. Existing
+LongCLIP load_from_clip converts text positional embeddings through fp16 before
+expansion; its first 20 positions exactly match that fp16 round trip, with a
+6.0171e-5 difference from native fp32 positions. Native and production initial
+visual state tensors are exactly equal. Measured residual/attention-delta logit
+differences are 3.3364e-5 / 2.3335e-5, and attention differences 1.9056e-6 /
+1.0016e-6, with **zero changed pointing peaks** over 1,908 phrases. This inherited
+text-loading behavior was preserved for the single-variable A/B experiment;
+it does not violate same-model production/diagnostic extraction equivalence.
+
+Final tests: **91 passed, 1 skipped, 3 warnings**. Real 4-GPU batch256 smoke,
+gradient sanity, legacy source equivalence, state loading and browser rendering
+all pass. The dashboard displays the requested four maps, GT, pair metrics and
+ranking diagnostics from completed artifacts. All work stops here for review;
+no q/k constraint, additional objective or downstream component was introduced.
