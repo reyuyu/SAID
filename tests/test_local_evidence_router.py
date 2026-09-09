@@ -129,3 +129,32 @@ def test_cli_serialization_and_seed_stream():
     seed_everything(25);b=(random.random(),np.random.rand(),torch.rand(1))
     assert a==b
     with pytest.raises(ValueError):SALUModel(TinyCLIP(),said_feature_source='invalid')
+
+
+def test_evaluator_direct_router_and_ranking():
+    import numpy as np
+    from eval.salu.grounding_root_cause import logits_from_features
+    from eval.salu.local_router_eval import patch_geometry,full_gate
+    model=SALUModel(TinyCLIP(),said_feature_source='attention_delta')
+    _,h=model.encode_router_input(torch.randn(1,3,32,32));t=F.normalize(torch.randn(2,32),dim=-1)
+    logits=logits_from_features(h[0],t,model.said_router)
+    actual=model.said_router(t,h.expand(2,-1,-1))[0]
+    torch.testing.assert_close(actual,torch.softmax(logits/.07,-1),atol=1e-6,rtol=1e-6)
+    direct=logits_from_features(h[0],t)
+    torch.testing.assert_close(direct,t@F.normalize(h[0],dim=-1).T)
+    grid=np.arange(196)[None,:].astype(float)
+    same=patch_geometry(grid,grid);opposite=patch_geometry(grid,-grid)
+    assert same['spearman'][0]==pytest.approx(1) and opposite['spearman'][0]==pytest.approx(-1)
+    assert all(same['top%d'%k][0]==1 and opposite['top%d'%k][0]==0 for k in [1,5,10,20])
+    summary={key:{k:{'mean':value} for k in ['mass_gain','semantic_mass_excess','switch_margin','target_gt_distractor']}
+             for key,value in [('attention_delta_final_router',.1),('residual_final_router',-.1)]}
+    assert full_gate(summary)
+    summary['attention_delta_final_router']['mass_gain']['mean']=-.01
+    assert not full_gate(summary)
+
+
+def test_retrieval_recall_known_matching_features():
+    from eval.salu.local_router_coco import recall_metrics
+    images=torch.eye(12);texts=images.repeat_interleave(5,dim=0)
+    result=recall_metrics(images,texts)
+    assert all(v==1 for scores in result.values() for v in scores.values())
