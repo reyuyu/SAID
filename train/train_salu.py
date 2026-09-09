@@ -12,6 +12,13 @@ Nothing else is trained: no prototype bank, no unsaid explorer, no sparsity /
 entropy / overlap / reconstruction loss. SmartCLIP's ``mask_net`` is kept for
 checkpoint compatibility but frozen and excluded from the optimizer.
 
+Precision: fp32 master weights + bf16 autocast (default). fp16 autocast with
+GradScaler's default scaling overflows in this graph, so fp16 is opt-in.
+
+Throughput logging distinguishes:
+  * compute_sec_per_step / compute_samples_per_sec: forward+backward+optimizer only
+  * wall_sec_per_step / wall_samples_per_sec: full loop iteration (incl. data loading)
+
 Example (4 GPUs, 676K no-SAM subset)::
 
     CUDA_VISIBLE_DEVICES=0,1,2,3 \
@@ -20,9 +27,10 @@ Example (4 GPUs, 676K no-SAM subset)::
     SHARE4V_JSON=debug/share4v_smoke_nosam.json \
     COCO_DATA_ROOT=/root/datasets/coco \
     torchrun --nproc_per_node=4 --master_port=25961 train/train_salu.py \
-        --base_model B16 --batch_size 256 --max_steps 100 \
+        --base_model B16 --batch_size 256 --epochs 1 \
         --backbone_lr 1e-6 --head_lr 1e-4 \
-        --lambda_global 1.0 --lambda_said 1.0 --tau_said 0.07
+        --lambda_global 1.0 --lambda_said 1.0 --tau_said 0.07 \
+        --save_at 200,400
 """
 import argparse
 import json
@@ -83,6 +91,21 @@ def set_lrs(optimizer, base_lrs, step, warmup_length, total_steps) -> float:
     return scale
 
 
+def summarize_throughput(global_batch, compute_times, wall_times):
+    """Compute- and wall-time throughput metrics (logging only)."""
+    def _avg(values):
+        return float(sum(values)) / float(len(values)) if values else 0.0
+
+    compute_sec = _avg(compute_times)
+    wall_sec = _avg(wall_times)
+    return {
+        'compute_sec_per_step': compute_sec,
+        'compute_samples_per_sec': (float(global_batch) / compute_sec) if compute_sec > 0 else 0.0,
+        'wall_sec_per_step': wall_sec,
+        'wall_samples_per_sec': (float(global_batch) / wall_sec) if wall_sec > 0 else 0.0,
+    }
+
+
 def build_optimizer(model: SALUModel, backbone_lr, head_lr, weight_decay):
     backbone = model.backbone_parameters()
     head = model.said_head_parameters()
@@ -140,6 +163,8 @@ def main():
     parser.add_argument('--output_dir', default='runs_salu')
     parser.add_argument('--save_every', type=int, default=1000,
                         help='save a checkpoint every N steps (0 = only at the end)')
+    parser.add_argument('--save_at', default='',
+                        help='comma-separated steps to checkpoint, e.g. "200,400"')
     parser.add_argument('--log_every', type=int, default=10)
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--download_root', default=None)
@@ -155,6 +180,7 @@ def main():
         args.base_model = 'ViT-B/16'
     elif args.base_model == 'L14':
         args.base_model = 'ViT-L/14'
+    save_at = sorted({int(s) for s in args.save_at.split(',') if s.strip()})
 
     rank, local_rank = setup_distributed()
     device = torch.device('cuda', local_rank)
@@ -197,6 +223,7 @@ def main():
     )
     steps_per_epoch = len(loader)
     total_steps = args.max_steps if args.max_steps is not None else args.epochs * steps_per_epoch
+    global_batch = args.batch_size * world_size
 
     start_step, start_epoch = 0, 0
     if args.resume:
@@ -215,11 +242,13 @@ def main():
     step = start_step
     stopped = False
     t_start = time.time()
-    step_times = []
+    compute_times = []
+    wall_times = []
 
     for epoch in range(start_epoch, args.epochs):
         sampler.set_epoch(epoch)
         for images, texts in loader:
+            t_wall0 = time.time()
             if args.max_steps is not None and step >= args.max_steps:
                 stopped = True
                 break
@@ -228,7 +257,7 @@ def main():
             text_tokens = longclip.tokenize(texts, truncate=True).to(device)
 
             scale_factor = set_lrs(optimizer, base_lrs, step, args.warmup_length, total_steps)
-            t0 = time.time()
+            t_compute0 = time.time()
             with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=use_amp):
                 out = ddp_model(images, text_tokens, args.lambda_global, args.lambda_said)
                 loss = out['loss_total']
@@ -240,10 +269,15 @@ def main():
                 loss.backward()
                 optimizer.step()
             optimizer.zero_grad(set_to_none=True)
-            step_times.append(time.time() - t0)
+            compute_times.append(time.time() - t_compute0)
+            wall_times.append(time.time() - t_wall0)
 
-            is_last_step = args.max_steps is not None and step == args.max_steps - 1
+            is_last_step = (
+                (args.max_steps is not None and step == args.max_steps - 1)
+                or (args.max_steps is None and step == total_steps - 1)
+            )
             if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step):
+                throughput = summarize_throughput(global_batch, compute_times, wall_times)
                 record = {
                     'step': step,
                     'epoch': epoch,
@@ -259,14 +293,15 @@ def main():
                     'said_attention_min': float(out['said_attention_min']),
                     'said_feature_norm': float(out['said_feature_norm']),
                     'global_feature_norm': float(out['global_feature_norm']),
-                    'sec_per_step_avg': sum(step_times) / len(step_times),
                 }
+                record.update(throughput)
+                record['sec_per_step_avg'] = throughput['compute_sec_per_step']  # legacy alias (compute-only)
                 with open(log_path, 'a') as fp:
                     fp.write(json.dumps(record, sort_keys=True) + '\n')
                 print('LOG ' + json.dumps(record, sort_keys=True), flush=True)
 
             step += 1
-            if rank == 0 and args.save_every and step % args.save_every == 0:
+            if rank == 0 and ((args.save_every and step % args.save_every == 0) or step in save_at):
                 ckpt_path = os.path.join(args.output_dir, 'salu_said_only_step%06d.pt' % step)
                 save_checkpoint(ckpt_path, ddp_model, optimizer, scaler, step, epoch, args, base_lrs, total_steps)
                 print('SAVED ' + ckpt_path, flush=True)
@@ -278,14 +313,13 @@ def main():
         final_path = os.path.join(args.output_dir, 'salu_said_only_last.pt')
         save_checkpoint(final_path, ddp_model, optimizer, scaler, step, epoch, args, base_lrs, total_steps)
         elapsed = time.time() - t_start
-        steps_done = max(1, len(step_times))
+        throughput = summarize_throughput(global_batch, compute_times, wall_times)
         summary = {
             'steps': step - start_step,
-            'wall_sec': elapsed,
-            'sec_per_step': elapsed / steps_done,
-            'samples_per_sec': args.batch_size * world_size / max(1e-9, sum(step_times) / len(step_times)),
+            'wall_sec_total': elapsed,
             'final_checkpoint': final_path,
         }
+        summary.update(throughput)
         print('SUMMARY ' + json.dumps(summary, sort_keys=True), flush=True)
         with open(os.path.join(args.output_dir, 'salu_summary.json'), 'w') as fp:
             json.dump(summary, fp, indent=2, sort_keys=True)
