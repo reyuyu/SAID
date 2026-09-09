@@ -113,6 +113,9 @@ def main():
     diag_set = json.load(open(os.path.join(args.diagnostics_dir, 'diagnostic_set.json')))
     perm = diag_set['permutation']
 
+    grid = int(model.clip.visual.input_resolution // model.clip.visual.conv1.weight.shape[-1])
+    print('patch grid', grid, 'patches', grid * grid, flush=True)
+
     samples = [int(s) for s in args.samples.split(',') if s.strip()]
     report = {'checkpoint': args.checkpoint, 'tag': args.tag, 'samples': []}
 
@@ -195,7 +198,7 @@ def main():
         x += col_w
 
         for variant in VARIANTS:
-            canvas.paste(heat_tile(maps[variant], scale_max, tile), (x, header_h))
+            canvas.paste(heat_tile(maps[variant].reshape(grid, grid), scale_max, tile), (x, header_h))
             draw.rectangle([x, header_h, x + tile - 1, header_h + tile - 1], outline=(190, 190, 190))
             draw.text((x, header_h + tile + 4), VAR_LABEL[variant], fill=(0, 0, 0), font=font_l)
             wrapped = textwrap.wrap(captions[variant], width=42)[:12]
