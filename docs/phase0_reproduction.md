@@ -12,10 +12,11 @@ backwards-compatible changes listed at the bottom.
   OpenAI CLIP ViT-B/16 initialisation, 4-GPU training smoke, checkpoint save/reload and
   the COCO retrieval evaluation were all verified on the server.
 * **Full 1.246M SmartCLIP training reproduction: blocked by missing SAM subset** - the
-  official ShareGPT4V-PT mixture needs 570,486 SAM images that are currently not
-  obtainable, so no full-dataset training run has been performed in this phase. The
-  verified smoke runs use an official-format subset JSON (676,415 COCO + LLaVA records),
-  which is **not** the full official training set.
+  official ShareGPT4V-PT mixture needs 570,486 SAM images. Full 1.246M SmartCLIP training
+  reproduction is pending acquisition and verification of the required SA-1B SAM shards,
+  so no full-dataset training run has been performed in this phase. The verified smoke
+  runs use an official-format subset JSON (676,415 COCO + LLaVA records), which is **not**
+  the full official training set.
 
 ## 1. Baseline provenance
 
@@ -160,7 +161,9 @@ These numbers come from a smoke checkpoint on a data subset; they are not paper 
   slice in matching file names. Therefore the smoke run used an **official-format
   subset JSON** (COCO + LLaVA records only, 676,415 records) at
   `datasets/ShareGPT4V/debug/share4v_smoke_nosam.json`. Therefore
-  **Full 1.246M SmartCLIP training reproduction: blocked by missing SAM subset**.
+  **Full 1.246M SmartCLIP training reproduction: blocked by missing SAM subset**: it is
+  pending acquisition and verification of the required SA-1B SAM shards (potential backup
+  sources exist but are not yet verified).
 * Upstream behaviour kept as-is: every DDP rank creates its own `runs/<id>_...`
   directory and TensorBoard writer, and `get_run_id()` races across ranks, so a
   4-GPU run produces four run directories (rank 0 writes `loss.txt` / `metric.txt`).
