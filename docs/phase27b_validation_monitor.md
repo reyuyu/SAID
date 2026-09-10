@@ -16,27 +16,32 @@
 | --- | --- |
 | `eval/retrieval/coco_retrieval.py` | `retrieval_metrics()`：i2t / t2i 的 R@1/5/10；`evaluate_coco()`：COCO val2017 标准 5-caption 协议（5,000 图 → 25,000 文本） |
 | `eval/retrieval/sharegpt4v_retrieval.py` | `evaluate_sharegpt4v()`：固定 ShareGPT4V 验证集（审计 split 的前 1,000 条，每图 1 条 caption → 1,000 路检索） |
-| `train/train_salu.py` | `--val_every` / `--val_sharegpt4v` / `--val_coco` / `--val_batch_size`；`run_standard_validation()`；`append_val_record()` |
+| `train/train_salu.py` | `--val_every` / `--val_sharegpt4v` / `--eval_coco_initial` / `--eval_coco_each_epoch` / `--eval_coco`（别名 `--val_coco`）/ `--val_batch_size` / `--legacy_eval_coco`；`plan_validation()`、`run_validation_job()`、`run_planned_validation()`、`run_initial_validation()`、`append_validation_record()` |
+| `eval/validation_protocol.py` | `build_manifest()` / `load_or_create_manifest()`（冻结的 ShareGPT4V-1K 三变体清单）、`evaluate_variant()` / `evaluate_all_variants()`、`rng_guard()` / `rng_snapshot()` |
 
 检索指标本身与特征来源无关：`retrieval_metrics()` 先把特征做 L2 归一化，再按方向统计命中率，
 因此对特征整体缩放不敏感。
 
 ## 训练中的接入方式
 
-- 每 `--val_every N` 步（`N > 0`）以及训练结束时各评测一次；`--val_every 0` 表示只做结束时的评测。
+- **初始（step 0）**：开启 `--eval_coco_initial` 时，`main()` 在进入训练循环**之前**调度一次
+  canonical COCO 评测（`reason='initial'`、`step=0`、`epoch=0`）。
+- **间隔**：每 `--val_every N` 步（`N > 0`）跑一次 ShareGPT4V-1K 三变体。
+- **epoch end / final**：ShareGPT4V-1K 各跑一次；COCO 只在 `--eval_coco_each_epoch` /
+  `--eval_coco` 打开时跑，且 epoch end 与 final 重合时只跑一次。
 - 评测只在 rank 0 执行，前后各有一次 `dist.barrier()`：其它 rank 在 barrier 处等待，
   因此不会有人在 rank 0 评测时提前进入下一步的集合通信（不会出现 NCCL 超时或错位）。
-- 评测期间模型切到 `eval()`，结束后切回 `train()`；评测在 `torch.inference_mode()` 下运行。
-- 每次评测追加一行 JSON 到 `<output_dir>/val_metrics.jsonl`：
+- 评测期间模型切到 `eval()`，结束后在 `finally` 中切回 `train()`；评测在
+  `torch.inference_mode()` 下运行，并包在 `rng_guard()` 中。
+- 每次评测追加一行 UTF-8 JSON 到 `<output_dir>/validation_history.jsonl`：
 
 ```json
-{"kind": "standard_retrieval", "step": 20, "tag": "interval", "world_size": 4,
- "sharegpt4v": {"image2text_R1": 0.0, "image2text_R5": 0.0, "image2text_R10": 0.0,
-                "text2image_R1": 0.0, "text2image_R5": 0.0, "text2image_R10": 0.0},
- "coco": {"image2text_R1": 0.0, "...": 0.0}}
+{"step": 0, "epoch": 0, "dataset": "coco_val2017", "caption_variant": "coco_5captions",
+ "reason": "initial", "protocol": "coco-val2017-5captions-v1", "similarity_chunk": 512,
+ "wall_sec": 103.4, "metrics": {"image2text_R1": 0.5842, "...": 0.0}}
 ```
 
-`tag` 为 `interval`（按间隔触发）或 `final`（训练结束）。
+`reason` 为 `initial` / `interval` / `epoch_end` / `final`。
 
 ## 运行方式
 
@@ -51,8 +56,8 @@ export SHARE4V_FULL_AUDIT=/root/SAID/outputs/data_audit/sharegpt4v_full_audit.js
 torchrun --nproc_per_node=4 --master_port=25961 train/train_salu.py \
   --base_model B16 --batch_size 256 --epochs 1 --said_loss_mode identifiable \
   --backbone_lr 1e-6 --head_lr 1e-4 --tau_said 0.07 --amp_dtype bf16 \
-  --val_every 100 --val_sharegpt4v --val_coco --val_batch_size 64 \
-  --output_dir runs_salu/<run_name>
+  --val_every 100 --val_sharegpt4v --eval_coco_initial --eval_coco_each_epoch --val_coco \
+  --val_batch_size 64 --output_dir runs_salu/<run_name>
 ```
 
 `SHARE4V_FULL_AUDIT`（或 `--strict_manifest`）会启用 full-data Gate：JSON SHA256、数据根目录、
@@ -89,7 +94,8 @@ CPU 侧解码与 resize 成为瓶颈，GPU 会出现等待。这只影响吞吐�
 
 - 间隔验证会串行化训练：rank 0 评测时其余 rank 停在 barrier，训练吞吐在该步会出现一次尖峰。
   COCO 协议（5,000 图）比 ShareGPT4V 协议（1,000 图）慢，建议间隔设置得比 COCO 评测耗时长。
-- 评测特征在 CPU 上以 fp32 汇总；`similarity_chunk` 只决定相似度块的形状，不改变指标数值。
+- 评测特征在 CPU 上以 fp32 汇总；`similarity_chunk` 只决定相似度块的形状，**除极少数 near-tie
+  行外不改变指标数值**（实测 COCO i2t R@5 有 1/5000 行的差异，详见下节与"固定验证 Protocol"）。
 - 验证集固定为审计 manifest 定义的 split，不随训练随机种子变化，因此不同 run 之间的指标可直接比较。
 
 ## Chunked 相似度（本阶段实现）
@@ -100,8 +106,8 @@ CPU 侧解码与 resize 成为瓶颈，GPU 会出现等待。这只影响吞吐�
 - T2I：每次取 `text_features[start:end]` 与**全部**图像做矩阵乘，按行取 top-10；
 - 每行先用 1-D `argsort()` 选候选（与 legacy `train_utils.eval_coco` 的 `argsort()[-k:]` 规则一致），
   三档 Recall 都从同一份 top-10 中切出；
-- `similarity_chunk` 现在真正生效：chunk = 1 / 2 / 7 / 13 / 53 / 4096 / None 的结果**完全相同**
-  （单元测试断言字典相等，不是近似）。
+- `similarity_chunk` 现在真正生效：在小尺寸测试特征上，chunk = 1 / 2 / 7 / 13 / 53 / 4096 / None
+  的结果**完全相同**（单元测试断言字典相等，不是近似）；真实 COCO 特征上见下节的 1/5000 near-tie。
 
 内存：默认 `chunk = 512` → I2T 块 512×25,000×4B ≈ 48.8 MB（完整矩阵为 476.8 MB），
 T2I 块 512×5,000×4B ≈ 9.8 MB。实测峰值 RSS：legacy 3153 MB → new 3279 MB。
@@ -184,8 +190,26 @@ new（image_batch 64）103.0 s。六个指标**未完全一致**，按指令 STO
 - `--val_every N`：只驱动 ShareGPT4V-1K（三种变体），另在 epoch end 与 final 各跑一次
 - COCO 只按显式节奏：`--eval_coco_initial`（step 0）/ `--eval_coco_each_epoch`（epoch end）/
   `--eval_coco`（final）；`--val_coco` 保留为 `--eval_coco` 的别名
+- **`--eval_coco_initial` 在第一次 optimizer update 之前**由 `main()` 直接调度：所有 rank 先
+  `dist.barrier()`，rank 0 调 `run_initial_validation()` 跑 canonical COCO（`similarity_chunk=512`），
+  记录为 `step=0 / epoch=0 / reason='initial'`，评测结束由 `run_validation_job` 恢复 `train()`，
+  再一次 `dist.barrier()` 之后才进入训练循环。step 0 只调度 COCO，ShareGPT4V-1K 仍按
+  间隔 / epoch end / final 走；resume 到 step > 0 的 run 跳过该初始评测（它已经越过 step 0）
 - 同一 `(step, dataset, caption_variant)` 只写一次：epoch end 与 final 落在同一步时 COCO
   与 ShareGPT4V-1K 都只跑一次（实测 Run B：6 条记录而非 9 条）
+
+**Balancing Gain 定义（全项目统一）**：
+
+```
+Balancing Gain = Full Pair Gap - Said Pair Gap
+positive = Said better    negative = Said worse
+relative_balancing_gain = Balancing Gain / Full Pair Gap
+```
+
+这是 `gap_comparison()` / `batch_representation_gaps()` 一直以来的定义（代码未改动任何数值），
+本轮只统一了措辞：定义写在 `eval/validation_protocol.py` 的 `BALANCING_GAIN_DEFINITION` /
+`BALANCING_GAIN_SIGN`，同名字段随每条诊断写入（`balancing_gain_definition` /
+`balancing_gain_sign`），文档、测试与用户可见 label 共用同一句话。
 
 **RNG 安全**：每次评测都包在 `rng_guard()` 中，退出时恢复 Python `random`、NumPy、
 torch CPU 以及**全部 CUDA** RNG 状态。`validation_history.jsonl` 统一记录
@@ -194,11 +218,14 @@ torch CPU 以及**全部 CUDA** RNG 状态。`validation_history.jsonl` 统一�
 
 ## 实测：ShareGPT4V-1K 三变体（residual final，step 659）
 
-| 变体 | I2T R@1/5/10 | T2I R@1/5/10 | Full Gap | Full RMG | Said Gap | Said RMG | Balance Gain | Conditioning Margin | wall |
+| 变体 | I2T R@1/5/10 | T2I R@1/5/10 | Full Gap | Full RMG | Said Gap | Said RMG | Balancing Gain | Conditioning Margin | wall |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | first_sentence | 0.631 / 0.864 / 0.934 | 0.610 / 0.836 / 0.912 | 0.6755 | 0.5418 | 0.6675 | 0.5720 | +0.0080 | +0.0988 | 17.7 s |
 | fixed_sparse | 0.878 / 0.973 / 0.986 | 0.852 / 0.960 / 0.982 | 0.6460 | 0.4997 | 0.6756 | 0.5345 | −0.0297 | +0.1640 | 17.5 s |
 | full_dense | 0.947 / 0.995 / 0.997 | 0.931 / 0.996 / 0.997 | 0.6378 | 0.5010 | 0.6827 | 0.5409 | −0.0449 | +0.1835 | 18.2 s |
+
+Balancing Gain 一列即 `Full Gap − Said Gap`：只有 `first_sentence` 为正（Said 更好），
+`fixed_sparse` 与 `full_dense` 为负（Said 更差）。
 
 检索只使用 `encode_image` / `encode_text`；Said 特征只出现在 Gap / RMG / conditioning 诊断中，
 从不进入检索排序（evaluator 内部断言 `encode_router_input == encode_image`，实测 max abs Δ = 0.0）。
@@ -218,3 +245,8 @@ torch CPU 以及**全部 CUDA** RNG 状态。`validation_history.jsonl` 统一�
 | rank 0–3 `caption_stream_sha256` | 全部一致 |
 | rank 0–3 `initial_state_sha256` | 全部一致 |
 | Run A / Run B 验证记录数 | 0 / 6（step 10 与 step 20 各 3 变体） |
+
+上面的 matched smoke 未开启 `--eval_coco_initial`；step 0 的初始评测走同一条
+`run_validation_job()` 路径（同一个 `rng_guard()` + `eval()/train()` 恢复），其 RNG 中性由
+`test_initial_validation_hook_emits_step0_coco_before_any_update` 断言（调用前后 `rng_snapshot()` 相等），
+因此开启该 flag 不会改变训练流。

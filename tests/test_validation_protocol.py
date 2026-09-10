@@ -18,6 +18,8 @@ for _p in (REPO_ROOT, TRAIN_DIR):
 import train_salu  # noqa: E402
 from eval.salu.representation_probe import training_like_caption  # noqa: E402
 from eval.validation_protocol import (  # noqa: E402
+    BALANCING_GAIN_DEFINITION,
+    BALANCING_GAIN_SIGN,
     CANONICAL_SIMILARITY_CHUNK,
     MANIFEST_SEED,
     VARIANTS,
@@ -151,7 +153,13 @@ def test_plan_validation_coco_cadence_is_separate():
     plan = train_salu.plan_validation(each_epoch, 659, True, False)
     assert plan == [{'dataset': 'coco_val2017', 'caption_variant': 'coco_5captions', 'reason': 'epoch_end'}]
     initial = _Args(eval_coco_initial=True)
-    assert train_salu.plan_validation(initial, 0, False, False)[0]['reason'] == 'initial'
+    assert train_salu.plan_validation(initial, 0, False, False) == []   # never implicit
+    assert train_salu.plan_validation(initial, 0, False, False, is_initial=True) == [
+        {'dataset': 'coco_val2017', 'caption_variant': 'coco_5captions', 'reason': 'initial'}]
+    # step 0 asks for COCO only: ShareGPT4V-1K keeps its interval / epoch-end / final cadence
+    both = _Args(eval_coco_initial=True, val_sharegpt4v=True, val_every=10)
+    assert [job['dataset'] for job in train_salu.plan_validation(both, 0, False, False, is_initial=True)] \
+        == ['coco_val2017']
     # epoch end == final is still a single job
     both = _Args(eval_coco=True, eval_coco_each_epoch=True)
     assert len(train_salu.plan_validation(both, 659, True, True)) == 1
@@ -257,3 +265,88 @@ def test_append_validation_record_keeps_unicode(tmp_path):
     raw = path.read_text(encoding='utf-8')
     assert '测试集' in raw and '\\u' not in raw
     assert json.loads(raw)['metrics']['说明'] == '第一句'
+
+
+# --------------------------------------------------------------------------- #
+# step 0: --eval_coco_initial is scheduled by main *before* any optimizer update
+# --------------------------------------------------------------------------- #
+def test_initial_validation_hook_emits_step0_coco_before_any_update(tmp_path, monkeypatch):
+    """The hook ``main`` calls right before its loop produces the step-0 COCO job.
+
+    Behaviour of the main-level hook: at the moment it evaluates, no optimizer update
+    has happened yet, the record carries ``step=0 / epoch=0 / reason='initial'`` with the
+    canonical chunk, and it leaves both the RNG stream and the model mode untouched.
+    The wiring of ``main`` itself (call order versus the first ``optimizer.step()`` and
+    the two barriers) is pinned in ``test_validation_hooks.py``.
+    """
+    ledger = {'optimizer_steps': 0}
+    calls = []
+
+    def fake_coco(model, preprocess, batch_size=64, similarity_chunk=None, device=None):
+        calls.append({'optimizer_steps': ledger['optimizer_steps'],
+                      'similarity_chunk': similarity_chunk, 'batch_size': batch_size})
+        return {'image2text_R%d' % k: 0.0 for k in (1, 5, 10)}
+
+    monkeypatch.setattr(train_salu, 'evaluate_coco_standard', fake_coco)
+    args = _Args(eval_coco_initial=True, val_sharegpt4v=True, val_every=10, val_batch_size=8)
+    history = tmp_path / 'validation_history.jsonl'
+    model = _StubModel()
+    seen = set()
+    torch.manual_seed(11)
+    before = rng_snapshot()
+
+    records = train_salu.run_initial_validation(args, model, lambda image: torch.ones(3, 8, 8),
+                                                None, None, 'cpu', str(history), seen)
+
+    assert calls == [{'optimizer_steps': 0, 'similarity_chunk': CANONICAL_SIMILARITY_CHUNK,
+                      'batch_size': 8}]
+    assert len(records) == 1
+    record = records[0]
+    assert (record['step'], record['epoch'], record['reason']) == (0, 0, 'initial')
+    assert record['dataset'] == 'coco_val2017'
+    assert record['caption_variant'] == 'coco_5captions'
+    assert record['protocol'] == 'coco-val2017-5captions-v1'
+    assert record['similarity_chunk'] == CANONICAL_SIMILARITY_CHUNK == 512
+    assert model.training is True          # train mode restored after the evaluation
+    assert rng_snapshot() == before        # the training stream is untouched
+    assert len(history.read_text(encoding='utf-8').splitlines()) == 1
+    # main's loop now takes its first optimizer update (the hook must not care)
+    ledger['optimizer_steps'] += 1
+    # the initial job is written exactly once
+    assert train_salu.run_initial_validation(args, model, lambda image: torch.ones(3, 8, 8),
+                                             None, None, 'cpu', str(history), seen) == []
+    assert len(history.read_text(encoding='utf-8').splitlines()) == 1
+
+
+def test_initial_validation_is_silent_without_the_flag(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(train_salu, 'evaluate_coco_standard',
+                        lambda *a, **kw: calls.append(1) or {'image2text_R1': 0.0})
+    args = _Args(eval_coco_initial=False, val_sharegpt4v=True, val_every=10)
+    history = tmp_path / 'validation_history.jsonl'
+    assert train_salu.run_initial_validation(args, _StubModel(), lambda image: torch.ones(3, 8, 8),
+                                             None, None, 'cpu', str(history), set()) == []
+    assert calls == []
+    assert not history.exists()
+
+
+# --------------------------------------------------------------------------- #
+# Balancing Gain: one definition everywhere
+# --------------------------------------------------------------------------- #
+def test_balancing_gain_is_full_pair_gap_minus_said_pair_gap(cohort):
+    """Balancing Gain = Full Pair Gap - Said Pair Gap; positive = Said better."""
+    samples, root = cohort
+    result = evaluate_variant(_StubModel(), samples, root, 'full_dense',
+                              preprocess=lambda image: torch.ones(3, 8, 8), batch_size=2,
+                              similarity_chunk=CANONICAL_SIMILARITY_CHUNK, device='cpu')
+    diagnostics = result['diagnostics']
+    gain = diagnostics['full_pair_gap'] - diagnostics['said_pair_gap']
+    assert BALANCING_GAIN_DEFINITION == 'full_pair_gap - said_pair_gap'
+    assert BALANCING_GAIN_SIGN == 'positive = Said better; negative = Said worse'
+    assert diagnostics['balancing_gain_definition'] == BALANCING_GAIN_DEFINITION
+    assert diagnostics['balancing_gain_sign'] == BALANCING_GAIN_SIGN
+    assert diagnostics['balancing_gain'] == pytest.approx(gain, abs=1e-12)
+    assert (diagnostics['balancing_gain'] > 0) == \
+           (diagnostics['said_pair_gap'] < diagnostics['full_pair_gap'])
+    assert diagnostics['relative_balancing_gain'] == pytest.approx(
+        gain / max(diagnostics['full_pair_gap'], 1e-8), abs=1e-12)

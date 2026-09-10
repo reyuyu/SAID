@@ -14,6 +14,12 @@ Protocol
   ``encode_text``. Said features never enter the retrieval ranking; they appear
   only in the representation diagnostics (pair gap, RMG, balancing gain,
   conditioning margin).
+* **Balancing Gain = Full Pair Gap - Said Pair Gap** (``balancing_gain``): positive
+  means the caption-conditioned Said representation sits closer to its text than the
+  full visual representation (Said better), negative means Said worse.
+  ``relative_balancing_gain`` divides it by the Full Pair Gap. This is the long-standing
+  definition of ``gap_comparison`` / ``batch_representation_gaps`` — only the wording is
+  fixed here, no number changes.
 * **Canonical similarity chunk**: ``similarity_chunk = 512`` for every model and
   every dataset, so numbers from different runs are comparable.
 
@@ -44,6 +50,10 @@ MANIFEST_SEED = 26
 N_IMAGES = 1000
 CANONICAL_SIMILARITY_CHUNK = DEFAULT_SIMILARITY_CHUNK  # 512
 PROTOCOL_NAME = 'sharegpt4v1k-fixed-captions-v1'
+# One wording for the representation diagnostic, shared by code, docs and tests so
+# the sign convention cannot drift: the numbers themselves come from ``gap_comparison``.
+BALANCING_GAIN_DEFINITION = 'full_pair_gap - said_pair_gap'
+BALANCING_GAIN_SIGN = 'positive = Said better; negative = Said worse'
 
 
 def first_sentence(dense: str) -> str:
@@ -194,6 +204,8 @@ def evaluate_variant(model, samples: List[dict], image_root, variant: str, prepr
         'said_rmg': comparison['said']['rmg'],
         'balancing_gain': comparison['balancing_gain'],
         'relative_balancing_gain': comparison['relative_balancing_gain'],
+        'balancing_gain_definition': BALANCING_GAIN_DEFINITION,
+        'balancing_gain_sign': BALANCING_GAIN_SIGN,
         'conditioning_margin': comparison['conditioning_gap_margin'],
         'said_own_gap': comparison['said_own_gap'],
         'said_shuffle_gap': comparison['said_shuffle_gap'],

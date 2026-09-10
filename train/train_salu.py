@@ -22,8 +22,9 @@ Throughput logging distinguishes:
 Validation cadence (Phase 2.7B protocol):
   * ``--val_every N`` drives **ShareGPT4V-1K only** (three frozen caption variants:
     first_sentence / fixed_sparse / full_dense), also run at epoch end and final.
-  * COCO runs only at the cadence asked for: ``--eval_coco_initial`` (step 0),
-    ``--eval_coco_each_epoch`` (epoch end), ``--eval_coco`` (final).
+  * COCO runs only at the cadence asked for: ``--eval_coco_initial`` (a dedicated
+    step-0 call *before the first optimizer update*), ``--eval_coco_each_epoch``
+    (epoch end), ``--eval_coco`` (final).
   * Every result is appended to ``<output_dir>/validation_history.jsonl`` (UTF-8,
     ``ensure_ascii=False``) with step / epoch / dataset / caption_variant / metrics /
     wall_sec / protocol / similarity_chunk; a repeated (step, dataset, variant) is
@@ -144,23 +145,27 @@ def validation_key(step, dataset, caption_variant):
     return (int(step), str(dataset), str(caption_variant))
 
 
-def plan_validation(args, step, is_epoch_end, is_final_step):
+def plan_validation(args, step, is_epoch_end, is_final_step, is_initial=False):
     """Which validation jobs run at this step (cadence only, no dedupe).
 
-    ``--val_every`` drives ShareGPT4V-1K only. COCO runs at the cadence selected by
-    ``--eval_coco_initial`` / ``--eval_coco_each_epoch`` / ``--eval_coco`` (final);
-    when an epoch end is also the final step the caller runs COCO once.
+    ``--val_every`` drives ShareGPT4V-1K only, at interval steps, epoch end and final.
+    COCO runs only at the cadence explicitly asked for: ``--eval_coco_initial`` (the
+    dedicated step-0 call, ``is_initial=True``) / ``--eval_coco_each_epoch`` (epoch
+    end) / ``--eval_coco`` or its ``--val_coco`` alias (final); when an epoch end is
+    also the final step the caller runs COCO once.
     """
     jobs = []
-    if args.val_sharegpt4v:
+    if args.val_sharegpt4v and not is_initial:
         interval = args.val_every > 0 and step % args.val_every == 0
         if interval or is_epoch_end or is_final_step:
             reason = 'interval' if interval else ('epoch_end' if is_epoch_end else 'final')
             for variant in SHAREGPT4V1K_VARIANTS:
                 jobs.append({'dataset': 'sharegpt4v1k', 'caption_variant': variant, 'reason': reason})
     coco_reason = None
-    if args.eval_coco_initial and step == 0:
-        coco_reason = 'initial'
+    if is_initial:
+        # step 0 is owned by the dedicated ``run_initial_validation`` call only, so it
+        # is never reached implicitly through an interval step
+        coco_reason = 'initial' if args.eval_coco_initial else None
     elif args.eval_coco_each_epoch and is_epoch_end:
         coco_reason = 'epoch_end'
     elif (args.eval_coco or args.val_coco) and is_final_step:
@@ -219,15 +224,34 @@ def run_validation_job(args, job, model, preprocess, cohort, image_root, device,
 
 
 def run_planned_validation(args, model, preprocess, cohort, image_root, device,
-                           step, epoch, is_epoch_end, is_final_step, history_path, seen):
+                           step, epoch, is_epoch_end, is_final_step, history_path, seen,
+                           is_initial=False):
     """Run every planned job for this step (rank 0 only) and return the records."""
     records = []
-    for job in plan_validation(args, step, is_epoch_end, is_final_step):
+    for job in plan_validation(args, step, is_epoch_end, is_final_step, is_initial=is_initial):
         record = run_validation_job(args, job, model, preprocess, cohort, image_root, device,
                                     step, epoch, history_path, seen)
         if record is not None:
             records.append(record)
     return records
+
+
+def run_initial_validation(args, model, preprocess, cohort, image_root, device,
+                           history_path, seen):
+    """Canonical COCO validation at step 0, before the first optimizer update.
+
+    ``main()`` calls this once, immediately before entering the training loop, so the
+    very first optimizer update of the run already sees the initial record. It is only
+    reached when the run really starts at step 0 (a resumed run has already passed it).
+
+    Only ``--eval_coco_initial`` schedules a job here; the record carries
+    ``step=0, epoch=0, reason='initial'`` and the canonical ``similarity_chunk``.
+    The job runs under the same RNG guard as every other validation point and
+    ``run_validation_job`` restores ``train()`` mode afterwards, so training is
+    bit-identical whether or not the initial evaluation ran.
+    """
+    return run_planned_validation(args, model, preprocess, cohort, image_root, device,
+                                  0, 0, False, False, history_path, seen, is_initial=True)
 
 
 def build_optimizer(model: SALUModel, backbone_lr, head_lr, weight_decay):
@@ -308,7 +332,7 @@ def parse_args(argv=None):
     parser.add_argument('--eval_coco_each_epoch', action='store_true',
                         help='also run COCO retrieval at every epoch end')
     parser.add_argument('--eval_coco_initial', action='store_true',
-                        help='also run COCO retrieval at step 0 (future official runs)')
+                        help='run canonical COCO retrieval at step 0, before the first optimizer update')
     parser.add_argument('--val_every', type=int, default=0,
                         help='ShareGPT4V-1K validation every N steps (0 = only epoch end / final)')
     parser.add_argument('--val_sharegpt4v', action='store_true',
@@ -435,6 +459,19 @@ def main():
     t_start = time.time()
     compute_times = []
     wall_times = []
+
+    # --eval_coco_initial: canonical COCO validation at step 0 (reason='initial'),
+    # strictly before the first optimizer update. Every rank waits at the barriers
+    # around the rank-0-only evaluation, and only rank 0 writes the record.
+    if args.eval_coco_initial and start_step == 0:
+        if dist.is_initialized():
+            dist.barrier()
+        if rank == 0:
+            for record in run_initial_validation(args, ddp_model, preprocess, cohort, cohort_root,
+                                                 device, validation_history_path, seen_validation):
+                print('VAL_INITIAL ' + json.dumps(record, sort_keys=True, ensure_ascii=False), flush=True)
+        if dist.is_initialized():
+            dist.barrier()
 
     for epoch in range(start_epoch, args.epochs):
         sampler.set_epoch(epoch)

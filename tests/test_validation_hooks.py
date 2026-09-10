@@ -1,4 +1,5 @@
 """Phase 2.7b tests: validation hooks (cohort evaluator, cadence flags, records)."""
+import inspect
 import json
 import os
 import sys
@@ -13,6 +14,7 @@ for _p in (REPO_ROOT, TRAIN_DIR):
         sys.path.insert(0, _p)
 
 from eval.retrieval.sharegpt4v_retrieval import evaluate_sharegpt4v  # noqa: E402
+import train_salu  # noqa: E402
 from train_salu import append_validation_record, parse_args, validation_key  # noqa: E402
 
 METRIC_KEYS = {'%s_R%d' % (d, k) for d in ('image2text', 'text2image') for k in (1, 5, 10)}
@@ -93,3 +95,28 @@ def test_validation_flags_are_exposed():
     assert defaults.val_sharegpt4v is False and defaults.eval_coco is False
     assert defaults.eval_coco_each_epoch is False and defaults.eval_coco_initial is False
     assert defaults.val_batch_size == 64
+
+
+def test_main_schedules_initial_validation_before_the_first_optimizer_step():
+    """``main()`` itself must produce the step-0 COCO job before any optimizer update.
+
+    This is a wiring check on ``main``'s own source, not on ``plan_validation``: the
+    ``--eval_coco_initial`` block has to sit before the training loop, call
+    ``run_initial_validation``, and be enclosed by the two ``dist.barrier()`` calls
+    that keep every rank in lockstep around the rank-0-only evaluation.
+    """
+    source = inspect.getsource(train_salu.main)
+    loop_at = source.index('for epoch in range(start_epoch, args.epochs):')
+    block_at = source.index('if args.eval_coco_initial and start_step == 0:')
+    block = source[block_at:loop_at]
+
+    assert 'run_initial_validation(' in block
+    assert block.count('dist.barrier()') == 2      # every rank waits around the rank-0 job
+    assert 'if rank == 0:' in block                # only rank 0 evaluates and writes
+    # the block sits before the training loop, therefore before every optimizer update
+    assert block_at < loop_at
+    assert block_at < source.index('loss.backward()')
+    assert block_at < source.index('optimizer.step()')
+    # a resumed run has already passed step 0, so the initial job is skipped there
+    assert 'start_step == 0' in block.splitlines()[0]
+    assert callable(train_salu.run_initial_validation)

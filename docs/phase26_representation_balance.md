@@ -14,8 +14,8 @@ Phase 2.4 / 2.5 的定位审计、局部证据和 attention_delta 消融全部�
 在线 `pair_gap_full`、`pair_gap_said`、`balancing_gain`、`relative_balancing_gain`
 保留到既有 JSONL，旧字段不删除。它们由当前 forward 中已有特征在 `no_grad` 下
 以 fp32 累积，记录的是 **rank 0 本地训练 batch**，不是跨 rank 正式验证。
-`balancing_gain = pair_gap_full - pair_gap_said`，相对增益除以
-`max(pair_gap_full, 1e-8)`。训练损失、学习率、随机数流和数据采样不受影响。
+`balancing_gain = pair_gap_full - pair_gap_said`（**正值 = Said 更好，负值 = Said 更差**），
+相对增益除以 `max(pair_gap_full, 1e-8)`。训练损失、学习率、随机数流和数据采样不受影响。
 
 正式 checkpoint 比较使用固定验证 probe，与 batch 曲线分开显示。
 本轮复用已 Review 的 Phase 2.5 residual arm：initial、100、200、400、final（659 步）。
