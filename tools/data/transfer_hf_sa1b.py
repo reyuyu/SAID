@@ -15,8 +15,6 @@ import subprocess
 import threading
 import time
 
-import paramiko
-
 REPO = 'hanlincs/InternVL-SA1B-Caption-WebDataset'
 REVISION = '4cdaea026f51899bb88d24d423121d2106a943ba'
 
@@ -30,6 +28,7 @@ def digest(path):
 
 
 def connect():
+    import paramiko
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.RejectPolicy())
@@ -38,6 +37,14 @@ def connect():
                    timeout=20)
     client.get_transport().set_keepalive(20)
     return client
+
+
+def sftp_batch(local, destination, offset):
+    for value in (local, destination):
+        if any(char in value for char in ('"', '\n', '\r')):
+            raise ValueError('unsupported SFTP batch path')
+    # OpenSSH reput fails when the remote path does not exist.
+    return '%s "%s" "%s"\n' % ('reput' if offset > 0 else 'put', local, destination)
 
 
 def remote(client, command):
@@ -127,10 +134,7 @@ def main():
                     raise RuntimeError('remote partial larger than expected')
                 if args.native_sftp:
                     batch = args.local_dir / (filename + '.sftp.batch')
-                    for value in (path.resolve().as_posix(), partial):
-                        if any(char in value for char in ('"', '\n', '\r')):
-                            raise ValueError('unsupported SFTP batch path')
-                    batch.write_text('reput "%s" "%s"\n' % (path.resolve().as_posix(), partial), encoding='utf-8')
+                    batch.write_text(sftp_batch(path.resolve().as_posix(), partial, offset), encoding='utf-8')
                     with (args.local_dir / (filename + '.upload.log')).open('w') as log:
                         subprocess.run(['sftp', '-o', 'BatchMode=no', '-o', 'StrictHostKeyChecking=yes',
                                         '-B', '262144', '-R', '64', '-P', os.environ['SAID_SSH_PORT'],
@@ -164,7 +168,7 @@ def main():
             command = ('cd %s && %s -m tools.data.prepare_hf_sa1b ingest --root %s --shard %s' %
                        tuple(shlex.quote(v) for v in (args.remote_repo, args.remote_python, args.data_root, shard)))
             result = remote(client, command)
-            save(shard, {'ingested': True, 'elapsed_seconds': round(time.monotonic() - started, 2),
+            save(shard, {'ingested': True, 'error': None, 'elapsed_seconds': round(time.monotonic() - started, 2),
                          'ingest_result': json.loads(result)})
         except Exception as exc:
             stop.set()

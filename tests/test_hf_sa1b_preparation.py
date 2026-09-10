@@ -9,6 +9,7 @@ from tools.data.prepare_hf_sa1b import (
     SHARDS, canonical_id, required_ids, scan_tar, selective_extract, union_stats, verify_hash,
 )
 from tools.data.audit_sharegpt4v import sha256_file
+from tools.data.transfer_hf_sa1b import sftp_batch
 
 
 def make_tar(path, ids, corrupt=None):
@@ -85,3 +86,10 @@ def test_unsafe_canonical_names(name):
 
 def test_required_extraction_only_sam():
     assert required_ids([{'image': 'sam/images/sa_9.jpg'}, {'image': 'coco/train2017/sa_8.jpg'}]) == {'sa_9'}
+
+
+def test_native_sftp_new_target_and_partial_resume():
+    assert sftp_batch('C:/with space/a.tar', '/remote/a.partial', 0).startswith('put "C:/with space/a.tar"')
+    assert sftp_batch('C:/a.tar', '/remote/a.partial', 1024).startswith('reput ')
+    with pytest.raises(ValueError):
+        sftp_batch('C:/a.tar\nrm /other', '/remote/a.partial', 0)

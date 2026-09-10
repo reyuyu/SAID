@@ -122,14 +122,14 @@ def selective_extract(tar_path, destination, required):
 def initialize(json_path, metadata_path, root, output):
     metadata = json.loads(Path(metadata_path).read_text(encoding='utf-8'))
     entries = {item['path']: item for item in metadata}
-    records = json.loads(Path(json_path).read_text(encoding='utf-8'))
-    ids = required_ids(records)
-    write_json(output / 'required_sam_ids.json', {'json_sha256': sha256_file(json_path), 'ids': sorted(ids)})
     path = output / 'sam_shards.json'
     if path.exists():
         previous = json.loads(path.read_text(encoding='utf-8'))
         if previous.get('revision') == REVISION:
             raise RuntimeError('already initialized; use ingest/status to resume')
+    records = json.loads(Path(json_path).read_text(encoding='utf-8'))
+    ids = required_ids(records)
+    write_json(output / 'required_sam_ids.json', {'json_sha256': sha256_file(json_path), 'ids': sorted(ids)})
     shards = []
     for shard in SHARDS:
         info = entries['data/sa_%s.tar' % shard]
