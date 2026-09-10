@@ -6,10 +6,13 @@ from datetime import datetime, timezone
 import errno
 import hashlib
 import json
+from itertools import islice
+import multiprocessing
 import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
+import shutil
 import warnings
 
 from PIL import Image
@@ -135,9 +138,17 @@ def audit_records(records, root, workers=1, progress=False, failures_path=None):
         item['unique_images'] += 1
         item['duplicate_path_records'] += count - 1
     examples = defaultdict(list)
-    executor = ProcessPoolExecutor(max_workers=workers) if workers > 1 else None
+    # Spawn avoids inheriting decoder/allocator locks; bounded batches avoid
+    # eagerly queuing a million jobs before yielding any audit progress.
+    executor = ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context('spawn')) if workers > 1 else None
     jobs = ((str(root), relative) for relative in counts)
-    results = executor.map(_inspect_job, jobs, chunksize=64) if executor else map(_inspect_job, jobs)
+    def bounded_results():
+        while True:
+            batch = list(islice(jobs, 2048))
+            if not batch:
+                break
+            yield from executor.map(_inspect_job, batch, chunksize=32)
+    results = bounded_results() if executor else map(_inspect_job, jobs)
     failure_stream = open(failures_path, 'w', encoding='utf-8') if failures_path else None
     try:
         for completed, (relative, status, error) in enumerate(results, 1):
@@ -206,6 +217,7 @@ def main():
     records = json.loads(args.json.read_text(encoding='utf-8'))
     manifest = split_manifest(records, args.root, fingerprint)
     write_json(args.output_dir / 'sharegpt4v_split_manifest.json', manifest)
+    manifest_sha256 = sha256_file(args.output_dir / 'sharegpt4v_split_manifest.json')
     overlap = manifest['overlap_count']
     del manifest
     result = audit_records(records, args.root, args.workers, progress=True,
@@ -214,6 +226,8 @@ def main():
         raise RuntimeError('JSON changed during audit; result not published')
     result.update(schema_version=1, json_path=str(args.json.resolve()), json_sha256=fingerprint,
                   data_root=str(args.root.resolve()), overlap_count=overlap,
+                  manifest_sha256=manifest_sha256,
+                  filesystem_free_bytes=shutil.disk_usage(args.root).free,
                   audit_time=datetime.now(timezone.utc).isoformat())
     write_json(args.output_dir / (args.name + '.json'), result)
     (args.output_dir / (args.name + '.md')).write_text(audit_markdown(result), encoding='utf-8')

@@ -87,3 +87,11 @@ def test_gate_requires_complete_matching_counts():
     assert not full_data_gate(dict(good, scan_complete=False))
     assert not full_data_gate(dict(good, resolved_records=2))
     assert not full_data_gate({})
+
+
+def test_spawn_audit_matches_serial(tmp_path):
+    path = tmp_path / 'sam/images/sa_1.jpg'
+    path.parent.mkdir(parents=True)
+    Image.new('RGB', (7, 9)).save(path)
+    records = [{'image': 'sam/images/sa_1.jpg'}, {'image': 'sam/images/sa_2.jpg'}]
+    assert audit_records(records, tmp_path, workers=2) == audit_records(records, tmp_path)
