@@ -48,6 +48,24 @@ Unsaid (Phase 2.8A, opt-in, no new parameters):
     cosine, entropies, effective patch counts, attention overlap, attention JSD) are
     monitoring only and never enter a loss.
 
+Objective modes (Phase 3.0A, ``--objective_mode``):
+  * ``legacy`` (default): the Phase 2 losses described above, unchanged.
+  * ``gap_completion``: the **base** objective, *Said-Conditioned Visual Complement
+    Discovery*, on ``(Image I, C_S)`` only::
+
+        L_total = lambda_said * L_said
+                + lambda_gap_discover * L_gap_discover
+                + lambda_global_absorb * L_global_absorb
+
+    It has no Global-text InfoNCE and no Phase 2.8A / 2.9A Unsaid term, so
+    ``--lambda_global 0 --lambda_unsaid 0`` are required and checked before training starts
+    (``validate_objective_args``). The DataLoader asks ``share4v_train_dataset`` for
+    ``caption_views=False``, so a batch is exactly ``(I, C_S)``: no ``caption_full``, no
+    ``caption_unsaid``, no ``has_unsaid``, and only ``C_S`` is tokenized. Logged
+    ``loss_global`` / ``loss_unsaid`` are JSON ``null`` because those terms do not exist in
+    this objective, and the semantic flags (``visual_complement_enabled``,
+    ``legacy_unsaid_enabled``, ``global_text_alignment_enabled``) say which objective ran.
+
 Example (4 GPUs, 676K no-SAM subset)::
 
     CUDA_VISIBLE_DEVICES=0,1,2,3 \
@@ -172,6 +190,96 @@ def tri_gap_record(out):
 def validation_key(step, dataset, caption_variant):
     """Identity of a validation result: never write the same one twice."""
     return (int(step), str(dataset), str(caption_variant))
+
+
+# --------------------------------------------------------------------------- #
+# Phase 3.0A base objective: (I, C_S)-only batch + its logger payload
+# --------------------------------------------------------------------------- #
+GAP_BATCH_KEYS = ('images', 'texts_said')
+
+
+def resolve_gap_mode(args):
+    """Data-shape policy of the chosen objective, as one testable decision.
+
+    Returns ``(gap_mode, tri_mode, caption_views, collate_fn)``:
+
+    * ``gap_mode`` -- the Phase 3.0A base objective is running.
+    * ``tri_mode`` -- the Phase 2.9A debiased-suffix Unsaid branch is running.
+    * ``caption_views`` -- what ``share4v_train_dataset`` is asked for. The gap objective
+      must get ``False``: that is exactly the ``(I, C_S)`` tuple, and it is the only way
+      ``caption_full`` / ``caption_unsaid`` / ``has_unsaid`` can appear.
+    * ``collate_fn`` -- ``tri_caption_collate`` only for the tri-view dataset; the gap run
+      keeps the default collate, so it cannot even represent extra caption views.
+    """
+    tri_mode = args.unsaid_mode == 'debiased_suffix'
+    gap_mode = args.objective_mode == 'gap_completion'
+    caption_views = bool(tri_mode) and not gap_mode
+    return gap_mode, tri_mode, caption_views, (tri_caption_collate if caption_views else None)
+
+
+def build_gap_train_batch(batch, tokenize):
+    """Build the Phase 3.0A base training batch from an ``(I, C_S)`` tuple.
+
+    ``batch`` must be exactly the ``share4v_train_dataset(caption_views=False)`` item:
+    a 2-tuple ``(image_tensor, caption_said)``. Any other shape -- in particular a
+    tri-caption dict carrying ``caption_full`` / ``caption_unsaid`` / ``has_unsaid`` --
+    is rejected instead of being silently fed to the gap objective, because the gap
+    objective is defined on ``Image I`` + ``C_S`` only.
+
+    ``tokenize`` is called exactly once, on ``C_S``: the full caption and the withheld
+    suffix are never text-encoded anywhere in this path.
+    """
+    if isinstance(batch, dict):
+        raise ValueError('gap_completion takes an (I, C_S) tuple batch, got a dict with keys %r'
+                         % (sorted(batch),))
+    if not isinstance(batch, (tuple, list)) or len(batch) != 2:
+        raise ValueError('gap_completion takes an (I, C_S) tuple batch, got %r'
+                         % (type(batch).__name__,))
+    images, texts_said = batch
+    if isinstance(texts_said, torch.Tensor):
+        raise ValueError('gap_completion expects caption strings as C_S, got a tensor')
+    return {'images': images, 'texts_said': tokenize(list(texts_said))}
+
+
+def build_gap_log_fields(out):
+    """Logger payload of one gap_completion step.
+
+    ``loss_global`` / ``loss_unsaid`` do not exist in this objective and stay ``None`` so
+    that the JSON record carries ``null`` instead of a fabricated number -- and so that no
+    caller ever evaluates ``out['loss_global'].detach()`` on a missing term.
+
+    ``global_feature_norm`` / ``said_feature_norm`` / ``unsaid_feature_norm`` are L2 norms
+    of *already normalised* representations, so they are ~1 by construction and are kept
+    only for compatibility: they are not magnitude diagnostics.
+    """
+    def _value(key):
+        value = out.get(key)
+        if value is None:
+            return None
+        return float(value.detach()) if torch.is_tensor(value) else value
+
+    fields = {key: _value(key) for key in (
+        'loss_global', 'loss_unsaid',
+        'loss_said', 'loss_gap_discover', 'loss_global_absorb', 'loss_total',
+        'loss_route', 'loss_evidence',
+        'route_top1_acc', 'evidence_top1_acc', 'route_margin', 'evidence_margin',
+        'gap_before_mean', 'gap_after_mean', 'gap_reduction_mean',
+        'gap_closure_ratio_mean', 'gap_closure_positive_fraction',
+        'said_unsaid_feature_cosine', 'unsaid_novel_component_norm',
+        'said_attention_entropy', 'unsaid_attention_entropy',
+        'said_unsaid_attention_overlap', 'said_unsaid_attention_jsd',
+        'said_attention_max', 'said_attention_min',
+        'global_feature_norm', 'said_feature_norm', 'unsaid_feature_norm',
+        'router_input_feature_norm',
+    )}
+    fields['objective_mode'] = out.get('objective_mode')
+    fields['said_loss_mode'] = out.get('said_loss_mode')
+    fields['gap_anti_temperature'] = out.get('gap_anti_temperature')
+    # explicit, non-overloaded semantics for this objective
+    fields['visual_complement_enabled'] = bool(out.get('visual_complement_enabled', False))
+    fields['legacy_unsaid_enabled'] = bool(out.get('legacy_unsaid_enabled', False))
+    fields['global_text_alignment_enabled'] = bool(out.get('global_text_alignment_enabled', False))
+    return fields
 
 
 def tri_caption_collate(samples):
@@ -469,11 +577,62 @@ def parse_args(argv=None):
     parser.add_argument('--legacy_eval_coco', action='store_true',
                         help='additionally run the legacy train_utils.eval_coco for comparison')
     parser.add_argument('--strict_manifest', action='store_true')
+    # ------------------------------------------------------------------ #
+    # Phase 3.0A base objective: Said-Conditioned Visual Complement Discovery
+    # ------------------------------------------------------------------ #
+    parser.add_argument('--objective_mode', default='legacy', choices=['legacy', 'gap_completion'],
+                        help="legacy = Phase 2 losses (L_global + L_said [+ L_unsaid]); "
+                             "gap_completion = Phase 3.0A base objective on (I, C_S) only, "
+                             "requires --lambda_global 0 --lambda_unsaid 0")
+    parser.add_argument('--lambda_gap_discover', type=float, default=1.0,
+                        help='weight of L_gap_discover = mean(gap_after) (gap_completion only)')
+    parser.add_argument('--lambda_global_absorb', type=float, default=1.0,
+                        help='weight of L_global_absorb (gap_completion only)')
+    parser.add_argument('--gap_anti_temperature', type=float, default=1.0,
+                        help='temperature of the soft anti-Said attention A_U (gap_completion only)')
     return parser.parse_args(argv)
+
+
+def validate_objective_args(args):
+    """Reject a Phase 3.0A configuration that would silently mix objectives.
+
+    The base gap objective is built from ``Image I`` + ``C_S`` alone, so a Global-text
+    InfoNCE term, a Phase 2.8A residual Unsaid term, a Phase 2.9A candidate conditioned
+    Unsaid term or a full-caption alignment would all change what the run *is*. They are
+    therefore configuration errors, raised before any model or data is built.
+    """
+    if args.objective_mode != 'gap_completion':
+        return args
+    problems = []
+    if float(args.lambda_global) != 0.0:
+        problems.append('--lambda_global must be 0 for --objective_mode gap_completion, got %r'
+                        % (args.lambda_global,))
+    if float(args.lambda_unsaid) != 0.0:
+        problems.append('--lambda_unsaid must be 0 for --objective_mode gap_completion, got %r'
+                        % (args.lambda_unsaid,))
+    if args.global_caption_view != 'prefix':
+        problems.append("--global_caption_view must be 'prefix' for --objective_mode "
+                        'gap_completion, got %r' % (args.global_caption_view,))
+    if float(args.lambda_said) == 0.0:
+        problems.append('--lambda_said must be non-zero; the Said router is trained by L_said')
+    if not 0.0 < float(args.lambda_gap_discover) < float('inf'):
+        problems.append('--lambda_gap_discover must be positive and finite, got %r'
+                        % (args.lambda_gap_discover,))
+    if not 0.0 < float(args.lambda_global_absorb) < float('inf'):
+        problems.append('--lambda_global_absorb must be positive and finite, got %r'
+                        % (args.lambda_global_absorb,))
+    if float(args.gap_anti_temperature) <= 0.0:
+        problems.append('--gap_anti_temperature must be positive, got %r'
+                        % (args.gap_anti_temperature,))
+    if problems:
+        raise ValueError('illegal gap_completion configuration: ' + '; '.join(problems))
+    return args
 
 
 def main():
     args = parse_args()
+    # fail on an illegal Phase 3.0A configuration before any DDP / model / data setup
+    validate_objective_args(args)
 
     if args.base_model == 'B16':
         args.base_model = 'ViT-B/16'
@@ -523,7 +682,12 @@ def main():
         if rank == 0:
             print('FULL_DATA_GATE_PASS json=%s audit=%s' % (jp, ap), flush=True)
     tri_mode = args.unsaid_mode == 'debiased_suffix'
-    train_set = share4v_train_dataset(caption_views=tri_mode, suffix_seed=args.seed)
+    # Phase 3.0A base objective: the DataLoader must hand over (I, C_S) and nothing else.
+    # ``share4v_train_dataset`` defaults to exactly that tuple; ``caption_views=True`` is
+    # the only producer of C_F / C_U / has_unsaid, so the gap run asks for False and keeps
+    # the default collate (never ``tri_caption_collate``).
+    gap_mode, tri_mode, caption_views, train_collate = resolve_gap_mode(args)
+    train_set = share4v_train_dataset(caption_views=caption_views, suffix_seed=args.seed)
     sampler = DistributedSampler(train_set, shuffle=True, seed=args.seed)
     loader_generator = torch.Generator().manual_seed(args.seed + rank)
     loader = DataLoader(
@@ -535,7 +699,7 @@ def main():
         drop_last=True,
         worker_init_fn=seed_worker,
         generator=loader_generator,
-        collate_fn=tri_caption_collate if tri_mode else None,
+        collate_fn=train_collate,
     )
     steps_per_epoch = len(loader)
     stop_steps, total_steps = resolve_total_steps(args, steps_per_epoch)
@@ -614,7 +778,14 @@ def main():
 
             caption_batch = None
             texts_full = texts_unsaid = has_unsaid = None
-            if tri_mode:
+            gap_batch = None
+            if gap_mode:
+                # Phase 3.0A: exactly (I, C_S); C_F and C_U are never constructed here.
+                gap_batch = build_gap_train_batch(
+                    batch, lambda captions: longclip.tokenize(captions, truncate=True).to(device))
+                images = gap_batch['images']
+                texts = batch[1]
+            elif tri_mode:
                 caption_batch = batch
                 images = batch['image']
                 texts = batch['caption_said']
@@ -633,7 +804,7 @@ def main():
                     'batch_image_sha256': hashlib.sha256(images.numpy().tobytes()).hexdigest()[:16],
                     'batch_caption_sha256': hashlib.sha256('\n'.join(texts).encode('utf-8')).hexdigest()[:16],
                 }
-                if tri_mode:
+                if tri_mode and not gap_mode:
                     batch_digests.update({
                         'batch_prefix_sha256': batch_digests['batch_caption_sha256'],
                         'batch_full_sha256': hashlib.sha256(
@@ -646,33 +817,48 @@ def main():
                     })
             images = images.to(device, non_blocking=True)
             update_caption_digest(caption_digest, texts)
-            if tri_mode:
+            if tri_mode and not gap_mode:
                 update_caption_digest(full_digest, batch['caption_full'])
                 update_caption_digest(unsaid_digest, batch['caption_unsaid'])
                 update_caption_digest(has_unsaid_digest,
                                       ['%s' % bool(value) for value in batch['has_unsaid']])
-            text_tokens = longclip.tokenize(texts, truncate=True).to(device)
-            full_tokens = (longclip.tokenize(texts_full, truncate=True).to(device)
-                           if texts_full is not None else None)
-            unsaid_tokens = (longclip.tokenize(texts_unsaid, truncate=True).to(device)
-                             if texts_unsaid is not None else None)
+            if gap_mode:
+                # C_S was tokenized exactly once, inside build_gap_train_batch
+                text_tokens = gap_batch['texts_said']
+                full_tokens = unsaid_tokens = None
+            else:
+                text_tokens = longclip.tokenize(texts, truncate=True).to(device)
+                full_tokens = (longclip.tokenize(texts_full, truncate=True).to(device)
+                               if texts_full is not None else None)
+                unsaid_tokens = (longclip.tokenize(texts_unsaid, truncate=True).to(device)
+                                 if texts_unsaid is not None else None)
 
             scale_factor = set_lrs(optimizer, base_lrs, step, args.warmup_length, total_steps)
             t_compute0 = time.time()
             with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=use_amp):
-                out = ddp_model(images, text_tokens, args.lambda_global, args.lambda_said,
-                                lambda_unsaid=args.lambda_unsaid,
-                                tau_unsaid=args.tau_unsaid,
-                                unsaid_residual_eps=args.unsaid_residual_eps,
-                                texts_full=full_tokens,
-                                texts_unsaid=unsaid_tokens,
-                                has_unsaid=has_unsaid,
-                                global_caption_view=args.global_caption_view,
-                                unsaid_mode=args.unsaid_mode,
-                                unsaid_gate_floor=args.unsaid_gate_floor,
-                                unsaid_gate_temperature=args.unsaid_gate_temperature,
-                                unsaid_suppression_beta=args.unsaid_suppression_beta,
-                                unsaid_candidate_chunk_size=args.unsaid_candidate_chunk_size)
+                if gap_mode:
+                    # the gap objective gets (I, C_S) and its own weights; no texts_full,
+                    # no texts_unsaid, no has_unsaid, no global / Unsaid term
+                    out = ddp_model(images, text_tokens, 0.0, args.lambda_said,
+                                    lambda_unsaid=0.0,
+                                    objective_mode='gap_completion',
+                                    lambda_gap_discover=args.lambda_gap_discover,
+                                    lambda_global_absorb=args.lambda_global_absorb,
+                                    gap_anti_temperature=args.gap_anti_temperature)
+                else:
+                    out = ddp_model(images, text_tokens, args.lambda_global, args.lambda_said,
+                                    lambda_unsaid=args.lambda_unsaid,
+                                    tau_unsaid=args.tau_unsaid,
+                                    unsaid_residual_eps=args.unsaid_residual_eps,
+                                    texts_full=full_tokens,
+                                    texts_unsaid=unsaid_tokens,
+                                    has_unsaid=has_unsaid,
+                                    global_caption_view=args.global_caption_view,
+                                    unsaid_mode=args.unsaid_mode,
+                                    unsaid_gate_floor=args.unsaid_gate_floor,
+                                    unsaid_gate_temperature=args.unsaid_gate_temperature,
+                                    unsaid_suppression_beta=args.unsaid_suppression_beta,
+                                    unsaid_candidate_chunk_size=args.unsaid_candidate_chunk_size)
                 loss = out['loss_total']
             if scaler.is_enabled():
                 scaler.scale(loss).backward()
@@ -691,47 +877,65 @@ def main():
             )
             if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step or step + 1 in save_at):
                 throughput = summarize_throughput(global_batch, compute_times, wall_times)
-                record = {
-                    'step': step,
-                    'completed_steps': step + 1,
-                    'epoch': epoch,
-                    'lr_scale': scale_factor,
-                    'backbone_lr': optimizer.param_groups[0]['lr'],
-                    'head_lr': optimizer.param_groups[1]['lr'],
-                    'loss_global': float(out['loss_global'].detach()),
-                    'loss_said': float(out['loss_said'].detach()),
-                    'loss_route': float(out['loss_route'].detach()),
-                    'loss_evidence': float(out['loss_evidence'].detach()),
-                    'loss_unsaid': float(out['loss_unsaid'].detach()),
-                    'unsaid_enabled': bool(out['unsaid_enabled']),
-                    'route_top1_acc': float(out['route_top1_acc'].detach()),
-                    'evidence_top1_acc': float(out['evidence_top1_acc'].detach()),
-                    'route_margin': float(out['route_margin'].detach()),
-                    'evidence_margin': float(out['evidence_margin'].detach()),
-                    'loss_total': float(out['loss_total'].detach()),
-                    'said_attention_entropy': float(out['said_attention_entropy']),
-                    'said_effective_patch_count': float(out['said_effective_patch_count']),
-                    'said_attention_max': float(out['said_attention_max']),
-                    'said_attention_min': float(out['said_attention_min']),
-                    'said_feature_norm': float(out['said_feature_norm']),
-                    'router_input_feature_norm': float(out['router_input_feature_norm']),
-                    'global_feature_norm': float(out['global_feature_norm']),
-                }
+                if gap_mode:
+                    # Phase 3.0A payload: loss_global / loss_unsaid do not exist here and
+                    # are written as JSON null (never ``out[...].detach()`` on a missing
+                    # term). The legacy 2.8A/2.9A monitors are not part of this objective.
+                    record = {
+                        'step': step,
+                        'completed_steps': step + 1,
+                        'epoch': epoch,
+                        'lr_scale': scale_factor,
+                        'backbone_lr': optimizer.param_groups[0]['lr'],
+                        'head_lr': optimizer.param_groups[1]['lr'],
+                        'unsaid_enabled': False,   # legacy alias only, see the flags below
+                        'said_effective_patch_count': float(out['said_effective_patch_count']),
+                    }
+                    record.update(build_gap_log_fields(out))
+                else:
+                    record = {
+                        'step': step,
+                        'completed_steps': step + 1,
+                        'epoch': epoch,
+                        'lr_scale': scale_factor,
+                        'backbone_lr': optimizer.param_groups[0]['lr'],
+                        'head_lr': optimizer.param_groups[1]['lr'],
+                        'loss_global': float(out['loss_global'].detach()),
+                        'loss_said': float(out['loss_said'].detach()),
+                        'loss_route': float(out['loss_route'].detach()),
+                        'loss_evidence': float(out['loss_evidence'].detach()),
+                        'loss_unsaid': float(out['loss_unsaid'].detach()),
+                        'unsaid_enabled': bool(out['unsaid_enabled']),
+                        'route_top1_acc': float(out['route_top1_acc'].detach()),
+                        'evidence_top1_acc': float(out['evidence_top1_acc'].detach()),
+                        'route_margin': float(out['route_margin'].detach()),
+                        'evidence_margin': float(out['evidence_margin'].detach()),
+                        'loss_total': float(out['loss_total'].detach()),
+                        'said_attention_entropy': float(out['said_attention_entropy']),
+                        'said_effective_patch_count': float(out['said_effective_patch_count']),
+                        'said_attention_max': float(out['said_attention_max']),
+                        'said_attention_min': float(out['said_attention_min']),
+                        'said_feature_norm': float(out['said_feature_norm']),
+                        'router_input_feature_norm': float(out['router_input_feature_norm']),
+                        'global_feature_norm': float(out['global_feature_norm']),
+                    }
                 record.update(throughput)
                 if batch_digests:
                     record.update(batch_digests)
-                for key in ('pair_gap_full', 'pair_gap_said', 'balancing_gain',
-                            'relative_balancing_gain'):
-                    record[key] = float(out[key])
-                record['representation_gap_scope'] = 'rank0_local_training_batch'
-                record.update(tri_gap_record(out))
+                if not gap_mode:
+                    for key in ('pair_gap_full', 'pair_gap_said', 'balancing_gain',
+                                'relative_balancing_gain'):
+                        record[key] = float(out[key])
+                    record['representation_gap_scope'] = 'rank0_local_training_batch'
+                    record.update(tri_gap_record(out))
                 if caption_batch is not None:
                     record.update(caption_view_stats(caption_batch))
-                # Unsaid monitors: None (JSON null) when the branch is disabled, so a
-                # skipped branch can never be read as a measurement.
-                for key in UNSAID_DIAGNOSTIC_KEYS:
-                    value = out.get(key)
-                    record[key] = None if value is None else float(value)
+                if not gap_mode:
+                    # Unsaid monitors: None (JSON null) when the branch is disabled, so a
+                    # skipped branch can never be read as a measurement.
+                    for key in UNSAID_DIAGNOSTIC_KEYS:
+                        value = out.get(key)
+                        record[key] = None if value is None else float(value)
                 if torch.cuda.is_available():
                     record['peak_gpu_mem_gb'] = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
                 record['sec_per_step_avg'] = throughput['compute_sec_per_step']  # legacy alias (compute-only)
@@ -804,13 +1008,17 @@ def main():
                 json.dump(result, fp, indent=2, sort_keys=True)
 
     if dist.is_initialized():
+        # the full / unsaid caption streams only exist in the tri-view run; in gap mode the
+        # dataset never produced them, so their digests must stay null
+        tri_streams = bool(tri_mode) and not gap_mode
         audit = {'rank': rank, 'seed': args.seed, 'initial_state_sha256': initial_digest,
                  'sampler_order_sha256': sampler_digest.hexdigest(),
                  'caption_stream_sha256': caption_digest.hexdigest(),
                  'prefix_caption_stream_sha256': caption_digest.hexdigest(),
-                 'full_caption_stream_sha256': full_digest.hexdigest() if tri_mode else None,
-                 'unsaid_caption_stream_sha256': unsaid_digest.hexdigest() if tri_mode else None,
-                 'has_unsaid_stream_sha256': has_unsaid_digest.hexdigest() if tri_mode else None,
+                 'full_caption_stream_sha256': full_digest.hexdigest() if tri_streams else None,
+                 'unsaid_caption_stream_sha256': unsaid_digest.hexdigest() if tri_streams else None,
+                 'has_unsaid_stream_sha256': has_unsaid_digest.hexdigest() if tri_streams else None,
+                 'objective_mode': args.objective_mode,
                  'steps': step, 'dataset_size': len(train_set)}
         with open(os.path.join(args.output_dir, 'reproducibility_rank%d.json' % rank), 'w') as fp:
             json.dump(audit, fp, indent=2, sort_keys=True)

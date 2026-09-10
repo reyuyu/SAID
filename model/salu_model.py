@@ -49,6 +49,11 @@ separate method (``_forward_gap_completion``) that re-runs the *same* reviewed m
 
 -- and never calls ``unsaid_branch``, ``debiased_unsaid_branch`` or
 ``_debiased_pair_scores``. With ``objective_mode='legacy'`` no gap code runs at all.
+
+The gap payload reports the semantics explicitly: ``visual_complement_enabled=True``,
+``legacy_unsaid_enabled=False``, ``global_text_alignment_enabled=False``. The legacy
+``unsaid_enabled`` key survives only for old logger compatibility and must not be read as
+"the Phase 3 visual complement is on".
 """
 from typing import Dict, Optional
 
@@ -772,6 +777,15 @@ class SALUModel(nn.Module):
                 # this objective: ``None``, never a fabricated zero measurement.
                 'loss_global': None,
                 'loss_unsaid': None,
+                # Phase 3.0A logging semantics (never overload a flag name):
+                #   visual_complement_enabled -- Said-Conditioned Visual Complement
+                #     Discovery is the objective that is running.
+                #   legacy_unsaid_enabled -- the Phase 2.8A / 2.9A Unsaid branches are not.
+                #   global_text_alignment_enabled -- no Global-text InfoNCE here.
+                # ``unsaid_enabled`` is kept only for legacy logger compatibility and must
+                # not be read as "is the Phase 3 visual complement on".
+                'visual_complement_enabled': True,
+                'legacy_unsaid_enabled': False,
                 'global_text_alignment_enabled': False,
                 'unsaid_enabled': False,
                 'loss_said': loss_said,
@@ -828,6 +842,7 @@ class SALUModel(nn.Module):
         self,
         images: torch.Tensor,
         said_texts: torch.Tensor,
+        gap_anti_temperature: float = 1.0,
         return_details: bool = False,
     ) -> Dict[str, torch.Tensor]:
         """Encode ``(I, C_S)`` into the global / Said / Unsaid features (inference API).
@@ -836,6 +851,11 @@ class SALUModel(nn.Module):
         feature ``z_U`` is built **without any unsaid text**: it is the soft anti-Said
         pooling ``normalize(sum_p A_U_p h_p)`` of the image's own patches, where ``A_U``
         comes from the Said raw scores of ``C_S`` alone.
+
+        ``gap_anti_temperature`` is the soft anti-Said temperature: a numerical
+        hyper-parameter of ``A_U``, never a text input, so this API sees exactly the same
+        ``A_U`` function as training. At the training default ``1.0`` the numbers match
+        ``_forward_gap_completion``.
 
         Always returned: ``global_feature``, ``said_feature``, ``unsaid_feature``.
         With ``return_details=True`` also: ``said_scores``, ``said_attention``,
@@ -846,7 +866,9 @@ class SALUModel(nn.Module):
         t = F.normalize(self.encode_text(said_texts), dim=-1)
         details = self.said_router.forward_with_details(t, patch_features)
         z_said = details['said']
-        A_unsaid = soft_anti_said_attention(details['scores'], temperature=1.0)
+        A_unsaid = soft_anti_said_attention(details['scores'],
+                                            temperature=gap_anti_temperature)
+
         z_unsaid = unsaid_feature_from_attention(A_unsaid, patch_features)
         out = {
             'global_feature': z_global,

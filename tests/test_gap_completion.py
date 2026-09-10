@@ -479,9 +479,11 @@ def test_d_gap_mode_routes_pairwise_exactly_once_and_gradient_reaches_z_unsaid()
 def test_e_encode_said_unsaid_takes_no_unsaid_or_candidate_text():
     signature = inspect.signature(SALUModel.encode_said_unsaid)
     names = [name for name in signature.parameters if name != 'self']
-    assert names == ['images', 'said_texts', 'return_details']
+    # gap_anti_temperature is a numerical hyper-parameter of A_U, never a text input
+    assert names == ['images', 'said_texts', 'gap_anti_temperature', 'return_details']
+    assert signature.parameters['gap_anti_temperature'].default == 1.0
     lowered = [name.lower() for name in names]
-    for banned in ('unsaid', 'candidate', 'uss'):
+    for banned in ('unsaid_text', 'candidate', 'uss', 'hidden_text'):
         assert not any(banned in name for name in lowered), banned
     # the only text input is the tokenised observed/incomplete caption C_S
     text_parameters = [name for name in lowered if 'text' in name or 'caption' in name]
