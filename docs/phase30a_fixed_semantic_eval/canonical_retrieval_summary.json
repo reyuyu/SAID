@@ -53,6 +53,24 @@
         "text2image_R10": 0.705,
         "text2image_R5": 0.59928
       }
+    },
+    "D_tau0.5_S+D+A": {
+      "initial": {
+        "image2text_R1": 0.517,
+        "image2text_R10": 0.8428,
+        "image2text_R5": 0.7662,
+        "text2image_R1": 0.32692,
+        "text2image_R10": 0.68232,
+        "text2image_R5": 0.5776
+      },
+      "step100": {
+        "image2text_R1": 0.5322,
+        "image2text_R10": 0.8594,
+        "image2text_R5": 0.7814,
+        "text2image_R1": 0.3502,
+        "text2image_R10": 0.70552,
+        "text2image_R5": 0.5996
+      }
     }
   },
   "note": "Standard CLIP CLS retrieval via encode_image(). The base objective has no Global-text InfoNCE, so this only checks that it does not break canonical retrieval. Measured on the initial and step-100 checkpoints only.",
@@ -212,6 +230,60 @@
         },
         "full_dense": {
           "image2text_R1": 0.882,
+          "image2text_R10": 0.993,
+          "image2text_R5": 0.979,
+          "text2image_R1": 0.872,
+          "text2image_R10": 0.996,
+          "text2image_R5": 0.98
+        }
+      }
+    },
+    "D_tau0.5_S+D+A": {
+      "initial": {
+        "first_sentence": {
+          "image2text_R1": 0.544,
+          "image2text_R10": 0.859,
+          "image2text_R5": 0.774,
+          "text2image_R1": 0.514,
+          "text2image_R10": 0.814,
+          "text2image_R5": 0.748
+        },
+        "fixed_sparse": {
+          "image2text_R1": 0.746,
+          "image2text_R10": 0.953,
+          "image2text_R5": 0.92,
+          "text2image_R1": 0.74,
+          "text2image_R10": 0.949,
+          "text2image_R5": 0.918
+        },
+        "full_dense": {
+          "image2text_R1": 0.758,
+          "image2text_R10": 0.952,
+          "image2text_R5": 0.92,
+          "text2image_R1": 0.776,
+          "text2image_R10": 0.973,
+          "text2image_R5": 0.948
+        }
+      },
+      "step100": {
+        "first_sentence": {
+          "image2text_R1": 0.561,
+          "image2text_R10": 0.882,
+          "image2text_R5": 0.802,
+          "text2image_R1": 0.557,
+          "text2image_R10": 0.84,
+          "text2image_R5": 0.775
+        },
+        "fixed_sparse": {
+          "image2text_R1": 0.811,
+          "image2text_R10": 0.977,
+          "image2text_R5": 0.954,
+          "text2image_R1": 0.808,
+          "text2image_R10": 0.968,
+          "text2image_R5": 0.948
+        },
+        "full_dense": {
+          "image2text_R1": 0.884,
           "image2text_R10": 0.993,
           "image2text_R5": 0.979,
           "text2image_R1": 0.872,

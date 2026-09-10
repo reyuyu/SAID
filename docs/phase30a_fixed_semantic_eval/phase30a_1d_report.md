@@ -203,6 +203,7 @@ ShareGPT4V-1K `image2text_R1` / `text2image_R1`:
 | A | step100 | 0.561 / 0.547 | 0.818 / 0.820 | 0.886 / 0.884 |
 | B | step100 | 0.550 / 0.544 | 0.823 / 0.817 | 0.883 / 0.886 |
 | C | step100 | 0.566 / 0.553 | 0.815 / 0.810 | 0.882 / 0.872 |
+| D | step100 | 0.561 / 0.557 | 0.811 / 0.808 | 0.884 / 0.872 |
 
 COCO val2017 (5-caption protocol):
 
@@ -212,9 +213,16 @@ COCO val2017 (5-caption protocol):
 | A | step100 | 0.5360 | 0.7870 | 0.8622 | 0.3448 | 0.5944 | 0.6996 |
 | B | step100 | 0.5340 | 0.7836 | 0.8600 | 0.3422 | 0.5926 | 0.6974 |
 | C | step100 | 0.5344 | 0.7828 | 0.8596 | 0.3495 | 0.5993 | 0.7050 |
+| D | step100 | 0.5322 | 0.7814 | 0.8594 | 0.3502 | 0.5996 | 0.7055 |
 
-Canonical retrieval **improves** over the 100 steps in every arm and on every variant. The
-base objective (without any Global-text InfoNCE) does not break standard CLIP retrieval.
+All four arms start from the identical checkpoint (every `initial` row is byte-identical).
+
+Canonical retrieval **improves** over the 100 steps in every arm, on every 1K variant and on
+COCO: 1K `first_sentence` I2T R@1 0.544 → 0.550–0.566, `fixed_sparse` 0.746 → 0.811–0.823,
+`full_dense` 0.758 → 0.882–0.886; COCO I2T R@1 0.5170 → 0.5322–0.5360 and T2I R@1
+0.3269 → 0.3422–0.3502. The four arms are within ~0.01 of each other everywhere, and the
+`A` control is not worse than the arms that carry the gap losses. The base objective, which
+contains **no Global-text InfoNCE at all**, therefore does not break standard CLIP retrieval.
 
 ## 6. Patch common mode (Q5)
 
