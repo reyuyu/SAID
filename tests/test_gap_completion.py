@@ -559,6 +559,30 @@ def test_f_gap_mode_is_deterministic_for_the_same_input():
         assert torch.equal(encoded[key], repeated[key]), key
 
 
+def test_f_encode_said_unsaid_is_deterministic_in_eval():
+    """Inference determinism for a fixed (I, C_S): every returned tensor is identical."""
+    torch.manual_seed(6)
+    model = build_model()
+    images, texts = make_batch()
+    model.eval()
+    with torch.no_grad():
+        first = model.encode_said_unsaid(images, texts, return_details=True)
+        second = model.encode_said_unsaid(images, texts, return_details=True)
+    for key in ('global_feature', 'said_feature', 'unsaid_feature', 'said_scores',
+                'said_attention', 'unsaid_attention', 'u_new', 'gap_before', 'gap_after',
+                'closure', 'novel_norm'):
+        assert torch.allclose(first[key], second[key], atol=1e-7), key
+        assert torch.equal(first[key], second[key]), key
+
+    # and the training-time gap forward is deterministic in eval as well
+    with torch.no_grad():
+        left = gap_forward(model, images, texts)
+        right = gap_forward(model, images, texts)
+    for key in ('loss_said', 'loss_gap_discover', 'loss_global_absorb', 'loss_total',
+                'gap_before_mean', 'gap_after_mean'):
+        assert torch.allclose(left[key], right[key], atol=1e-7), key
+
+
 # --------------------------------------------------------------------------- #
 # G. objective_mode='legacy' is the default, bit-for-bit
 # --------------------------------------------------------------------------- #
@@ -586,3 +610,115 @@ def test_g_legacy_mode_is_identical_to_the_default():
     assert float(gap['loss_total']) != float(default['loss_total'])
     assert set(gap) - set(default) >= {'loss_gap_discover', 'loss_global_absorb',
                                        'gap_before_mean', 'unsaid_feature_norm'}
+
+
+# --------------------------------------------------------------------------- #
+# H. direct graph gradient of L_gap_discover (through z_U only)
+# --------------------------------------------------------------------------- #
+def test_h_gap_discovery_has_a_direct_gradient_only_through_z_unsaid():
+    """backward on ``loss_gap_discover`` alone: z_U branch only, router strictly frozen."""
+    model = build_model()
+    images, texts = make_batch()
+    out = gap_forward(model, images, texts)
+    out['loss_gap_discover'].backward()
+
+    # the visual patch path does receive gradient: z_U -> A_U -> H -> patches
+    patch_weight_grad = model.clip.patch_proj.weight.grad
+    assert patch_weight_grad is not None
+    assert float(patch_weight_grad.abs().sum()) > 0.0
+    # (patch_offsets is a plain buffer in the stub, so it legitimately has no .grad)
+    assert model.clip.patch_offsets.grad is None
+    assert not model.clip.patch_offsets.requires_grad
+
+    # the Said router is untouched: A_U is detached and the z_S reference is detached
+    for name, parameter in model.said_router.named_parameters():
+        grad = parameter.grad
+        assert grad is None or float(grad.abs().sum()) == 0.0, name
+
+    # no loss ever moves both sides: L_absorb was not part of this backward pass
+    assert model.clip.logit_scale.grad is None
+
+
+def test_h_gap_discovery_never_touches_the_router_at_the_module_boundary():
+    """The same fact, stated where the math lives, with no model wiring involved."""
+    torch.manual_seed(7)
+    model = build_model()
+    images, texts = make_batch()
+    _, patch_features = model.encode_router_input(images)
+    t = F.normalize(model.clip.encode_text(texts), dim=-1)
+    details = model.said_router.forward_with_details(t, patch_features)
+    A_unsaid = soft_anti_said_attention(details['scores'])
+    assert A_unsaid.requires_grad is False
+    z_unsaid = unsaid_feature_from_attention(A_unsaid, patch_features)
+    gap_discovery_loss(gap_completion_terms(details['said'].detach(), details['said'].detach(),
+                                            z_unsaid)).backward()
+    # patch path carries the gradient, the router (hence C_S's route into z_U) carries none
+    assert float(model.clip.patch_proj.weight.grad.abs().sum()) > 0.0
+    for name, parameter in model.said_router.named_parameters():
+        grad = parameter.grad
+        assert grad is None or float(grad.abs().sum()) == 0.0, name
+
+
+# --------------------------------------------------------------------------- #
+# I. absorption: live global branch only, completion target detached
+# --------------------------------------------------------------------------- #
+def test_i_absorption_moves_the_live_global_feature_but_not_the_references():
+    torch.manual_seed(8)
+    global_feature = torch.randn(4, DIM, requires_grad=True)
+    said_feature = torch.randn(4, DIM, requires_grad=True)
+    unsaid_feature = torch.randn(4, DIM, requires_grad=True)
+    global_absorption_loss(global_feature, said_feature, unsaid_feature).backward()
+    assert global_feature.grad is not None and float(global_feature.grad.abs().sum()) > 0.0
+    assert said_feature.grad is None                 # s_ref frozen
+    assert unsaid_feature.grad is None               # completion target frozen
+
+
+def test_i_absorption_does_not_reach_the_said_router_on_a_real_forward():
+    model = build_model()
+    images, texts = make_batch()
+    out = gap_forward(model, images, texts)
+    out['loss_global_absorb'].backward()
+
+    # the live global visual branch carries the gradient
+    assert model.clip.global_proj.weight.grad is not None
+    assert float(model.clip.global_proj.weight.grad.abs().sum()) > 0.0
+    # the completion target is detached, so neither z_U nor the router receive anything
+    assert model.clip.logit_scale.grad is None
+    for name, parameter in model.said_router.named_parameters():
+        grad = parameter.grad
+        assert grad is None or float(grad.abs().sum()) == 0.0, name
+
+
+def test_i_absorption_alone_leaves_the_patch_branch_untouched():
+    """``L_global_absorb``'s only path to ``g`` is the CLS/global projection."""
+    model = build_model()
+    images, texts = make_batch()
+    out = gap_forward(model, images, texts)
+    out['loss_global_absorb'].backward()
+    patch_grad = model.clip.patch_proj.weight.grad
+    assert patch_grad is None or float(patch_grad.abs().sum()) == 0.0
+    # the global branch in the stub shares the flattened image input, so it does get grad
+    assert model.clip.global_proj.weight.grad is not None
+
+
+# --------------------------------------------------------------------------- #
+# J. the legacy 'positive' Said ablation is available in gap mode, unchanged
+# --------------------------------------------------------------------------- #
+def test_j_positive_said_mode_gap_forward_uses_the_legacy_said_semantics():
+    model = build_model(said_loss_mode='positive')
+    images, texts = make_batch()
+    out = gap_forward(model, images, texts)
+    assert out['said_loss_mode'] == 'positive'
+    assert out['loss_global'] is None and out['loss_unsaid'] is None
+    assert float(out['loss_route']) == 0.0 and float(out['loss_evidence']) == 0.0
+    assert float(out['route_top1_acc']) == 0.0 and float(out['evidence_top1_acc']) == 0.0
+    for key in ('loss_said', 'loss_gap_discover', 'loss_global_absorb', 'loss_total'):
+        assert torch.isfinite(out[key]).all(), key
+    out['loss_total'].backward()
+    assert model.said_router.q_proj.weight.grad is not None
+
+    # the identifiable default really is the identifiable loss
+    identifiable = gap_forward(build_model(), images, texts)
+    assert identifiable['said_loss_mode'] == 'identifiable'
+    assert float(identifiable['loss_route']) > 0.0
+    assert float(identifiable['loss_evidence']) > 0.0

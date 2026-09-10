@@ -732,18 +732,35 @@ class SALUModel(nn.Module):
         loss_global_absorb = global_absorption_loss(z_global, z_s_own, z_unsaid)
 
         scale = self.clip.logit_scale.exp().clamp(max=100)
-        z_pair, _ = self.said_router.route_pairwise(
-            t, patch_features, chunk_size=self.pair_chunk_size
-        )
-        said = identifiable_said_loss(z_pair, t, scale)
-        loss_said = said['loss_said']
+        if self.said_loss_mode == 'identifiable':
+            z_pair, _ = self.said_router.route_pairwise(
+                t, patch_features, chunk_size=self.pair_chunk_size
+            )
+            said = identifiable_said_loss(z_pair, t, scale)
+            loss_said = said['loss_said']
+            loss_route = said['loss_route'].detach()
+            loss_evidence = said['loss_evidence'].detach()
+            route_top1 = said['route_top1_acc'].detach()
+            evidence_top1 = said['evidence_top1_acc'].detach()
+            route_margin = said['route_margin'].detach()
+            evidence_margin = said['evidence_margin'].detach()
+        else:
+            # 'positive' keeps the legacy Phase 2 ablation wording: the own-caption Said
+            # feature (the one the router already produced above) against the gathered
+            # captions. Reuses the already-encoded C_S -- no second text encode.
+            loss_said = contrastive_loss(
+                gather_features_with_grad(z_s_own), gather_features_with_grad(t), scale
+            )
+            zero = torch.zeros((), device=loss_said.device, dtype=loss_said.dtype)
+            loss_route = loss_evidence = zero
+            route_top1 = evidence_top1 = zero
+            route_margin = evidence_margin = zero
 
         loss_total = (float(lambda_said) * loss_said
                       + float(lambda_gap_discover) * loss_gap_discover
                       + float(lambda_global_absorb) * loss_global_absorb)
 
         z_g = F.normalize(z_global, dim=-1)
-        zero = torch.zeros((), device=images.device, dtype=loss_total.dtype)
 
         with torch.no_grad():
             A_s_detached = A_own.detach().float()
@@ -759,14 +776,18 @@ class SALUModel(nn.Module):
                 'unsaid_enabled': False,
                 'loss_said': loss_said,
                 'loss_total': loss_total,
-                'loss_route': said['loss_route'].detach(),
-                'loss_evidence': said['loss_evidence'].detach(),
-                'loss_gap_discover': loss_gap_discover.detach(),
-                'loss_global_absorb': loss_global_absorb.detach(),
-                'route_top1_acc': said['route_top1_acc'].detach(),
-                'evidence_top1_acc': said['evidence_top1_acc'].detach(),
-                'route_margin': said['route_margin'].detach(),
-                'evidence_margin': said['evidence_margin'].detach(),
+                # The two gap losses stay live tensors in the output so that the direct
+                # graph gradient can be checked at this boundary, exactly as the
+                # train_salu logger detaches them (``.detach()`` is a no-op on a
+                # detached tensor, so both callers are safe).
+                'loss_gap_discover': loss_gap_discover,
+                'loss_global_absorb': loss_global_absorb,
+                'loss_route': loss_route,
+                'loss_evidence': loss_evidence,
+                'route_top1_acc': route_top1,
+                'evidence_top1_acc': evidence_top1,
+                'route_margin': route_margin,
+                'evidence_margin': evidence_margin,
                 'said_attention_entropy': entropy_said.mean(),
                 'said_effective_patch_count': entropy_said.exp().mean(),
                 'said_attention_max': A_s_detached.max(dim=-1).values.mean(),
@@ -784,8 +805,8 @@ class SALUModel(nn.Module):
                 'router_input_feature_norm': patch_features.detach().float().norm(dim=-1).mean(),
                 'gap_anti_temperature': float(gap_anti_temperature),
                 'objective_mode': 'gap_completion',
+                'said_loss_mode': self.said_loss_mode,
                 'legacy_unsaid_terms': False,
-                'loss_said_zero': zero,
             }
             # detached gap diagnostics: closure is monitoring only and never in a loss.
             for key, value in gap_diagnostics(terms).items():
