@@ -131,13 +131,17 @@ set score during training instead of only at the end.
   Set `SAID_RUNS_ROOT` or type the path in the sidebar.
 * Selectors: run(s), dataset (`ShareGPT4V-1K` or `COCO val2017`), caption variant,
   metric, and whether the series are grouped per run · dataset · variant or per
-  caption variant only.
+  caption variant only (the variant-only grouping is honoured for a single run and
+  automatically falls back to run · dataset · variant when several runs are selected,
+  so two runs can never share one line).
 * Charts: retrieval (`I2T` / `T2I` R@1/5/10) and representation diagnostics
   (pair gap, RMG, balancing gain, conditioning margin) against the training step,
   each metric on its own y scale. `Balancing Gain = Full Pair Gap − Said Pair Gap`
   (positive = Said better, negative = Said worse).
-* Guard: a record whose `similarity_chunk` is not the canonical `512` is listed as
-  a warning, because such a curve cannot be compared with the canonical ones.
+* Guard: the curves, the latest-point table and the numeric table only use records
+  whose `similarity_chunk` is the canonical `512`. Any other chunk is still warned
+  about, listed in the anomaly table and shown as a raw JSONL line in the expander,
+  but never plotted next to canonical numbers.
 
 ```bash
 python -m pytest tests/test_validation_curves_dashboard.py -q

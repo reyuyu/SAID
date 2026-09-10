@@ -12,6 +12,15 @@ block whose shape depends on the dataset:
 * ``coco_val2017`` -> a flat retrieval dict
 
 ``flatten_metrics`` hides that difference from the charts.
+
+Comparison rules (Phase 2.7C hardening):
+
+* Only records with the canonical ``similarity_chunk`` may enter the main curves, the
+  latest-point table and the numeric table. Records with any other chunk stay visible
+  in the warning, in the anomaly table and in the raw JSONL view, but they are never
+  plotted next to canonical numbers.
+* A series never merges two runs: caption-variant-only grouping is allowed only when a
+  single run is selected, otherwise the grouping falls back to run · dataset · variant.
 """
 import json
 from pathlib import Path
@@ -116,11 +125,81 @@ def load_runs(root):
             records = read_history(run['path'])
         except ValueError:
             continue
-        runs.append(dict(run, records=records,
-                         steps=sorted({int(r['step']) for r in records}),
-                         datasets=sorted({str(r.get('dataset', '?')) for r in records}),
-                         variants=sorted({str(r.get('caption_variant', '?')) for r in records})))
+        runs.append(summarize_run(run, records))
     return runs
+
+
+def summarize_run(run, records):
+    """``run`` plus the steps / datasets / variants its records cover."""
+    records = list(records)
+    return dict(run, records=records,
+                steps=sorted({int(r['step']) for r in records}),
+                datasets=sorted({str(r.get('dataset', '?')) for r in records}),
+                variants=sorted({str(r.get('caption_variant', '?')) for r in records}))
+
+
+def is_canonical(record, canonical=CANONICAL_SIMILARITY_CHUNK):
+    """Canonical means the record was evaluated with the canonical similarity chunk."""
+    return record.get('similarity_chunk') == canonical
+
+
+def dropped_row(run_name, record):
+    """One row of the anomaly table for a record that may not join the main curves."""
+    return {'实验': run_name,
+            '步数': int(record.get('step', -1)),
+            '数据集': dataset_label(str(record.get('dataset', '?'))),
+            '文本变体': variant_label(str(record.get('caption_variant', '?'))),
+            '验证点': reason_label(record.get('reason')),
+            'similarity_chunk': record.get('similarity_chunk')}
+
+
+def split_canonical(runs, canonical=CANONICAL_SIMILARITY_CHUNK):
+    """``(canonical_runs, dropped)``: curves / latest / tables may only use the first.
+
+    ``dropped`` keeps every excluded record (wrong chunk, or a chunk that is missing)
+    so the page can still warn about it, list it and show its raw line.
+    """
+    kept_runs, dropped = [], []
+    for run in runs:
+        kept_runs.append(summarize_run(run, [r for r in run['records']
+                                             if is_canonical(r, canonical)]))
+        dropped.extend(dropped_row(run['name'], r) for r in run['records']
+                       if not is_canonical(r, canonical))
+    return kept_runs, dropped
+
+
+def raw_lines(path):
+    """Non-empty raw lines of a history file (missing file yields no lines)."""
+    try:
+        text = Path(path).read_text(encoding='utf-8')
+    except (OSError, UnicodeError):
+        return []
+    return [line for line in text.splitlines() if line.strip()]
+
+
+def dropped_raw_lines(runs, canonical=CANONICAL_SIMILARITY_CHUNK):
+    """Raw JSONL lines that may not join the curves: non-canonical or unparsable."""
+    out = []
+    for run in runs:
+        for line in raw_lines(run['path']):
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                out.append({'实验': run['name'], '原因': '无法解析的 JSONL 行', '原始行': line})
+                continue
+            if isinstance(record, dict) and not is_canonical(record, canonical):
+                out.append({'实验': run['name'], '原因': 'similarity_chunk != %s' % canonical,
+                            '原始行': line})
+    return out
+
+
+def curve_series_mode(n_runs, requested='auto'):
+    """Series grouping that can never merge two runs into one line.
+
+    ``'variant'`` (caption variant only) is only honoured when a single run is
+    selected; with several runs the caller must fall back to ``'auto'``.
+    """
+    return 'variant' if (requested == 'variant' and int(n_runs) == 1) else 'auto'
 
 
 def flatten_metrics(record):
@@ -237,15 +316,7 @@ def latest_points(runs, datasets=None):
 
 def non_canonical_chunks(runs, canonical=CANONICAL_SIMILARITY_CHUNK):
     """Records that did not use the canonical chunk, so mixed numbers are visible."""
-    outliers = []
-    for run in runs:
-        for record in run['records']:
-            chunk = record.get('similarity_chunk')
-            if chunk != canonical:
-                outliers.append({'实验': run['name'], '步数': int(record['step']),
-                                 '数据集': dataset_label(str(record.get('dataset', '?'))),
-                                 'similarity_chunk': chunk})
-    return outliers
+    return split_canonical(runs, canonical)[1]
 
 
 def total_wall_sec(runs):

@@ -1,9 +1,27 @@
-"""Said attention visualization dashboard (Streamlit, read-only artifacts).
+"""Said visualization dashboard (Streamlit, read-only artifacts).
 
-The dashboard NEVER loads a checkpoint or runs the model: it only reads the
-precomputed artifacts produced by ``eval/salu/export_dashboard_artifacts.py``
-(JSON / NPY / PNG under ``outputs/salu_dashboard/``), so switching checkpoints or
-samples is instant.
+The dashboard NEVER loads a checkpoint and NEVER runs the model or an evaluator:
+every page only reads artifacts that an export step or the training run already
+wrote, so switching runs / checkpoints / samples is instant.
+
+Read-only inputs by page:
+
+* ``outputs/salu_dashboard/`` — attention export (JSON / NPY / PNG) from
+  ``eval/salu/export_dashboard_artifacts.py``; page "历史：Said 注意力".
+* ``outputs/representation_balance/`` — fixed-probe and training-batch diagnostics;
+  pages "表征平衡监控" and "训练状态".
+* ``outputs/data_audit/`` — full-data gate / SAM shard audits; page "数据完整性".
+* ``outputs/semantic_grounding/``, ``outputs/local_semantic_evidence/``,
+  ``outputs/local_evidence_router/`` — historical grounding audits.
+* ``runs_salu/*/validation_history.jsonl`` — the validation records that
+  ``train/train_salu.py`` appends *while training runs* (no export step, no
+  re-inference); page "验证得分曲线（训练中）". That page only plots records whose
+  ``similarity_chunk`` is the canonical 512 and never merges two runs into one series.
+
+Every root can be overridden in the sidebar or through its environment variable
+(``SAID_DASHBOARD_ROOT``, ``REPRESENTATION_BALANCE_ROOT``, ``SAID_DATA_AUDIT_ROOT``,
+``SEMANTIC_GROUNDING_ROOT``, ``LOCAL_EVIDENCE_ROOT``, ``LOCAL_ROUTER_ROOT``,
+``SAID_RUNS_ROOT``).
 
 Run (server, loopback only)::
 

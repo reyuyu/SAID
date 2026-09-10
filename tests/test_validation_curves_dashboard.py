@@ -124,8 +124,80 @@ def test_non_canonical_chunk_is_flagged(tmp_path):
     write_run(tmp_path, 'odd', [sharegpt4v1k_record(0, 'full_dense', chunk=1024)])
     runs = curves.load_runs(tmp_path)
     assert curves.non_canonical_chunks(runs) == [
-        {'实验': 'odd', '步数': 0, '数据集': 'ShareGPT4V-1K（1,000 路）', 'similarity_chunk': 1024}]
+        {'实验': 'odd', '步数': 0, '数据集': 'ShareGPT4V-1K（1,000 路）', '文本变体': '完整 caption',
+         '验证点': '间隔', 'similarity_chunk': 1024}]
     assert curves.non_canonical_chunks(curves.load_runs(fixture_runs(tmp_path / 'ok'))) == []
+
+
+# --------------------------------------------------------------------------- #
+# canonical chunk filtering: only chunk == 512 reaches the main views
+# --------------------------------------------------------------------------- #
+def mixed_chunk_run(root, name='mixed'):
+    """Two canonical points (step 10 / 20) and one chunk=1024 point (step 30)."""
+    write_run(root, name, [sharegpt4v1k_record(10, 'first_sentence'),
+                           sharegpt4v1k_record(20, 'first_sentence', 'final', r1=0.70),
+                           sharegpt4v1k_record(30, 'first_sentence', chunk=1024, r1=0.99)])
+    return root
+
+
+def test_split_canonical_keeps_only_chunk_512(tmp_path):
+    runs = curves.load_runs(mixed_chunk_run(tmp_path))
+    canonical_runs, dropped = curves.split_canonical(runs)
+    assert [record['step'] for record in canonical_runs[0]['records']] == [10, 20]
+    assert canonical_runs[0]['steps'] == [10, 20]
+    assert [row['步数'] for row in dropped] == [30]
+    assert dropped[0]['similarity_chunk'] == 1024
+    assert curves.is_canonical(sharegpt4v1k_record(1, 'first_sentence')) is True
+    assert curves.is_canonical(sharegpt4v1k_record(1, 'first_sentence', chunk=1024)) is False
+
+
+def test_non_canonical_records_never_reach_curves_latest_or_table(tmp_path):
+    runs = curves.load_runs(mixed_chunk_run(tmp_path))
+    canonical_runs, _ = curves.split_canonical(runs)
+
+    rows = curves.curve_rows(canonical_runs, metrics=['image2text_R1'],
+                             datasets={'sharegpt4v1k'}, variants={'first_sentence'})
+    assert {row['步数'] for row in rows} == {10, 20}
+    latest = curves.latest_points(canonical_runs, datasets={'sharegpt4v1k'})
+    assert [row['步数'] for row in latest] == [20]          # not the chunk=1024 point at step 30
+    assert 30 not in [row['步数'] for row in curves.wide_rows(rows)]
+    # the excluded record stays visible in the anomaly list and as a raw line
+    assert [row['步数'] for row in curves.non_canonical_chunks(runs)] == [30]
+    raw = curves.dropped_raw_lines(runs)
+    assert len(raw) == 1 and '"step": 30' in raw[0]['原始行']
+    assert curves.available_metrics(canonical_runs) == \
+        ['image2text_R1', 'image2text_R5', 'image2text_R10', 'text2image_R1', 'text2image_R5',
+         'text2image_R10', 'full_pair_gap', 'said_pair_gap', 'full_rmg', 'said_rmg',
+         'balancing_gain', 'relative_balancing_gain', 'conditioning_margin']
+
+
+# --------------------------------------------------------------------------- #
+# series grouping: two runs may never share a series
+# --------------------------------------------------------------------------- #
+def test_curve_series_mode_never_merges_two_runs(tmp_path):
+    assert curves.curve_series_mode(2, 'variant') == 'auto'
+    assert curves.curve_series_mode(3, 'variant') == 'auto'
+    assert curves.curve_series_mode(1, 'variant') == 'variant'
+    assert curves.curve_series_mode(1, 'auto') == 'auto'
+    assert curves.curve_series_mode(2, 'auto') == 'auto'
+
+
+def test_same_variant_in_two_runs_stays_two_series(tmp_path):
+    write_run(tmp_path, 'run_a', [sharegpt4v1k_record(10, 'first_sentence')])
+    write_run(tmp_path, 'run_b', [sharegpt4v1k_record(10, 'first_sentence', r1=0.70)])
+    runs = curves.load_runs(tmp_path)
+    mode = curves.curve_series_mode(len(runs), 'variant')
+    rows = curves.curve_rows(runs, metrics=['image2text_R1'], datasets={'sharegpt4v1k'},
+                             variants={'first_sentence'}, series=mode)
+    assert len({row['系列'] for row in rows}) == 2
+    assert {row['系列'] for row in rows} == {
+        'run_a · ShareGPT4V-1K（1,000 路） · 第一句',
+        'run_b · ShareGPT4V-1K（1,000 路） · 第一句'}
+    # with a single run the variant-only grouping is still available
+    single = curves.curve_rows(runs[:1], metrics=['image2text_R1'], datasets={'sharegpt4v1k'},
+                               variants={'first_sentence'},
+                               series=curves.curve_series_mode(1, 'variant'))
+    assert {row['系列'] for row in single} == {'第一句'}
 
 
 def test_balancing_gain_definition_matches_the_canonical_one():
@@ -167,6 +239,39 @@ def test_page_explains_how_to_produce_records_when_there_are_none(tmp_path, monk
     assert not app.exception
     assert '未找到验证记录' in app.info[0].value
     assert '--val_sharegpt4v' in app.code[0].value
+
+
+def test_page_excludes_non_canonical_points_but_still_warns(tmp_path, monkeypatch):
+    """A chunk=1024 point warns and stays viewable, but never joins the main views."""
+    mixed_chunk_run(tmp_path)
+    monkeypatch.setenv('SAID_RUNS_ROOT', str(tmp_path))
+    app = AppTest.from_string(PAGE).run()
+    assert not app.exception
+    assert any('canonical similarity_chunk' in warning.value for warning in app.warning)
+    frames = [frame.value for frame in app.dataframe]
+    with_steps = [frame for frame in frames if '步数' in frame.columns]
+    assert 30 in list(with_steps[0]['步数'])                               # 异常记录表
+    assert all(30 not in list(frame['步数']) for frame in with_steps[1:])   # latest + canonical 表
+    assert any('"step": 30' in block.value for block in app.code)           # 原始 JSONL 仍可见
+
+
+def test_page_forces_run_aware_series_with_two_runs(tmp_path, monkeypatch):
+    """「只按文本变体」may not merge the same variant of two runs into one series."""
+    write_run(tmp_path, 'run_a', [sharegpt4v1k_record(10, 'first_sentence')])
+    write_run(tmp_path, 'run_b', [sharegpt4v1k_record(10, 'first_sentence', r1=0.70)])
+    monkeypatch.setenv('SAID_RUNS_ROOT', str(tmp_path))
+    app = AppTest.from_string(PAGE).run()
+    assert not app.exception
+    assert not any('已自动改用' in warning.value for warning in app.warning)
+    app.radio[0].set_value('只按文本变体').run()
+    assert not app.exception
+    assert any('已自动改用' in warning.value for warning in app.warning)
+    # a single run may still be grouped by caption variant alone
+    monkeypatch.setenv('SAID_RUNS_ROOT', str(tmp_path / 'run_a'))
+    single = AppTest.from_string(PAGE).run()
+    single.radio[0].set_value('只按文本变体').run()
+    assert not single.exception
+    assert not any('已自动改用' in warning.value for warning in single.warning)
 
 
 def test_app_navigation_exposes_the_curves_page():
