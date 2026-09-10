@@ -291,13 +291,40 @@ def test_gap_mode_rejects_a_global_or_unsaid_term():
                                    '--global_caption_view', 'full']))
 
 
-def test_gap_mode_rejects_degenerate_gap_weights():
-    for flag, value in (('lambda_gap_discover', '0'), ('lambda_global_absorb', '-1'),
-                        ('gap_anti_temperature', '0'), ('lambda_said', '0')):
+def test_gap_mode_accepts_zero_gap_weights_as_matched_controls():
+    """A zero gap / absorb weight is a legal matched control, not a configuration error.
+
+    (0, 0) = Said-only control, (1, 0) = discovery only, (1, 1) = the full base objective.
+    """
+    for gap_weight, absorb_weight in (('0', '0'), ('1', '0'), ('0', '1'), ('1', '1')):
+        args = train_salu.validate_objective_args(train_salu.parse_args([
+            '--objective_mode', 'gap_completion', '--lambda_global', '0', '--lambda_unsaid', '0',
+            '--lambda_gap_discover', gap_weight, '--lambda_global_absorb', absorb_weight]))
+        assert args.lambda_gap_discover == float(gap_weight)
+        assert args.lambda_global_absorb == float(absorb_weight)
+
+
+def test_gap_mode_rejects_negative_or_non_finite_gap_weights():
+    for flag, value in (('lambda_gap_discover', '-1'), ('lambda_global_absorb', '-0.5'),
+                        ('lambda_gap_discover', 'inf'), ('lambda_global_absorb', 'nan'),
+                        ('gap_anti_temperature', '0'), ('gap_anti_temperature', '-1'),
+                        ('lambda_said', '0'), ('lambda_said', '-1')):
         argv = ['--objective_mode', 'gap_completion', '--lambda_global', '0',
                 '--lambda_unsaid', '0', '--' + flag, value]
         with pytest.raises(ValueError):
             train_salu.validate_objective_args(train_salu.parse_args(argv))
+
+
+def test_said_only_control_still_computes_the_gap_diagnostics():
+    """With (0, 0) the representations are still built, but L_total is exactly L_S."""
+    model = build_model()
+    images, texts = make_batch()
+    out = gap_forward(model, images, texts, lambda_gap_discover=0.0, lambda_global_absorb=0.0)
+    assert torch.allclose(out['loss_total'], out['loss_said'], atol=1e-6)
+    for key in ('loss_gap_discover', 'loss_global_absorb', 'gap_before_mean', 'gap_after_mean',
+                'patch_pair_cosine_mean', 'raw_pool_cosine', 'cos_said_unsaid'):
+        assert out[key] is not None and torch.isfinite(out[key]).all(), key
+    assert out['lambda_gap_discover'] == 0.0 and out['lambda_global_absorb'] == 0.0
 
 
 def test_gap_mode_accepts_the_phase30a_configuration():

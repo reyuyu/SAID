@@ -65,6 +65,8 @@ import torch.nn.functional as F
 from .salu_modules import SaidRouter
 from .representation_metrics import batch_representation_gaps
 from . import unsaid_core
+# Phase 3.0A.1c: pure complement-emergence diagnostics (never part of any loss).
+from . import complement_diagnostics
 
 # Phase 3.0A: reviewed parameter-free Gap Completion math (never re-implemented here).
 from .gap_completion import (
@@ -820,11 +822,26 @@ class SALUModel(nn.Module):
                 'gap_anti_temperature': float(gap_anti_temperature),
                 'objective_mode': 'gap_completion',
                 'said_loss_mode': self.said_loss_mode,
+                # the effective weights are reported so a zero (matched control) is explicit
+                'lambda_said': float(lambda_said),
+                'lambda_gap_discover': float(lambda_gap_discover),
+                'lambda_global_absorb': float(lambda_global_absorb),
                 'legacy_unsaid_terms': False,
             }
             # detached gap diagnostics: closure is monitoring only and never in a loss.
             for key, value in gap_diagnostics(terms).items():
                 out[key] = value
+            # Phase 3.0A.1c complement-emergence diagnostics. Three strictly separated
+            # questions, all detached and all outside every loss:
+            #   patch homogeneity  -- H3, intrinsic patch geometry (no attention involved)
+            #   raw pooling        -- the magnitude/direction the normalisation hides
+            #   global relation    -- cos(g, z_S) vs cos(g, z_U)
+            out.update(complement_diagnostics.patch_homogeneity_metrics(patch_features,
+                                                                        z_global))
+            out.update(complement_diagnostics.raw_pooling_metrics(A_own, A_unsaid,
+                                                                 patch_features))
+            out.update(complement_diagnostics.global_relation_metrics(z_global, z_s_own,
+                                                                     z_unsaid))
             # the legacy 2.9B pair-gap diagnostics keep their names and stay available.
             out.update(batch_representation_gaps(z_g, z_s_own, t))
 

@@ -80,6 +80,7 @@ Example (4 GPUs, 676K no-SAM subset)::
         --save_at 200,400
 """
 import argparse
+import contextlib
 import hashlib
 import json
 import math
@@ -101,6 +102,7 @@ for _p in (REPO_ROOT, TRAIN_DIR):
 
 from model import longclip  # noqa: E402
 from model.salu_model import SALUModel  # noqa: E402
+from model.complement_diagnostics import COMPLEMENT_DIAGNOSTIC_KEYS  # noqa: E402
 from model.unsaid_core import DIAGNOSTIC_KEYS as UNSAID_DIAGNOSTIC_KEYS  # noqa: E402
 from sharegpt4v import share4v_train_dataset, share4v_val_dataset  # noqa: E402
 from train_utils import eval_coco  # noqa: E402  (legacy SmartCLIP-style COCO evaluation)
@@ -271,6 +273,15 @@ def build_gap_log_fields(out):
         'said_attention_max', 'said_attention_min',
         'global_feature_norm', 'said_feature_norm', 'unsaid_feature_norm',
         'router_input_feature_norm',
+        # Phase 3.0A.1c complement-emergence diagnostics (monitoring only)
+        'patch_pair_cosine_mean', 'patch_pair_cosine_std',
+        'patch_to_global_cosine_mean', 'patch_to_global_cosine_std',
+        'patch_centered_energy',
+        'said_raw_pool_norm', 'unsaid_raw_pool_norm',
+        'raw_pool_cosine', 'raw_pool_norm_ratio',
+        'cos_global_said', 'cos_global_unsaid', 'cos_said_unsaid',
+        # every effective weight is recorded, including a deliberate zero
+        'lambda_said', 'lambda_gap_discover', 'lambda_global_absorb',
     )}
     fields['objective_mode'] = out.get('objective_mode')
     fields['said_loss_mode'] = out.get('said_loss_mode')
@@ -476,30 +487,161 @@ def build_optimizer(model: SALUModel, backbone_lr, head_lr, weight_decay):
     return optimizer, len(backbone), len(head)
 
 
+def objective_checkpoint_metadata(args):
+    """``phase`` / ``objective_mode`` written into a checkpoint.
+
+    Compatibility rule: ``legacy`` runs keep their historical phase tag and do **not** grow
+    an ``objective_mode`` field, so every pre-Phase-3.0A checkpoint stays readable byte for
+    byte. A ``gap_completion`` run is tagged as its own phase and carries the objective, so
+    a later resume can refuse to silently mix objectives.
+    """
+    if getattr(args, 'objective_mode', 'legacy') == 'gap_completion':
+        return 'phase3.0a-gap-completion', 'gap_completion'
+    return 'phase2-said-only', None
+
+
+def validate_resume_objective(checkpoint, args, path='<checkpoint>'):
+    """Refuse to resume across objectives.
+
+    A checkpoint **with** ``objective_mode`` must match the CLI exactly. A checkpoint
+    **without** it predates Phase 3.0A and is therefore a legacy run: ``legacy`` may still
+    resume it, ``gap_completion`` may not (it would silently continue the wrong objective).
+    """
+    current = getattr(args, 'objective_mode', 'legacy')
+    stored = checkpoint.get('objective_mode')
+    if stored is None:
+        if current != 'legacy':
+            raise ValueError(
+                "cannot resume a legacy checkpoint (no objective_mode metadata) with "
+                "--objective_mode %s: %s" % (current, path))
+        return 'legacy'
+    if str(stored) != str(current):
+        raise ValueError('resume objective mismatch: checkpoint declares objective_mode=%r '
+                         'but the CLI asks for %r (%s)' % (stored, current, path))
+    return str(stored)
+
+
 def save_checkpoint(path, ddp_model, optimizer, scaler, step, epoch, args, base_lrs, total_steps):
-    torch.save(
-        {
-            'model': ddp_model.module.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'scaler': scaler.state_dict(),
-            'scheduler': {
-                'type': 'cosine_with_warmup',
-                'base_lrs': list(base_lrs),
-                'warmup_length': args.warmup_length,
-                'total_steps': total_steps,
-                'step': step,
-            },
+    phase, objective_mode = objective_checkpoint_metadata(args)
+    payload = {
+        'model': ddp_model.module.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        'scaler': scaler.state_dict(),
+        'scheduler': {
+            'type': 'cosine_with_warmup',
+            'base_lrs': list(base_lrs),
+            'warmup_length': args.warmup_length,
+            'total_steps': total_steps,
             'step': step,
-            'epoch': epoch,
-            'args': vars(args),
-            'phase': 'phase2-said-only',
         },
-        path,
-    )
+        'step': step,
+        'epoch': epoch,
+        'args': vars(args),
+        'phase': phase,
+    }
+    if objective_mode is not None:
+        payload['objective_mode'] = objective_mode
+    torch.save(payload, path)
     # a plain CLIP-only state dict so standard tooling (eval/retrieval/coco.py)
     # can load the backbone without knowing about SALU
     clip_path = os.path.join(os.path.dirname(path), 'clip_only_' + os.path.basename(path))
     torch.save(ddp_model.module.clip.state_dict(), clip_path)
+
+
+def batch_identity_sha256(images, captions):
+    """Content hash of one training batch ``(I, C_S)`` (Phase 3.0A.1c sweeps).
+
+    Used to prove that every temperature / feature-source probe saw the *same* images and
+    the *same* prefix captions, so a difference in the metrics can only come from the
+    setting under test.
+    """
+    digest = hashlib.sha256()
+    if torch.is_tensor(images):
+        digest.update(images.detach().float().cpu().contiguous().numpy().tobytes())
+    else:
+        digest.update(repr(images).encode('utf-8'))
+    digest.update(b'\x00')
+    for caption in captions:
+        digest.update(str(caption).encode('utf-8'))
+        digest.update(b'\x01')
+    return digest.hexdigest()
+
+
+def parse_step_list(value):
+    """``'0,20,50,100'`` -> ``[0, 20, 50, 100]`` (empty string -> no diagnostic steps)."""
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        return [int(item) for item in value]
+    return [int(part) for part in str(value).split(',') if str(part).strip()]
+
+
+def grad_norm_summary(model):
+    """L2 norm of the accumulated gradients, split backbone vs Said router.
+
+    Reads the gradients of the *single* training backward pass: no extra backward is run.
+    Returns ``grad_norm_backbone``, ``grad_norm_said_router``, ``grad_norm_total`` and the
+    number of tensors that actually received a gradient.
+    """
+    head_ids = {id(parameter) for parameter in model.said_router.parameters()}
+    sums = {'backbone': 0.0, 'router': 0.0}
+    counts = {'backbone': 0, 'router': 0}
+    for parameter in model.parameters():
+        if parameter.grad is None:
+            continue
+        group = 'router' if id(parameter) in head_ids else 'backbone'
+        value = float(parameter.grad.detach().float().pow(2).sum())
+        sums[group] += value
+        counts[group] += 1
+    total = math.sqrt(sums['backbone'] + sums['router'])
+    return {
+        'grad_norm_backbone': math.sqrt(sums['backbone']),
+        'grad_norm_said_router': math.sqrt(sums['router']),
+        'grad_norm_total': total,
+        'grad_tensor_count_backbone': counts['backbone'],
+        'grad_tensor_count_said_router': counts['router'],
+    }
+
+
+def backward_and_step(loss, optimizer, scaler):
+    """One optimizer step with the same scaler semantics as before (extracted verbatim)."""
+    if scaler.is_enabled():
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+    else:
+        loss.backward()
+        optimizer.step()
+
+
+def grad_contribution_norms(model, out, diagnostic_steps, step):
+    """Per-term gradient norms on *diagnostic steps only* (Phase 3.0A.1c, Section 11).
+
+    ``grad_norm_gap_contribution`` / ``grad_norm_absorb_contribution`` need their own
+    backward passes, so they are computed only when ``step`` is one of ``diagnostic_steps``
+    (step 0 / 20 / 50 / 100 in the 100-step diagnostic), never on every step. The backward
+    passes are local (``no_sync`` when DDP is active), so they cannot perturb the gradient
+    synchronisation of the real training step. Must be called with the gradient buffers
+    cleared; returns ``{}`` on all other steps.
+    """
+    if step not in set(diagnostic_steps):
+        return {}
+    contributions = {}
+    distributed = dist.is_available() and dist.is_initialized()
+    for name, term in (('gap', out.get('loss_gap_discover')),
+                       ('absorb', out.get('loss_global_absorb'))):
+        if term is None or not torch.is_tensor(term) or not term.requires_grad:
+            continue
+        model.zero_grad(set_to_none=True)
+        context = model.no_sync() if distributed else contextlib.nullcontext()
+        with context:
+            term.backward(retain_graph=False)
+        summary = grad_norm_summary(model)
+        contributions['grad_norm_%s_contribution' % name] = summary['grad_norm_total']
+        contributions['grad_norm_%s_contribution_backbone' % name] = summary['grad_norm_backbone']
+        contributions['grad_norm_%s_contribution_router' % name] = summary['grad_norm_said_router']
+    model.zero_grad(set_to_none=True)
+    return contributions
 
 
 def parse_args(argv=None):
@@ -590,6 +732,10 @@ def parse_args(argv=None):
                         help='weight of L_global_absorb (gap_completion only)')
     parser.add_argument('--gap_anti_temperature', type=float, default=1.0,
                         help='temperature of the soft anti-Said attention A_U (gap_completion only)')
+    parser.add_argument('--grad_contribution_steps', type=parse_step_list, default=[0],
+                        help='comma-separated steps at which the extra per-term gradient '
+                             'norms are measured (gap_completion only; each costs one '
+                             'backward pass). Empty string disables them.')
     return parser.parse_args(argv)
 
 
@@ -613,14 +759,18 @@ def validate_objective_args(args):
     if args.global_caption_view != 'prefix':
         problems.append("--global_caption_view must be 'prefix' for --objective_mode "
                         'gap_completion, got %r' % (args.global_caption_view,))
-    if float(args.lambda_said) == 0.0:
-        problems.append('--lambda_said must be non-zero; the Said router is trained by L_said')
-    if not 0.0 < float(args.lambda_gap_discover) < float('inf'):
-        problems.append('--lambda_gap_discover must be positive and finite, got %r'
-                        % (args.lambda_gap_discover,))
-    if not 0.0 < float(args.lambda_global_absorb) < float('inf'):
-        problems.append('--lambda_global_absorb must be positive and finite, got %r'
-                        % (args.lambda_global_absorb,))
+    if float(args.lambda_said) <= 0.0:
+        problems.append('--lambda_said must be positive; the Said router is trained by L_said')
+    # A zero gap / absorb weight is legal and meaningful: it is the matched control arm.
+    #   L_S            -> (0, 0)   Said-only control
+    #   L_S + L_gap    -> (1, 0)   discovery only
+    #   L_S + L_gap + L_absorb -> (1, 1)  full base objective
+    # Only finiteness and non-negativity are required.
+    for flag, value in (('--lambda_gap_discover', args.lambda_gap_discover),
+                        ('--lambda_global_absorb', args.lambda_global_absorb)):
+        if not math.isfinite(float(value)) or float(value) < 0.0:
+            problems.append('%s must be finite and >= 0 (0 = matched control), got %r'
+                            % (flag, value))
     if float(args.gap_anti_temperature) <= 0.0:
         problems.append('--gap_anti_temperature must be positive, got %r'
                         % (args.gap_anti_temperature,))
@@ -724,8 +874,11 @@ def main():
     start_step, start_epoch = 0, 0
     if args.resume:
         ckpt = torch.load(args.resume, map_location='cpu', weights_only=False)
+        validate_resume_objective(ckpt, args, args.resume)
         if ckpt.get('args', {}).get('said_feature_source', 'residual') != args.said_feature_source:
             raise ValueError('resume checkpoint feature source differs from CLI')
+        if ckpt.get('args', {}).get('gap_anti_temperature') != args.gap_anti_temperature:
+            raise ValueError('resume checkpoint gap_anti_temperature differs from CLI')
         ddp_model.module.load_state_dict(ckpt['model'])
         optimizer.load_state_dict(ckpt['optimizer'])
         if 'scaler' in ckpt and ckpt['scaler']:
@@ -744,9 +897,12 @@ def main():
     has_unsaid_digest = hashlib.sha256()
     sampler_digest = hashlib.sha256()
     if rank == 0 and args.save_initial and not args.resume:
-        torch.save({'model': salu.state_dict(), 'args': vars(args), 'step': 0,
-                    'phase': 'phase2.5-local-evidence-router'},
-                   os.path.join(args.output_dir, 'salu_initial.pt'))
+        initial_phase, initial_objective = objective_checkpoint_metadata(args)
+        initial_payload = {'model': salu.state_dict(), 'args': vars(args), 'step': 0,
+                           'phase': initial_phase}
+        if initial_objective is not None:
+            initial_payload['objective_mode'] = initial_objective
+        torch.save(initial_payload, os.path.join(args.output_dir, 'salu_initial.pt'))
     ddp_model.train()
     step = start_step
     stopped = False
@@ -861,13 +1017,22 @@ def main():
                                     unsaid_candidate_chunk_size=args.unsaid_candidate_chunk_size)
                 loss = out['loss_total']
             if scaler.is_enabled():
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                # fp16 path: unchanged (GradScaler semantics, see backward_and_step)
+                backward_and_step(loss, optimizer, scaler)
             else:
+                # bf16 / fp32 path
                 loss.backward()
                 optimizer.step()
-            optimizer.zero_grad(set_to_none=True)
+            # cheap: reads the gradients of the training backward pass, no extra backward
+            grad_summary = grad_norm_summary(salu) if gap_mode else None
+            if gap_mode and step % args.log_every == 0:
+                # per-term norms need their own backward (diagnostic steps only)
+                optimizer.zero_grad(set_to_none=True)
+                grad_contributions = grad_contribution_norms(
+                    ddp_model, out, args.grad_contribution_steps, step)
+            else:
+                optimizer.zero_grad(set_to_none=True)
+                grad_contributions = None
             compute_times.append(time.time() - t_compute0)
             wall_times.append(time.time() - t_wall0)
 
@@ -892,6 +1057,11 @@ def main():
                         'said_effective_patch_count': float(out['said_effective_patch_count']),
                     }
                     record.update(build_gap_log_fields(out))
+                    if grad_summary is not None:
+                        record.update(grad_summary)
+                        record['grad_norm_point'] = 'post_optimizer_step'
+                    if grad_contributions:
+                        record.update(grad_contributions)
                 else:
                     record = {
                         'step': step,
