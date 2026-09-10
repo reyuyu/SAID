@@ -59,7 +59,7 @@ class _StubClip(nn.Module):
         return self.encode_image(images), self._patches(images)
 
     def encode_text(self, tokens):
-        one_hot = F.one_hot(tokens.clamp(0, self.text_proj.in_features - 1),
+        one_hot = F.one_hot(tokens.long().clamp(0, self.text_proj.in_features - 1),
                             num_classes=self.text_proj.in_features).float()
         return self.text_proj(one_hot.mean(dim=1))
 
