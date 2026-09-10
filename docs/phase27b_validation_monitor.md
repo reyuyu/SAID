@@ -250,3 +250,6 @@ Balancing Gain 一列即 `Full Gap − Said Gap`：只有 `first_sentence` 为�
 `run_validation_job()` 路径（同一个 `rng_guard()` + `eval()/train()` 恢复），其 RNG 中性由
 `test_initial_validation_hook_emits_step0_coco_before_any_update` 断言（调用前后 `rng_snapshot()` 相等），
 因此开启该 flag 不会改变训练流。
+
+这些记录的可视化（训练中验证得分曲线）见 `docs/phase27c_validation_dashboard.md`：看板只读本文件，
+不重新推理。

@@ -90,6 +90,7 @@ def main():
     from representation_balance_page import style
     style()
     pages = {'表征平衡监控': '表征平衡监控', '训练状态': '训练状态',
+             '验证得分曲线': '验证得分曲线（训练中）',
              '数据完整性': '数据完整性',
              'Said attention': '历史：Said 注意力',
              'Semantic Grounding Audit': '历史：语义定位审计',
@@ -107,6 +108,10 @@ def main():
     if page == '训练状态':
         from representation_balance_page import training_main
         training_main()
+        return
+    if page == '验证得分曲线':
+        from validation_curves_page import main as curves_main
+        curves_main()
         return
     if page == 'Local-Evidence Router':
         from local_router_page import main as local_router_main

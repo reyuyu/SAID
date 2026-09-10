@@ -117,3 +117,29 @@ message; incomplete runs are not presented as completed evaluation results.
 ```bash
 python -m pytest tests/test_grounding_dashboard.py tests/test_said_dashboard.py -q
 ```
+
+## 6. Validation score curves (Phase 2.7C)
+
+Choose **验证得分曲线（训练中）** in the Page control. This page plots the validation
+points that training already wrote while it runs, so you can watch the validation
+set score during training instead of only at the end.
+
+* Data source: `<output_dir>/validation_history.jsonl`, one JSON object per
+  validation point (written by `train/train_salu.py`; no export step, no
+  checkpoint loading, no re-inference).
+* Root: the parent directory of the runs (`runs_salu`), or a single run directory.
+  Set `SAID_RUNS_ROOT` or type the path in the sidebar.
+* Selectors: run(s), dataset (`ShareGPT4V-1K` or `COCO val2017`), caption variant,
+  metric, and whether the series are grouped per run · dataset · variant or per
+  caption variant only.
+* Charts: retrieval (`I2T` / `T2I` R@1/5/10) and representation diagnostics
+  (pair gap, RMG, balancing gain, conditioning margin) against the training step,
+  each metric on its own y scale. `Balancing Gain = Full Pair Gap − Said Pair Gap`
+  (positive = Said better, negative = Said worse).
+* Guard: a record whose `similarity_chunk` is not the canonical `512` is listed as
+  a warning, because such a curve cannot be compared with the canonical ones.
+
+```bash
+python -m pytest tests/test_validation_curves_dashboard.py -q
+```
+
