@@ -161,6 +161,59 @@ def validation_key(step, dataset, caption_variant):
     return (int(step), str(dataset), str(caption_variant))
 
 
+def tri_caption_collate(samples):
+    """Collate the Phase 2.9A caption-view dicts into one batch."""
+    return {
+        'image': torch.stack([sample['image'] for sample in samples]),
+        'caption_full': [sample['caption_full'] for sample in samples],
+        'caption_said': [sample['caption_said'] for sample in samples],
+        'caption_unsaid': [sample['caption_unsaid'] for sample in samples],
+        'has_unsaid': torch.tensor([bool(sample['has_unsaid']) for sample in samples],
+                                   dtype=torch.bool),
+        'num_sentences': torch.tensor([sample['num_sentences'] for sample in samples],
+                                      dtype=torch.long),
+        'prefix_k': torch.tensor([sample['prefix_k'] for sample in samples], dtype=torch.long),
+        'unsaid_sentence_index': torch.tensor([sample['unsaid_sentence_index'] for sample in samples],
+                                              dtype=torch.long),
+    }
+
+
+def caption_view_stats(batch):
+    """Data statistics of one tri-view batch (Phase 2.9A diagnostics)."""
+    num_sentences = batch['num_sentences'].float()
+    prefix_k = batch['prefix_k'].float()
+    has_unsaid = batch['has_unsaid']
+    unsaid_index = batch['unsaid_sentence_index'].float()
+    suffix_length = num_sentences - prefix_k
+    return {
+        'data_num_sentences_mean': float(num_sentences.mean()),
+        'data_num_sentences_median': float(num_sentences.median()),
+        'data_prefix_k_mean': float(prefix_k.mean()),
+        'data_suffix_length_mean': float(suffix_length.mean()),
+        'data_unsaid_position_mean': (float(unsaid_index[has_unsaid].mean())
+                                      if bool(has_unsaid.any()) else 0.0),
+        'data_has_unsaid_ratio': float(has_unsaid.float().mean()),
+    }
+
+
+def debug_caption_examples(batch, count=3):
+    """Human-readable Full / Said / Unsaid examples that also verify the suffix property."""
+    lines = []
+    for position in range(min(int(count), len(batch['caption_said']))):
+        full = batch['caption_full'][position]
+        said = batch['caption_said'][position]
+        unsaid = batch['caption_unsaid'][position]
+        num_sentences = int(batch['num_sentences'][position])
+        prefix_k = int(batch['prefix_k'][position])
+        index = int(batch['unsaid_sentence_index'][position])
+        in_suffix = bool(batch['has_unsaid'][position]) and index > prefix_k and unsaid in full
+        lines.append('DEBUG_EXAMPLE %d N=%d K=%d J=%d has_unsaid=%s unsaid_in_suffix=%s\n'
+                     '  Full: %s\n  Said: %s\n  Unsaid: %s'
+                     % (position, num_sentences, prefix_k, index,
+                        bool(batch['has_unsaid'][position]), in_suffix, full, said, unsaid))
+    return '\n'.join(lines)
+
+
 def plan_validation(args, step, is_epoch_end, is_final_step, is_initial=False):
     """Which validation jobs run at this step (cadence only, no dedupe).
 
@@ -351,6 +404,16 @@ def parse_args(argv=None):
                         help='temperature of the Unsaid anti-routing softmax')
     parser.add_argument('--unsaid_residual_eps', type=float, default=1e-4,
                         help='residual-norm threshold below which an Unsaid target is invalid')
+    parser.add_argument('--unsaid_mode', default='residual',
+                        choices=['residual', 'debiased_suffix'],
+                        help='residual = Phase 2.8A ablation; debiased_suffix = Phase 2.9A '
+                             'withheld-suffix alignment')
+    parser.add_argument('--global_caption_view', default='prefix', choices=['prefix', 'full'],
+                        help="text view used by the global alignment (default 'prefix' = legacy)")
+    parser.add_argument('--unsaid_gate_floor', type=float, default=0.1,
+                        help='lower bound of the soft Said-suppression gate (debiased_suffix)')
+    parser.add_argument('--unsaid_gate_temperature', type=float, default=1.0)
+    parser.add_argument('--unsaid_suppression_beta', type=float, default=1.0)
     parser.add_argument('--tau_said', type=float, default=0.07)
     parser.add_argument('--said_loss_mode', default='identifiable', choices=['positive', 'identifiable'],
                         help='positive = Phase 2 ablation; identifiable = Phase 2.2 routing objective')
@@ -443,7 +506,8 @@ def main():
         require_full_data(ap, jp, root)
         if rank == 0:
             print('FULL_DATA_GATE_PASS json=%s audit=%s' % (jp, ap), flush=True)
-    train_set = share4v_train_dataset()
+    tri_mode = args.unsaid_mode == 'debiased_suffix'
+    train_set = share4v_train_dataset(caption_views=tri_mode, suffix_seed=args.seed)
     sampler = DistributedSampler(train_set, shuffle=True, seed=args.seed)
     loader_generator = torch.Generator().manual_seed(args.seed + rank)
     loader = DataLoader(
@@ -455,6 +519,7 @@ def main():
         drop_last=True,
         worker_init_fn=seed_worker,
         generator=loader_generator,
+        collate_fn=tri_caption_collate if tri_mode else None,
     )
     steps_per_epoch = len(loader)
     stop_steps, total_steps = resolve_total_steps(args, steps_per_epoch)
@@ -522,11 +587,25 @@ def main():
     for epoch in range(start_epoch, args.epochs):
         sampler.set_epoch(epoch)
         sampler_digest.update(torch.tensor(list(sampler), dtype=torch.int64).numpy().tobytes())
-        for images, texts in loader:
+        for batch in loader:
             t_wall0 = time.time()
             if args.max_steps is not None and step >= args.max_steps:
                 stopped = True
                 break
+
+            caption_batch = None
+            texts_full = texts_unsaid = has_unsaid = None
+            if tri_mode:
+                caption_batch = batch
+                images = batch['image']
+                texts = batch['caption_said']
+                texts_full = batch['caption_full']
+                texts_unsaid = batch['caption_unsaid']
+                has_unsaid = batch['has_unsaid'].to(device)
+                if rank == 0 and step == 0:
+                    print(debug_caption_examples(batch), flush=True)
+            else:
+                images, texts = batch
 
             batch_digests = None
             if rank == 0 and (step % args.log_every == 0 or step == 0):
@@ -538,6 +617,10 @@ def main():
             images = images.to(device, non_blocking=True)
             update_caption_digest(caption_digest, texts)
             text_tokens = longclip.tokenize(texts, truncate=True).to(device)
+            full_tokens = (longclip.tokenize(texts_full, truncate=True).to(device)
+                           if texts_full is not None else None)
+            unsaid_tokens = (longclip.tokenize(texts_unsaid, truncate=True).to(device)
+                             if texts_unsaid is not None else None)
 
             scale_factor = set_lrs(optimizer, base_lrs, step, args.warmup_length, total_steps)
             t_compute0 = time.time()
@@ -545,7 +628,15 @@ def main():
                 out = ddp_model(images, text_tokens, args.lambda_global, args.lambda_said,
                                 lambda_unsaid=args.lambda_unsaid,
                                 tau_unsaid=args.tau_unsaid,
-                                unsaid_residual_eps=args.unsaid_residual_eps)
+                                unsaid_residual_eps=args.unsaid_residual_eps,
+                                texts_full=full_tokens,
+                                texts_unsaid=unsaid_tokens,
+                                has_unsaid=has_unsaid,
+                                global_caption_view=args.global_caption_view,
+                                unsaid_mode=args.unsaid_mode,
+                                unsaid_gate_floor=args.unsaid_gate_floor,
+                                unsaid_gate_temperature=args.unsaid_gate_temperature,
+                                unsaid_suppression_beta=args.unsaid_suppression_beta)
                 loss = out['loss_total']
             if scaler.is_enabled():
                 scaler.scale(loss).backward()
@@ -597,6 +688,8 @@ def main():
                             'relative_balancing_gain'):
                     record[key] = float(out[key])
                 record['representation_gap_scope'] = 'rank0_local_training_batch'
+                if caption_batch is not None:
+                    record.update(caption_view_stats(caption_batch))
                 # Unsaid monitors: None (JSON null) when the branch is disabled, so a
                 # skipped branch can never be read as a measurement.
                 for key in UNSAID_DIAGNOSTIC_KEYS:

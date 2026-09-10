@@ -36,6 +36,13 @@ import torch.nn.functional as F
 
 DEFAULT_TAU_UNSAID = 0.07
 DEFAULT_RESIDUAL_EPS = 1e-4
+# Phase 2.9A debiased-suffix Unsaid (frozen V1 constants, no sweep).
+DEFAULT_GATE_FLOOR = 0.1
+DEFAULT_GATE_TEMPERATURE = 1.0
+DEFAULT_SUPPRESSION_BETA = 1.0
+GATE_STD_EPS = 1e-6
+GATE_LOG_EPS = 1e-8
+UNSAID_MODES = ('residual', 'debiased_suffix')
 # Logged only when Unsaid is enabled; ``None`` when ``lambda_unsaid == 0`` so a
 # disabled branch can never be mistaken for a measurement.
 DIAGNOSTIC_KEYS = (
@@ -48,6 +55,17 @@ DIAGNOSTIC_KEYS = (
     'unsaid_attention_max',
     'said_unsaid_attention_overlap',
     'said_unsaid_attention_jsd',
+    # Phase 2.9A debiased-suffix diagnostics (None when that branch is not active)
+    'unsaid_valid_batch_size',
+    'unsaid_retrieval_top1_i2t',
+    'unsaid_retrieval_top1_t2i',
+    'unsaid_retrieval_margin_i2t',
+    'unsaid_retrieval_margin_t2i',
+    'unsaid_gate_mean',
+    'unsaid_gate_min',
+    'unsaid_gate_max',
+    'said_coverage_under_raw',
+    'said_coverage_under_gated',
 )
 
 
@@ -150,3 +168,95 @@ def masked_mean(values: torch.Tensor, valid: torch.Tensor) -> torch.Tensor:
     """Mean over the valid rows; 0 when nothing is valid (never NaN)."""
     weights = valid.float()
     return (values.float() * weights).sum() / weights.sum().clamp_min(1.0)
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2.9A: debiased suffix Unsaid (soft Said suppression gate)
+# --------------------------------------------------------------------------- #
+def said_suppression_gate(said_scores: torch.Tensor,
+                          gate_floor: float = DEFAULT_GATE_FLOOR,
+                          gate_temperature: float = DEFAULT_GATE_TEMPERATURE) -> torch.Tensor:
+    """Soft per-patch gate from own-prefix Said raw cosine scores ``s^S`` [B, P].
+
+    ``s_hat = (s^S - mean_p) / (std_p + eps)``, then
+    ``gate = floor + (1 - floor) * sigmoid(-s_hat / tau_gate)``, clamped to
+    ``[floor, 1]``. The result is **detached**: the gate is a fixed prior for this
+    iteration, never a gradient path into the Said scores. ``gate`` describes how
+    much room a patch still has relative to the current prefix -- it is *not* an
+    attention distribution and never hard-masks a patch.
+    """
+    floor = float(gate_floor)
+    tau = float(gate_temperature)
+    if not 0.0 < floor < 1.0:
+        raise ValueError('gate_floor must be in (0, 1), got %r' % (gate_floor,))
+    if tau <= 0.0:
+        raise ValueError('gate_temperature must be positive, got %r' % (gate_temperature,))
+    if said_scores.dim() != 2:
+        raise ValueError('said_scores must be [B, P], got %r' % (tuple(said_scores.shape),))
+    scores = said_scores.detach().float()
+    centred = scores - scores.mean(dim=-1, keepdim=True)
+    scale = scores.std(dim=-1, unbiased=False, keepdim=True) + GATE_STD_EPS
+    gate = floor + (1.0 - floor) * torch.sigmoid(-(centred / scale) / tau)
+    return gate.clamp(floor, 1.0).detach()
+
+
+def debiased_unsaid_attention(hidden_logits: torch.Tensor, gate: torch.Tensor,
+                              tau_unsaid: float = DEFAULT_TAU_UNSAID,
+                              beta: float = DEFAULT_SUPPRESSION_BETA) -> torch.Tensor:
+    """``softmax_p(r^U / tau_unsaid + beta * log(gate_i,p + eps))``.
+
+    Args:
+        hidden_logits: [B, C, P] positive hidden-semantic cosine ``r^U_{i,j,p}``.
+        gate: [B, P] own-prefix suppression gate (detached), broadcast over candidates.
+        tau_unsaid: positive temperature.
+        beta: suppression strength; ``beta == 0`` gives pure hidden-semantic attention.
+    """
+    tau = float(tau_unsaid)
+    if tau <= 0.0:
+        raise ValueError('tau_unsaid must be positive, got %r' % (tau_unsaid,))
+    if hidden_logits.dim() != 3 or gate.dim() != 2:
+        raise ValueError('expected hidden_logits [B, C, P] and gate [B, P], got %r and %r'
+                         % (tuple(hidden_logits.shape), tuple(gate.shape)))
+    if hidden_logits.shape[0] != gate.shape[0] or hidden_logits.shape[2] != gate.shape[1]:
+        raise ValueError('hidden_logits / gate mismatch: %r vs %r'
+                         % (tuple(hidden_logits.shape), tuple(gate.shape)))
+    logits = hidden_logits.float() / tau
+    if float(beta) != 0.0:
+        logits = logits + float(beta) * torch.log(gate.float() + GATE_LOG_EPS).unsqueeze(1)
+    return torch.softmax(logits, dim=-1)
+
+
+def said_coverage(attention: torch.Tensor, gate: torch.Tensor) -> torch.Tensor:
+    """``sum_p A_p * (1 - gate_p)``: how much attention lands on prefix-used patches.
+
+    Accepts ``attention`` as [B, P] or [B, C, P] with ``gate`` [B, P]. Diagnostic only
+    (never a loss). Lower under the gated attention than under the raw hidden-semantic
+    attention means the gate really pushed attention towards patches the current prefix
+    has used less.
+    """
+    weight = 1.0 - gate.float()
+    if attention.dim() == 3:
+        weight = weight.unsqueeze(1)
+    return (attention.float() * weight).sum(dim=-1)
+
+
+def pairwise_retrieval_loss(pair_scores: torch.Tensor) -> Dict[str, torch.Tensor]:
+    """Symmetric contrastive (missing-text retrieval) loss on a square score matrix."""
+    if pair_scores.dim() != 2 or pair_scores.shape[0] != pair_scores.shape[1]:
+        raise ValueError('pair_scores must be [N, N], got %r' % (tuple(pair_scores.shape),))
+    batch = pair_scores.shape[0]
+    if batch < 2:
+        return {'loss': pair_scores.sum() * 0.0, 'top1_i2t': None, 'top1_t2i': None,
+                'margin_i2t': None, 'margin_t2i': None, 'batch_size': batch}
+    labels = torch.arange(batch, device=pair_scores.device)
+    loss = 0.5 * (F.cross_entropy(pair_scores, labels) + F.cross_entropy(pair_scores.t(), labels))
+    with torch.no_grad():
+        def _stats(scores):
+            top1 = (scores.argmax(dim=1) == labels).float().mean()
+            diagonal = scores.diagonal()
+            off = (scores.sum(dim=1) - diagonal) / float(batch - 1)
+            return top1, (diagonal - off).mean()
+        top1_i2t, margin_i2t = _stats(pair_scores)
+        top1_t2i, margin_t2i = _stats(pair_scores.t())
+    return {'loss': loss, 'top1_i2t': top1_i2t, 'top1_t2i': top1_t2i,
+            'margin_i2t': margin_i2t, 'margin_t2i': margin_t2i, 'batch_size': batch}

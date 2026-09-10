@@ -232,16 +232,35 @@ class SALUModel(nn.Module):
         lambda_unsaid: float = 0.0,
         tau_unsaid: float = unsaid_core.DEFAULT_TAU_UNSAID,
         unsaid_residual_eps: float = unsaid_core.DEFAULT_RESIDUAL_EPS,
+        texts_full: Optional[torch.Tensor] = None,
+        texts_unsaid: Optional[torch.Tensor] = None,
+        has_unsaid: Optional[torch.Tensor] = None,
+        global_caption_view: str = 'prefix',
+        unsaid_mode: str = 'residual',
+        unsaid_gate_floor: float = unsaid_core.DEFAULT_GATE_FLOOR,
+        unsaid_gate_temperature: float = unsaid_core.DEFAULT_GATE_TEMPERATURE,
+        unsaid_suppression_beta: float = unsaid_core.DEFAULT_SUPPRESSION_BETA,
     ) -> Dict[str, torch.Tensor]:
         # lambda_unsaid == 0 must stay bit-for-bit the Said-only path: the branch is
         # skipped (not computed and multiplied by zero), so no extra q/k forward runs.
         unsaid_enabled = float(lambda_unsaid) != 0.0
+        if global_caption_view not in ('prefix', 'full'):
+            raise ValueError("global_caption_view must be 'prefix' or 'full'")
+        if unsaid_mode not in unsaid_core.UNSAID_MODES:
+            raise ValueError('unsaid_mode must be one of %r' % (unsaid_core.UNSAID_MODES,))
 
         z_global, patch_features = self.encode_router_input(images)
         text_features = self.clip.encode_text(texts)
 
         z_g = F.normalize(z_global, dim=-1)
         t = F.normalize(text_features, dim=-1)
+        # Phase 2.9A: the global objective may align against the full caption while the
+        # Said router keeps the sampled prefix. Default keeps the legacy prefix view.
+        t_global = t
+        if global_caption_view == 'full':
+            if texts_full is None:
+                raise ValueError("global_caption_view='full' requires texts_full")
+            t_global = F.normalize(self.clip.encode_text(texts_full), dim=-1)
 
         # own-caption attention: diagnostics for every mode, and the whole
         # objective in 'positive' mode. With Unsaid enabled the details variant is
@@ -258,7 +277,7 @@ class SALUModel(nn.Module):
 
         scale = self.clip.logit_scale.exp().clamp(max=100)
         loss_global = contrastive_loss(
-            gather_features_with_grad(z_g), gather_features_with_grad(t), scale
+            gather_features_with_grad(z_g), gather_features_with_grad(t_global), scale
         )
 
         zero = torch.zeros((), device=images.device, dtype=loss_global.dtype)
@@ -284,10 +303,20 @@ class SALUModel(nn.Module):
             route_margin = evidence_margin = zero
 
         if unsaid_enabled:
-            unsaid = self.unsaid_branch(
-                unsaid_scores, A_own, patch_features, z_g, z_s_own,
-                tau_unsaid=tau_unsaid, unsaid_residual_eps=unsaid_residual_eps,
-            )
+            if unsaid_mode == 'debiased_suffix':
+                if texts_unsaid is None or has_unsaid is None:
+                    raise ValueError("unsaid_mode='debiased_suffix' requires texts_unsaid and has_unsaid")
+                unsaid = self.debiased_unsaid_branch(
+                    unsaid_scores, A_own, patch_features, self.clip.encode_text(texts_unsaid),
+                    has_unsaid, scale, tau_unsaid=tau_unsaid,
+                    gate_floor=unsaid_gate_floor, gate_temperature=unsaid_gate_temperature,
+                    beta=unsaid_suppression_beta,
+                )
+            else:
+                unsaid = self.unsaid_branch(
+                    unsaid_scores, A_own, patch_features, z_g, z_s_own,
+                    tau_unsaid=tau_unsaid, unsaid_residual_eps=unsaid_residual_eps,
+                )
             loss_unsaid = unsaid['loss_unsaid']
             loss_total = (lambda_global * loss_global + lambda_said * loss_said
                           + float(lambda_unsaid) * loss_unsaid)
@@ -321,9 +350,121 @@ class SALUModel(nn.Module):
             }
             # disabled branch: None (never a fabricated measurement)
             for key in unsaid_core.DIAGNOSTIC_KEYS:
-                out[key] = None if unsaid is None else unsaid[key]
+                out[key] = None if unsaid is None else unsaid.get(key)
             out.update(batch_representation_gaps(z_g, z_s_own, t))
         return out
+
+    # ------------------------------------------------------------------ #
+    # Phase 2.9A: debiased suffix Unsaid (hidden-semantic positive attention)
+    # ------------------------------------------------------------------ #
+    def debiased_unsaid_branch(self, scores_said, attention_said, patch_features, text_unsaid,
+                               has_unsaid, scale, tau_unsaid=unsaid_core.DEFAULT_TAU_UNSAID,
+                               gate_floor=unsaid_core.DEFAULT_GATE_FLOOR,
+                               gate_temperature=unsaid_core.DEFAULT_GATE_TEMPERATURE,
+                               beta=unsaid_core.DEFAULT_SUPPRESSION_BETA) -> Dict[str, torch.Tensor]:
+        """Unsaid alignment on the *withheld suffix sentence* of each sample.
+
+        ``gate`` comes from the sample's own prefix Said scores and is detached; the
+        direction of Unsaid attention is decided by the positive hidden-semantic score
+        ``r^U`` (same ``W_q`` / ``W_k`` as Said, no new projection). Only samples with
+        ``has_unsaid`` take part; a valid batch below 2 returns a differentiable zero.
+        """
+        gate = unsaid_core.said_suppression_gate(scores_said, gate_floor, gate_temperature)
+        q_hidden = F.normalize(self.said_router.q_proj(text_unsaid), dim=-1)     # [B, D]
+        k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)  # [B, P, D]
+        hidden_logits = torch.einsum('jd,ipd->ijp', q_hidden, k_hidden)           # [B, B, P]
+
+        index = torch.nonzero(has_unsaid.reshape(-1).bool(), as_tuple=False).flatten()
+        valid_batch = int(index.numel())
+        empty = {key: None for key in unsaid_core.DIAGNOSTIC_KEYS}
+        empty.update({'loss_unsaid': patch_features.sum() * 0.0, 'unsaid_valid_batch_size': valid_batch,
+                      'unsaid_valid_ratio': has_unsaid.float().mean().detach()})
+        if valid_batch < 2:
+            return empty
+
+        sub_patches = patch_features[index]
+        sub_gate = gate[index]
+        sub_scores_said = scores_said[index]
+        sub_attention_said = attention_said[index]
+        sub_hidden = hidden_logits[index][:, index]                              # [Bu, Bu, P]
+        A_unsaid = unsaid_core.debiased_unsaid_attention(sub_hidden, sub_gate, tau_unsaid, beta)
+        z_unsaid = F.normalize(torch.einsum('ijp,ipd->ijd', A_unsaid, sub_patches), dim=-1)
+        t_unsaid = F.normalize(text_unsaid[index], dim=-1)
+        pair_scores = scale * torch.einsum('ijd,jd->ij', z_unsaid, t_unsaid)
+        retrieval = unsaid_core.pairwise_retrieval_loss(pair_scores)
+
+        with torch.no_grad():
+            diagonal = torch.arange(valid_batch, device=pair_scores.device)
+            A_own_pair = A_unsaid[diagonal, diagonal]                            # [Bu, P]
+            raw_attention = torch.softmax(sub_hidden / float(tau_unsaid), dim=-1)
+            A_raw_pair = raw_attention[diagonal, diagonal]
+            entropy_said = unsaid_core.attention_entropy(sub_attention_said)
+            entropy_unsaid = unsaid_core.attention_entropy(A_own_pair)
+            diagnostics = {
+                'unsaid_valid_ratio': has_unsaid.float().mean().detach(),
+                'unsaid_valid_batch_size': torch.tensor(float(valid_batch), device=pair_scores.device),
+                'unsaid_retrieval_top1_i2t': retrieval['top1_i2t'],
+                'unsaid_retrieval_top1_t2i': retrieval['top1_t2i'],
+                'unsaid_retrieval_margin_i2t': retrieval['margin_i2t'],
+                'unsaid_retrieval_margin_t2i': retrieval['margin_t2i'],
+                'unsaid_attention_entropy': entropy_unsaid.mean(),
+                'unsaid_effective_patch_count': entropy_unsaid.exp().mean(),
+                'unsaid_attention_max': A_own_pair.max(dim=-1).values.mean(),
+                'said_attention_entropy': entropy_said.mean(),
+                'said_effective_patch_count': entropy_said.exp().mean(),
+                'said_unsaid_attention_overlap':
+                    unsaid_core.attention_overlap(sub_attention_said, A_own_pair).mean(),
+                'said_unsaid_attention_jsd':
+                    unsaid_core.attention_jsd(sub_attention_said, A_own_pair).mean(),
+                'unsaid_gate_mean': sub_gate.mean(),
+                'unsaid_gate_min': sub_gate.min(),
+                'unsaid_gate_max': sub_gate.max(),
+                'said_coverage_under_raw': unsaid_core.said_coverage(A_raw_pair, sub_gate).mean(),
+                'said_coverage_under_gated': unsaid_core.said_coverage(A_own_pair, sub_gate).mean(),
+            }
+        return {'loss_unsaid': retrieval['loss'], **diagnostics}
+
+    # ------------------------------------------------------------------ #
+    # scoring APIs (Phase 2.9A); standard encode_image / encode_text unchanged
+    # ------------------------------------------------------------------ #
+    def score_said_conditioned(self, patch_features: torch.Tensor,
+                               texts: torch.Tensor) -> torch.Tensor:
+        """[B, C] Said score matrix: image ``i`` routed by caption ``j``, scored on ``t_j``."""
+        z_pair, _ = self.said_router.route_pairwise(texts, patch_features,
+                                                    chunk_size=self.pair_chunk_size)
+        scale = self.clip.logit_scale.exp().clamp(max=100)
+        return scale * torch.einsum('ijd,jd->ij', z_pair, F.normalize(texts, dim=-1))
+
+    def score_unsaid_candidates(self, patch_features: torch.Tensor, prefix_texts: torch.Tensor,
+                               candidate_texts: torch.Tensor,
+                               tau_unsaid: float = unsaid_core.DEFAULT_TAU_UNSAID,
+                               gate_floor: float = unsaid_core.DEFAULT_GATE_FLOOR,
+                               gate_temperature: float = unsaid_core.DEFAULT_GATE_TEMPERATURE,
+                               beta: float = unsaid_core.DEFAULT_SUPPRESSION_BETA,
+                               return_details: bool = False):
+        """[B, C] pair scores for (image i, candidate missing text j).
+
+        The gate is built from each image's own prefix (``prefix_texts``); the attention
+        direction comes from the positive hidden-semantic score against the candidates.
+        Returns the score matrix, or ``{'scores', 'attention', 'gate', ...}`` when
+        ``return_details`` is set.
+        """
+        with torch.no_grad():
+            details = self.said_router.forward_with_details(
+                F.normalize(prefix_texts, dim=-1), patch_features)
+        gate = unsaid_core.said_suppression_gate(details['scores'], gate_floor, gate_temperature)
+        q_hidden = F.normalize(self.said_router.q_proj(F.normalize(candidate_texts, dim=-1)), dim=-1)
+        k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)
+        hidden_logits = torch.einsum('jd,ipd->ijp', q_hidden, k_hidden)
+        attention = unsaid_core.debiased_unsaid_attention(hidden_logits, gate, tau_unsaid, beta)
+        z_unsaid = F.normalize(torch.einsum('ijp,ipd->ijd', attention, patch_features), dim=-1)
+        scale = self.clip.logit_scale.exp().clamp(max=100)
+        scores = scale * torch.einsum('ijd,jd->ij', z_unsaid,
+                                      F.normalize(candidate_texts, dim=-1))
+        if not return_details:
+            return scores
+        return {'scores': scores, 'attention': attention, 'gate': gate,
+                'hidden_logits': hidden_logits}
 
     def unsaid_branch(
         self,
@@ -373,11 +514,11 @@ class SALUModel(nn.Module):
 
     def forward(self, images, texts, lambda_global: float = 1.0, lambda_said: float = 1.0,
                 lambda_unsaid: float = 0.0, tau_unsaid: float = unsaid_core.DEFAULT_TAU_UNSAID,
-                unsaid_residual_eps: float = unsaid_core.DEFAULT_RESIDUAL_EPS):
+                unsaid_residual_eps: float = unsaid_core.DEFAULT_RESIDUAL_EPS, **kwargs):
         return self.forward_train(
             images, texts, lambda_global=lambda_global, lambda_said=lambda_said,
             lambda_unsaid=lambda_unsaid, tau_unsaid=tau_unsaid,
-            unsaid_residual_eps=unsaid_residual_eps,
+            unsaid_residual_eps=unsaid_residual_eps, **kwargs,
         )
 
     def extra_repr(self) -> str:

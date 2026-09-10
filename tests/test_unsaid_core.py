@@ -249,7 +249,10 @@ def test_unsaid_is_finite_under_bf16_autocast():
     assert torch.isfinite(out['loss_unsaid'])
     assert torch.isfinite(out['loss_total'])
     for key in unsaid_core.DIAGNOSTIC_KEYS:
-        assert torch.isfinite(out[key]), key
+        value = out[key]
+        if value is None:                     # diagnostics of the other Unsaid mode
+            continue
+        assert torch.isfinite(value), key
 
 
 # --------------------------------------------------------------------------- #
