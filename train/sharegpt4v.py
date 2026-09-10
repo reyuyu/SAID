@@ -15,15 +15,23 @@ json_name = os.environ.get('SHARE4V_JSON', 'share-captioner_coco_lcs_sam_1246k_1
 image_root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V/')
 
 class share4v_train_dataset(data.Dataset):
-    def __init__(self, data4v_root=data4v_root, json_name=json_name, image_root=image_root):
+    def __init__(self, data4v_root=data4v_root, json_name=json_name, image_root=image_root,
+                 strict_manifest=None, preprocess=None):
         self.data4v_root = data4v_root
         self.json_name = json_name
         self.image_root = image_root
         self.total_len = 1000
+        strict_manifest = strict_manifest or os.environ.get('SHARE4V_FULL_AUDIT')
+        if strict_manifest:
+            from tools.data.full_data_gate import require_full_data
+            require_full_data(strict_manifest, os.path.join(data4v_root, json_name), image_root)
         with open(os.path.join(data4v_root, json_name), 'r', encoding='utf8') as fp:
             self.json_data = json.load(fp)[self.total_len:]
-        _, self.preprocess = clip.load("ViT-L/14")
-        del _
+        if preprocess is None:
+            _, self.preprocess = clip.load("ViT-L/14")
+            del _
+        else:
+            self.preprocess = preprocess
         print('share4v_train_dataset loaded, total length:', len(self.json_data))
 
     def __len__(self):

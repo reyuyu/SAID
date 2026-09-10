@@ -90,11 +90,16 @@ def main():
     from representation_balance_page import style
     style()
     pages = {'表征平衡监控': '表征平衡监控', '训练状态': '训练状态',
+             '数据完整性': '数据完整性',
              'Said attention': '历史：Said 注意力',
              'Semantic Grounding Audit': '历史：语义定位审计',
              'Local Semantic Evidence': '历史：局部语义证据',
              'Local-Evidence Router': '历史：Local-Evidence Router'}
     page = st.sidebar.radio('页面导航', list(pages), format_func=pages.get)
+    if page == '数据完整性':
+        from data_integrity_page import main as integrity_main
+        integrity_main()
+        return
     if page == '表征平衡监控':
         from representation_balance_page import main as balance_main
         balance_main()
