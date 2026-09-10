@@ -88,6 +88,51 @@ class SaidRouter(nn.Module):
         return A_s, z_s
 
     # ------------------------------------------------------------------ #
+    # own caption with details: same numbers as forward(), plus raw scores
+    # ------------------------------------------------------------------ #
+    def forward_with_details(
+        self,
+        text_feature: torch.Tensor,
+        patch_features: torch.Tensor,
+    ) -> dict:
+        """Own-caption routing plus the raw (pre-temperature) cosine scores.
+
+        ``forward()`` is untouched. This variant exists for the Phase 2.8A Unsaid
+        branch, which must reuse the *same* ``q`` / ``k`` / ``s`` rather than create
+        its own ``q_u`` / ``k_u`` projection. ``s = q^T k`` is the un-temperatured
+        cosine score, and the attention / Said feature are produced with the same
+        operations in the same order as ``forward()`` (so they are bit-identical).
+
+        Returns:
+            dict with ``scores`` [B, N], ``attention`` [B, N] and ``said`` [B, D].
+        """
+        if text_feature.dim() != 2:
+            raise ValueError('text_feature must be [B, D], got %r' % (tuple(text_feature.shape),))
+        if patch_features.dim() != 3:
+            raise ValueError('patch_features must be [B, N, D], got %r' % (tuple(patch_features.shape),))
+        if text_feature.shape[0] != patch_features.shape[0]:
+            raise ValueError(
+                'batch mismatch: text_feature %r vs patch_features %r'
+                % (tuple(text_feature.shape), tuple(patch_features.shape))
+            )
+        if text_feature.shape[-1] != patch_features.shape[-1]:
+            raise ValueError(
+                'dim mismatch: text_feature %r vs patch_features %r'
+                % (tuple(text_feature.shape), tuple(patch_features.shape))
+            )
+
+        q = F.normalize(self.q_proj(text_feature), dim=-1)       # [B, D]
+        k = F.normalize(self.k_proj(patch_features), dim=-1)     # [B, N, D]
+        scores = torch.einsum('bd,bnd->bn', q, k)                # raw cosine, no temperature
+        attention = F.softmax(scores / self.tau_said, dim=-1)    # [B, N]
+        said = torch.einsum('bn,bnd->bd', attention, patch_features)
+        return {
+            'scores': scores,
+            'attention': attention,
+            'said': F.normalize(said, dim=-1),
+        }
+
+    # ------------------------------------------------------------------ #
     # pairwise routing: every (image i, caption j) pair (Phase 2.2)
     # ------------------------------------------------------------------ #
     def route_pairwise(

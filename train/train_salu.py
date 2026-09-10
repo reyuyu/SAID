@@ -33,6 +33,21 @@ Validation cadence (Phase 2.7B protocol):
   * ``--legacy_eval_coco`` additionally runs the legacy SmartCLIP evaluator for
     protocol comparison.
 
+Unsaid (Phase 2.8A, opt-in, no new parameters):
+  * ``--lambda_unsaid`` (default ``0.0``) adds the minimal Unsaid complement loss
+    ``L_U = mean_valid[1 - cos(z_U, target_U)]``, where ``z_U`` pools the same patch
+    features with the same Said raw scores but anti-routed
+    (``A^U = softmax(-s / tau_unsaid)``) and ``target_U`` is the stop-gradient
+    complement of the Said direction inside the global representation.
+  * ``--tau_unsaid`` (default ``0.07``) and ``--unsaid_residual_eps`` (default
+    ``1e-4``) control that branch.
+  * ``--lambda_unsaid 0`` skips the branch entirely, so the run stays the Said-only
+    run: same losses, same RNG use, same speed. Unsaid diagnostics are then logged as
+    ``null`` behind ``unsaid_enabled = false`` instead of fabricated numbers.
+  * Unsaid monitors (loss, valid ratio, residual norm, target cosine, said/unsaid
+    cosine, entropies, effective patch counts, attention overlap, attention JSD) are
+    monitoring only and never enter a loss.
+
 Example (4 GPUs, 676K no-SAM subset)::
 
     CUDA_VISIBLE_DEVICES=0,1,2,3 \
@@ -68,6 +83,7 @@ for _p in (REPO_ROOT, TRAIN_DIR):
 
 from model import longclip  # noqa: E402
 from model.salu_model import SALUModel  # noqa: E402
+from model.unsaid_core import DIAGNOSTIC_KEYS as UNSAID_DIAGNOSTIC_KEYS  # noqa: E402
 from sharegpt4v import share4v_train_dataset, share4v_val_dataset  # noqa: E402
 from train_utils import eval_coco  # noqa: E402  (legacy SmartCLIP-style COCO evaluation)
 from eval.retrieval.coco_retrieval import (  # noqa: E402
@@ -308,6 +324,12 @@ def parse_args(argv=None):
     parser.add_argument('--head_lr', type=float, default=1e-4)
     parser.add_argument('--lambda_global', type=float, default=1.0)
     parser.add_argument('--lambda_said', type=float, default=1.0)
+    parser.add_argument('--lambda_unsaid', type=float, default=0.0,
+                        help='weight of the minimal Unsaid complement loss (0 = Said-only path)')
+    parser.add_argument('--tau_unsaid', type=float, default=0.07,
+                        help='temperature of the Unsaid anti-routing softmax')
+    parser.add_argument('--unsaid_residual_eps', type=float, default=1e-4,
+                        help='residual-norm threshold below which an Unsaid target is invalid')
     parser.add_argument('--tau_said', type=float, default=0.07)
     parser.add_argument('--said_loss_mode', default='identifiable', choices=['positive', 'identifiable'],
                         help='positive = Phase 2 ablation; identifiable = Phase 2.2 routing objective')
@@ -496,7 +518,10 @@ def main():
             scale_factor = set_lrs(optimizer, base_lrs, step, args.warmup_length, total_steps)
             t_compute0 = time.time()
             with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=use_amp):
-                out = ddp_model(images, text_tokens, args.lambda_global, args.lambda_said)
+                out = ddp_model(images, text_tokens, args.lambda_global, args.lambda_said,
+                                lambda_unsaid=args.lambda_unsaid,
+                                tau_unsaid=args.tau_unsaid,
+                                unsaid_residual_eps=args.unsaid_residual_eps)
                 loss = out['loss_total']
             if scaler.is_enabled():
                 scaler.scale(loss).backward()
@@ -526,6 +551,8 @@ def main():
                     'loss_said': float(out['loss_said'].detach()),
                     'loss_route': float(out['loss_route'].detach()),
                     'loss_evidence': float(out['loss_evidence'].detach()),
+                    'loss_unsaid': float(out['loss_unsaid'].detach()),
+                    'unsaid_enabled': bool(out['unsaid_enabled']),
                     'route_top1_acc': float(out['route_top1_acc'].detach()),
                     'evidence_top1_acc': float(out['evidence_top1_acc'].detach()),
                     'route_margin': float(out['route_margin'].detach()),
@@ -546,6 +573,13 @@ def main():
                             'relative_balancing_gain'):
                     record[key] = float(out[key])
                 record['representation_gap_scope'] = 'rank0_local_training_batch'
+                # Unsaid monitors: None (JSON null) when the branch is disabled, so a
+                # skipped branch can never be read as a measurement.
+                for key in UNSAID_DIAGNOSTIC_KEYS:
+                    value = out.get(key)
+                    record[key] = None if value is None else float(value)
+                if torch.cuda.is_available():
+                    record['peak_gpu_mem_gb'] = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
                 record['sec_per_step_avg'] = throughput['compute_sec_per_step']  # legacy alias (compute-only)
                 with open(log_path, 'a') as fp:
                     fp.write(json.dumps(record, sort_keys=True) + '\n')
