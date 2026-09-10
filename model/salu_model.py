@@ -468,7 +468,12 @@ class SALUModel(nn.Module):
             raise ValueError('candidate_chunk_size must be >= 0, got %r'
                              % (candidate_chunk_size,))
         k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)   # [I, P, D]
-        q_hidden = F.normalize(self.said_router.q_proj(candidate_texts), dim=-1)  # [C, D]
+        # Phase 2.9B.1a: the hidden text goes through the *same* pipeline as Said --
+        # t_U = normalize(E_T(U)) first, then q_U = normalize(W_q t_U). The frozen
+        # algorithm spec normalises before the shared affine projection, so the raw text
+        # feature must never be fed to q_proj directly.
+        candidate_unit = F.normalize(candidate_texts, dim=-1)                    # [C, D]
+        q_hidden = F.normalize(self.said_router.q_proj(candidate_unit), dim=-1)  # [C, D]
         rows = torch.arange(patch_features.shape[0], device=patch_features.device)
         score_chunks, own_attention, own_raw_attention = [], [], []
         for start in range(0, n_candidates, step):
@@ -477,8 +482,8 @@ class SALUModel(nn.Module):
             attention = unsaid_core.debiased_unsaid_attention(logits, gate, tau_unsaid, beta)
             pooled = torch.einsum('icp,ipd->icd', attention, patch_features)
             z_chunk = F.normalize(pooled, dim=-1)
-            text_chunk = F.normalize(candidate_texts[start:stop], dim=-1)
-            score_chunks.append(scale * torch.einsum('icd,cd->ic', z_chunk, text_chunk))
+            score_chunks.append(scale * torch.einsum('icd,cd->ic', z_chunk,
+                                                     candidate_unit[start:stop]))
             if own_rows is not None:
                 inside = (own_rows >= start) & (own_rows < stop)
                 if bool(inside.any()):
@@ -528,9 +533,11 @@ class SALUModel(nn.Module):
         if not return_details:
             return scores
         if not chunked:
-            # legacy Phase 2.9A payload (unchunked: the full attention is affordable)
+            # legacy Phase 2.9A payload (unchunked: the full attention is affordable),
+            # computed with the same normalised-text pipeline as the shared helper
             with torch.no_grad():
-                q_hidden = F.normalize(self.said_router.q_proj(candidate_texts), dim=-1)
+                q_hidden = F.normalize(self.said_router.q_proj(F.normalize(candidate_texts, dim=-1)),
+                                       dim=-1)
                 k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)
                 hidden_logits = torch.einsum('jd,ipd->ijp', q_hidden, k_hidden)
                 attention = unsaid_core.debiased_unsaid_attention(hidden_logits, gate,

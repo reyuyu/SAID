@@ -41,8 +41,11 @@ def test_chunked_unsaid_matches_the_unchunked_result(chunk_size):
     base, base_grads = run_branch(0)
     chunked, chunked_grads = run_branch(chunk_size)
 
-    # the loss itself is bit-identical: chunking only splits the candidate dimension
-    assert torch.equal(base['loss_unsaid'], chunked['loss_unsaid'])
+    # chunking only splits the candidate dimension; tiny differences can still appear
+    # because the einsum kernel differs for narrow chunks (documented 1e-6 bound)
+    loss_diff = abs(float(base['loss_unsaid']) - float(chunked['loss_unsaid']))
+    assert loss_diff <= EQUIVALENCE_ATOL, loss_diff
+    assert loss_diff / max(1.0, abs(float(base['loss_unsaid']))) <= EQUIVALENCE_ATOL
     assert float(base['unsaid_valid_batch_size']) == float(chunked['unsaid_valid_batch_size']) == 5.0
     for key in ('unsaid_retrieval_top1_i2t', 'unsaid_retrieval_top1_t2i',
                 'unsaid_retrieval_margin_i2t', 'unsaid_retrieval_margin_t2i',
@@ -188,6 +191,91 @@ def test_own_positive_attention_order_across_remainder_chunks():
                           torch.stack([torch.softmax(legacy['hidden_logits'][k, k] / 0.07, dim=-1)
                                        for k in range(5)]), atol=EQUIVALENCE_ATOL)
     assert chunked['own_attention'].shape == diagonal.shape == (5, patch_features_count(model))
+
+
+def test_hidden_text_is_normalized_before_the_shared_projection():
+    """Phase 2.9B.1a: q_U = normalize(W_q normalize(E_T(U))), never W_q on the raw feature."""
+    from model import unsaid_core
+
+    model, patches, prefix, _ = api_inputs(images=3)
+    torch.manual_seed(5)
+    candidates = torch.randn(3, DIM_LOCAL) * torch.tensor([[1.0], [7.5], [0.05]])
+    assert model.said_router.q_proj.bias.abs().sum().item() > 0      # affine with bias
+
+    candidate_unit = torch.nn.functional.normalize(candidates, dim=-1)
+    q_reference = torch.nn.functional.normalize(
+        model.said_router.q_proj(candidate_unit), dim=-1)
+    q_wrong = torch.nn.functional.normalize(model.said_router.q_proj(candidates), dim=-1)
+    assert not torch.allclose(q_reference, q_wrong, atol=1e-4)       # the old form differs
+
+    chunked = model.score_unsaid_candidates(patches, prefix, candidates, candidate_chunk_size=2)
+    with torch.no_grad():
+        details = model.said_router.forward_with_details(
+            torch.nn.functional.normalize(prefix, dim=-1), patches)
+        gate = unsaid_core.said_suppression_gate(details['scores'], 0.1, 1.0)
+        k_hidden = torch.nn.functional.normalize(model.said_router.k_proj(patches), dim=-1)
+        logits = torch.einsum('jd,ipd->ijp', q_reference, k_hidden)
+        attention = unsaid_core.debiased_unsaid_attention(logits, gate, 0.07, 1.0)
+        z = torch.nn.functional.normalize(torch.einsum('ijp,ipd->ijd', attention, patches), dim=-1)
+        scale = model.clip.logit_scale.exp().clamp(max=100)
+        manual = scale * torch.einsum('ijd,jd->ij', z, candidate_unit)
+    assert torch.allclose(chunked, manual, atol=SCORE_ATOL, rtol=SCORE_RTOL)
+
+    # and the wrong form really is a different score matrix
+    logits_wrong = torch.einsum('jd,ipd->ijp', q_wrong, k_hidden)
+    attention_wrong = unsaid_core.debiased_unsaid_attention(logits_wrong, gate, 0.07, 1.0)
+    z_wrong = torch.nn.functional.normalize(
+        torch.einsum('ijp,ipd->ijd', attention_wrong, patches), dim=-1)
+    wrong_scores = scale * torch.einsum('ijd,jd->ij', z_wrong, candidate_unit)
+    assert not torch.allclose(chunked, wrong_scores, atol=1e-4)
+
+
+DIM_LOCAL = 8
+
+
+def test_hidden_text_normalization_matches_the_said_pipeline():
+    """Said and Unsaid must both feed L2-normalised text into the shared q_proj."""
+    from model import unsaid_core
+
+    model, patches, prefix, candidates = api_inputs(images=3)
+    with torch.no_grad():
+        said_details = model.said_router.forward_with_details(
+            torch.nn.functional.normalize(prefix, dim=-1), patches)
+        q_said = torch.nn.functional.normalize(
+            model.said_router.q_proj(torch.nn.functional.normalize(prefix, dim=-1)), dim=-1)
+        # the Said path's own q used by the router equals the normalised-text formula
+        assert torch.allclose(said_details['scores'],
+                              torch.einsum('id,ipd->ip', q_said,
+                                           torch.nn.functional.normalize(
+                                               model.said_router.k_proj(patches), dim=-1)),
+                              atol=EQUIVALENCE_ATOL)
+        details = model.score_unsaid_candidates(patches, prefix, candidates,
+                                                candidate_chunk_size=2, return_details=True)
+        q_unsaid = torch.nn.functional.normalize(
+            model.said_router.q_proj(torch.nn.functional.normalize(candidates, dim=-1)), dim=-1)
+    assert details['own_attention'] is not None
+    assert torch.isfinite(details['scores']).all()
+    # same projection, same normalisation rule on both sides
+    assert q_said.shape == q_unsaid.shape
+    assert float(q_said.norm(dim=-1).mean()) == pytest.approx(1.0, abs=1e-5)
+    assert float(q_unsaid.norm(dim=-1).mean()) == pytest.approx(1.0, abs=1e-5)
+
+
+def test_normalized_text_path_keeps_gradients_alive():
+    torch.manual_seed(6)
+    model = build_model()
+    images, tokens = make_batch(6)
+    out = model.forward_train(images, tokens, 1.0, 1.0, lambda_unsaid=1.0,
+                              unsaid_mode='debiased_suffix', global_caption_view='full',
+                              texts_full=tokens.flip(0), texts_unsaid=tokens.flip(1),
+                              has_unsaid=HAS_UNSAID, unsaid_candidate_chunk_size=2)
+    out['loss_unsaid'].backward()
+    parameters = dict(model.named_parameters())
+    for name in ('said_router.q_proj.weight', 'said_router.k_proj.weight',
+                 'clip.patch_proj.weight', 'clip.text_proj.weight'):
+        grad = parameters[name].grad
+        assert grad is not None and torch.isfinite(grad).all(), name
+        assert grad.abs().sum().item() > 0, name
 
 
 def test_explicit_gap_diagnostics_are_finite_and_never_in_the_loss():
