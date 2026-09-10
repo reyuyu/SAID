@@ -22,10 +22,14 @@ for _p in (REPO_ROOT, os.path.join(REPO_ROOT, 'train')):
 from eval.unsaid_mechanism_probe import (  # noqa: E402
     best_patch_cosine,
     distribution,
+    nnls,
+    nonnegative_cone_reachability,
     parse_checkpoints,
     probe_variant,
     softmax_mixture_oracle,
     span_reachability,
+    span_tolerance,
+    span_tolerance_sensitivity,
 )
 from eval.validation_protocol import VARIANTS  # noqa: E402
 from model.salu_modules import SaidRouter  # noqa: E402
@@ -286,14 +290,22 @@ def test_probe_reports_reachability_layers_and_gaps(cohort):
     samples, root = cohort
     record = run_probe(_ProbeStub(), samples, root)
     reach = record['metrics']['reachability']
-    for key in ('c_current', 'c_patch_max', 'c_span', 'c_softmax_oracle',
-                'c_softmax_oracle_init', 'patch_span_rank'):
+    for key in ('cohort_n', 'c_current', 'c_patch_max', 'c_span', 'patch_span_rank',
+                'oracle_subset_n', 'oracle_subset_current', 'oracle_subset_patch_max',
+                'oracle_subset_span', 'c_softmax_oracle', 'c_softmax_oracle_init', 'c_cone',
+                'router_gap', 'optimization_gap', 'oracle_optimization_gap',
+                'positive_mixture_gap', 'positive_constraint_gap'):
         assert key in reach, key
-    assert reach['optimization_gap'] is not None
+    assert reach['optimization_gap'] == reach['router_gap']
+    assert reach['router_gap'] is not None
+    assert reach['oracle_optimization_gap'] is not None
     assert reach['positive_mixture_gap'] is not None
-    # c_span is a (loose) bound of any positive mixture, so the oracle stays below it
-    assert reach['c_softmax_oracle']['mean'] <= reach['c_span']['mean'] + 1e-6
+    assert reach['positive_constraint_gap'] is not None
+    # the cone relaxes the simplex: no positive mixture may beat it
+    assert reach['c_cone']['mean'] + 1e-6 >= reach['c_softmax_oracle']['mean']
+    assert reach['c_softmax_oracle']['mean'] <= reach['oracle_subset_span']['mean'] + 1e-6
     assert record['oracle']['samples'] == 2 and record['oracle']['steps'] == 20
+    assert record['metrics']['span_tolerance']['standard_factor'] == 1.0
     assert set(record['samples_detail']) >= {'valid', 'c_current', 'c_patch_max', 'c_span',
                                              'residual_norm', 'said_unsaid_cosine', 'span_rank'}
     assert all(0.0 <= value <= 1.0 + 1e-6 for value in record['samples_detail']['c_span'])
@@ -323,3 +335,130 @@ def test_degenerate_residual_yields_no_valid_samples_and_no_nan(cohort):
     assert all(math.isfinite(value) for value in _all_numbers(record))
     # attention diagnostics still exist (they do not depend on the target)
     assert record['metrics']['said_attention_entropy']['n'] == len(samples)
+
+
+# --------------------------------------------------------------------------- #
+# H. oracle subset consistency: every gap comes from the same samples
+# --------------------------------------------------------------------------- #
+def test_oracle_gaps_use_only_the_oracle_subset(cohort):
+    samples, root = cohort
+    record = run_probe(_ProbeStub(), samples, root, oracle_samples=2)
+    reach = record['metrics']['reachability']
+
+    assert reach['cohort_n'] == record['n_valid'] == len(samples)
+    assert reach['oracle_subset_n'] == 2                      # a strict subset
+    assert reach['oracle_subset_valid_indices'] == [0, 1]
+    assert record['oracle']['valid_indices'] == [0, 1]
+    assert reach['c_current']['n'] == len(samples)
+    assert reach['oracle_subset_current']['n'] == 2
+    assert reach['oracle_subset_patch_max']['n'] == 2
+    assert reach['oracle_subset_span']['n'] == 2
+
+    # the per-sample values recorded for the same subset reproduce every gap exactly
+    values = record['samples_detail']
+    subset_current = [values['c_current'][index] for index in reach['oracle_subset_valid_indices']]
+    subset_span = [values['c_span'][index] for index in reach['oracle_subset_valid_indices']]
+    oracle_mean = reach['c_softmax_oracle']['mean']
+    assert reach['router_gap'] == pytest.approx(
+        oracle_mean - sum(subset_current) / len(subset_current), abs=1e-6)
+    assert reach['optimization_gap'] == reach['router_gap']
+    assert reach['oracle_optimization_gap'] == pytest.approx(
+        reach['c_cone']['mean'] - oracle_mean, abs=1e-6)
+    assert reach['positive_mixture_gap'] == pytest.approx(
+        sum(subset_span) / len(subset_span) - oracle_mean, abs=1e-6)
+    assert reach['positive_constraint_gap'] == pytest.approx(
+        sum(subset_span) / len(subset_span) - reach['c_cone']['mean'], abs=1e-6)
+
+    # regression guard: the old buggy definition mixed a 2-sample oracle mean with the
+    # 4-sample cohort mean, which is a different number here
+    buggy = oracle_mean - reach['c_current']['mean']
+    assert abs(buggy - reach['router_gap']) > 1e-9
+
+
+# --------------------------------------------------------------------------- #
+# I. numerical rank tolerance
+# --------------------------------------------------------------------------- #
+def test_numerical_rank_uses_the_standard_tolerance():
+    patches = torch.zeros(1, 4, 8)
+    patches[0, 0, 0] = 1.0
+    patches[0, 1, 1] = 1.0
+    patches[0, 2, 2] = 1e-9            # float32 noise: below the standard tolerance
+    target = F.normalize(torch.tensor([[1.0, 1.0, 1e-9, 0.0, 0.0, 0.0, 0.0, 0.0]]), dim=-1)
+
+    assert span_tolerance(1.0, (4, 8), 1.0) == pytest.approx(8 * float(torch.finfo(torch.float32).eps))
+    _, standard_rank = span_reachability(patches, target, tol_factor=1.0)
+    assert standard_rank[0].item() == 2
+    permissive_span, permissive_rank = span_reachability(patches, target, tol_factor=1e-6)
+    assert permissive_rank[0].item() == 3     # the old 1e-6 factor kept pure noise
+    standard_span, _ = span_reachability(patches, target, tol_factor=1.0)
+    assert standard_span[0].item() <= permissive_span[0].item() + 1e-6
+
+
+def test_span_tolerance_sensitivity_reports_stability():
+    torch.manual_seed(9)
+    patches = torch.randn(3, 6, 16)
+    target = F.normalize(0.5 * patches[:, 2] + 0.5 * patches[:, 5], dim=-1)
+    sensitivity = span_tolerance_sensitivity(patches, target)
+    assert set(sensitivity['factors']) == {'0.1x', '1x', '10x'}
+    assert sensitivity['standard_factor'] == 1.0
+    assert sensitivity['rank_identical_fraction'] == 1.0
+    assert sensitivity['stable'] is True
+    assert sensitivity['c_span_mean_max_abs_diff'] == pytest.approx(0.0, abs=1e-6)
+    assert sensitivity['c_span_mean_relative_spread'] < 1e-3
+
+    deficient = torch.zeros(1, 2, 8)
+    deficient[0, 0, 0] = 1.0
+    deficient[0, 1, 1] = 1e-7                 # right at the edge of the standard tolerance
+    edge = span_tolerance_sensitivity(deficient,
+                                      F.normalize(torch.tensor([[1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]),
+                                                  dim=-1))
+    assert edge['rank_identical_fraction'] == 0.0
+    assert edge['stable'] is False
+    assert edge['factors']['0.1x']['span_rank']['median'] == 2
+    assert edge['factors']['10x']['span_rank']['median'] == 1
+
+
+# --------------------------------------------------------------------------- #
+# J. exact non-negative cone reachability (Lawson-Hanson NNLS)
+# --------------------------------------------------------------------------- #
+def test_nnls_satisfies_kkt_conditions_and_is_deterministic():
+    rng = np.random.default_rng(0)
+    A = rng.normal(size=(16, 6))
+    b = rng.normal(size=16)
+    x = nnls(A, b)
+    assert (x >= 0).all()
+    gradient = A.T @ (A @ x - b)
+    assert (gradient[x == 0] >= -1e-8).all()
+    assert np.abs(gradient[x > 0]).max() < 1e-8
+    assert np.linalg.norm(A @ x - b) <= np.linalg.norm(b) + 1e-12
+    assert np.array_equal(x, nnls(A, b))
+
+
+def test_nonnegative_cone_reachability_inside_and_zero_direction():
+    torch.manual_seed(10)
+    patches = torch.randn(2, 6, 8)
+    inside = F.normalize(0.6 * patches[0, 1] + 0.4 * patches[0, 4], dim=-1).unsqueeze(0)
+    inside = torch.cat([inside, F.normalize(patches[1, 0], dim=-1).unsqueeze(0)])
+    result = nonnegative_cone_reachability(patches, inside)
+    assert result['c_cone'].min().item() > 0.999
+    assert result['status'] == ['ok', 'ok']
+
+    # patches live in the first 4 dims, the target in the last 4 -> the cone cannot move
+    flat = torch.zeros(1, 6, 8)
+    torch.manual_seed(12)
+    flat[0, :, :4] = torch.randn(6, 4)
+    orthogonal = torch.zeros(1, 8)
+    orthogonal[0, 5] = 1.0
+    zero = nonnegative_cone_reachability(flat, orthogonal)
+    assert zero['c_cone'][0].item() == 0.0
+    assert zero['status'] == ['zero'] and zero['zero_count'] == 1
+
+
+def test_nonnegative_cone_is_an_upper_reference_for_positive_mixtures():
+    torch.manual_seed(11)
+    patches = torch.randn(4, 8, 8)
+    target = F.normalize(torch.randn(4, 8), dim=-1)
+    cone = nonnegative_cone_reachability(patches, target)['c_cone']
+    oracle = softmax_mixture_oracle(patches, target, steps=200, lr=0.1)['cos_best']
+    assert (cone + 1e-6 >= oracle).all()
+    assert torch.isfinite(cone).all()

@@ -1,5 +1,10 @@
 # Phase 2.8B：Unsaid Mechanism & Reachability
 
+> **本轮（reachability 加固）修正了本文档中的 gap 列**：早先 `optimization_gap` / `positive_mixture_gap`
+> 把一个 64 样本的 oracle 均值与 256 样本的 current/span 均值相减，属于统计错误。请以下文
+> 「Reachability 加固（本轮修正）」一节的同 subset 数字为准；`C_current` / `C_patch_max` / `C_oracle`
+> 三个量本身未受影响（`C_span` 的 tolerance 也已改用标准判据，差别 ≤ 4.7e-4）。
+
 本阶段不设计新方法，只验证 Phase 2.8A 的 Minimal Unsaid 在真实训练中"能不能被优化、能不能从 Said 分离、
 target 是否在 patch 表征的可达范围内"，并回答瓶颈在哪一层。
 
@@ -241,6 +246,102 @@ COCO val2017（5-caption，`similarity_chunk = 512`）：
 6. `C_softmax_oracle` 有多高：**0.20–0.38**（≈ best single patch）。
 7. 瓶颈归属：**主要是 positive-mixture 表达力**（`C_span − C_oracle ≈ 0.47–0.59`），其次才是 router 优化
    （`C_oracle − C_current ≈ 0.41–0.48`）；target geometry 不是主要瓶颈。
+
+## Reachability 加固（本轮修正，不改方法、不重训）
+
+本轮只修 `eval/unsaid_mechanism_probe.py` 的诊断，未改模型 / loss / Said / Unsaid / validation / dataset，
+也未重新训练；用现有 Arm S / Arm SU 的 initial / 100 / 300 / 500 checkpoint 重新离线评测
+（`outputs/unsaid_mechanism_v2/`，256 图 cohort，oracle 与 cone 都用同一 64 个 valid 样本）。
+
+### 1. oracle subset 统计修正
+
+所有 gap 现在只在同一个 oracle subset 上计算：
+
+```text
+router_gap (== optimization_gap) = mean(C_oracle - C_current[selected])
+oracle_optimization_gap          = mean(C_cone   - C_oracle)
+positive_mixture_gap             = mean(C_span[selected] - C_oracle)
+positive_constraint_gap          = mean(C_span[selected] - C_cone)
+```
+
+并额外输出 `oracle_subset_current` / `oracle_subset_patch_max` / `oracle_subset_span`
+（mean / median / P10 / P90）；全 256 样本的 `c_current` / `c_patch_max` / `c_span` 仍单独报告，两者不再混算。
+`oracle_subset_valid_indices` 记录具体样本下标。单元测试
+`test_oracle_gaps_use_only_the_oracle_subset` 用 2/4 子集验证每条 gap 只由同一 subset 复现，
+并保留一条"旧定义会给出不同数"的回归断言。
+
+### 2. 标准 numerical rank tolerance
+
+tolerance 由 `sigma_max * max(N,D) * eps * 1e-6` 改为标准基准 `sigma_max * max(N,D) * eps`
+（`span_tolerance()`；`tol_factor` 可调）。离线敏感度（0.1× / 1× / 10×，first_sentence）：
+
+| Arm / step | rank 均值 0.1× / 1× / 10× | C_span 均值 0.1× / 1× / 10× | rank 全样本一致比例 | C_span 相对跨度 | stable |
+| --- | --- | --- | --- | --- | --- |
+| S initial | 196.0 / 196.0 / 195.49 | 0.81646 / 0.81646 / 0.81608 | 0.797 | 4.65e-4 | False |
+| S step100 | 196.0 / 196.0 / 195.57 | 0.81129 / 0.81129 / 0.81097 | 0.820 | 3.95e-4 | False |
+| S step300 | 196.0 / 196.0 / 195.59 | 0.84337 / 0.84337 / 0.84299 | 0.840 | 4.49e-4 | False |
+| S step500 | 196.0 / 196.0 / 195.60 | 0.85468 / 0.85468 / 0.85439 | 0.848 | 3.39e-4 | False |
+| SU step500 | 196.0 / 196.0 / 195.67 | 0.83839 / 0.83839 / 0.83818 | 0.852 | 2.52e-4 | False |
+
+判据是本轮固定下来的（`rank_identical_fraction == 1.0` 且 `C_span` 相对跨度 < 1e-3）：由于 10× tolerance
+下平均每个样本会多剔除约 0.4 个奇异值，**严格按判据标记为 not stable**；但 `C_span` 的相对变化
+≤ 4.7e-4（< 0.05%），0.1× 与 1× 完全一致，因此**结论层面稳定**。没有为了好看挑选 tolerance。
+
+### 3. 非负锥（exact cone）可达性
+
+`nonnegative_cone_reachability(H, target)`：`a* = argmin_{a>=0} ||H^T a - target||²`，
+`p = H^T a*`，`C_cone = cos(normalize(p), target)`；`||p|| <= 1e-8` 时 `C_cone = 0` 且状态记为 `zero`。
+因为 `z_u`（softmax 混合后归一化）落在同一个非负锥内，`C_cone` 是 positive-mixture 方向可达性的
+**松散但精确求解的参考上界**（投影性质 `cos(p*, t) = ||p*|| >= cos(p, t)` 对锥内任意 `p` 成立）。
+
+环境里没有 `scipy`（未安装，且本轮不修改冻结的环境文件），因此用 Lawson–Hanson(1974) active-set 算法
+在 numpy/float64 上实现等价 NNLS（`nnls()`），并用 KKT 条件与已知构型做单元测试
+（`test_nnls_satisfies_kkt_conditions_and_is_deterministic`）。
+
+### 4. 同 subset 的最终分解（first_sentence，n=64/256）
+
+| step | Arm | C_current(sub) | C_patch_max | C_softmax_oracle | C_cone | C_span(sub) | router_gap | oracle_opt_gap | pos_constraint_gap |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 共享 | +0.0184 | 0.193 | 0.202 | 0.203 | 0.820 | 0.1840 | 0.0006 | 0.6168 |
+| 100 | S | −0.0215 | 0.201 | 0.208 | 0.209 | 0.812 | 0.2300 | 0.0007 | 0.6033 |
+| 100 | SU | −0.0169 | 0.205 | 0.212 | 0.213 | 0.813 | 0.2289 | 0.0007 | 0.6005 |
+| 300 | S | −0.0905 | 0.348 | 0.350 | 0.351 | 0.846 | 0.4401 | 0.0016 | 0.4950 |
+| 300 | SU | −0.0773 | 0.329 | 0.329 | 0.331 | 0.837 | 0.4066 | 0.0015 | 0.5061 |
+| 500 | S | −0.1030 | 0.380 | 0.380 | 0.382 | 0.857 | 0.4831 | 0.0019 | 0.4754 |
+| 500 | SU | −0.0667 | 0.344 | 0.347 | 0.349 | 0.842 | 0.4137 | 0.0019 | 0.4927 |
+
+`C_cone` 与 `C_softmax_oracle` 几乎相同（差 0.001–0.002），且都停在 best single patch 附近 →
+**违约的是非负约束本身，而不是 softmax/simplex 参数化**。
+
+固定 subset 判据：`C_current(sub) = 0.0184/0.0166/−0.0024/0.0415`（mean/median/P10/P90，step 0）。
+
+### 5. matched causal delta（step 500，SU − S）
+
+| caption | ΔC_current（cohort / subset） | ΔC_patch | ΔC_oracle | ΔC_cone | ΔC_span | Full Gap SU−S | Said Gap SU−S | Cond. SU−S | I2T R@1 SU−S | T2I R@1 SU−S |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| first_sentence | **+0.0346 / +0.0363** | −0.0361 | −0.0331 | −0.0331 | −0.0158 | +0.0080 | +0.0013 | −0.0006 | +0.0000 | +0.0000 |
+| fixed_sparse | **+0.0745 / +0.0716** | −0.0294 | −0.0239 | −0.0246 | −0.0231 | +0.0092 | −0.0009 | −0.0025 | +0.0020 | +0.0040 |
+| full_dense | **+0.0911 / +0.0890** | −0.0231 | −0.0153 | −0.0163 | −0.0261 | — | — | — | — | — |
+| COCO（SU−S） | — | — | — | — | — | — | — | — | −0.0010 | −0.0027 |
+
+即：三个 caption 下 SU 的 `C_current` 都高于（更接近 0）matched S，而同一批 checkpoint 的
+patch/oracle/cone/span 几何量反而略低——所以这部分提升不能由几何漂移解释，是 `L_u` 的对齐压力。
+
+### 6. 本轮结论（只回答四个问题）
+
+- **A. `L_u` 相对 matched Said-only 是否产生 target-alignment pressure？** 是，但幅度小且绝对水平仍为负：
+  `ΔC_current = +0.035 / +0.072 / +0.089`（first_sentence / fixed_sparse / full_dense，step 500），
+  同时几何量（patch/oracle/cone/span）反向变化 −0.015…−0.036。Said-only 对照下 `C_current` 随训练变负，
+  说明这个"压力"只是减缓恶化，并未把 `z_u` 拉向 target。
+- **B. 标准 tolerance 下 `C_span` 是否仍然高？** 是：0.80–0.86（rank 中位数 196/196），
+  0.1×/1×/10× tolerance 下 `C_span` 相对变化 ≤ 4.7e-4。
+- **C. exact `C_cone` 更接近谁？** 接近 **`C_softmax_oracle`**（差 0.001–0.002），远离 `C_span`
+  （差 0.48–0.62）。softmax oracle 已经在非负锥最优解附近，simplex/归一化不是限制。
+- **D. 瓶颈归属（最终）**：**positive / non-negative mixture capacity** 是主瓶颈
+  （`positive_constraint_gap` 0.48–0.62）；**oracle/router optimization** 是次瓶颈
+  （`router_gap` 0.18–0.48，且 `C_current` 随训练变负）；**target geometry 不是瓶颈**
+  （`C_span` 高、跨 tolerance 稳定、`cos(target, z_s) ≈ 0`）。
+
 
 ## 未做的事
 

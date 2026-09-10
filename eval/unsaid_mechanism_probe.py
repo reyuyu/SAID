@@ -70,7 +70,52 @@ DEFAULT_ORACLE_SAMPLES = 64
 DEFAULT_ORACLE_STEPS = 100
 DEFAULT_ORACLE_LR = 0.1
 PRIMARY_VARIANT = 'first_sentence'
-SPAN_TOL_RATIO = 1e-6      # singular values below max(S) * max(N, D) * eps * ratio are dropped
+# Standard numerical-rank tolerance: singular values below
+# ``sigma_max * max(N, D) * eps`` (times an explicit factor) are treated as zero.
+SPAN_TOL_FACTOR = 1.0
+TOLERANCE_FACTORS = (0.1, 1.0, 10.0)
+# ||H^T a*|| below this (target is unit-norm) counts as "the cone cannot move at all".
+CONE_ZERO_EPS = 1e-8
+
+
+def span_tolerance(singular_max: float, shape, factor: float = SPAN_TOL_FACTOR) -> float:
+    """Standard tolerance ``sigma_max * max(N, D) * eps`` times ``factor``."""
+    return float(singular_max) * max(shape) * torch.finfo(torch.float32).eps * float(factor)
+
+
+def nnls(A: np.ndarray, b: np.ndarray, max_iter: int = 500) -> np.ndarray:
+    """``argmin_{x >= 0} ||A x - b||_2`` via the Lawson-Hanson active-set method.
+
+    ``scipy.optimize.nnls`` is not installed in this environment and the frozen
+    environment file is not changed for a diagnostic, so the classical
+    Lawson-Hanson (1974) algorithm is implemented here in float64. Deterministic.
+    """
+    A = np.asarray(A, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    m, n = A.shape
+    x = np.zeros(n)
+    passive = np.zeros(n, dtype=bool)
+    tolerance = 10.0 * max(m, n) * np.finfo(np.float64).eps * np.linalg.norm(A, 1)
+    w = A.T @ (b - A @ x)
+    for _ in range(int(max_iter)):
+        free = ~passive
+        if not free.any() or not np.any(w[free] > tolerance):
+            break
+        candidates = np.where(free, w, -np.inf)
+        passive[int(np.argmax(candidates))] = True
+        for _ in range(int(max_iter)):
+            s = np.zeros(n)
+            s[passive] = np.linalg.lstsq(A[:, passive], b, rcond=None)[0]
+            if np.all(s[passive] > 0):
+                x = s
+                break
+            blocking = passive & (s <= 0)
+            ratios = x[blocking] / (x[blocking] - s[blocking])
+            alpha = float(np.min(ratios)) if ratios.size else 0.0
+            x = x + alpha * (s - x)
+            passive[x <= 0] = False
+        w = A.T @ (b - A @ x)
+    return x
 
 
 # --------------------------------------------------------------------------- #
@@ -100,13 +145,16 @@ def best_patch_cosine(patches: torch.Tensor, target: torch.Tensor) -> torch.Tens
 
 
 def span_reachability(patches: torch.Tensor, target: torch.Tensor,
-                      tol_ratio: float = SPAN_TOL_RATIO) -> Tuple[torch.Tensor, torch.Tensor]:
+                      tol_factor: float = SPAN_TOL_FACTOR) -> Tuple[torch.Tensor, torch.Tensor]:
     """Projection of ``target`` onto the row span of ``H`` (fp32 SVD), per sample.
+
+    ``tol_factor`` scales the standard numerical-rank tolerance
+    ``sigma_max * max(N, D) * eps`` (1.0 = standard; see ``span_tolerance_sensitivity``).
 
     Returns:
         c_span: [B] in [0, 1] (clamped for fp error) -- how much of a unit target lies
             in the *signed* linear span of the patch rows.
-        rank: [B] int64 -- number of singular values above the stable tolerance.
+        rank: [B] int64 -- number of singular values above the tolerance.
     """
     if patches.dim() != 3 or target.dim() != 2:
         raise ValueError('expected patches [B, N, D] and target [B, D], got %r and %r'
@@ -121,17 +169,99 @@ def span_reachability(patches: torch.Tensor, target: torch.Tensor,
             spans.append(torch.zeros((), dtype=torch.float32))
             ranks.append(0)
             continue
-        tol = float(singular[0]) * max(matrix.shape) * torch.finfo(torch.float32).eps * tol_ratio
+        tol = span_tolerance(float(singular[0]), matrix.shape, tol_factor)
         rank = int((singular > tol).sum())
         if rank == 0:
             spans.append(torch.zeros((), dtype=torch.float32))
-            ranks.append(0)
+            ranks.append(rank)
             continue
         basis = vh[:rank]                                   # [rank, D], orthonormal rows
         projection = basis.t() @ (basis @ unit_target)
         spans.append(projection.norm().clamp(0.0, 1.0))
         ranks.append(rank)
     return torch.stack(spans), torch.tensor(ranks, dtype=torch.int64)
+
+
+def span_tolerance_sensitivity(patches: torch.Tensor, target: torch.Tensor,
+                               factors: Sequence[float] = TOLERANCE_FACTORS) -> Dict:
+    """Rank / ``C_span`` under ``0.1x``, ``1x`` and ``10x`` the standard tolerance.
+
+    Stability rule (fixed here, not chosen after seeing the numbers): the tolerance
+    choice is called *stable* when every sample keeps the same rank under all three
+    factors (``rank_identical_fraction == 1.0``) **and** the relative spread of the
+    mean ``C_span`` across factors stays below 1e-3. Both raw quantities are always
+    reported, so a reviewer can apply a different rule.
+    """
+    per_factor = {}
+    rank_arrays = []
+    for factor in factors:
+        c_span, rank = span_reachability(patches, target, tol_factor=factor)
+        rank_arrays.append(rank)
+        per_factor['%gx' % factor] = {
+            'factor': float(factor),
+            'c_span': distribution(c_span),
+            'span_rank': distribution(rank.float()),
+            'rank_min': int(rank.min()) if rank.numel() else None,
+            'rank_max': int(rank.max()) if rank.numel() else None,
+        }
+    keys = list(per_factor)
+    spans = [per_factor[key]['c_span']['mean'] for key in keys
+             if per_factor[key]['c_span']['mean'] is not None]
+    span_spread = (max(spans) - min(spans)) if spans else None
+    span_mean = (sum(spans) / len(spans)) if spans else None
+    relative_spread = (span_spread / span_mean) if span_mean else None
+    stack = torch.stack(rank_arrays) if rank_arrays else None
+    if stack is not None and stack.numel():
+        identical = int((stack == stack[0]).all(dim=0).sum())
+        fraction = identical / float(stack.shape[1])
+    else:
+        fraction = None
+    return {
+        'factors': per_factor,
+        'standard_factor': SPAN_TOL_FACTOR,
+        'rank_identical_fraction': fraction,
+        'c_span_mean_max_abs_diff': span_spread,
+        'c_span_mean_relative_spread': relative_spread,
+        'stable': bool(fraction == 1.0 and relative_spread is not None and relative_spread < 1e-3),
+    }
+
+
+def nonnegative_cone_reachability(patches: torch.Tensor, target: torch.Tensor,
+                                  zero_eps: float = CONE_ZERO_EPS) -> Dict:
+    """Exact non-negative cone reachability (CPU, float64, Lawson-Hanson NNLS).
+
+    ``a* = argmin_{a >= 0} ||H^T a - target||^2``, ``p = H^T a*``,
+    ``C_cone = cos(normalize(p), target)``; ``C_cone = 0`` with status ``zero`` when
+    ``||p|| <= zero_eps`` (the cone cannot move at all in that direction).
+
+    The normalised softmax mixture ``z_u`` lives in the same non-negative cone, so
+    ``C_cone`` is a strong (looser, exact-solver) reference for positive-mixture
+    directional reachability.
+    """
+    if patches.dim() != 3 or target.dim() != 2:
+        raise ValueError('expected patches [B, N, D] and target [B, D], got %r and %r'
+                         % (tuple(patches.shape), tuple(target.shape)))
+    cosines, residual_norms, statuses = [], [], []
+    for index in range(patches.shape[0]):
+        matrix = patches[index].float().cpu().numpy().astype(np.float64)   # [N, D]
+        b = F.normalize(target[index].float(), dim=-1).cpu().numpy().astype(np.float64)
+        A = matrix.T                                                       # [D, N]
+        coefficients = nnls(A, b)
+        pooled = A @ coefficients
+        norm = float(np.linalg.norm(pooled))
+        if norm <= float(zero_eps):
+            cosines.append(0.0)
+            residual_norms.append(float(np.linalg.norm(b)))
+            statuses.append('zero')
+            continue
+        cosine = float(np.dot(pooled / norm, b))
+        cosines.append(min(1.0, max(-1.0, cosine)))
+        residual_norms.append(float(np.linalg.norm(pooled - b)))
+        statuses.append('ok')
+    return {'c_cone': torch.tensor(cosines, dtype=torch.float32),
+            'residual_norm': torch.tensor(residual_norms, dtype=torch.float32),
+            'status': statuses,
+            'zero_count': int(sum(1 for status in statuses if status == 'zero'))}
 
 
 def softmax_mixture_oracle(patches: torch.Tensor, target: torch.Tensor,
@@ -272,30 +402,53 @@ def probe_variant(model, samples, image_root, variant, preprocess, device='cpu',
 
     valid_index = torch.nonzero(valid, as_tuple=False).flatten()
     oracle_count = min(int(oracle_samples), int(valid_index.numel()))
+    selected = valid_index[:oracle_count]
     oracle = {'samples': oracle_count, 'steps': int(oracle_steps), 'lr': float(oracle_lr),
-              'init': 'current_unsaid_logits'}
+              'init': 'current_unsaid_logits',
+              'kind': 'approximate softmax-mixture oracle',
+              'valid_indices': [int(i) for i in selected]}
     if oracle_count > 0:
-        selected = valid_index[:oracle_count]
         result = softmax_mixture_oracle(
             patches[selected], target[selected],
             init_logits=-scores[selected] / float(tau_unsaid),
             steps=oracle_steps, lr=oracle_lr)
         cos_oracle = result['cos_best'].detach().cpu()
         cos_oracle_init = result['cos_init'].detach().cpu()
+        # exact non-negative cone on exactly the same subset
+        cone = nonnegative_cone_reachability(patches[selected], target[selected])
         oracle.update({'cos_best': distribution(cos_oracle),
                        'cos_init': distribution(cos_oracle_init),
-                       'cos_best_values': [round(float(v), 6) for v in cos_oracle]})
+                       'cos_best_values': [round(float(v), 6) for v in cos_oracle],
+                       'c_cone': distribution(cone['c_cone']),
+                       'c_cone_values': [round(float(v), 6) for v in cone['c_cone']],
+                       'c_cone_status': cone['status'],
+                       'c_cone_zero_count': cone['zero_count']})
     else:
         cos_oracle = torch.zeros(0)
         cos_oracle_init = torch.zeros(0)
         oracle.update({'cos_best': distribution([]), 'cos_init': distribution([]),
-                       'cos_best_values': []})
+                       'cos_best_values': [], 'c_cone': distribution([]),
+                       'c_cone_values': [], 'c_cone_status': [], 'c_cone_zero_count': 0})
 
     entropy_said = unsaid_core.attention_entropy(A_said)
     entropy_unsaid = unsaid_core.attention_entropy(A_unsaid)
     overlap = unsaid_core.attention_overlap(A_said, A_unsaid)
     jsd = unsaid_core.attention_jsd(A_said, A_unsaid)
     patch_count = int(patches.shape[1])
+    # Every gap below is computed on the *same* oracle subset; the full-cohort
+    # current / patch / span summaries are reported separately and never mixed in.
+    subset_current = cos_current[selected] if oracle_count > 0 else torch.zeros(0)
+    subset_patch = patch_max[selected] if oracle_count > 0 else torch.zeros(0)
+    subset_span = span[selected] if oracle_count > 0 else torch.zeros(0)
+    router_gap = oracle_optimization_gap = positive_mixture_gap = positive_constraint_gap = None
+    if oracle_count > 0:
+        oracle_mean = distribution(cos_oracle)['mean']
+        cone_mean = oracle['c_cone']['mean']
+        router_gap = oracle_mean - distribution(subset_current)['mean']
+        oracle_optimization_gap = cone_mean - oracle_mean
+        positive_mixture_gap = distribution(subset_span)['mean'] - oracle_mean
+        positive_constraint_gap = distribution(subset_span)['mean'] - cone_mean
+
     metrics = {
         'loss_unsaid_eval': loss_eval,
         'unsaid_valid_ratio': float(valid.float().mean()),
@@ -312,17 +465,30 @@ def probe_variant(model, samples, image_root, variant, preprocess, device='cpu',
         'said_attention_max': distribution(A_said.max(dim=-1).values),
         'unsaid_attention_max': distribution(A_unsaid.max(dim=-1).values),
         'reachability': {
+            # full valid cohort: tolerance-independent quantities
+            'cohort_n': int(valid_index.numel()),
             'c_current': distribution(cos_current[valid]) if valid.any() else distribution([]),
             'c_patch_max': distribution(patch_max[valid]) if valid.any() else distribution([]),
             'c_span': distribution(span[valid]) if valid.any() else distribution([]),
+            'patch_span_rank': (distribution(span_rank[valid].float()) if valid.any()
+                                else distribution([])),
+            # oracle subset: every gap uses only these samples
+            'oracle_subset_n': oracle_count,
+            'oracle_subset_valid_indices': [int(i) for i in selected],
+            'oracle_subset_current': distribution(subset_current),
+            'oracle_subset_patch_max': distribution(subset_patch),
+            'oracle_subset_span': distribution(subset_span),
             'c_softmax_oracle': oracle['cos_best'],
             'c_softmax_oracle_init': oracle['cos_init'],
-            'patch_span_rank': distribution(span_rank[valid].float()) if valid.any() else distribution([]),
-            'optimization_gap': (distribution(cos_oracle)['mean'] - distribution(cos_current[valid])['mean'])
-                                if (oracle_count > 0 and valid.any()) else None,
-            'positive_mixture_gap': (distribution(span[valid])['mean'] - distribution(cos_oracle)['mean'])
-                                    if (oracle_count > 0 and valid.any()) else None,
+            'c_cone': oracle['c_cone'],
+            'router_gap': router_gap,
+            'optimization_gap': router_gap,          # same number, subset-consistent
+            'oracle_optimization_gap': oracle_optimization_gap,
+            'positive_mixture_gap': positive_mixture_gap,
+            'positive_constraint_gap': positive_constraint_gap,
         },
+        'span_tolerance': (span_tolerance_sensitivity(patches[valid], target[valid])
+                           if valid.any() else None),
     }
     return {
         'variant': variant,
