@@ -270,6 +270,24 @@ def run_initial_validation(args, model, preprocess, cohort, image_root, device,
                                   0, 0, False, False, history_path, seen, is_initial=True)
 
 
+def resolve_total_steps(args, steps_per_epoch):
+    """``(stop_steps, lr_total_steps)``: run length vs LR-schedule horizon.
+
+    Default (``--lr_total_steps`` unset) keeps the old behaviour: ``--max_steps``
+    truncates the run *and* shrinks the cosine schedule, so both values are the same.
+    Setting ``--lr_total_steps`` decouples them: ``--max_steps`` only stops the run,
+    while the LR schedule keeps the horizon of the full run it stands in for (e.g. a
+    500-step probe of a 3-epoch run uses ``lr_total_steps = 3 * steps_per_epoch``).
+    """
+    stop_steps = args.max_steps if args.max_steps is not None else args.epochs * steps_per_epoch
+    if args.lr_total_steps is None:
+        return int(stop_steps), int(stop_steps)
+    lr_total = int(args.lr_total_steps)
+    if lr_total <= 0:
+        raise ValueError('--lr_total_steps must be positive, got %r' % (args.lr_total_steps,))
+    return int(stop_steps), lr_total
+
+
 def build_optimizer(model: SALUModel, backbone_lr, head_lr, weight_decay):
     backbone = model.backbone_parameters()
     head = model.said_head_parameters()
@@ -320,6 +338,9 @@ def parse_args(argv=None):
     parser.add_argument('--epochs', type=int, default=3)
     parser.add_argument('--max_steps', type=int, default=None,
                         help='debug early stop; None = full run')
+    parser.add_argument('--lr_total_steps', type=int, default=None,
+                        help='LR-schedule horizon for the cosine decay; None = follow --max_steps / epochs '
+                             '(old behaviour). Setting it makes --max_steps only truncate the run.')
     parser.add_argument('--backbone_lr', type=float, default=1e-6)
     parser.add_argument('--head_lr', type=float, default=1e-4)
     parser.add_argument('--lambda_global', type=float, default=1.0)
@@ -436,7 +457,10 @@ def main():
         generator=loader_generator,
     )
     steps_per_epoch = len(loader)
-    total_steps = args.max_steps if args.max_steps is not None else args.epochs * steps_per_epoch
+    stop_steps, total_steps = resolve_total_steps(args, steps_per_epoch)
+    if rank == 0:
+        print('steps_per_epoch %d stop_steps %d lr_total_steps %d lr_warmup %d'
+              % (steps_per_epoch, stop_steps, total_steps, args.warmup_length), flush=True)
     global_batch = args.batch_size * world_size
 
     cohort = None
@@ -536,7 +560,7 @@ def main():
 
             is_last_step = (
                 (args.max_steps is not None and step == args.max_steps - 1)
-                or (args.max_steps is None and step == total_steps - 1)
+                or (args.max_steps is None and step == stop_steps - 1)
             )
             if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step or step + 1 in save_at):
                 throughput = summarize_throughput(global_batch, compute_times, wall_times)
