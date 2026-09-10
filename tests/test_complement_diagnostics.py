@@ -340,3 +340,134 @@ def test_parse_step_list_argument():
     assert train_salu.parse_step_list(None) == []
     assert train_salu.parse_step_list([3]) == [3]
     assert train_salu.parse_args([]).grad_contribution_steps == [0]
+
+
+# --------------------------------------------------------------------------- #
+# per-term gradient diagnostics run on the training graph
+# --------------------------------------------------------------------------- #
+def test_grad_contribution_norms_build_their_own_graph():
+    """They must not reuse the training graph (DDP frees it) and must leave buffers clean."""
+    model = build_model()
+    images, texts = make_batch()
+    args = parse(objective_mode='gap_completion')
+    out = gap_forward(model, images, texts)
+    out['loss_total'].backward()                   # exactly as the training loop does
+    full = train_salu.grad_norm_summary(model)
+    for key in ('grad_norm_backbone', 'grad_norm_said_router', 'grad_norm_total'):
+        assert math.isfinite(full[key]) and full[key] > 0.0, key
+    assert full['grad_norm_said_router'] > 0.0     # L_said trains the router
+
+    model.zero_grad(set_to_none=True)
+    contributions = train_salu.grad_contribution_norms(model, images, texts, args, [0], 0)
+    assert contributions, 'step 0 must be a diagnostic step by default'
+    for name in ('gap', 'absorb'):
+        value = contributions['grad_norm_%s_contribution' % name]
+        assert math.isfinite(value) and value > 0.0, name
+    # the absorb term has no path to the Said router (target detached, z_S frozen)
+    assert contributions['grad_norm_absorb_contribution_router'] == 0.0
+    assert contributions['grad_norm_gap_contribution_router'] == 0.0
+    # and the buffers are left clean for the next real step
+    assert all(parameter.grad is None for parameter in model.parameters())
+
+
+def test_grad_contribution_norms_are_skipped_off_the_diagnostic_steps():
+    model = build_model()
+    images, texts = make_batch()
+    args = parse(objective_mode='gap_completion')
+    out = gap_forward(model, images, texts)
+    out['loss_total'].backward()
+    model.zero_grad(set_to_none=True)
+    assert train_salu.grad_contribution_norms(model, images, texts, args, [20, 50, 100], 7) == {}
+    assert train_salu.grad_contribution_norms(model, images, texts, args, [], 0) == {}
+
+
+def test_grad_norm_summary_accepts_a_ddp_wrapped_model():
+    """DDP exposes params through ``.module``; the summary must work on either form.
+
+    The training loop passes the DDP wrapper, so ``grad_norm_summary`` and
+    ``grad_contribution_norms`` must not assume a bare ``SALUModel``.
+    """
+    model = build_model()
+    images, texts = make_batch()
+    out = gap_forward(model, images, texts)
+    out['loss_total'].backward()
+    args = parse(objective_mode='gap_completion')
+
+    class _Wrapper:
+        """Minimal stand-in for DDP: attributes live behind ``.module``, as in PyTorch."""
+
+        def __init__(self, module):
+            self.module = module
+
+        def __call__(self, *fargs, **fkwargs):
+            return self.module(*fargs, **fkwargs)
+
+        def forward(self, *fargs, **fkwargs):
+            return self.module.forward(*fargs, **fkwargs)
+
+        def zero_grad(self, set_to_none=True):
+            return self.module.zero_grad(set_to_none=set_to_none)
+
+        def parameters(self):
+            return self.module.parameters()
+
+        def no_sync(self):
+            # DDP's context manager; the test never initialises a process group, so the
+            # helper must fall back to a no-op instead of calling into the module
+            raise AssertionError('no_sync must not be called without a process group')
+
+    wrapped = _Wrapper(model)
+    summary = train_salu.grad_norm_summary(wrapped)
+    assert summary['grad_norm_total'] > 0.0
+    assert summary['grad_norm_said_router'] > 0.0
+    model.zero_grad(set_to_none=True)
+    contributions = train_salu.grad_contribution_norms(wrapped, images, texts, args, [0], 0)
+    assert contributions['grad_norm_gap_contribution'] > 0.0
+    assert train_salu.unwrap_model(wrapped) is model
+    assert train_salu.unwrap_model(model) is model
+
+
+def test_grad_contribution_norms_use_a_fresh_context_per_term():
+    """Both terms must run: a single reused (single-use) context would break the second.
+
+    The parameters are also passed keyword-free positionally here, so an accidental
+    signature/argument drift is caught rather than silently tolerated.
+    """
+    model = build_model()
+    images, texts = make_batch()
+    args = parse(objective_mode='gap_completion')
+    model.zero_grad(set_to_none=True)
+    contributions = train_salu.grad_contribution_norms(model, images, texts, args, [0], 0)
+    assert set(contributions) == {
+        'grad_norm_gap_contribution', 'grad_norm_gap_contribution_backbone',
+        'grad_norm_gap_contribution_router', 'grad_norm_gap_contribution_weight',
+        'grad_norm_absorb_contribution', 'grad_norm_absorb_contribution_backbone',
+        'grad_norm_absorb_contribution_router', 'grad_norm_absorb_contribution_weight',
+    }
+    for key, value in contributions.items():
+        assert math.isfinite(value), key
+
+
+def test_ddp_no_sync_degrades_to_a_no_op_without_a_process_group():
+    """Outside distributed init there is no no_sync; the helper must not call into it."""
+    model = build_model()
+    assert not (torch.distributed.is_available() and torch.distributed.is_initialized())
+    for _ in range(3):                     # repeatable, i.e. a fresh context every time
+        with train_salu.ddp_no_sync(model):
+            pass
+    with train_salu.ddp_no_sync(model):
+        pass
+
+
+def test_grad_contribution_with_zero_weight_still_measures_the_representation():
+    """A zero weight is a matched control: the term is measured, just not in L_total."""
+    model = build_model()
+    images, texts = make_batch()
+    args = parse(objective_mode='gap_completion', lambda_gap_discover='0')
+    out = gap_forward(model, images, texts, lambda_gap_discover=0.0)
+    assert torch.allclose(out['loss_total'], out['loss_said'] + out['loss_global_absorb'],
+                          atol=1e-6)
+    model.zero_grad(set_to_none=True)
+    contributions = train_salu.grad_contribution_norms(model, images, texts, args, [0], 0)
+    assert contributions['grad_norm_gap_contribution_weight'] == 0.0
+    assert contributions['grad_norm_gap_contribution'] > 0.0

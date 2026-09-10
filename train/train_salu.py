@@ -576,13 +576,27 @@ def parse_step_list(value):
     return [int(part) for part in str(value).split(',') if str(part).strip()]
 
 
+def unwrap_model(model):
+    """Return the underlying ``SALUModel`` whether or not ``model`` is DDP-wrapped."""
+    return getattr(model, 'module', model)
+
+
+def ddp_no_sync(model):
+    """``model.no_sync()`` for a DDP wrapper, a no-op context otherwise."""
+    if dist.is_available() and dist.is_initialized() and hasattr(model, 'no_sync'):
+        return model.no_sync()
+    return contextlib.nullcontext()
+
+
 def grad_norm_summary(model):
     """L2 norm of the accumulated gradients, split backbone vs Said router.
 
     Reads the gradients of the *single* training backward pass: no extra backward is run.
     Returns ``grad_norm_backbone``, ``grad_norm_said_router``, ``grad_norm_total`` and the
-    number of tensors that actually received a gradient.
+    number of tensors that actually received a gradient. ``model`` may be the raw
+    ``SALUModel`` or its DDP wrapper.
     """
+    model = unwrap_model(model)
     head_ids = {id(parameter) for parameter in model.said_router.parameters()}
     sums = {'backbone': 0.0, 'router': 0.0}
     counts = {'backbone': 0, 'router': 0}
@@ -603,43 +617,62 @@ def grad_norm_summary(model):
     }
 
 
-def backward_and_step(loss, optimizer, scaler):
-    """One optimizer step with the same scaler semantics as before (extracted verbatim)."""
+def backward_and_step(loss, optimizer, scaler, retain_graph=False):
+    """One optimizer step with the same scaler semantics as before (extracted verbatim).
+
+    ``retain_graph`` is only ever true on the Phase 3.0A diagnostic steps, where the
+    per-term gradient norms need to differentiate the same forward graph a second time.
+    """
     if scaler.is_enabled():
-        scaler.scale(loss).backward()
+        scaler.scale(loss).backward(retain_graph=retain_graph)
         scaler.step(optimizer)
         scaler.update()
     else:
-        loss.backward()
+        loss.backward(retain_graph=retain_graph)
         optimizer.step()
 
 
-def grad_contribution_norms(model, out, diagnostic_steps, step):
+def grad_contribution_norms(model, images, text_tokens, args, diagnostic_steps, step):
     """Per-term gradient norms on *diagnostic steps only* (Phase 3.0A.1c, Section 11).
 
-    ``grad_norm_gap_contribution`` / ``grad_norm_absorb_contribution`` need their own
-    backward passes, so they are computed only when ``step`` is one of ``diagnostic_steps``
-    (step 0 / 20 / 50 / 100 in the 100-step diagnostic), never on every step. The backward
-    passes are local (``no_sync`` when DDP is active), so they cannot perturb the gradient
-    synchronisation of the real training step. Must be called with the gradient buffers
-    cleared; returns ``{}`` on all other steps.
+    ``grad_norm_gap_contribution`` / ``grad_norm_absorb_contribution`` are measured on a
+    **fresh forward graph** built here, not on the training graph. Reusing the training
+    graph is not viable: DDP's reducer releases it during the training backward (verified
+    with ``find_unused_parameters=True`` on gloo), so a second backward through it raises
+    "Trying to backward through the graph a second time".
+
+    The cost is one extra forward + backward per term, and only on the requested steps
+    (step 0 / 20 / 50 / 100 in the 100-step diagnostic); ``{}`` is returned on every other
+    step. The passes run inside ``no_sync`` (when DDP is active) and consume their own
+    graph, so the real training step and its gradient synchronisation are untouched. When
+    a weight is zero the corresponding term is absent from ``loss_total``, which is exactly
+    the matched control being measured.
     """
     if step not in set(diagnostic_steps):
         return {}
     contributions = {}
-    distributed = dist.is_available() and dist.is_initialized()
-    for name, term in (('gap', out.get('loss_gap_discover')),
-                       ('absorb', out.get('loss_global_absorb'))):
-        if term is None or not torch.is_tensor(term) or not term.requires_grad:
-            continue
+    for name, weight in (('gap', args.lambda_gap_discover),
+                         ('absorb', args.lambda_global_absorb)):
         model.zero_grad(set_to_none=True)
-        context = model.no_sync() if distributed else contextlib.nullcontext()
-        with context:
-            term.backward(retain_graph=False)
+        # a fresh context per term: contexts are single-use and the first backward frees
+        # the graph it built
+        with ddp_no_sync(model):
+            # a fresh graph: enable_grad because the caller may sit inside no_grad
+            with torch.enable_grad():
+                out = model(images, text_tokens, 0.0, args.lambda_said, lambda_unsaid=0.0,
+                            objective_mode='gap_completion',
+                            lambda_gap_discover=args.lambda_gap_discover,
+                            lambda_global_absorb=args.lambda_global_absorb,
+                            gap_anti_temperature=args.gap_anti_temperature)
+                term = out['loss_gap_discover'] if name == 'gap' else out['loss_global_absorb']
+                weighted = term if float(weight) != 0.0 else term * 1.0
+                weighted.backward(retain_graph=False)
         summary = grad_norm_summary(model)
         contributions['grad_norm_%s_contribution' % name] = summary['grad_norm_total']
         contributions['grad_norm_%s_contribution_backbone' % name] = summary['grad_norm_backbone']
         contributions['grad_norm_%s_contribution_router' % name] = summary['grad_norm_said_router']
+        contributions['grad_norm_%s_contribution_weight' % name] = float(weight)
+        del out, term, weighted
     model.zero_grad(set_to_none=True)
     return contributions
 
@@ -1017,7 +1050,7 @@ def main():
                                     unsaid_candidate_chunk_size=args.unsaid_candidate_chunk_size)
                 loss = out['loss_total']
             if scaler.is_enabled():
-                # fp16 path: unchanged (GradScaler semantics, see backward_and_step)
+                # fp16 path
                 backward_and_step(loss, optimizer, scaler)
             else:
                 # bf16 / fp32 path
@@ -1025,14 +1058,12 @@ def main():
                 optimizer.step()
             # cheap: reads the gradients of the training backward pass, no extra backward
             grad_summary = grad_norm_summary(salu) if gap_mode else None
-            if gap_mode and step % args.log_every == 0:
-                # per-term norms need their own backward (diagnostic steps only)
-                optimizer.zero_grad(set_to_none=True)
-                grad_contributions = grad_contribution_norms(
-                    ddp_model, out, args.grad_contribution_steps, step)
-            else:
-                optimizer.zero_grad(set_to_none=True)
-                grad_contributions = None
+            optimizer.zero_grad(set_to_none=True)
+            # per-term diagnostics build their own graph, so only on the requested steps
+            grad_contributions = (grad_contribution_norms(ddp_model, images, text_tokens,
+                                                          args, args.grad_contribution_steps,
+                                                          step)
+                                  if gap_mode else None)
             compute_times.append(time.time() - t_compute0)
             wall_times.append(time.time() - t_wall0)
 

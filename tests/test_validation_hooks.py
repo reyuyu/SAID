@@ -115,7 +115,7 @@ def test_main_schedules_initial_validation_before_the_first_optimizer_step():
     assert 'if rank == 0:' in block                # only rank 0 evaluates and writes
     # the block sits before the training loop, therefore before every optimizer update
     assert block_at < loop_at
-    assert block_at < source.index('loss.backward()')
+    assert block_at < source.index('loss.backward(')
     assert block_at < source.index('optimizer.step()')
     # a resumed run has already passed step 0, so the initial job is skipped there
     assert 'start_step == 0' in block.splitlines()[0]
