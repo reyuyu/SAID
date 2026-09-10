@@ -132,34 +132,57 @@ def load_or_create_usr_manifest(path: str, source_manifest_path: str,
 # --------------------------------------------------------------------------- #
 # metrics
 # --------------------------------------------------------------------------- #
-def rank_of(scores: torch.Tensor) -> torch.Tensor:
-    """1-based rank of the diagonal label (ties broken deterministically by index)."""
-    if scores.dim() != 2 or scores.shape[0] != scores.shape[1]:
-        raise ValueError('scores must be [Q, Q], got %r' % (tuple(scores.shape),))
+def rank_of(scores: torch.Tensor, labels: Optional[torch.Tensor] = None) -> torch.Tensor:
+    """1-based rank of each row's correct candidate (ties broken deterministically by index).
+
+    ``scores`` may be rectangular ``[N_query, Q_candidate]``; the candidate pool is then the
+    *full* pool and ``labels[row]`` gives the correct candidate column (defaults to the
+    diagonal for a square matrix).
+    """
+    if scores.dim() != 2:
+        raise ValueError('scores must be 2-D, got %r' % (tuple(scores.shape),))
+    n_query, n_candidate = scores.shape
+    if labels is None:
+        if n_query != n_candidate:
+            raise ValueError('labels are required for rectangular scores %r'
+                             % (tuple(scores.shape),))
+        labels = torch.arange(n_query)
     order = torch.argsort(scores, dim=1, descending=True, stable=True)
-    labels = torch.arange(scores.shape[0]).unsqueeze(1)
-    position = (order == labels).float().argmax(dim=1)
+    position = (order == labels.unsqueeze(1)).float().argmax(dim=1)
     return position + 1
 
 
-def retrieval_report(scores: torch.Tensor) -> Dict[str, float]:
-    """R@1/5/10, MRR, mean/median rank and positive-vs-negative score margins."""
-    n = int(scores.shape[0])
-    ranks = rank_of(scores)
+def retrieval_report(scores: torch.Tensor, labels: Optional[torch.Tensor] = None) -> Dict[str, float]:
+    """R@1/5/10, MRR, mean/median rank and positive-vs-negative margins.
+
+    Subgroups evaluate ``scores[subset, :]`` with the *original* labels, so the candidate
+    pool always stays the full ``Q`` (only query rows are ever selected).
+    """
+    if scores.dim() != 2:
+        raise ValueError('scores must be 2-D, got %r' % (tuple(scores.shape),))
+    n_query, n_candidate = scores.shape
+    if labels is None:
+        labels = torch.arange(n_query)
+    labels = labels.long()
+    ranks = rank_of(scores, labels)
     report = {}
     for k in (1, 5, 10):
-        report['R@%d' % k] = float((ranks <= min(k, n)).float().mean())
+        report['R@%d' % k] = float((ranks <= min(k, n_candidate)).float().mean())
     report['MRR'] = float((1.0 / ranks.float()).mean())
     report['mean_rank'] = float(ranks.float().mean())
     report['median_rank'] = float(ranks.float().median())
-    positive = scores.diagonal()
-    mask = ~torch.eye(n, dtype=torch.bool)
-    negatives = scores[mask].view(n, n - 1) if n > 1 else torch.zeros(n, 0)
+    report['candidate_pool'] = int(n_candidate)
+    report['query_count'] = int(n_query)
+    positive = scores.gather(1, labels.unsqueeze(1)).squeeze(1)
+    mask = torch.ones_like(scores, dtype=torch.bool)
+    mask.scatter_(1, labels.unsqueeze(1), False)
+    negatives = scores[mask].view(n_query, n_candidate - 1) if n_candidate > 1 \
+        else torch.zeros(n_query, 0)
     report['positive_score_mean'] = float(positive.mean())
     report['positive_minus_mean_negative'] = (float((positive - negatives.mean(dim=1)).mean())
-                                              if n > 1 else 0.0)
+                                              if n_candidate > 1 else 0.0)
     report['positive_minus_best_negative'] = (float((positive - negatives.max(dim=1).values).mean())
-                                              if n > 1 else 0.0)
+                                              if n_candidate > 1 else 0.0)
     return report
 
 
@@ -169,11 +192,13 @@ def random_chance(query_count: int) -> Dict[str, float]:
             'R@10': min(10.0 / query_count, 1.0)}
 
 
-def delta_report(raw_scores: torch.Tensor, debiased_scores: torch.Tensor) -> Dict[str, float]:
-    """Debiased - Raw on the same queries: recall deltas plus per-query rank deltas."""
-    raw, debiased = retrieval_report(raw_scores), retrieval_report(debiased_scores)
+def delta_report(raw_scores: torch.Tensor, debiased_scores: torch.Tensor,
+                 labels: Optional[torch.Tensor] = None) -> Dict[str, float]:
+    """Debiased - Raw on the same query rows, same *full* candidate pool (same labels)."""
+    raw = retrieval_report(raw_scores, labels)
+    debiased = retrieval_report(debiased_scores, labels)
     delta = {('Delta ' + key): debiased[key] - raw[key] for key in ('R@1', 'R@5', 'R@10', 'MRR')}
-    rank_delta = (rank_of(raw_scores).float() - rank_of(debiased_scores).float())
+    rank_delta = (rank_of(raw_scores, labels).float() - rank_of(debiased_scores, labels).float())
     improved = float((rank_delta > 0).float().mean())
     worsened = float((rank_delta < 0).float().mean())
     delta.update({'improved_fraction': improved,
@@ -204,15 +229,19 @@ def rank_bins(values: Sequence[float], groups: int) -> List[List[int]]:
 
 def stratified_report(scores: Dict[str, torch.Tensor], values: Sequence[float], groups: int,
                       label: str) -> List[Dict]:
-    """Raw vs Debiased retrieval inside deterministic value bins."""
+    """Raw vs Debiased retrieval inside deterministic value bins.
+
+    Subgroups only select *query rows* (``scores[name][subset, :]``); the candidate pool
+    always stays the full ``Q`` with the original labels.
+    """
     output = []
     for position, index in enumerate(rank_bins(values, groups)):
         if not index:
             continue
-        subset = torch.tensor(index)
-        raw = retrieval_report(scores['raw'][subset][:, subset])
-        debiased = retrieval_report(scores['debiased'][subset][:, subset])
-        delta = delta_report(scores['raw'][subset][:, subset], scores['debiased'][subset][:, subset])
+        subset = torch.tensor(index).long()
+        raw = retrieval_report(scores['raw'][subset, :], subset)
+        debiased = retrieval_report(scores['debiased'][subset, :], subset)
+        delta = delta_report(scores['raw'][subset, :], scores['debiased'][subset, :], subset)
         output.append({'bin': position, 'label': label, 'count': len(index),
                        'value_mean': float(np.mean([values[i] for i in index])),
                        'raw': raw, 'debiased': debiased, 'delta': delta})
@@ -353,14 +382,14 @@ def evaluate(model, queries, image_root, preprocess, device='cpu', image_batch_s
 
 
 def _subset_report(scores: Dict[str, torch.Tensor], index: Sequence[int]) -> Dict:
+    """Query-row subgroup with the full candidate pool and the original labels."""
     if not index:
         return {'count': 0}
-    subset = torch.tensor(list(index))
-    raw = retrieval_report(scores['raw'][subset][:, subset])
-    debiased = retrieval_report(scores['debiased'][subset][:, subset])
+    subset = torch.tensor(list(index)).long()
+    raw = retrieval_report(scores['raw'][subset, :], subset)
+    debiased = retrieval_report(scores['debiased'][subset, :], subset)
     return {'count': len(index), 'raw': raw, 'debiased': debiased,
-            'delta': delta_report(scores['raw'][subset][:, subset],
-                                  scores['debiased'][subset][:, subset])}
+            'delta': delta_report(scores['raw'][subset, :], scores['debiased'][subset, :], subset)}
 
 
 def state_digest(model) -> str:
@@ -410,9 +439,10 @@ def main():
     model = SALUModel(clip_model, said_feature_source='residual').float().to(args.device)
     os.makedirs(args.output_dir, exist_ok=True)
     for tag, path in parse_checkpoints(args.checkpoints):
-        if path in ('', '-'):                       # "initial:" -> fresh deterministic model
+        if path in ('', '-'):                       # no checkpoint: NOT an official baseline
             checkpoint = {'step': 0, 'epoch': 0}
             checkpoint_sha256 = None
+            tag = tag + '_fresh_untracked'      # never named "initial" in the results
         else:
             checkpoint = torch.load(path, map_location='cpu', weights_only=False)
             checkpoint_sha256 = file_sha256(path)

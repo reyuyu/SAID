@@ -14,6 +14,7 @@ for _p in (REPO_ROOT, os.path.join(REPO_ROOT, 'train'), os.path.join(REPO_ROOT, 
         sys.path.insert(0, _p)
 
 from eval.unsaid_retrieval import (  # noqa: E402
+    stratified_report,
     PROTOCOL_NAME,
     SCORERS,
     USR_SUFFIX_SEED,
@@ -152,6 +153,43 @@ def test_rank_bins_are_deterministic_and_balanced():
     assert [len(b) for b in bins] == [2, 2, 2]
     assert bins[0] == [1, 3] and bins[2] == [4, 2]
     assert rank_bins(values, 3) == bins                      # deterministic
+
+
+def test_subgroup_keeps_the_full_candidate_pool():
+    """Regression: subgrouping must select query rows only, never candidate columns."""
+    q = 8
+    scores = torch.full((q, q), -5.0)
+    scores.fill_diagonal_(1.0)
+    for row in range(q):                       # hard negatives inside and outside the subgroup
+        scores[row, (row + 3) % q] = 0.5
+    subset = torch.tensor([1, 4, 6])
+
+    correct = retrieval_report(scores[subset, :], subset)
+    buggy = retrieval_report(scores[subset][:, subset])
+    assert correct['candidate_pool'] == q                # full pool preserved
+    assert correct['query_count'] == len(subset)
+    assert buggy['candidate_pool'] == len(subset)        # the old behaviour shrank the pool
+    assert correct['R@1'] != buggy['R@1'] or correct['MRR'] != buggy['MRR']
+
+    delta_correct = delta_report(scores[subset, :], scores[subset, :] * 0.5, subset)
+    assert delta_correct['Delta MRR'] == pytest.approx(0.0)          # identical scorers
+    assert torch.equal(rank_of(scores[subset, :], subset), rank_of(scores, None)[subset])
+    assert rank_of(scores[subset, :], subset).tolist() == [1, 1, 1]
+
+
+def test_stratified_report_uses_the_full_candidate_pool():
+    q = 8
+    scores = {name: torch.full((q, q), -4.0) for name in ('raw', 'debiased')}
+    for name in scores:
+        scores[name].fill_diagonal_(1.0)
+    scores['debiased'][0, 5] = 9.0             # debiased beats raw for query 0 only
+    bins = stratified_report(scores, [0.1 * i for i in range(q)], 2, 'value')
+    assert [item['count'] for item in bins] == [4, 4]
+    for item in bins:
+        assert item['raw']['candidate_pool'] == q
+        assert item['debiased']['candidate_pool'] == q
+    assert bins[0]['delta']['Delta R@1'] > 0
+    assert bins[1]['delta']['Delta R@1'] == pytest.approx(0.0)
 
 
 # --------------------------------------------------------------------------- #
