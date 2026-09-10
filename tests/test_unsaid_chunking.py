@@ -278,6 +278,25 @@ def test_normalized_text_path_keeps_gradients_alive():
         assert grad.abs().sum().item() > 0, name
 
 
+def test_tri_gap_record_serializes_explicit_gaps_and_keeps_none():
+    """Phase 2.9C logging fix: the three explicit gaps reach the training record."""
+    from train_salu import tri_gap_record
+
+    full = tri_gap_record({'gap_global_to_full_text': 0.5,
+                           'gap_global_to_said_text': 0.6,
+                           'gap_said_to_said_text': 0.7})
+    assert full == {'gap_global_to_full_text': 0.5, 'gap_global_to_said_text': 0.6,
+                    'gap_said_to_said_text': 0.7}
+    prefix = tri_gap_record({'gap_global_to_full_text': None,
+                             'gap_global_to_said_text': 0.6,
+                             'gap_said_to_said_text': 0.7})
+    assert prefix['gap_global_to_full_text'] is None          # JSON null, not fabricated
+    empty = tri_gap_record({})
+    assert set(empty) == {'gap_global_to_full_text', 'gap_global_to_said_text',
+                          'gap_said_to_said_text'}
+    assert all(value is None for value in empty.values())
+
+
 def test_explicit_gap_diagnostics_are_finite_and_never_in_the_loss():
     model = build_model()
     images, tokens = make_batch()

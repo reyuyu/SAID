@@ -156,6 +156,19 @@ def append_validation_record(path, record):
         fp.write(json.dumps(record, sort_keys=True, ensure_ascii=False) + '\n')
 
 
+def tri_gap_record(out):
+    """Explicit tri-alignment gaps for the training log (Phase 2.9C logging fix).
+
+    ``forward_train`` already returns ``gap_global_to_full_text`` /
+    ``gap_global_to_said_text`` / ``gap_said_to_said_text``; Phase 2.9B computed them but
+    never serialized them. ``None`` (e.g. no full-caption view) stays ``None`` -> JSON null.
+    Logging only: no loss or forward math is touched.
+    """
+    return {key: (None if out.get(key) is None else float(out[key]))
+            for key in ('gap_global_to_full_text', 'gap_global_to_said_text',
+                        'gap_said_to_said_text')}
+
+
 def validation_key(step, dataset, caption_variant):
     """Identity of a validation result: never write the same one twice."""
     return (int(step), str(dataset), str(caption_variant))
@@ -711,6 +724,7 @@ def main():
                             'relative_balancing_gain'):
                     record[key] = float(out[key])
                 record['representation_gap_scope'] = 'rank0_local_training_batch'
+                record.update(tri_gap_record(out))
                 if caption_batch is not None:
                     record.update(caption_view_stats(caption_batch))
                 # Unsaid monitors: None (JSON null) when the branch is disabled, so a
