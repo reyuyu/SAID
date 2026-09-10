@@ -89,5 +89,72 @@ CPU 侧解码与 resize 成为瓶颈，GPU 会出现等待。这只影响吞吐�
 
 - 间隔验证会串行化训练：rank 0 评测时其余 rank 停在 barrier，训练吞吐在该步会出现一次尖峰。
   COCO 协议（5,000 图）比 ShareGPT4V 协议（1,000 图）慢，建议间隔设置得比 COCO 评测耗时长。
-- 评测特征在 CPU 上以 fp32 汇总；`similarity_chunk` 参数保留为协议标记，不改变指标数值。
+- 评测特征在 CPU 上以 fp32 汇总；`similarity_chunk` 只决定相似度块的形状，不改变指标数值。
 - 验证集固定为审计 manifest 定义的 split，不随训练随机种子变化，因此不同 run 之间的指标可直接比较。
+
+## Chunked 相似度（本阶段实现）
+
+`retrieval_metrics()` 不再构造完整的 `5000 × 25000` 相似度矩阵：
+
+- I2T：每次取 `image_features[start:end]` 与**全部**文本做矩阵乘，按行取 top-10；
+- T2I：每次取 `text_features[start:end]` 与**全部**图像做矩阵乘，按行取 top-10；
+- 每行先用 1-D `argsort()` 选候选（与 legacy `train_utils.eval_coco` 的 `argsort()[-k:]` 规则一致），
+  三档 Recall 都从同一份 top-10 中切出；
+- `similarity_chunk` 现在真正生效：chunk = 1 / 2 / 7 / 13 / 53 / 4096 / None 的结果**完全相同**
+  （单元测试断言字典相等，不是近似）。
+
+内存：默认 `chunk = 512` → I2T 块 512×25,000×4B ≈ 48.8 MB（完整矩阵为 476.8 MB），
+T2I 块 512×5,000×4B ≈ 9.8 MB。实测峰值 RSS：legacy 3153 MB → new 3279 MB。
+
+## legacy COCO 协议等价性（正式验证）
+
+同一 checkpoint（`runs_salu/phase22/salu_said_only_last.pt`，step 659，residual final）、
+同一 `preprocess`、同一 tokenizer、同一 COCO val2017 顺序与 caption 顺序，两次独立进程分别运行：
+
+| 指标 | legacy `train_utils.eval_coco` | new（chunk 512, image_batch 1） | 是否一致 |
+| --- | --- | --- | --- |
+| I2T R@1 | 0.5842 | 0.5842 | ✅ |
+| I2T R@5 | **0.8128** | **0.8130** | ❌ 差 1 张 |
+| I2T R@10 | 0.8850 | 0.8850 | ✅ |
+| T2I R@1 | 0.39984 | 0.39984 | ✅ |
+| T2I R@5 | 0.65884 | 0.65884 | ✅ |
+| T2I R@10 | 0.75708 | 0.75708 | ✅ |
+
+耗时：legacy 143.9 s（其中逐图编码约 132 s）；new（image_batch 1）148.4 s；
+new（image_batch 64）103.0 s。六个指标**未完全一致**，按指令 STOP 定因，结论如下。
+
+**已排除的原因**（均有实测证据）：
+
+1. 特征不一致 —— 打桩捕获 legacy 实际使用的特征后逐位比较：图像 max abs Δ = **0.0**、
+   文本 max abs Δ = **0.0**、差异行数 0；即两侧特征完全相同。
+2. 排序 / 顺序 / 归一化 / protocol 定义 —— caption 顺序、5-caption 映射、L2 归一化、
+   `argsort()[-k:]` 选择规则均一致；在同一批特征上，legacy 循环与 new 循环的命中数相同。
+3. 分块与整块 GEMM 的算术差异 —— 512 行块与整块逐位比较差异元素 **0**；
+   512 行块的每行 top-5 集合与整块矩阵 top-5 集合 **0 处不匹配**。
+
+**根因**：COCO val2017 的**第 1414 行**相似度对 GEMM 分块形状敏感——整块 5000 行与单行块
+在该行给出不同 top-5（整块 `{243, 6245, 6247, 12255, 23328}`，单行块
+`{243, 6245, 6247, 7073, 23328}`）。legacy 在整块矩阵上按行 `argsort`，该行的命中判定为
+"miss"，而分块路径判为 "hit"（`7073 ∈ truth = {7070..7074}`），于是 R@5 为 4065 而非 4064。
+差异规模为 **1 行 / 5000 = 0.02%**，只出现在 R@5。
+
+**权衡（需要 Review 决策）**：六项逐位相同要求计算完整 `5000 × 25000` 相似度矩阵（476.8 MB），
+而本阶段明确要求不构造完整矩阵。当前实现选择"有界显存 + 选择规则与 legacy 一致"，
+代价是这一行的浮点敏感性。若两者都要满足，可加一个仅用于认证的显式 `--exact_full_matrix`
+模式；本阶段未实现，等 Review 决定。
+
+## COCO val2017 / ShareGPT4V 训练集 overlap 审计
+
+对完整 manifest（1,246,901 条；training 1,245,901 + validation 1,000）按 canonical 标识比较：
+
+| 项目 | 数值 |
+| --- | --- |
+| COCO val2017 标注 id / 目录 stem | 5000 / 5000（差集 0） |
+| COCO 来源训练 stem 数 | 118,287 |
+| 训练集唯一 stem 数 | 1,245,901（无重复） |
+| **overlap：COCO 源 ∩ val2017** | **0** |
+| **overlap：任意来源 ∩ val2017** | **0** |
+| examples | 无 |
+
+结论：COCO val2017 的 5,000 张图没有任何一张出现在 ShareGPT4V 训练 split 中，
+检索指标不存在 val 泄漏。报告落在 `outputs/data_audit/coco_val_overlap_report.json`（未提交）。

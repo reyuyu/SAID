@@ -8,11 +8,12 @@ is never used.
 """
 import torch
 
-from eval.retrieval.coco_retrieval import retrieval_metrics
+from eval.retrieval.coco_retrieval import DEFAULT_SIMILARITY_CHUNK, retrieval_metrics
 
 
 @torch.inference_mode()
-def evaluate_sharegpt4v(model, dataset, batch_size=64, device=None):
+def evaluate_sharegpt4v(model, dataset, batch_size=64, device=None,
+                        similarity_chunk=DEFAULT_SIMILARITY_CHUNK):
     """Retrieval metrics on the fixed ShareGPT4V validation split.
 
     Args:
@@ -45,5 +46,6 @@ def evaluate_sharegpt4v(model, dataset, batch_size=64, device=None):
         text_features.append(core.encode_text(tokens).detach().cpu().float())
 
     return retrieval_metrics(
-        torch.cat(image_features), torch.cat(text_features), captions_per_image=1
+        torch.cat(image_features), torch.cat(text_features), captions_per_image=1,
+        similarity_chunk=similarity_chunk,
     )

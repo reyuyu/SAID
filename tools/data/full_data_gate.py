@@ -1,8 +1,23 @@
 """Bind a successful complete audit to the exact JSON, split, and data root."""
 import json
+import os
 from pathlib import Path
 
 from tools.data.audit_sharegpt4v import full_data_gate, sha256_file
+
+
+def resolve_json_path(image_root, json_setting):
+    """Resolve ``SHARE4V_JSON`` with the same semantics as the dataset loader.
+
+    Absolute paths are used as-is; relative paths (the usual case, e.g.
+    ``share-captioner_coco_lcs_sam_1246k_1107.json`` or ``debug/xxx.json``) are
+    joined onto ``SHARE4V_DATA_ROOT``.
+    """
+    if not json_setting:
+        raise ValueError('SHARE4V_JSON is empty')
+    if os.path.isabs(json_setting):
+        return json_setting
+    return os.path.join(image_root, json_setting)
 
 
 def require_full_data(audit_path, json_path, image_root):

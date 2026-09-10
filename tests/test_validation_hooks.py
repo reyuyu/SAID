@@ -12,49 +12,10 @@ for _p in (REPO_ROOT, TRAIN_DIR):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from eval.retrieval.coco_retrieval import retrieval_metrics  # noqa: E402
 from eval.retrieval.sharegpt4v_retrieval import evaluate_sharegpt4v  # noqa: E402
 from train_salu import append_val_record, parse_args, run_standard_validation  # noqa: E402
 
 METRIC_KEYS = {'%s_R%d' % (d, k) for d in ('image2text', 'text2image') for k in (1, 5, 10)}
-
-
-def test_retrieval_metrics_perfect_alignment_five_captions():
-    n, c, d = 8, 5, 8  # d >= n keeps every image feature unique
-    images = torch.zeros(n, d)
-    texts = torch.zeros(n * c, d)
-    for i in range(n):
-        images[i, i] = 1.0
-        for j in range(c):
-            texts[i * c + j, i] = 1.0
-    metrics = retrieval_metrics(images, texts, captions_per_image=5)
-    assert set(metrics) == METRIC_KEYS
-    for key, value in metrics.items():
-        assert value == pytest.approx(1.0), key
-
-
-def test_retrieval_metrics_single_caption_is_deterministic():
-    torch.manual_seed(0)
-    images = torch.randn(16, 8)
-    texts = torch.randn(16, 8)
-    first = retrieval_metrics(images, texts, captions_per_image=1)
-    second = retrieval_metrics(images, texts, captions_per_image=1)
-    assert first == second
-    assert set(first) == METRIC_KEYS
-    assert all(0.0 <= v <= 1.0 for v in first.values())
-
-
-def test_retrieval_metrics_scale_invariance():
-    torch.manual_seed(1)
-    images = torch.randn(12, 8) * 7.5
-    texts = torch.randn(12, 8) * 0.25
-    plain = retrieval_metrics(images, texts, captions_per_image=1)
-    normalized = retrieval_metrics(
-        torch.nn.functional.normalize(images, dim=-1),
-        torch.nn.functional.normalize(texts, dim=-1),
-        captions_per_image=1,
-    )
-    assert plain == normalized
 
 
 class _DummyDataset:

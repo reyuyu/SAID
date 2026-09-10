@@ -259,12 +259,10 @@ def main():
               flush=True)
 
     if args.strict_manifest or os.environ.get('SHARE4V_FULL_AUDIT'):
-        from tools.data.full_data_gate import require_full_data
+        from tools.data.full_data_gate import require_full_data, resolve_json_path
         root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V')
-        jp = os.environ.get('SHARE4V_JSON', 'share-captioner_coco_lcs_sam_1246k_1107.json')
-        if not os.path.isabs(jp):
-            # SHARE4V_JSON follows the dataset convention: relative to SHARE4V_DATA_ROOT
-            jp = os.path.join(root, jp)
+        # SHARE4V_JSON follows the dataset convention: relative to SHARE4V_DATA_ROOT
+        jp = resolve_json_path(root, os.environ.get('SHARE4V_JSON', 'share-captioner_coco_lcs_sam_1246k_1107.json'))
         ap = os.environ.get('SHARE4V_FULL_AUDIT', os.path.join(REPO_ROOT, 'outputs/data_audit/sharegpt4v_full_audit.json'))
         require_full_data(ap, jp, root)
         if rank == 0:
