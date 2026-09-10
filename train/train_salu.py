@@ -183,6 +183,10 @@ def parse_args(argv=None):
     parser.add_argument('--resume', default=None, help='SALU checkpoint to resume from')
     parser.add_argument('--eval_coco', action='store_true',
                         help='run standard CLIP COCO retrieval evaluation at the end (rank 0)')
+    parser.add_argument('--val_every', type=int, default=0)
+    parser.add_argument('--val_sharegpt4v', action='store_true')
+    parser.add_argument('--val_coco', action='store_true')
+    parser.add_argument('--strict_manifest', action='store_true')
     return parser.parse_args(argv)
 
 
@@ -227,6 +231,12 @@ def main():
               any(p.requires_grad for p in salu.clip.mask_net.parameters()) if hasattr(salu.clip, 'mask_net') else 'n/a',
               flush=True)
 
+    if args.strict_manifest or os.environ.get('SHARE4V_FULL_AUDIT'):
+        from tools.data.full_data_gate import require_full_data
+        root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V')
+        jp = os.environ.get('SHARE4V_JSON', os.path.join(root, 'sharegpt4v.json'))
+        ap = os.environ.get('SHARE4V_FULL_AUDIT', os.path.join(REPO_ROOT, 'outputs/data_audit/sharegpt4v_full_audit.json'))
+        require_full_data(ap, jp, root)
     train_set = share4v_train_dataset()
     sampler = DistributedSampler(train_set, shuffle=True, seed=args.seed)
     loader_generator = torch.Generator().manual_seed(args.seed + rank)
