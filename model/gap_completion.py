@@ -35,7 +35,13 @@ live CLS embedding to absorb the completion::
     complete_target = normalize(s_ref + u_new.detach())
     L_global_absorb = mean(1 - normalize(g_live) . complete_target)
 
-No loss moves both sides: discovery only moves ``z_U``, absorption only moves ``g``.
+No loss moves both sides: ``L_gap_discover``'s **direct graph gradient** flows through the
+``z_U`` branch (the ``g_ref`` and ``z_S`` reference branches are detached), and
+``L_global_absorb``'s direct graph gradient flows through the live ``g`` branch (the
+completion target is detached). Because ``g``, ``z_S`` and ``z_U`` all come from the *same*
+visual backbone, this is **not** parameter isolation: one optimizer update changes every
+visual representation of the next forward pass. Only the direct gradient path of the loss
+being differentiated is isolated.
 
 Terminology (Phase 3.0A). ``C_S`` **does** condition the visual complement construction
 (``C_S -> said raw scores -> soft anti-Said -> A_U -> z_U``), whereas the unsaid text
