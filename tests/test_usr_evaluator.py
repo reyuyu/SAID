@@ -27,6 +27,7 @@ from eval.unsaid_retrieval import (  # noqa: E402
     recover_prefix_k,
     retrieval_report,
     split_sentences,
+    stratified_report,
 )
 from sharegpt4v import sample_unsaid_index  # noqa: E402
 from test_debiased_unsaid import build_model  # noqa: E402
