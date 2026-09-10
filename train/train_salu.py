@@ -54,8 +54,10 @@ for _p in (REPO_ROOT, TRAIN_DIR):
 
 from model import longclip  # noqa: E402
 from model.salu_model import SALUModel  # noqa: E402
-from sharegpt4v import share4v_train_dataset  # noqa: E402
-from train_utils import eval_coco  # noqa: E402  (standard CLIP retrieval evaluation)
+from sharegpt4v import share4v_train_dataset, share4v_val_dataset  # noqa: E402
+from train_utils import eval_coco  # noqa: E402  (legacy SmartCLIP-style COCO evaluation)
+from eval.retrieval.coco_retrieval import evaluate_coco as evaluate_coco_standard  # noqa: E402
+from eval.retrieval.sharegpt4v_retrieval import evaluate_sharegpt4v  # noqa: E402
 from salu_reproducibility import seed_everything, seed_worker, state_digest, update_caption_digest
 
 
@@ -106,6 +108,26 @@ def summarize_throughput(global_batch, compute_times, wall_times):
         'wall_sec_per_step': wall_sec,
         'wall_samples_per_sec': (float(global_batch) / wall_sec) if wall_sec > 0 else 0.0,
     }
+
+
+def append_val_record(path, record):
+    """Append one validation record as a JSON line."""
+    with open(path, 'a') as fp:
+        fp.write(json.dumps(record, sort_keys=True) + '\n')
+
+
+def run_standard_validation(args, model, preprocess, val_set, device, step, world_size):
+    """Standard CLIP retrieval validation; the Said router is never used."""
+    record = {'step': step, 'world_size': world_size, 'kind': 'standard_retrieval'}
+    if args.val_sharegpt4v:
+        record['sharegpt4v'] = evaluate_sharegpt4v(
+            model, val_set, batch_size=args.val_batch_size, device=device
+        )
+    if args.val_coco:
+        record['coco'] = evaluate_coco_standard(
+            model, preprocess, batch_size=args.val_batch_size, device=device
+        )
+    return record
 
 
 def build_optimizer(model: SALUModel, backbone_lr, head_lr, weight_decay):
@@ -183,9 +205,14 @@ def parse_args(argv=None):
     parser.add_argument('--resume', default=None, help='SALU checkpoint to resume from')
     parser.add_argument('--eval_coco', action='store_true',
                         help='run standard CLIP COCO retrieval evaluation at the end (rank 0)')
-    parser.add_argument('--val_every', type=int, default=0)
-    parser.add_argument('--val_sharegpt4v', action='store_true')
-    parser.add_argument('--val_coco', action='store_true')
+    parser.add_argument('--val_every', type=int, default=0,
+                        help='run standard retrieval validation every N steps (0 = only at the end)')
+    parser.add_argument('--val_sharegpt4v', action='store_true',
+                        help='validate on the fixed 1,000-image ShareGPT4V validation split')
+    parser.add_argument('--val_coco', action='store_true',
+                        help='validate on COCO val2017 with the standard 5-caption protocol')
+    parser.add_argument('--val_batch_size', type=int, default=64,
+                        help='images per forward pass during validation')
     parser.add_argument('--strict_manifest', action='store_true')
     return parser.parse_args(argv)
 
@@ -234,9 +261,14 @@ def main():
     if args.strict_manifest or os.environ.get('SHARE4V_FULL_AUDIT'):
         from tools.data.full_data_gate import require_full_data
         root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V')
-        jp = os.environ.get('SHARE4V_JSON', os.path.join(root, 'sharegpt4v.json'))
+        jp = os.environ.get('SHARE4V_JSON', 'share-captioner_coco_lcs_sam_1246k_1107.json')
+        if not os.path.isabs(jp):
+            # SHARE4V_JSON follows the dataset convention: relative to SHARE4V_DATA_ROOT
+            jp = os.path.join(root, jp)
         ap = os.environ.get('SHARE4V_FULL_AUDIT', os.path.join(REPO_ROOT, 'outputs/data_audit/sharegpt4v_full_audit.json'))
         require_full_data(ap, jp, root)
+        if rank == 0:
+            print('FULL_DATA_GATE_PASS json=%s audit=%s' % (jp, ap), flush=True)
     train_set = share4v_train_dataset()
     sampler = DistributedSampler(train_set, shuffle=True, seed=args.seed)
     loader_generator = torch.Generator().manual_seed(args.seed + rank)
@@ -253,6 +285,11 @@ def main():
     steps_per_epoch = len(loader)
     total_steps = args.max_steps if args.max_steps is not None else args.epochs * steps_per_epoch
     global_batch = args.batch_size * world_size
+
+    val_set = None
+    if args.val_sharegpt4v and rank == 0:
+        val_set = share4v_val_dataset()
+        print('val_sharegpt4v_size', len(val_set), flush=True)
 
     start_step, start_epoch = 0, 0
     if args.resume:
@@ -357,6 +394,23 @@ def main():
                 save_checkpoint(ckpt_path, ddp_model, optimizer, scaler, step, epoch, args, base_lrs, total_steps)
                 print('SAVED ' + ckpt_path, flush=True)
 
+            if (args.val_every > 0 and step % args.val_every == 0
+                    and (args.val_sharegpt4v or args.val_coco)):
+                # keep every rank in lockstep around the rank-0-only evaluation
+                if dist.is_initialized():
+                    dist.barrier()
+                if rank == 0:
+                    ddp_model.eval()
+                    record = run_standard_validation(
+                        args, ddp_model, preprocess, val_set, device, step, world_size
+                    )
+                    record['tag'] = 'interval'
+                    append_val_record(os.path.join(args.output_dir, 'val_metrics.jsonl'), record)
+                    print('VAL ' + json.dumps(record, sort_keys=True), flush=True)
+                    ddp_model.train()
+                if dist.is_initialized():
+                    dist.barrier()
+
         if stopped:
             break
 
@@ -374,6 +428,15 @@ def main():
         print('SUMMARY ' + json.dumps(summary, sort_keys=True), flush=True)
         with open(os.path.join(args.output_dir, 'salu_summary.json'), 'w') as fp:
             json.dump(summary, fp, indent=2, sort_keys=True)
+
+        if args.val_sharegpt4v or args.val_coco:
+            ddp_model.eval()
+            record = run_standard_validation(
+                args, ddp_model, preprocess, val_set, device, step, world_size
+            )
+            record['tag'] = 'final'
+            append_val_record(os.path.join(args.output_dir, 'val_metrics.jsonl'), record)
+            print('VAL_FINAL ' + json.dumps(record, sort_keys=True), flush=True)
 
         if args.eval_coco:
             ddp_model.eval()
