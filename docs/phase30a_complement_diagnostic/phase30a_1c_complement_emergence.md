@@ -133,22 +133,28 @@ values are `n/a` there. Per-term backwards are run on a **fresh forward graph** 
 
 ## 3. Hypotheses
 
-### H1 — training insufficient: **NOT SUPPORTED**
+### H1 — training insufficient: **INCONCLUSIVE**
 
-The 3-step `cos(z_S,z_U) ≈ 0.99` is *not* an initialisation artefact that training washes
-out, but the trajectory is genuine and non-trivial:
+The within-arm cross-step numbers below come from **different batches at every logged step**
+(the training loop draws a new batch each step), so they are an optimization log, not a
+fixed-cohort longitudinal measurement. In addition `max_steps = 100` sits entirely **inside**
+`warmup_length = 200`, so the learning rate never leaves its first ~1.5 % of the schedule.
+A claim about whether training helps or hurts therefore requires fixed-cohort checkpoint
+evaluation; the trajectory alone cannot settle it.
 
-* `cos(z_S,z_U)`: 0.9893 → 0.9718 (tau1.0) and 0.9835 → 0.9637 (tau0.5) — moves down, but
-  stays ≈0.97 after 100 steps.
-* `novel_norm`: 0.1398 → 0.2269 (tau1.0) and 0.1737 → 0.2578 (tau0.5) — rises clearly.
-* `gap closure`: 0.0158 → **-0.1428** (tau1.0) and 0.0144 → **-0.1728** (tau0.5) —
-  *worsens*, does not rise. `closure_positive_fraction` collapses 0.652 → 0.066 (tau1.0)
-  and 0.625 → 0.051 (tau0.5).
+What the training log does show at face value:
 
-So more training does move the features apart, but it does **not** produce useful closure;
-the mechanism's own objective becomes *anti*-correlated with closure. Note also that
-`gap_before` itself falls 0.379 → 0.258 as the model trains (the global embedding and its
-own caption align), and it falls *faster* than `gap_after`, which is why the ratio degrades.
+* `cos(z_S,z_U)`: 0.9893 → 0.9718 (tau1.0) and 0.9835 → 0.9637 (tau0.5) — moves down.
+* `novel_norm`: 0.1398 → 0.2269 (tau1.0) and 0.1737 → 0.2578 (tau0.5) — rises.
+* `gap_after` (the optimized term): 0.3734 → 0.2904 (tau1.0) and 0.3739 → 0.2972 (tau0.5)
+  — **decreases**, i.e. `L_gap` is being optimized.
+* `gap_before` (the detached Said-only reference): 0.3792 → 0.2579 (tau1.0) and
+  0.3792 → 0.2577 (tau0.5) — decreases *faster* than `gap_after`.
+* `closure ratio`: 0.0158 → −0.1428 (tau1.0) and 0.0144 → −0.1728 (tau0.5).
+
+**The optimized absolute completion distance decreases, but the moving Said-only reference
+decreases faster, causing relative closure to deteriorate.** The optimizer is doing its job
+on its own objective; the defect is that this objective is not the closure diagnostic.
 
 ### H2 — `tau = 1.0` too soft: **NOT SUPPORTED**
 
@@ -159,6 +165,10 @@ criterion also required `gap closure >= tau=1`, and `tau = 0.5` closes *less* at
 steps, has a worse `gap_after` at **13/13** steps, and ends at a worse closure ratio
 (-0.1728 vs -0.1428). Lower temperature buys diversity and pays for it in usefulness —
 exactly the Section 13 counterexample, now inside training rather than only at step 0.
+
+This arm-to-arm comparison is the one longitudinal claim the training log *does* support:
+both arms see the **same batch at the same step** (verified in Section 2), the only
+difference is the temperature, so the paired comparison is matched rather than confounded.
 
 ### H3 — CLIP patch features homogeneous: **INCONCLUSIVE / does not explain the cosine**
 

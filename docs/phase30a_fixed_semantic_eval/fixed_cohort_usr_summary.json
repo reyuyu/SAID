@@ -1,0 +1,858 @@
+{
+  "c_u_is_evaluation_target_only": true,
+  "cohort_candidate_pool": 868,
+  "cohort_query_count": 868,
+  "cohort_sha256": "20c06542df13c309b09f028e987d1d65746e712930106792e72457d8a94395c8",
+  "notes": "Every checkpoint is evaluated on the identical frozen cohort: same images, same C_S, same C_U targets, same 868-candidate pool. No optimizer step is taken during evaluation. z_U is built from (I, C_S) before any candidate exists, and the score matrices are plain inner products over the full pool. The Gap core loss and the Gap core math are unchanged.",
+  "protocol": "phase30a-1d-fixed-cohort",
+  "random_chance": {
+    "R@1": 0.001152073732718894,
+    "R@10": 0.01152073732718894,
+    "R@5": 0.00576036866359447
+  },
+  "trajectory": {
+    "A_tau1.0_S_only": {
+      "checkpoints": {
+        "initial": {
+          "candidate_pool": 868,
+          "checkpoint_step": 0,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7223502397537231,
+              "mean_delta_rank": 105.70276641845703,
+              "median_delta_rank": 59.0,
+              "worsened_fraction": 0.24423962831497192
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.074884794652462,
+              "mean_delta_rank": -0.10483870655298233,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.13133640587329865
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.24423962831497192,
+              "mean_delta_rank": -105.80760192871094,
+              "median_delta_rank": -59.0,
+              "worsened_fraction": 0.7223502397537231
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.10234940052032471,
+              "R@1": 0.05875575914978981,
+              "R@10": 0.17165899276733398,
+              "R@5": 0.12557603418827057,
+              "mean_rank": 189.79954528808594,
+              "median_rank": 126.0
+            },
+            "global": {
+              "MRR": 0.3513632118701935,
+              "R@1": 0.26497694849967957,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4481566846370697,
+              "mean_rank": 84.09677124023438,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.10246466100215912,
+              "R@1": 0.05875575914978981,
+              "R@10": 0.17281106114387512,
+              "R@5": 0.12557603418827057,
+              "mean_rank": 189.9043731689453,
+              "median_rank": 126.0
+            }
+          }
+        },
+        "step100": {
+          "candidate_pool": 868,
+          "checkpoint_step": 100,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.809907853603363,
+              "mean_delta_rank": 138.7603759765625,
+              "median_delta_rank": 117.0,
+              "worsened_fraction": 0.16359446942806244
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.1071428582072258,
+              "mean_delta_rank": -1.9596774578094482,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.4677419364452362
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.16013824939727783,
+              "mean_delta_rank": -140.7200469970703,
+              "median_delta_rank": -118.0,
+              "worsened_fraction": 0.809907853603363
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.06419714540243149,
+              "R@1": 0.04032257944345474,
+              "R@10": 0.09331797063350677,
+              "R@5": 0.07258064299821854,
+              "mean_rank": 212.46543884277344,
+              "median_rank": 163.0
+            },
+            "global": {
+              "MRR": 0.363386332988739,
+              "R@1": 0.2718893885612488,
+              "R@10": 0.5334101319313049,
+              "R@5": 0.4677419364452362,
+              "mean_rank": 73.70507049560547,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.06293544918298721,
+              "R@1": 0.03801843151450157,
+              "R@10": 0.08986175060272217,
+              "R@5": 0.07258064299821854,
+              "mean_rank": 214.42510986328125,
+              "median_rank": 166.0
+            }
+          }
+        },
+        "step20": {
+          "candidate_pool": 868,
+          "checkpoint_step": 20,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.731566846370697,
+              "mean_delta_rank": 108.8110580444336,
+              "median_delta_rank": 63.0,
+              "worsened_fraction": 0.2338709682226181
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.08064515888690948,
+              "mean_delta_rank": -0.19930875301361084,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.14861750602722168
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.23271889984607697,
+              "mean_delta_rank": -109.01036834716797,
+              "median_delta_rank": -63.0,
+              "worsened_fraction": 0.731566846370697
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.09747183322906494,
+              "R@1": 0.0552995391190052,
+              "R@10": 0.16474653780460358,
+              "R@5": 0.11981566995382309,
+              "mean_rank": 191.8859405517578,
+              "median_rank": 131.0
+            },
+            "global": {
+              "MRR": 0.3521289825439453,
+              "R@1": 0.2661290466785431,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4458525478839874,
+              "mean_rank": 83.07488250732422,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.09736756235361099,
+              "R@1": 0.0552995391190052,
+              "R@10": 0.16359446942806244,
+              "R@5": 0.11866359412670135,
+              "mean_rank": 192.0852508544922,
+              "median_rank": 131.0
+            }
+          }
+        },
+        "step50": {
+          "candidate_pool": 868,
+          "checkpoint_step": 50,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7753456234931946,
+              "mean_delta_rank": 123.9573745727539,
+              "median_delta_rank": 94.0,
+              "worsened_fraction": 0.19239631295204163
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.074884794652462,
+              "mean_delta_rank": -0.45967742800712585,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.24078340828418732
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.19239631295204163,
+              "mean_delta_rank": -124.41705322265625,
+              "median_delta_rank": -96.0,
+              "worsened_fraction": 0.7764977216720581
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.08019572496414185,
+              "R@1": 0.047235023230314255,
+              "R@10": 0.13133640587329865,
+              "R@5": 0.09216590225696564,
+              "mean_rank": 202.50921630859375,
+              "median_rank": 146.0
+            },
+            "global": {
+              "MRR": 0.35640743374824524,
+              "R@1": 0.2661290466785431,
+              "R@10": 0.5288018584251404,
+              "R@5": 0.4573732614517212,
+              "mean_rank": 78.55184173583984,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.08026256412267685,
+              "R@1": 0.047235023230314255,
+              "R@10": 0.1301843374967575,
+              "R@5": 0.09331797063350677,
+              "mean_rank": 202.96888732910156,
+              "median_rank": 148.0
+            }
+          }
+        }
+      },
+      "gap_anti_temperature": 1.0,
+      "losses": "L_S"
+    },
+    "B_tau1.0_S+D": {
+      "checkpoints": {
+        "initial": {
+          "candidate_pool": 868,
+          "checkpoint_step": 0,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7223502397537231,
+              "mean_delta_rank": 105.70276641845703,
+              "median_delta_rank": 59.0,
+              "worsened_fraction": 0.24423962831497192
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.074884794652462,
+              "mean_delta_rank": -0.10483870655298233,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.13133640587329865
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.24423962831497192,
+              "mean_delta_rank": -105.80760192871094,
+              "median_delta_rank": -59.0,
+              "worsened_fraction": 0.7223502397537231
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.10234940052032471,
+              "R@1": 0.05875575914978981,
+              "R@10": 0.17165899276733398,
+              "R@5": 0.12557603418827057,
+              "mean_rank": 189.79954528808594,
+              "median_rank": 126.0
+            },
+            "global": {
+              "MRR": 0.3513632118701935,
+              "R@1": 0.26497694849967957,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4481566846370697,
+              "mean_rank": 84.09677124023438,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.10246466100215912,
+              "R@1": 0.05875575914978981,
+              "R@10": 0.17281106114387512,
+              "R@5": 0.12557603418827057,
+              "mean_rank": 189.9043731689453,
+              "median_rank": 126.0
+            }
+          }
+        },
+        "step100": {
+          "candidate_pool": 868,
+          "checkpoint_step": 100,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7972350120544434,
+              "mean_delta_rank": 131.58180236816406,
+              "median_delta_rank": 115.0,
+              "worsened_fraction": 0.17050690948963165
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.13133640587329865,
+              "mean_delta_rank": -1.4562212228775024,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.4447004497051239
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.16705068945884705,
+              "mean_delta_rank": -133.03802490234375,
+              "median_delta_rank": -116.0,
+              "worsened_fraction": 0.7995391488075256
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.07234864681959152,
+              "R@1": 0.044930875301361084,
+              "R@10": 0.10599078238010406,
+              "R@5": 0.08294931054115295,
+              "mean_rank": 206.14401245117188,
+              "median_rank": 158.0
+            },
+            "global": {
+              "MRR": 0.3591994047164917,
+              "R@1": 0.26843318343162537,
+              "R@10": 0.5345622301101685,
+              "R@5": 0.460829496383667,
+              "mean_rank": 74.56221008300781,
+              "median_rank": 9.0
+            },
+            "unsaid": {
+              "MRR": 0.07216346263885498,
+              "R@1": 0.044930875301361084,
+              "R@10": 0.1071428582072258,
+              "R@5": 0.08294931054115295,
+              "mean_rank": 207.60023498535156,
+              "median_rank": 159.0
+            }
+          }
+        },
+        "step20": {
+          "candidate_pool": 868,
+          "checkpoint_step": 20,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.72926265001297,
+              "mean_delta_rank": 108.49078369140625,
+              "median_delta_rank": 62.0,
+              "worsened_fraction": 0.2338709682226181
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.0714285746216774,
+              "mean_delta_rank": -0.1232718899846077,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.14400921761989594
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.2338709682226181,
+              "mean_delta_rank": -108.61405181884766,
+              "median_delta_rank": -63.0,
+              "worsened_fraction": 0.7304147481918335
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.09816616773605347,
+              "R@1": 0.05645161122083664,
+              "R@10": 0.16705068945884705,
+              "R@5": 0.12096773833036423,
+              "mean_rank": 191.57949829101562,
+              "median_rank": 129.0
+            },
+            "global": {
+              "MRR": 0.3513979911804199,
+              "R@1": 0.26497694849967957,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4458525478839874,
+              "mean_rank": 83.08870697021484,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.09752324223518372,
+              "R@1": 0.0552995391190052,
+              "R@10": 0.16474653780460358,
+              "R@5": 0.11981566995382309,
+              "mean_rank": 191.7027587890625,
+              "median_rank": 130.0
+            }
+          }
+        },
+        "step50": {
+          "candidate_pool": 868,
+          "checkpoint_step": 50,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7695852518081665,
+              "mean_delta_rank": 122.08294677734375,
+              "median_delta_rank": 93.0,
+              "worsened_fraction": 0.1981566846370697
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.074884794652462,
+              "mean_delta_rank": -0.3479262590408325,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.23617511987686157
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.19700460135936737,
+              "mean_delta_rank": -122.43087768554688,
+              "median_delta_rank": -95.0,
+              "worsened_fraction": 0.77073734998703
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.08156298100948334,
+              "R@1": 0.04838709533214569,
+              "R@10": 0.12788018584251404,
+              "R@5": 0.09447004646062851,
+              "mean_rank": 200.8859405517578,
+              "median_rank": 143.0
+            },
+            "global": {
+              "MRR": 0.3564693033695221,
+              "R@1": 0.26728111505508423,
+              "R@10": 0.5230414867401123,
+              "R@5": 0.4550691246986389,
+              "mean_rank": 78.80299377441406,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.08117012679576874,
+              "R@1": 0.04838709533214569,
+              "R@10": 0.1267281174659729,
+              "R@5": 0.09216590225696564,
+              "mean_rank": 201.23387145996094,
+              "median_rank": 145.0
+            }
+          }
+        }
+      },
+      "gap_anti_temperature": 1.0,
+      "losses": "L_S + L_gap"
+    },
+    "C_tau1.0_S+D+A": {
+      "checkpoints": {
+        "initial": {
+          "candidate_pool": 868,
+          "checkpoint_step": 0,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7223502397537231,
+              "mean_delta_rank": 105.70276641845703,
+              "median_delta_rank": 59.0,
+              "worsened_fraction": 0.24423962831497192
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.074884794652462,
+              "mean_delta_rank": -0.10483870655298233,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.13133640587329865
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.24423962831497192,
+              "mean_delta_rank": -105.80760192871094,
+              "median_delta_rank": -59.0,
+              "worsened_fraction": 0.7223502397537231
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.10234940052032471,
+              "R@1": 0.05875575914978981,
+              "R@10": 0.17165899276733398,
+              "R@5": 0.12557603418827057,
+              "mean_rank": 189.79954528808594,
+              "median_rank": 126.0
+            },
+            "global": {
+              "MRR": 0.3513632118701935,
+              "R@1": 0.26497694849967957,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4481566846370697,
+              "mean_rank": 84.09677124023438,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.10246466100215912,
+              "R@1": 0.05875575914978981,
+              "R@10": 0.17281106114387512,
+              "R@5": 0.12557603418827057,
+              "mean_rank": 189.9043731689453,
+              "median_rank": 126.0
+            }
+          }
+        },
+        "step100": {
+          "candidate_pool": 868,
+          "checkpoint_step": 100,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.8006912469863892,
+              "mean_delta_rank": 133.7315673828125,
+              "median_delta_rank": 108.0,
+              "worsened_fraction": 0.16935484111309052
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.09677419066429138,
+              "mean_delta_rank": -1.2638249397277832,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.42050692439079285
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.16820275783538818,
+              "mean_delta_rank": -134.99539184570312,
+              "median_delta_rank": -110.0,
+              "worsened_fraction": 0.8018433451652527
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.0709829181432724,
+              "R@1": 0.044930875301361084,
+              "R@10": 0.10483870655298233,
+              "R@5": 0.08179723471403122,
+              "mean_rank": 206.4827117919922,
+              "median_rank": 159.0
+            },
+            "global": {
+              "MRR": 0.36099180579185486,
+              "R@1": 0.27419355511665344,
+              "R@10": 0.5299538969993591,
+              "R@5": 0.4516128897666931,
+              "mean_rank": 72.75115203857422,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.07232998311519623,
+              "R@1": 0.047235023230314255,
+              "R@10": 0.10599078238010406,
+              "R@5": 0.08064515888690948,
+              "mean_rank": 207.7465362548828,
+              "median_rank": 159.0
+            }
+          }
+        },
+        "step20": {
+          "candidate_pool": 868,
+          "checkpoint_step": 20,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7304147481918335,
+              "mean_delta_rank": 108.55184173583984,
+              "median_delta_rank": 63.0,
+              "worsened_fraction": 0.23502303659915924
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.0679723471403122,
+              "mean_delta_rank": -0.1624424010515213,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.1463133692741394
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.23502303659915924,
+              "mean_delta_rank": -108.71428680419922,
+              "median_delta_rank": -63.0,
+              "worsened_fraction": 0.7304147481918335
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.09745962917804718,
+              "R@1": 0.0552995391190052,
+              "R@10": 0.16474653780460358,
+              "R@5": 0.11866359412670135,
+              "mean_rank": 191.6463165283203,
+              "median_rank": 130.0
+            },
+            "global": {
+              "MRR": 0.351639062166214,
+              "R@1": 0.26497694849967957,
+              "R@10": 0.5253456234931946,
+              "R@5": 0.4447004497051239,
+              "mean_rank": 83.09446716308594,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.09746801853179932,
+              "R@1": 0.0552995391190052,
+              "R@10": 0.16474653780460358,
+              "R@5": 0.11981566995382309,
+              "mean_rank": 191.8087615966797,
+              "median_rank": 130.0
+            }
+          }
+        },
+        "step50": {
+          "candidate_pool": 868,
+          "checkpoint_step": 50,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.77073734998703,
+              "mean_delta_rank": 122.89631652832031,
+              "median_delta_rank": 94.0,
+              "worsened_fraction": 0.19930875301361084
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.08064515888690948,
+              "mean_delta_rank": -0.471198171377182,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.24539171159267426
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.19700460135936737,
+              "mean_delta_rank": -123.36750793457031,
+              "median_delta_rank": -95.0,
+              "worsened_fraction": 0.77073734998703
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.08154948800802231,
+              "R@1": 0.047235023230314255,
+              "R@10": 0.12788018584251404,
+              "R@5": 0.09331797063350677,
+              "mean_rank": 201.22235107421875,
+              "median_rank": 145.0
+            },
+            "global": {
+              "MRR": 0.3576211929321289,
+              "R@1": 0.26728111505508423,
+              "R@10": 0.5288018584251404,
+              "R@5": 0.4550691246986389,
+              "mean_rank": 78.32603454589844,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.08108583092689514,
+              "R@1": 0.047235023230314255,
+              "R@10": 0.12788018584251404,
+              "R@5": 0.09331797063350677,
+              "mean_rank": 201.69354248046875,
+              "median_rank": 147.0
+            }
+          }
+        }
+      },
+      "gap_anti_temperature": 1.0,
+      "losses": "L_S + L_gap + L_absorb"
+    },
+    "D_tau0.5_S+D+A": {
+      "checkpoints": {
+        "initial": {
+          "candidate_pool": 868,
+          "checkpoint_step": 0,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7235022783279419,
+              "mean_delta_rank": 108.10368347167969,
+              "median_delta_rank": 59.0,
+              "worsened_fraction": 0.23963133990764618
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.10023041814565659,
+              "mean_delta_rank": -0.32949307560920715,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.22580644488334656
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.23847925662994385,
+              "mean_delta_rank": -108.43318176269531,
+              "median_delta_rank": -62.0,
+              "worsened_fraction": 0.7235022783279419
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.10019594430923462,
+              "R@1": 0.05645161122083664,
+              "R@10": 0.17281106114387512,
+              "R@5": 0.12903225421905518,
+              "mean_rank": 192.20045471191406,
+              "median_rank": 132.0
+            },
+            "global": {
+              "MRR": 0.3513632118701935,
+              "R@1": 0.26497694849967957,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4481566846370697,
+              "mean_rank": 84.09677124023438,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.10015745460987091,
+              "R@1": 0.05645161122083664,
+              "R@10": 0.17165899276733398,
+              "R@5": 0.1301843374967575,
+              "mean_rank": 192.5299530029297,
+              "median_rank": 132.0
+            }
+          }
+        },
+        "step100": {
+          "candidate_pool": 868,
+          "checkpoint_step": 100,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.8018433451652527,
+              "mean_delta_rank": 138.09793090820312,
+              "median_delta_rank": 112.0,
+              "worsened_fraction": 0.17050690948963165
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.13133640587329865,
+              "mean_delta_rank": -2.1440091133117676,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.48502305150032043
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.16935484111309052,
+              "mean_delta_rank": -140.24192810058594,
+              "median_delta_rank": -114.0,
+              "worsened_fraction": 0.8018433451652527
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.07093724608421326,
+              "R@1": 0.04608295112848282,
+              "R@10": 0.09907834231853485,
+              "R@5": 0.07949309051036835,
+              "mean_rank": 210.86981201171875,
+              "median_rank": 162.0
+            },
+            "global": {
+              "MRR": 0.35924044251441956,
+              "R@1": 0.2718893885612488,
+              "R@10": 0.5311059951782227,
+              "R@5": 0.45276498794555664,
+              "mean_rank": 72.77188873291016,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.06961336731910706,
+              "R@1": 0.044930875301361084,
+              "R@10": 0.09562212228775024,
+              "R@5": 0.07834101468324661,
+              "mean_rank": 213.01382446289062,
+              "median_rank": 162.0
+            }
+          }
+        },
+        "step20": {
+          "candidate_pool": 868,
+          "checkpoint_step": 20,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.72926265001297,
+              "mean_delta_rank": 112.22350311279297,
+              "median_delta_rank": 71.0,
+              "worsened_fraction": 0.23271889984607697
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.1105990782380104,
+              "mean_delta_rank": -0.3467741906642914,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.24423962831497192
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.23271889984607697,
+              "mean_delta_rank": -112.57027435302734,
+              "median_delta_rank": -71.0,
+              "worsened_fraction": 0.72926265001297
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.09688988327980042,
+              "R@1": 0.05645161122083664,
+              "R@10": 0.1624424010515213,
+              "R@5": 0.12096773833036423,
+              "mean_rank": 195.3168182373047,
+              "median_rank": 134.0
+            },
+            "global": {
+              "MRR": 0.3522215783596039,
+              "R@1": 0.2661290466785431,
+              "R@10": 0.5264977216720581,
+              "R@5": 0.4447004497051239,
+              "mean_rank": 83.09331512451172,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.09678912162780762,
+              "R@1": 0.05645161122083664,
+              "R@10": 0.16129031777381897,
+              "R@5": 0.12096773833036423,
+              "mean_rank": 195.66358947753906,
+              "median_rank": 134.0
+            }
+          }
+        },
+        "step50": {
+          "candidate_pool": 868,
+          "checkpoint_step": 50,
+          "cross_scorer_rank_delta": {
+            "global_vs_complete": {
+              "improved_fraction": 0.7788018584251404,
+              "mean_delta_rank": 128.76612854003906,
+              "median_delta_rank": 99.0,
+              "worsened_fraction": 0.19009216129779816
+            },
+            "unsaid_vs_complete": {
+              "improved_fraction": 0.10483870655298233,
+              "mean_delta_rank": -0.8594470024108887,
+              "median_delta_rank": 0.0,
+              "worsened_fraction": 0.32373273372650146
+            },
+            "unsaid_vs_global": {
+              "improved_fraction": 0.19009216129779816,
+              "mean_delta_rank": -129.62557983398438,
+              "median_delta_rank": -100.0,
+              "worsened_fraction": 0.7811059951782227
+            }
+          },
+          "query_count": 868,
+          "reports": {
+            "complete": {
+              "MRR": 0.07649119198322296,
+              "R@1": 0.04262672737240791,
+              "R@10": 0.1232718899846077,
+              "R@5": 0.0910138264298439,
+              "mean_rank": 207.11520385742188,
+              "median_rank": 149.0
+            },
+            "global": {
+              "MRR": 0.35800889134407043,
+              "R@1": 0.26843318343162537,
+              "R@10": 0.5288018584251404,
+              "R@5": 0.45276498794555664,
+              "mean_rank": 78.34907531738281,
+              "median_rank": 8.0
+            },
+            "unsaid": {
+              "MRR": 0.0766359344124794,
+              "R@1": 0.04262672737240791,
+              "R@10": 0.1232718899846077,
+              "R@5": 0.0910138264298439,
+              "mean_rank": 207.9746551513672,
+              "median_rank": 149.0
+            }
+          }
+        }
+      },
+      "gap_anti_temperature": 0.5,
+      "losses": "L_S + L_gap + L_absorb"
+    }
+  },
+  "usr_manifest": "outputs/validation/sharegpt4v1k_usr_manifest.json",
+  "usr_manifest_sha256": "ba2298ad836be0d95e952633b8a2a747f08509dba843b41b4ab6e37d6a703b19",
+  "usr_protocol": "sharegpt4v1k-usr-v1"
+}
