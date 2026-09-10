@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import random
+import time
 
 import torch
 import torch.distributed as dist
@@ -30,6 +31,8 @@ def main():
     if world > 1:
         torch.cuda.set_device(local_rank)
         dist.init_process_group('nccl')
+        # Object metadata is tiny control-plane traffic; avoid NCCL's object
+        # transport requiring GPU IPC/socket setup on this smoke environment.
     try:
         dataset = share4v_train_dataset(str(args.root), args.json, str(args.root),
                                        strict_manifest=args.audit, preprocess=_transform(224))
@@ -62,12 +65,17 @@ def main():
         sam_count = sum(dataset.json_data[i]['image'].startswith('sam/images/') for i in global_indices)
         result = {'rank': rank, 'records_read': seen, 'batches': batches, 'shapes': sorted(shapes),
                   'sam_records': sam_count, 'errors': 0, 'dataset_indices': global_indices}
-        results = [None] * world
-        if world > 1:
-            dist.all_gather_object(results, result)
-        else:
-            results = [result]
+        results = [result]
+        rank_output = args.output.with_name(args.output.stem + '_rank%02d.json' % rank)
+        write_json(rank_output, result)
         if rank == 0:
+            deadline = time.time() + 120
+            rank_paths = [args.output.with_name(args.output.stem + '_rank%02d.json' % i) for i in range(world)]
+            while time.time() < deadline and not all(path.exists() for path in rank_paths):
+                time.sleep(1)
+            if not all(path.exists() for path in rank_paths):
+                raise RuntimeError('rank result files missing')
+            results = [json.loads(path.read_text()) for path in rank_paths]
             all_indices = [i for item in results for i in item['dataset_indices']]
             assert len(all_indices) == len(set(all_indices)) == count
             assert all(item['batches'] == 20 for item in results) if world > 1 else seen == 1000
