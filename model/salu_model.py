@@ -31,6 +31,24 @@ it reuses the Said router's own-caption raw scores ``s`` and the same patch feat
 complement of the Said direction inside the global representation. With
 ``lambda_unsaid == 0`` the branch is not executed at all, so the model stays exactly
 the Said-only model (same losses, same RNG use, same speed).
+
+Phase 3.0A adds a second objective, selected by ``objective_mode='gap_completion'``
+(default ``'legacy'``): **Target-Independent Unsaid Semantic Supervision**, whose base
+form is **Said-Conditioned Visual Complement Discovery**. The training input is only
+``Image I`` + observed/incomplete caption ``C_S``: the gap path never receives
+``texts_full``, ``texts_unsaid`` or any candidate text, and the unsaid text ``C_U``
+never participates in visual representation construction. The gap path is a completely
+separate method (``_forward_gap_completion``) that re-runs the *same* reviewed math of
+``model/gap_completion.py`` --:
+
+    A_U = soft_anti_said_attention(s^S, temperature=gap_anti_temperature)     (detached)
+    z_U = normalize(sum_p A_U_p h_p)
+    L_gap_discover  = mean(gap_after)                     (direct graph gradient via z_U)
+    L_global_absorb = mean(1 - cos(normalize(g_live), normalize(s_ref + u_new).detach()))
+    L_total = lambda_said * L_S + lambda_gap_discover * L_gap + lambda_global_absorb * L_absorb
+
+-- and never calls ``unsaid_branch``, ``debiased_unsaid_branch`` or
+``_debiased_pair_scores``. With ``objective_mode='legacy'`` no gap code runs at all.
 """
 from typing import Dict, Optional
 
@@ -42,6 +60,18 @@ import torch.nn.functional as F
 from .salu_modules import SaidRouter
 from .representation_metrics import batch_representation_gaps
 from . import unsaid_core
+
+# Phase 3.0A: reviewed parameter-free Gap Completion math (never re-implemented here).
+from .gap_completion import (
+    gap_completion_terms,
+    gap_diagnostics,
+    gap_discovery_loss,
+    global_absorption_loss,
+    soft_anti_said_attention,
+    unsaid_feature_from_attention,
+)
+
+OBJECTIVE_MODES = ('legacy', 'gap_completion')
 
 
 def gather_features_with_grad(features: torch.Tensor) -> torch.Tensor:
@@ -241,7 +271,37 @@ class SALUModel(nn.Module):
         unsaid_gate_temperature: float = unsaid_core.DEFAULT_GATE_TEMPERATURE,
         unsaid_suppression_beta: float = unsaid_core.DEFAULT_SUPPRESSION_BETA,
         unsaid_candidate_chunk_size: int = 0,
+        objective_mode: str = 'legacy',
+        lambda_gap_discover: float = 1.0,
+        lambda_global_absorb: float = 1.0,
+        gap_anti_temperature: float = 1.0,
     ) -> Dict[str, torch.Tensor]:
+        # Phase 3.0A: a new keyword keeps every existing positional call site valid.
+        if objective_mode not in OBJECTIVE_MODES:
+            raise ValueError('objective_mode must be one of %r, got %r'
+                             % (OBJECTIVE_MODES, objective_mode))
+        if objective_mode == 'gap_completion':
+            # The gap objective is only Image I + C_S; the legacy global / Unsaid terms do
+            # not exist in it, so a non-zero weight is a configuration error, not a no-op.
+            if float(lambda_global) != 0.0:
+                raise ValueError("objective_mode='gap_completion' requires lambda_global == 0, got %r"
+                                 % (lambda_global,))
+            if float(lambda_unsaid) != 0.0:
+                raise ValueError("objective_mode='gap_completion' requires lambda_unsaid == 0, got %r"
+                                 % (lambda_unsaid,))
+            if global_caption_view != 'prefix':
+                raise ValueError("objective_mode='gap_completion' requires global_caption_view == 'prefix', got %r"
+                                 % (global_caption_view,))
+            # Dispatched *before* any legacy code: no global contrastive loss, no Unsaid
+            # branch, and ``encode_text`` runs exactly once (on C_S).
+            return self._forward_gap_completion(
+                images, texts,
+                lambda_said=lambda_said,
+                lambda_gap_discover=lambda_gap_discover,
+                lambda_global_absorb=lambda_global_absorb,
+                gap_anti_temperature=gap_anti_temperature,
+            )
+
         # lambda_unsaid == 0 must stay bit-for-bit the Said-only path: the branch is
         # skipped (not computed and multiplied by zero), so no extra q/k forward runs.
         unsaid_enabled = float(lambda_unsaid) != 0.0
@@ -609,6 +669,182 @@ class SALUModel(nn.Module):
             lambda_unsaid=lambda_unsaid, tau_unsaid=tau_unsaid,
             unsaid_residual_eps=unsaid_residual_eps, **kwargs,
         )
+
+    # ------------------------------------------------------------------ #
+    # Phase 3.0A: base Gap Completion objective (Image I + C_S only)
+    # ------------------------------------------------------------------ #
+    def _forward_gap_completion(
+        self,
+        images: torch.Tensor,
+        texts: torch.Tensor,
+        lambda_said: float = 1.0,
+        lambda_gap_discover: float = 1.0,
+        lambda_global_absorb: float = 1.0,
+        gap_anti_temperature: float = 1.0,
+    ) -> Dict[str, torch.Tensor]:
+        """Said-Conditioned Visual Complement Discovery: ``(I, C_S) -> L_total``.
+
+        ``texts`` is the tokenised observed/incomplete caption ``C_S`` and is the *only*
+        text this method ever sees: there is deliberately no ``texts_full``,
+        ``texts_unsaid``, ``texts_uss`` or candidate-text parameter, because the gap
+        objective must be constructible without the unsaid text ``C_U``.
+
+        Information flow (all of it conditioned on ``C_S``)::
+
+            z_global, patches = encode_router_input(images)   # one visual pass
+            t = normalize(encode_text(texts))                 # one text pass
+            said_scores, A_S, z_S = forward_with_details(t, patches)
+            A_U = soft_anti_said_attention(said_scores, gap_anti_temperature)   # detached
+            z_U = unsaid_feature_from_attention(A_U, patches)
+
+        Gradient description (see ``model/gap_completion.py``): ``L_gap_discover`` has a
+        **direct graph gradient** through the ``z_U`` branch (``z_S`` / ``g_ref`` are
+        detached) and ``L_global_absorb`` has one through the live global ``g`` branch
+        (the completion target is detached). This is *not* parameter isolation: ``g``,
+        ``z_S`` and ``z_U`` are all produced by the same visual backbone.
+        """
+        if int(images.shape[0]) < 2:
+            raise ValueError('gap_completion needs batch >= 2 for the identifiable Said loss, got %d'
+                             % int(images.shape[0]))
+        if images.shape[0] != texts.shape[0]:
+            raise ValueError('batch mismatch: %d images vs %d texts'
+                             % (int(images.shape[0]), int(texts.shape[0])))
+        if abs(float(lambda_said)) < 1e-12:
+            raise ValueError('lambda_said must be non-zero, otherwise L_said cannot train the '
+                             'Said router, got %r' % (lambda_said,))
+
+        z_global, patch_features = self.encode_router_input(images)
+        t = F.normalize(self.encode_text(texts), dim=-1)
+
+        details = self.said_router.forward_with_details(t, patch_features)
+        said_scores = details['scores']
+        A_own = details['attention']
+        z_s_own = details['said']
+
+        # soft anti-Said attention: target-independent, and detached by construction.
+        A_unsaid = soft_anti_said_attention(said_scores, temperature=gap_anti_temperature)
+        assert A_unsaid.requires_grad is False, 'A_U must never carry gradient'
+
+        z_unsaid = unsaid_feature_from_attention(A_unsaid, patch_features)
+
+        terms = gap_completion_terms(z_global, z_s_own, z_unsaid)
+        loss_gap_discover = gap_discovery_loss(terms)
+        loss_global_absorb = global_absorption_loss(z_global, z_s_own, z_unsaid)
+
+        scale = self.clip.logit_scale.exp().clamp(max=100)
+        z_pair, _ = self.said_router.route_pairwise(
+            t, patch_features, chunk_size=self.pair_chunk_size
+        )
+        said = identifiable_said_loss(z_pair, t, scale)
+        loss_said = said['loss_said']
+
+        loss_total = (float(lambda_said) * loss_said
+                      + float(lambda_gap_discover) * loss_gap_discover
+                      + float(lambda_global_absorb) * loss_global_absorb)
+
+        z_g = F.normalize(z_global, dim=-1)
+        zero = torch.zeros((), device=images.device, dtype=loss_total.dtype)
+
+        with torch.no_grad():
+            A_s_detached = A_own.detach().float()
+            A_u_detached = A_unsaid.detach().float()
+            entropy_said = SaidRouter.attention_entropy(A_s_detached)
+            entropy_unsaid = SaidRouter.attention_entropy(A_u_detached)
+            out = {
+                # the legacy global (CLIP contrastive) and Unsaid terms do not exist in
+                # this objective: ``None``, never a fabricated zero measurement.
+                'loss_global': None,
+                'loss_unsaid': None,
+                'global_text_alignment_enabled': False,
+                'unsaid_enabled': False,
+                'loss_said': loss_said,
+                'loss_total': loss_total,
+                'loss_route': said['loss_route'].detach(),
+                'loss_evidence': said['loss_evidence'].detach(),
+                'loss_gap_discover': loss_gap_discover.detach(),
+                'loss_global_absorb': loss_global_absorb.detach(),
+                'route_top1_acc': said['route_top1_acc'].detach(),
+                'evidence_top1_acc': said['evidence_top1_acc'].detach(),
+                'route_margin': said['route_margin'].detach(),
+                'evidence_margin': said['evidence_margin'].detach(),
+                'said_attention_entropy': entropy_said.mean(),
+                'said_effective_patch_count': entropy_said.exp().mean(),
+                'said_attention_max': A_s_detached.max(dim=-1).values.mean(),
+                'said_attention_min': A_s_detached.min(dim=-1).values.mean(),
+                'unsaid_attention_entropy': entropy_unsaid.mean(),
+                'unsaid_effective_patch_count': entropy_unsaid.exp().mean(),
+                'unsaid_attention_max': A_u_detached.max(dim=-1).values.mean(),
+                'said_unsaid_attention_overlap':
+                    unsaid_core.attention_overlap(A_s_detached, A_u_detached).mean(),
+                'said_unsaid_attention_jsd':
+                    unsaid_core.attention_jsd(A_s_detached, A_u_detached).mean(),
+                'global_feature_norm': z_g.detach().float().norm(dim=-1).mean(),
+                'said_feature_norm': z_s_own.detach().float().norm(dim=-1).mean(),
+                'unsaid_feature_norm': z_unsaid.detach().float().norm(dim=-1).mean(),
+                'router_input_feature_norm': patch_features.detach().float().norm(dim=-1).mean(),
+                'gap_anti_temperature': float(gap_anti_temperature),
+                'objective_mode': 'gap_completion',
+                'legacy_unsaid_terms': False,
+                'loss_said_zero': zero,
+            }
+            # detached gap diagnostics: closure is monitoring only and never in a loss.
+            for key, value in gap_diagnostics(terms).items():
+                out[key] = value
+            # the legacy 2.9B pair-gap diagnostics keep their names and stay available.
+            out.update(batch_representation_gaps(z_g, z_s_own, t))
+
+            def _gap(a, b):
+                return (1.0 - (F.normalize(a.float(), dim=-1)
+                               * F.normalize(b.float(), dim=-1)).sum(dim=-1)).mean()
+
+            out['gap_global_to_said_text'] = _gap(z_g, t)
+            out['gap_said_to_said_text'] = _gap(z_s_own, t)
+            # C_S is the only text view in this objective, so there is no full-caption gap.
+            out['gap_global_to_full_text'] = None
+        return out
+
+    def encode_said_unsaid(
+        self,
+        images: torch.Tensor,
+        said_texts: torch.Tensor,
+        return_details: bool = False,
+    ) -> Dict[str, torch.Tensor]:
+        """Encode ``(I, C_S)`` into the global / Said / Unsaid features (inference API).
+
+        ``said_texts`` is the tokenised observed/incomplete caption ``C_S``. The unsaid
+        feature ``z_U`` is built **without any unsaid text**: it is the soft anti-Said
+        pooling ``normalize(sum_p A_U_p h_p)`` of the image's own patches, where ``A_U``
+        comes from the Said raw scores of ``C_S`` alone.
+
+        Always returned: ``global_feature``, ``said_feature``, ``unsaid_feature``.
+        With ``return_details=True`` also: ``said_scores``, ``said_attention``,
+        ``unsaid_attention``, ``u_new``, ``gap_before``, ``gap_after``, ``closure``
+        and ``novel_norm``.
+        """
+        z_global, patch_features = self.encode_router_input(images)
+        t = F.normalize(self.encode_text(said_texts), dim=-1)
+        details = self.said_router.forward_with_details(t, patch_features)
+        z_said = details['said']
+        A_unsaid = soft_anti_said_attention(details['scores'], temperature=1.0)
+        z_unsaid = unsaid_feature_from_attention(A_unsaid, patch_features)
+        out = {
+            'global_feature': z_global,
+            'said_feature': z_said,
+            'unsaid_feature': z_unsaid,
+        }
+        if return_details:
+            terms = gap_completion_terms(z_global, z_said, z_unsaid)
+            out.update({
+                'said_scores': details['scores'],
+                'said_attention': details['attention'],
+                'unsaid_attention': A_unsaid,
+                'u_new': terms['u_new'],
+                'gap_before': terms['gap_before'],
+                'gap_after': terms['gap_after'],
+                'closure': terms['closure'],
+                'novel_norm': terms['novel_norm'],
+            })
+        return out
 
     def extra_repr(self) -> str:
         return 'tau_said=%g, said_loss_mode=%s, pair_chunk_size=%s, said_feature_source=%s' % (
