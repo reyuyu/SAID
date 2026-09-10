@@ -36,9 +36,19 @@ live CLS embedding to absorb the completion::
     L_global_absorb = mean(1 - normalize(g_live) . complete_target)
 
 No loss moves both sides: discovery only moves ``z_U``, absorption only moves ``g``.
-Terminology: the prefix defines *what is withheld*; with ``beta = 0`` it never enters the
-Unsaid scorer. This is **explicit alignment of under-utilized reported semantics**, not
-"Said-conditioned complementary retrieval" and not "inferring what is unsaid from what is said".
+
+Terminology (Phase 3.0A). ``C_S`` **does** condition the visual complement construction
+(``C_S -> said raw scores -> soft anti-Said -> A_U -> z_U``), whereas the unsaid text
+``C_U`` never participates in visual representation construction
+(``C_U -> A_U``: no, ``C_U -> z_U``: no, ``C_U -> g``: no). This is
+**Target-Independent Unsaid Semantic Supervision**, and its base form is
+**Said-Conditioned Visual Complement Discovery**. It is *not* "Said-conditioned
+complementary retrieval" (there is no candidate-retrieval architecture here), and it must
+never be described as "C_S does not condition Unsaid". ``L_gap_discover`` +
+``L_global_absorb`` form a stop-gradient bidirectional visual completion / self-distillation
+mechanism that **encourages the global image embedding to absorb complementary visual
+evidence**; it does not *guarantee* a complete global semantic representation, which has to
+be verified experimentally.
 """
 from typing import Dict
 
