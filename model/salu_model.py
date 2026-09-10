@@ -402,28 +402,10 @@ class SALUModel(nn.Module):
         sub_patches = patch_features[index]                                      # [Bu, P, D]
         sub_gate = gate[index]
         sub_attention_said = attention_said[index]
-        sub_text = F.normalize(text_unsaid[index], dim=-1)
-        k_hidden = F.normalize(self.said_router.k_proj(sub_patches), dim=-1)      # [Bu, P, D]
-        q_hidden = F.normalize(self.said_router.q_proj(text_unsaid[index]), dim=-1)  # [Bu, D]
-
         rows = torch.arange(valid_batch, device=sub_patches.device)
-        score_chunks, own_attention, own_raw_attention = [], [], []
-        for start in range(0, valid_batch, step):
-            stop = min(start + step, valid_batch)
-            logits = torch.einsum('cd,ipd->icp', q_hidden[start:stop], k_hidden)  # [Bu, C, P]
-            attention = unsaid_core.debiased_unsaid_attention(logits, sub_gate, tau_unsaid, beta)
-            pooled = torch.einsum('icp,ipd->icd', attention, sub_patches)
-            z_chunk = F.normalize(pooled, dim=-1)
-            score_chunks.append(scale * torch.einsum('icd,cd->ic', z_chunk, sub_text[start:stop]))
-            inside = (rows >= start) & (rows < stop)      # diagonal candidate inside this chunk
-            if bool(inside.any()):
-                local = rows[inside] - start
-                own_attention.append(attention[inside, local])
-                own_raw_attention.append(
-                    torch.softmax(logits / float(tau_unsaid), dim=-1)[inside, local])
-        pair_scores = torch.cat(score_chunks, dim=1)                              # [Bu, Bu]
-        A_own_pair = torch.cat(own_attention, dim=0)
-        A_raw_pair = torch.cat(own_raw_attention, dim=0)
+        pair_scores, A_own_pair, A_raw_pair = self._debiased_pair_scores(
+            sub_patches, text_unsaid[index], sub_gate, scale, tau_unsaid=tau_unsaid, beta=beta,
+            candidate_chunk_size=candidate_chunk_size, own_rows=rows)
         retrieval = unsaid_core.pairwise_retrieval_loss(pair_scores)
 
         with torch.no_grad():
@@ -464,36 +446,107 @@ class SALUModel(nn.Module):
         scale = self.clip.logit_scale.exp().clamp(max=100)
         return scale * torch.einsum('ijd,jd->ij', z_pair, F.normalize(texts, dim=-1))
 
+    def _debiased_pair_scores(self, patch_features, candidate_texts, gate, scale, *,
+                              tau_unsaid=unsaid_core.DEFAULT_TAU_UNSAID,
+                              beta=unsaid_core.DEFAULT_SUPPRESSION_BETA,
+                              candidate_chunk_size: int = 0, own_rows=None):
+        """Shared debiased-unsaid pairwise scoring used by training *and* inference.
+
+        ``patch_features`` [I, P, D], ``candidate_texts`` [C, D], ``gate`` [I, P].
+        Returns ``(scores [I, C], own_attention, own_raw_attention)``; the two attention
+        outputs are ``None`` unless ``own_rows`` is given, in which case only the
+        own-positive rows ``A^U_{i, own_rows[i]}`` are collected as ``[I, P]``.
+
+        The candidate dimension is chunked when ``candidate_chunk_size > 0``; the full
+        ``[I, C, P]`` attention is never materialised. ``candidate_chunk_size < 0``
+        raises ``ValueError``.
+        """
+        n_candidates = int(candidate_texts.shape[0])
+        step = n_candidates if not candidate_chunk_size else min(int(candidate_chunk_size),
+                                                                 n_candidates)
+        if int(candidate_chunk_size) < 0 or step <= 0:
+            raise ValueError('candidate_chunk_size must be >= 0, got %r'
+                             % (candidate_chunk_size,))
+        k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)   # [I, P, D]
+        q_hidden = F.normalize(self.said_router.q_proj(candidate_texts), dim=-1)  # [C, D]
+        rows = torch.arange(patch_features.shape[0], device=patch_features.device)
+        score_chunks, own_attention, own_raw_attention = [], [], []
+        for start in range(0, n_candidates, step):
+            stop = min(start + step, n_candidates)
+            logits = torch.einsum('cd,ipd->icp', q_hidden[start:stop], k_hidden)  # [I, Cc, P]
+            attention = unsaid_core.debiased_unsaid_attention(logits, gate, tau_unsaid, beta)
+            pooled = torch.einsum('icp,ipd->icd', attention, patch_features)
+            z_chunk = F.normalize(pooled, dim=-1)
+            text_chunk = F.normalize(candidate_texts[start:stop], dim=-1)
+            score_chunks.append(scale * torch.einsum('icd,cd->ic', z_chunk, text_chunk))
+            if own_rows is not None:
+                inside = (own_rows >= start) & (own_rows < stop)
+                if bool(inside.any()):
+                    local = own_rows[inside] - start
+                    own_attention.append(attention[inside, local])
+                    own_raw_attention.append(
+                        torch.softmax(logits / float(tau_unsaid), dim=-1)[inside, local])
+        scores = torch.cat(score_chunks, dim=1)
+        if own_rows is None:
+            return scores, None, None
+        return scores, torch.cat(own_attention, dim=0), torch.cat(own_raw_attention, dim=0)
+
     def score_unsaid_candidates(self, patch_features: torch.Tensor, prefix_texts: torch.Tensor,
                                candidate_texts: torch.Tensor,
                                tau_unsaid: float = unsaid_core.DEFAULT_TAU_UNSAID,
                                gate_floor: float = unsaid_core.DEFAULT_GATE_FLOOR,
                                gate_temperature: float = unsaid_core.DEFAULT_GATE_TEMPERATURE,
                                beta: float = unsaid_core.DEFAULT_SUPPRESSION_BETA,
+                               candidate_chunk_size: int = 0,
                                return_details: bool = False):
         """[B, C] pair scores for (image i, candidate missing text j).
 
-        The gate is built from each image's own prefix (``prefix_texts``); the attention
-        direction comes from the positive hidden-semantic score against the candidates.
-        Returns the score matrix, or ``{'scores', 'attention', 'gate', ...}`` when
-        ``return_details`` is set.
+        ``candidate_chunk_size == 0`` keeps the Phase 2.9A unchunked behaviour, including
+        the legacy ``return_details`` payload (``scores`` / ``attention`` /
+        ``hidden_logits`` / ``gate``). With ``candidate_chunk_size > 0`` the candidate
+        dimension is chunked and the full ``[B, C, P]`` attention is **never** built:
+        details then contain ``scores``, ``gate``, ``mode``/``n_chunks`` and — only when
+        ``B == C`` (candidate j belongs to image j, so the identity is well defined) — the
+        own-positive attention rows ``[B, P]``. No fabricated substitutes are returned.
         """
         with torch.no_grad():
             details = self.said_router.forward_with_details(
                 F.normalize(prefix_texts, dim=-1), patch_features)
         gate = unsaid_core.said_suppression_gate(details['scores'], gate_floor, gate_temperature)
-        q_hidden = F.normalize(self.said_router.q_proj(F.normalize(candidate_texts, dim=-1)), dim=-1)
-        k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)
-        hidden_logits = torch.einsum('jd,ipd->ijp', q_hidden, k_hidden)
-        attention = unsaid_core.debiased_unsaid_attention(hidden_logits, gate, tau_unsaid, beta)
-        z_unsaid = F.normalize(torch.einsum('ijp,ipd->ijd', attention, patch_features), dim=-1)
         scale = self.clip.logit_scale.exp().clamp(max=100)
-        scores = scale * torch.einsum('ijd,jd->ij', z_unsaid,
-                                      F.normalize(candidate_texts, dim=-1))
+        chunked = bool(candidate_chunk_size)
+        own_rows = (torch.arange(patch_features.shape[0], device=patch_features.device)
+                    if chunked and int(patch_features.shape[0]) == int(candidate_texts.shape[0])
+                    else None)
+        # Phase 2.9B.1: training and inference share one scoring helper (no drift). The
+        # Phase 2.9A API also normalised the candidate text *before* ``q_proj``, which the
+        # training path never did; that pre-normalisation is dropped here so both paths
+        # use the same frozen math (`q_proj` is affine, so the two forms differ).
+        scores, own_attention, own_raw_attention = self._debiased_pair_scores(
+            patch_features, candidate_texts, gate, scale, tau_unsaid=tau_unsaid, beta=beta,
+            candidate_chunk_size=candidate_chunk_size, own_rows=own_rows)
         if not return_details:
             return scores
-        return {'scores': scores, 'attention': attention, 'gate': gate,
-                'hidden_logits': hidden_logits}
+        if not chunked:
+            # legacy Phase 2.9A payload (unchunked: the full attention is affordable)
+            with torch.no_grad():
+                q_hidden = F.normalize(self.said_router.q_proj(candidate_texts), dim=-1)
+                k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)
+                hidden_logits = torch.einsum('jd,ipd->ijp', q_hidden, k_hidden)
+                attention = unsaid_core.debiased_unsaid_attention(hidden_logits, gate,
+                                                                  tau_unsaid, beta)
+            return {'scores': scores, 'attention': attention, 'gate': gate,
+                    'hidden_logits': hidden_logits, 'mode': 'unchunked'}
+        payload = {'scores': scores, 'gate': gate, 'mode': 'chunked',
+                   'candidate_chunk_size': int(candidate_chunk_size),
+                   'n_chunks': int(-(-int(candidate_texts.shape[0]) // int(candidate_chunk_size)))}
+        if own_attention is not None:
+            payload['own_attention'] = own_attention
+            payload['own_raw_attention'] = own_raw_attention
+        else:
+            payload['own_attention'] = None           # B != C: no well-defined diagonal
+            payload['own_raw_attention'] = None
+        return payload
 
     def unsaid_branch(
         self,

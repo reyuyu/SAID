@@ -628,7 +628,8 @@ def main():
                         'batch_unsaid_sha256': hashlib.sha256(
                             '\n'.join(batch['caption_unsaid']).encode('utf-8')).hexdigest()[:16],
                         'batch_has_unsaid_sha256': hashlib.sha256(
-                            ','.join(str(bool(value)) for value in batch['has_unsaid'])).hexdigest()[:16],
+                            ','.join(str(bool(value)) for value in batch['has_unsaid']
+                                     ).encode('utf-8')).hexdigest()[:16],
                     })
             images = images.to(device, non_blocking=True)
             update_caption_digest(caption_digest, texts)

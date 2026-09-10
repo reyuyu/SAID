@@ -268,7 +268,9 @@ def test_score_unsaid_candidates_retrieves_the_matching_hidden_text():
     assert scores[1, 1] > scores[1, 0]
     assert float(unsaid_core.pairwise_retrieval_loss(scores)['top1_i2t']) == 1.0
     details = model.score_unsaid_candidates(patches, prefix, candidates, return_details=True)
-    assert set(details) == {'scores', 'attention', 'gate', 'hidden_logits'}
+    # Phase 2.9B.1 adds the explicit 'mode' key (unchunked here)
+    assert {'scores', 'attention', 'gate', 'hidden_logits'} <= set(details)
+    assert details['mode'] == 'unchunked'
     assert torch.allclose(details['attention'].sum(-1), torch.ones(2, 2), atol=1e-5)
     assert (details['gate'] >= 0.1).all()
 
