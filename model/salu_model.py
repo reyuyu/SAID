@@ -240,6 +240,7 @@ class SALUModel(nn.Module):
         unsaid_gate_floor: float = unsaid_core.DEFAULT_GATE_FLOOR,
         unsaid_gate_temperature: float = unsaid_core.DEFAULT_GATE_TEMPERATURE,
         unsaid_suppression_beta: float = unsaid_core.DEFAULT_SUPPRESSION_BETA,
+        unsaid_candidate_chunk_size: int = 0,
     ) -> Dict[str, torch.Tensor]:
         # lambda_unsaid == 0 must stay bit-for-bit the Said-only path: the branch is
         # skipped (not computed and multiplied by zero), so no extra q/k forward runs.
@@ -311,6 +312,7 @@ class SALUModel(nn.Module):
                     has_unsaid, scale, tau_unsaid=tau_unsaid,
                     gate_floor=unsaid_gate_floor, gate_temperature=unsaid_gate_temperature,
                     beta=unsaid_suppression_beta,
+                    candidate_chunk_size=unsaid_candidate_chunk_size,
                 )
             else:
                 unsaid = self.unsaid_branch(
@@ -352,6 +354,16 @@ class SALUModel(nn.Module):
             for key in unsaid_core.DIAGNOSTIC_KEYS:
                 out[key] = None if unsaid is None else unsaid.get(key)
             out.update(batch_representation_gaps(z_g, z_s_own, t))
+            # Phase 2.9B explicit gap diagnostics (1 - cosine, detached, never in a loss);
+            # the legacy ``pair_gap_*`` fields stay untouched.
+            def _gap(a, b):
+                return (1.0 - (F.normalize(a.float(), dim=-1)
+                               * F.normalize(b.float(), dim=-1)).sum(dim=-1)).mean()
+
+            out['gap_global_to_said_text'] = _gap(z_g, t)
+            out['gap_said_to_said_text'] = _gap(z_s_own, t)
+            out['gap_global_to_full_text'] = (
+                _gap(z_g, t_global) if global_caption_view == 'full' else None)
         return out
 
     # ------------------------------------------------------------------ #
@@ -361,19 +373,21 @@ class SALUModel(nn.Module):
                                has_unsaid, scale, tau_unsaid=unsaid_core.DEFAULT_TAU_UNSAID,
                                gate_floor=unsaid_core.DEFAULT_GATE_FLOOR,
                                gate_temperature=unsaid_core.DEFAULT_GATE_TEMPERATURE,
-                               beta=unsaid_core.DEFAULT_SUPPRESSION_BETA) -> Dict[str, torch.Tensor]:
+                               beta=unsaid_core.DEFAULT_SUPPRESSION_BETA,
+                               candidate_chunk_size: int = 0) -> Dict[str, torch.Tensor]:
         """Unsaid alignment on the *withheld suffix sentence* of each sample.
 
         ``gate`` comes from the sample's own prefix Said scores and is detached; the
         direction of Unsaid attention is decided by the positive hidden-semantic score
         ``r^U`` (same ``W_q`` / ``W_k`` as Said, no new projection). Only samples with
         ``has_unsaid`` take part; a valid batch below 2 returns a differentiable zero.
+
+        Phase 2.9B: the valid filter runs *before* any pairwise interaction, and the
+        candidate dimension can be chunked (``candidate_chunk_size > 0``) so that the
+        ``[B_u, B_u, P]`` tensor never exists. Diagnostics keep only the own-positive
+        attention rows ``A^U_{i,i}`` ([B_u, P]).
         """
         gate = unsaid_core.said_suppression_gate(scores_said, gate_floor, gate_temperature)
-        q_hidden = F.normalize(self.said_router.q_proj(text_unsaid), dim=-1)     # [B, D]
-        k_hidden = F.normalize(self.said_router.k_proj(patch_features), dim=-1)  # [B, P, D]
-        hidden_logits = torch.einsum('jd,ipd->ijp', q_hidden, k_hidden)           # [B, B, P]
-
         index = torch.nonzero(has_unsaid.reshape(-1).bool(), as_tuple=False).flatten()
         valid_batch = int(index.numel())
         empty = {key: None for key in unsaid_core.DIAGNOSTIC_KEYS}
@@ -381,23 +395,38 @@ class SALUModel(nn.Module):
                       'unsaid_valid_ratio': has_unsaid.float().mean().detach()})
         if valid_batch < 2:
             return empty
+        step = valid_batch if not candidate_chunk_size else min(int(candidate_chunk_size), valid_batch)
+        if step <= 0:
+            raise ValueError('candidate_chunk_size must be >= 0, got %r' % (candidate_chunk_size,))
 
-        sub_patches = patch_features[index]
+        sub_patches = patch_features[index]                                      # [Bu, P, D]
         sub_gate = gate[index]
-        sub_scores_said = scores_said[index]
         sub_attention_said = attention_said[index]
-        sub_hidden = hidden_logits[index][:, index]                              # [Bu, Bu, P]
-        A_unsaid = unsaid_core.debiased_unsaid_attention(sub_hidden, sub_gate, tau_unsaid, beta)
-        z_unsaid = F.normalize(torch.einsum('ijp,ipd->ijd', A_unsaid, sub_patches), dim=-1)
-        t_unsaid = F.normalize(text_unsaid[index], dim=-1)
-        pair_scores = scale * torch.einsum('ijd,jd->ij', z_unsaid, t_unsaid)
+        sub_text = F.normalize(text_unsaid[index], dim=-1)
+        k_hidden = F.normalize(self.said_router.k_proj(sub_patches), dim=-1)      # [Bu, P, D]
+        q_hidden = F.normalize(self.said_router.q_proj(text_unsaid[index]), dim=-1)  # [Bu, D]
+
+        rows = torch.arange(valid_batch, device=sub_patches.device)
+        score_chunks, own_attention, own_raw_attention = [], [], []
+        for start in range(0, valid_batch, step):
+            stop = min(start + step, valid_batch)
+            logits = torch.einsum('cd,ipd->icp', q_hidden[start:stop], k_hidden)  # [Bu, C, P]
+            attention = unsaid_core.debiased_unsaid_attention(logits, sub_gate, tau_unsaid, beta)
+            pooled = torch.einsum('icp,ipd->icd', attention, sub_patches)
+            z_chunk = F.normalize(pooled, dim=-1)
+            score_chunks.append(scale * torch.einsum('icd,cd->ic', z_chunk, sub_text[start:stop]))
+            inside = (rows >= start) & (rows < stop)      # diagonal candidate inside this chunk
+            if bool(inside.any()):
+                local = rows[inside] - start
+                own_attention.append(attention[inside, local])
+                own_raw_attention.append(
+                    torch.softmax(logits / float(tau_unsaid), dim=-1)[inside, local])
+        pair_scores = torch.cat(score_chunks, dim=1)                              # [Bu, Bu]
+        A_own_pair = torch.cat(own_attention, dim=0)
+        A_raw_pair = torch.cat(own_raw_attention, dim=0)
         retrieval = unsaid_core.pairwise_retrieval_loss(pair_scores)
 
         with torch.no_grad():
-            diagonal = torch.arange(valid_batch, device=pair_scores.device)
-            A_own_pair = A_unsaid[diagonal, diagonal]                            # [Bu, P]
-            raw_attention = torch.softmax(sub_hidden / float(tau_unsaid), dim=-1)
-            A_raw_pair = raw_attention[diagonal, diagonal]
             entropy_said = unsaid_core.attention_entropy(sub_attention_said)
             entropy_unsaid = unsaid_core.attention_entropy(A_own_pair)
             diagnostics = {

@@ -414,6 +414,9 @@ def parse_args(argv=None):
                         help='lower bound of the soft Said-suppression gate (debiased_suffix)')
     parser.add_argument('--unsaid_gate_temperature', type=float, default=1.0)
     parser.add_argument('--unsaid_suppression_beta', type=float, default=1.0)
+    parser.add_argument('--unsaid_candidate_chunk_size', type=int, default=0,
+                        help='chunk the candidate-text dimension of the Unsaid attention '
+                             '(0 = Phase 2.9A unchunked behaviour, e.g. 32 for 2.9B)')
     parser.add_argument('--tau_said', type=float, default=0.07)
     parser.add_argument('--said_loss_mode', default='identifiable', choices=['positive', 'identifiable'],
                         help='positive = Phase 2 ablation; identifiable = Phase 2.2 routing objective')
@@ -559,6 +562,9 @@ def main():
     validation_history_path = os.path.join(args.output_dir, 'validation_history.jsonl')
     seen_validation = set()
     caption_digest = hashlib.sha256()
+    full_digest = hashlib.sha256()
+    unsaid_digest = hashlib.sha256()
+    has_unsaid_digest = hashlib.sha256()
     sampler_digest = hashlib.sha256()
     if rank == 0 and args.save_initial and not args.resume:
         torch.save({'model': salu.state_dict(), 'args': vars(args), 'step': 0,
@@ -614,8 +620,23 @@ def main():
                     'batch_image_sha256': hashlib.sha256(images.numpy().tobytes()).hexdigest()[:16],
                     'batch_caption_sha256': hashlib.sha256('\n'.join(texts).encode('utf-8')).hexdigest()[:16],
                 }
+                if tri_mode:
+                    batch_digests.update({
+                        'batch_prefix_sha256': batch_digests['batch_caption_sha256'],
+                        'batch_full_sha256': hashlib.sha256(
+                            '\n'.join(batch['caption_full']).encode('utf-8')).hexdigest()[:16],
+                        'batch_unsaid_sha256': hashlib.sha256(
+                            '\n'.join(batch['caption_unsaid']).encode('utf-8')).hexdigest()[:16],
+                        'batch_has_unsaid_sha256': hashlib.sha256(
+                            ','.join(str(bool(value)) for value in batch['has_unsaid'])).hexdigest()[:16],
+                    })
             images = images.to(device, non_blocking=True)
             update_caption_digest(caption_digest, texts)
+            if tri_mode:
+                update_caption_digest(full_digest, batch['caption_full'])
+                update_caption_digest(unsaid_digest, batch['caption_unsaid'])
+                update_caption_digest(has_unsaid_digest,
+                                      ['%s' % bool(value) for value in batch['has_unsaid']])
             text_tokens = longclip.tokenize(texts, truncate=True).to(device)
             full_tokens = (longclip.tokenize(texts_full, truncate=True).to(device)
                            if texts_full is not None else None)
@@ -636,7 +657,8 @@ def main():
                                 unsaid_mode=args.unsaid_mode,
                                 unsaid_gate_floor=args.unsaid_gate_floor,
                                 unsaid_gate_temperature=args.unsaid_gate_temperature,
-                                unsaid_suppression_beta=args.unsaid_suppression_beta)
+                                unsaid_suppression_beta=args.unsaid_suppression_beta,
+                                unsaid_candidate_chunk_size=args.unsaid_candidate_chunk_size)
                 loss = out['loss_total']
             if scaler.is_enabled():
                 scaler.scale(loss).backward()
@@ -770,6 +792,10 @@ def main():
         audit = {'rank': rank, 'seed': args.seed, 'initial_state_sha256': initial_digest,
                  'sampler_order_sha256': sampler_digest.hexdigest(),
                  'caption_stream_sha256': caption_digest.hexdigest(),
+                 'prefix_caption_stream_sha256': caption_digest.hexdigest(),
+                 'full_caption_stream_sha256': full_digest.hexdigest() if tri_mode else None,
+                 'unsaid_caption_stream_sha256': unsaid_digest.hexdigest() if tri_mode else None,
+                 'has_unsaid_stream_sha256': has_unsaid_digest.hexdigest() if tri_mode else None,
                  'steps': step, 'dataset_size': len(train_set)}
         with open(os.path.join(args.output_dir, 'reproducibility_rank%d.json' % rank), 'w') as fp:
             json.dump(audit, fp, indent=2, sort_keys=True)
