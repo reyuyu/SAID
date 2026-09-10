@@ -19,6 +19,19 @@ Throughput logging distinguishes:
   * compute_sec_per_step / compute_samples_per_sec: forward+backward+optimizer only
   * wall_sec_per_step / wall_samples_per_sec: full loop iteration (incl. data loading)
 
+Validation cadence (Phase 2.7B protocol):
+  * ``--val_every N`` drives **ShareGPT4V-1K only** (three frozen caption variants:
+    first_sentence / fixed_sparse / full_dense), also run at epoch end and final.
+  * COCO runs only at the cadence asked for: ``--eval_coco_initial`` (step 0),
+    ``--eval_coco_each_epoch`` (epoch end), ``--eval_coco`` (final).
+  * Every result is appended to ``<output_dir>/validation_history.jsonl`` (UTF-8,
+    ``ensure_ascii=False``) with step / epoch / dataset / caption_variant / metrics /
+    wall_sec / protocol / similarity_chunk; a repeated (step, dataset, variant) is
+    never written twice.
+  * All evaluation runs inside an RNG guard, so it cannot steer the training stream.
+  * ``--legacy_eval_coco`` additionally runs the legacy SmartCLIP evaluator for
+    protocol comparison.
+
 Example (4 GPUs, 676K no-SAM subset)::
 
     CUDA_VISIBLE_DEVICES=0,1,2,3 \
@@ -56,8 +69,18 @@ from model import longclip  # noqa: E402
 from model.salu_model import SALUModel  # noqa: E402
 from sharegpt4v import share4v_train_dataset, share4v_val_dataset  # noqa: E402
 from train_utils import eval_coco  # noqa: E402  (legacy SmartCLIP-style COCO evaluation)
-from eval.retrieval.coco_retrieval import evaluate_coco as evaluate_coco_standard  # noqa: E402
-from eval.retrieval.sharegpt4v_retrieval import evaluate_sharegpt4v  # noqa: E402
+from eval.retrieval.coco_retrieval import (  # noqa: E402
+    evaluate_coco as evaluate_coco_standard,
+    DEFAULT_SIMILARITY_CHUNK as CANONICAL_SIMILARITY_CHUNK,
+)
+from eval.validation_protocol import (  # noqa: E402
+    PROTOCOL_NAME as SHAREGPT4V1K_PROTOCOL,
+    VARIANTS as SHAREGPT4V1K_VARIANTS,
+    evaluate_all_variants,
+    evaluate_variant,
+    load_or_create_manifest,
+    rng_guard,
+)
 from salu_reproducibility import seed_everything, seed_worker, state_digest, update_caption_digest
 
 
@@ -110,24 +133,101 @@ def summarize_throughput(global_batch, compute_times, wall_times):
     }
 
 
-def append_val_record(path, record):
-    """Append one validation record as a JSON line."""
-    with open(path, 'a') as fp:
-        fp.write(json.dumps(record, sort_keys=True) + '\n')
+def append_validation_record(path, record):
+    """Append one validation record as a UTF-8 JSON line (never ASCII-escaped)."""
+    with open(path, 'a', encoding='utf-8') as fp:
+        fp.write(json.dumps(record, sort_keys=True, ensure_ascii=False) + '\n')
 
 
-def run_standard_validation(args, model, preprocess, val_set, device, step, world_size):
-    """Standard CLIP retrieval validation; the Said router is never used."""
-    record = {'step': step, 'world_size': world_size, 'kind': 'standard_retrieval'}
+def validation_key(step, dataset, caption_variant):
+    """Identity of a validation result: never write the same one twice."""
+    return (int(step), str(dataset), str(caption_variant))
+
+
+def plan_validation(args, step, is_epoch_end, is_final_step):
+    """Which validation jobs run at this step (cadence only, no dedupe).
+
+    ``--val_every`` drives ShareGPT4V-1K only. COCO runs at the cadence selected by
+    ``--eval_coco_initial`` / ``--eval_coco_each_epoch`` / ``--eval_coco`` (final);
+    when an epoch end is also the final step the caller runs COCO once.
+    """
+    jobs = []
     if args.val_sharegpt4v:
-        record['sharegpt4v'] = evaluate_sharegpt4v(
-            model, val_set, batch_size=args.val_batch_size, device=device
-        )
-    if args.val_coco:
-        record['coco'] = evaluate_coco_standard(
-            model, preprocess, batch_size=args.val_batch_size, device=device
-        )
+        interval = args.val_every > 0 and step % args.val_every == 0
+        if interval or is_epoch_end or is_final_step:
+            reason = 'interval' if interval else ('epoch_end' if is_epoch_end else 'final')
+            for variant in SHAREGPT4V1K_VARIANTS:
+                jobs.append({'dataset': 'sharegpt4v1k', 'caption_variant': variant, 'reason': reason})
+    coco_reason = None
+    if args.eval_coco_initial and step == 0:
+        coco_reason = 'initial'
+    elif args.eval_coco_each_epoch and is_epoch_end:
+        coco_reason = 'epoch_end'
+    elif (args.eval_coco or args.val_coco) and is_final_step:
+        coco_reason = 'final'
+    if coco_reason:
+        jobs.append({'dataset': 'coco_val2017', 'caption_variant': 'coco_5captions', 'reason': coco_reason})
+    return jobs
+
+
+def run_validation_job(args, job, model, preprocess, cohort, image_root, device,
+                       step, epoch, history_path, seen):
+    """Run one validation job under an RNG guard and append its record.
+
+    Returns the record, or ``None`` when (step, dataset, caption_variant) was
+    already written — a repeated ``final`` never produces a duplicate record.
+    """
+    key = validation_key(step, job['dataset'], job['caption_variant'])
+    if key in seen:
+        return None
+    seen.add(key)
+    started = time.time()
+    model.eval()
+    try:
+        with rng_guard():
+            if job['dataset'] == 'sharegpt4v1k':
+                result = evaluate_variant(
+                    model, cohort, image_root, job['caption_variant'], preprocess,
+                    batch_size=args.val_batch_size, similarity_chunk=CANONICAL_SIMILARITY_CHUNK,
+                    device=device,
+                )
+                metrics = {'retrieval': result['retrieval'], 'diagnostics': result['diagnostics']}
+                protocol = SHAREGPT4V1K_PROTOCOL
+            elif job['dataset'] == 'coco_val2017':
+                metrics = evaluate_coco_standard(
+                    model, preprocess, batch_size=args.val_batch_size,
+                    similarity_chunk=CANONICAL_SIMILARITY_CHUNK, device=device,
+                )
+                protocol = 'coco-val2017-5captions-v1'
+            else:
+                raise ValueError('unknown validation dataset %r' % (job['dataset'],))
+    finally:
+        model.train()
+    record = {
+        'step': int(step),
+        'epoch': int(epoch),
+        'dataset': job['dataset'],
+        'caption_variant': job['caption_variant'],
+        'metrics': metrics,
+        'wall_sec': time.time() - started,
+        'protocol': protocol,
+        'similarity_chunk': CANONICAL_SIMILARITY_CHUNK,
+        'reason': job.get('reason'),
+    }
+    append_validation_record(history_path, record)
     return record
+
+
+def run_planned_validation(args, model, preprocess, cohort, image_root, device,
+                           step, epoch, is_epoch_end, is_final_step, history_path, seen):
+    """Run every planned job for this step (rank 0 only) and return the records."""
+    records = []
+    for job in plan_validation(args, step, is_epoch_end, is_final_step):
+        record = run_validation_job(args, job, model, preprocess, cohort, image_root, device,
+                                    step, epoch, history_path, seen)
+        if record is not None:
+            records.append(record)
+    return records
 
 
 def build_optimizer(model: SALUModel, backbone_lr, head_lr, weight_decay):
@@ -204,15 +304,24 @@ def parse_args(argv=None):
     parser.add_argument('--scaler_init_scale', type=float, default=1024.0)
     parser.add_argument('--resume', default=None, help='SALU checkpoint to resume from')
     parser.add_argument('--eval_coco', action='store_true',
-                        help='run standard CLIP COCO retrieval evaluation at the end (rank 0)')
+                        help='run the canonical COCO val2017 retrieval evaluation at the end (rank 0)')
+    parser.add_argument('--eval_coco_each_epoch', action='store_true',
+                        help='also run COCO retrieval at every epoch end')
+    parser.add_argument('--eval_coco_initial', action='store_true',
+                        help='also run COCO retrieval at step 0 (future official runs)')
     parser.add_argument('--val_every', type=int, default=0,
-                        help='run standard retrieval validation every N steps (0 = only at the end)')
+                        help='ShareGPT4V-1K validation every N steps (0 = only epoch end / final)')
     parser.add_argument('--val_sharegpt4v', action='store_true',
-                        help='validate on the fixed 1,000-image ShareGPT4V validation split')
+                        help='validate the fixed ShareGPT4V-1K cohort with all three caption variants')
     parser.add_argument('--val_coco', action='store_true',
-                        help='validate on COCO val2017 with the standard 5-caption protocol')
+                        help='deprecated alias of --eval_coco (COCO at final)')
     parser.add_argument('--val_batch_size', type=int, default=64,
                         help='images per forward pass during validation')
+    parser.add_argument('--validation_manifest', default=os.path.join('outputs', 'validation',
+                                                                     'sharegpt4v1k_manifest.json'),
+                        help='frozen ShareGPT4V-1K caption manifest (created once, never resampled)')
+    parser.add_argument('--legacy_eval_coco', action='store_true',
+                        help='additionally run the legacy train_utils.eval_coco for comparison')
     parser.add_argument('--strict_manifest', action='store_true')
     return parser.parse_args(argv)
 
@@ -284,10 +393,18 @@ def main():
     total_steps = args.max_steps if args.max_steps is not None else args.epochs * steps_per_epoch
     global_batch = args.batch_size * world_size
 
-    val_set = None
+    cohort = None
+    cohort_root = None
     if args.val_sharegpt4v and rank == 0:
-        val_set = share4v_val_dataset()
-        print('val_sharegpt4v_size', len(val_set), flush=True)
+        data_root = os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V')
+        json_name = os.environ.get('SHARE4V_JSON', 'share-captioner_coco_lcs_sam_1246k_1107.json')
+        json_path = json_name if os.path.isabs(json_name) else os.path.join(data_root, json_name)
+        manifest = load_or_create_manifest(args.validation_manifest, json_path)
+        cohort = manifest['samples']
+        cohort_root = data_root
+        print('sharegpt4v1k_cohort %d variants %s manifest=%s json_sha256=%s' % (
+            len(cohort), ','.join(manifest['variants']), args.validation_manifest,
+            manifest['dataset_json_sha256'][:16]), flush=True)
 
     start_step, start_epoch = 0, 0
     if args.resume:
@@ -304,6 +421,8 @@ def main():
             print('resumed from %s at step %d epoch %d' % (args.resume, start_step, start_epoch), flush=True)
 
     log_path = os.path.join(args.output_dir, 'salu_log.jsonl')
+    validation_history_path = os.path.join(args.output_dir, 'validation_history.jsonl')
+    seen_validation = set()
     caption_digest = hashlib.sha256()
     sampler_digest = hashlib.sha256()
     if rank == 0 and args.save_initial and not args.resume:
@@ -326,6 +445,13 @@ def main():
                 stopped = True
                 break
 
+            batch_digests = None
+            if rank == 0 and (step % args.log_every == 0 or step == 0):
+                # per-step stream identity, used by the RNG-safety matched smoke
+                batch_digests = {
+                    'batch_image_sha256': hashlib.sha256(images.numpy().tobytes()).hexdigest()[:16],
+                    'batch_caption_sha256': hashlib.sha256('\n'.join(texts).encode('utf-8')).hexdigest()[:16],
+                }
             images = images.to(device, non_blocking=True)
             update_caption_digest(caption_digest, texts)
             text_tokens = longclip.tokenize(texts, truncate=True).to(device)
@@ -377,6 +503,8 @@ def main():
                     'global_feature_norm': float(out['global_feature_norm']),
                 }
                 record.update(throughput)
+                if batch_digests:
+                    record.update(batch_digests)
                 for key in ('pair_gap_full', 'pair_gap_said', 'balancing_gain',
                             'relative_balancing_gain'):
                     record[key] = float(out[key])
@@ -393,21 +521,30 @@ def main():
                 print('SAVED ' + ckpt_path, flush=True)
 
             if (args.val_every > 0 and step % args.val_every == 0
-                    and (args.val_sharegpt4v or args.val_coco)):
+                    and (args.val_sharegpt4v or args.eval_coco or args.val_coco)):
                 # keep every rank in lockstep around the rank-0-only evaluation
                 if dist.is_initialized():
                     dist.barrier()
                 if rank == 0:
-                    ddp_model.eval()
-                    record = run_standard_validation(
-                        args, ddp_model, preprocess, val_set, device, step, world_size
-                    )
-                    record['tag'] = 'interval'
-                    append_val_record(os.path.join(args.output_dir, 'val_metrics.jsonl'), record)
-                    print('VAL ' + json.dumps(record, sort_keys=True), flush=True)
-                    ddp_model.train()
+                    records = run_planned_validation(
+                        args, ddp_model, preprocess, cohort, cohort_root, device,
+                        step, epoch, False, False, validation_history_path, seen_validation)
+                    for record in records:
+                        print('VAL ' + json.dumps(record, sort_keys=True, ensure_ascii=False), flush=True)
                 if dist.is_initialized():
                     dist.barrier()
+
+        if (args.val_sharegpt4v or args.eval_coco_each_epoch) and not stopped:
+            if dist.is_initialized():
+                dist.barrier()
+            if rank == 0:
+                records = run_planned_validation(
+                    args, ddp_model, preprocess, cohort, cohort_root, device,
+                    step, epoch, True, False, validation_history_path, seen_validation)
+                for record in records:
+                    print('VAL_EPOCH_END ' + json.dumps(record, sort_keys=True, ensure_ascii=False), flush=True)
+            if dist.is_initialized():
+                dist.barrier()
 
         if stopped:
             break
@@ -427,20 +564,18 @@ def main():
         with open(os.path.join(args.output_dir, 'salu_summary.json'), 'w') as fp:
             json.dump(summary, fp, indent=2, sort_keys=True)
 
-        if args.val_sharegpt4v or args.val_coco:
-            ddp_model.eval()
-            record = run_standard_validation(
-                args, ddp_model, preprocess, val_set, device, step, world_size
-            )
-            record['tag'] = 'final'
-            append_val_record(os.path.join(args.output_dir, 'val_metrics.jsonl'), record)
-            print('VAL_FINAL ' + json.dumps(record, sort_keys=True), flush=True)
+        if args.val_sharegpt4v or args.eval_coco or args.val_coco:
+            records = run_planned_validation(
+                args, ddp_model, preprocess, cohort, cohort_root, device,
+                step, epoch, False, True, validation_history_path, seen_validation)
+            for record in records:
+                print('VAL_FINAL ' + json.dumps(record, sort_keys=True, ensure_ascii=False), flush=True)
 
-        if args.eval_coco:
+        if args.legacy_eval_coco:
             ddp_model.eval()
             result = eval_coco(ddp_model, preprocess)
-            print('COCO_RETRIEVAL ' + json.dumps(result, sort_keys=True), flush=True)
-            with open(os.path.join(args.output_dir, 'coco_retrieval.json'), 'w') as fp:
+            print('COCO_RETRIEVAL_LEGACY ' + json.dumps(result, sort_keys=True), flush=True)
+            with open(os.path.join(args.output_dir, 'coco_retrieval_legacy.json'), 'w') as fp:
                 json.dump(result, fp, indent=2, sort_keys=True)
 
     if dist.is_initialized():

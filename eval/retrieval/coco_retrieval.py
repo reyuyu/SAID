@@ -1,14 +1,25 @@
 """Standard, deterministic image<->text retrieval evaluation.
 
-Recall@K is computed with **exact chunked similarity**: the full
-``num_images x num_texts`` matrix is never materialised, yet the metrics are
-identical to the unchunked computation, because every similarity row is an
-independent dot product (chunking only changes which rows are computed together).
+Recall@K definition is identical to the legacy SmartCLIP ``train_utils.eval_coco``:
+each image is scored against every text (and vice versa) with L2-normalised
+features, and a hit means any of the image's own captions (or the image that owns
+a caption) appears in the top-K.
 
-Protocol (matches the legacy SmartCLIP ``train_utils.eval_coco``):
-  * COCO val2017, 5,000 images, first 5 captions per image in file order
-    -> 25,000 texts, so text index ``i`` belongs to image ``i // 5``.
-  * features are converted to CPU fp32 and L2-normalised before scoring.
+Scoring protocol
+----------------
+* ``similarity_chunk = 512`` is the **canonical protocol** for this project: the
+  full ``num_images x num_texts`` matrix is never materialised, and every model,
+  dataset and checkpoint must be evaluated with this same chunk so numbers are
+  directly comparable.
+* Chunking changes only which similarity rows are computed together. It is *not*
+  claimed to be bitwise identical to the full-matrix computation: for a handful of
+  near-tied rows (measured: 1 of 5,000 on COCO val2017 i2t R@5) the FP32 GEMM
+  block shape can change the last bits of a similarity and therefore the ordering
+  at the K boundary. Candidate selection reproduces the legacy rule
+  (per-row 1-D ``argsort()[-k:]``) so ties are broken the same way, but a
+  near-tie whose value itself shifts by 1 ulp can still flip.
+* Fairness therefore comes from fixing the evaluator and the chunk size, not from
+  assuming floating-point equality with a different GEMM shape.
 """
 import json
 import os

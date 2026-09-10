@@ -158,3 +158,63 @@ new（image_batch 64）103.0 s。六个指标**未完全一致**，按指令 STO
 
 结论：COCO val2017 的 5,000 张图没有任何一张出现在 ShareGPT4V 训练 split 中，
 检索指标不存在 val 泄漏。报告落在 `outputs/data_audit/coco_val_overlap_report.json`（未提交）。
+
+## 固定验证 Protocol（本阶段定稿）
+
+**Canonical similarity chunk = 512**，对所有模型、所有数据集统一；不为了对齐 legacy 的
+1/5000 R@5 浮点边界差异而切回完整相似度矩阵。`coco_retrieval.py` 的 docstring 已相应改写：
+不再声称分块与整块在有限精度下 bitwise identical，只声明 Recall@K 定义相同、chunk 固定、
+极少数 near-tie 可能因 FP32 GEMM 形状产生排序差异，因此**公平性来自固定的 evaluator + chunk**。
+
+**ShareGPT4V-1K 冻结 cohort**（`outputs/validation/sharegpt4v1k_manifest.json`，首次生成后只读）：
+
+- cohort：JSON 前 1,000 条（审计 held-out split），每图 1 caption → 1,000 路检索
+- 每个样本保存 `json_index` / `image_path` / 三种 caption，manifest 记录 `seed = 26`、
+  `dataset_json_sha256`、`similarity_chunk`
+- `first_sentence`：第一句
+- `fixed_sparse`：与训练相同的 prefix 规则（`'. '` 切分上的均匀随机前缀），但使用**私有 RNG**
+  （`seed + json_index`），一次生成后永久复用，绝不重采样
+- `full_dense`：完整 caption
+- 重建同一 JSON/seed 得到完全相同的 manifest；已存在的 manifest 若不匹配则报错而非覆盖
+- 变体重合（本 cohort）：`fixed_sparse == full_dense` 132/1000、`fixed_sparse == first_sentence`
+  141/1000；平均句数 4.48（sparse）vs 8.12（full）——trainng 规则的固有性质，如实记录
+
+**验证节奏**：
+
+- `--val_every N`：只驱动 ShareGPT4V-1K（三种变体），另在 epoch end 与 final 各跑一次
+- COCO 只按显式节奏：`--eval_coco_initial`（step 0）/ `--eval_coco_each_epoch`（epoch end）/
+  `--eval_coco`（final）；`--val_coco` 保留为 `--eval_coco` 的别名
+- 同一 `(step, dataset, caption_variant)` 只写一次：epoch end 与 final 落在同一步时 COCO
+  与 ShareGPT4V-1K 都只跑一次（实测 Run B：6 条记录而非 9 条）
+
+**RNG 安全**：每次评测都包在 `rng_guard()` 中，退出时恢复 Python `random`、NumPy、
+torch CPU 以及**全部 CUDA** RNG 状态。`validation_history.jsonl` 统一记录
+`step / epoch / dataset / caption_variant / metrics / wall_sec / protocol / similarity_chunk`
+（UTF-8，`ensure_ascii=False`）。
+
+## 实测：ShareGPT4V-1K 三变体（residual final，step 659）
+
+| 变体 | I2T R@1/5/10 | T2I R@1/5/10 | Full Gap | Full RMG | Said Gap | Said RMG | Balance Gain | Conditioning Margin | wall |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| first_sentence | 0.631 / 0.864 / 0.934 | 0.610 / 0.836 / 0.912 | 0.6755 | 0.5418 | 0.6675 | 0.5720 | +0.0080 | +0.0988 | 17.7 s |
+| fixed_sparse | 0.878 / 0.973 / 0.986 | 0.852 / 0.960 / 0.982 | 0.6460 | 0.4997 | 0.6756 | 0.5345 | −0.0297 | +0.1640 | 17.5 s |
+| full_dense | 0.947 / 0.995 / 0.997 | 0.931 / 0.996 / 0.997 | 0.6378 | 0.5010 | 0.6827 | 0.5409 | −0.0449 | +0.1835 | 18.2 s |
+
+检索只使用 `encode_image` / `encode_text`；Said 特征只出现在 Gap / RMG / conditioning 诊断中，
+从不进入检索排序（evaluator 内部断言 `encode_router_input == encode_image`，实测 max abs Δ = 0.0）。
+评测前后 RNG 快照完全一致（`rng_unchanged = True`）。
+
+## RNG matched smoke（4 × A800，full 1,245,901 训练集）
+
+- Run A：20 步，无验证
+- Run B：10 步 → 在 step 10 插入 ShareGPT4V-1K 三变体验证 → 继续到 20 步
+
+| 检查 | 结果 |
+| --- | --- |
+| 每步 batch 图像摘要（`batch_image_sha256`，全部 20 步） | 差异 0 |
+| 每步 caption 摘要（`batch_caption_sha256`，全部 20 步） | 差异 0 |
+| steps 11–20 摘要差异 | 0 |
+| rank 0–3 `sampler_order_sha256` | 全部一致 |
+| rank 0–3 `caption_stream_sha256` | 全部一致 |
+| rank 0–3 `initial_state_sha256` | 全部一致 |
+| Run A / Run B 验证记录数 | 0 / 6（step 10 与 step 20 各 3 变体） |
