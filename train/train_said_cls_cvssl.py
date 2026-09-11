@@ -44,7 +44,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import complement_visual_ssl as cvssl  # noqa: E402
 from model import longclip  # noqa: E402
 from model.said_cls_cvssl import (ARMS, ARM_LAMBDA_U, ARM_MASK, SaidClsCvsslObjective,  # noqa: E402
-                                  LAMBDA_ALIGN, LAMBDA_SPARSE)
+                                  SaidClsCvsslTrainModule, LAMBDA_ALIGN, LAMBDA_SPARSE)
 from said_cvssl_data import Share4VCvsslDataset, cvssl_collate, stateless_seed  # noqa: E402
 from scheduler import cosine_lr  # noqa: E402
 
@@ -310,6 +310,26 @@ def main():
     use_amp = args.amp_dtype == 'bf16'
     amp_dtype = torch.bfloat16
 
+    # real dtype audit, not config metadata: every trainable parameter and every AdamW group
+    dtype_counts = {}
+    for parameter in model.parameters():
+        key = str(parameter.dtype)
+        dtype_counts[key] = dtype_counts.get(key, 0) + 1
+    group_dtypes = {}
+    for name, group in (('backbone', optimizer), ('mask_net', mask_optimizer)):
+        group_dtypes[name] = sorted({str(p.dtype) for p in group.param_groups[0]['params']})
+    bf16_count = sum(1 for value in model.state_dict().values()
+                     if torch.is_tensor(value) and value.dtype == torch.bfloat16)
+    print('DTYPE_AUDIT rank=%d parameter_dtypes=%s backbone_group=%s mask_group=%s '
+          'bf16_tensors_in_model=%d amp_enabled=%s amp_dtype=%s'
+          % (rank, sorted(dtype_counts.items()), group_dtypes['backbone'],
+             group_dtypes['mask_net'], bf16_count, use_amp, args.amp_dtype), flush=True)
+    if dtype_counts != {'torch.float32': len(list(model.parameters()))}:
+        raise RuntimeError('fp32 master weights expected, got %r' % (dtype_counts,))
+    if group_dtypes != {'backbone': ['torch.float32'], 'mask_net': ['torch.float32']}:
+        raise RuntimeError('optimizer groups must be fp32, got %r' % (group_dtypes,))
+
+
     dataset = Share4VCvsslDataset(seed=args.seed, augment_view_b=not bool(args.view_b_off),
                                  strict_manifest=os.environ.get('SHARE4V_FULL_AUDIT'))
     sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True,
@@ -413,7 +433,8 @@ def main():
             view_digest.update(batch['view_b_resample_size'].numpy().tobytes())
             view_digest.update(batch['view_b_blur_sigma'].numpy().tobytes())
             if view_pixels_sha is None:
-                view_pixels_sha = tensor_digest(image_b[0])
+                # ``image_b`` only exists inside the step/probe helpers; the loop owns ``batch``.
+                view_pixels_sha = tensor_digest(batch['image_b'][0])
 
             # The gradient probe re-runs the objective, whose loss contains distributed collectives:
             # it must therefore run on EVERY rank at the same step (a rank-0-only probe would hang
