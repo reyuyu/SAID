@@ -40,12 +40,16 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 
-from eval.retrieval.coco_retrieval import DEFAULT_SIMILARITY_CHUNK, retrieval_metrics
+from eval.retrieval.coco_retrieval import (DEFAULT_SIMILARITY_CHUNK, patch_global_features,
+                                           retrieval_metrics)
 from eval.salu.representation_balance_metrics import cyclic_indices, gap_comparison
 from eval.salu.representation_probe import file_sha256, training_like_caption, write_json
 from model import longclip
 
 VARIANTS = ('first_sentence', 'fixed_sparse', 'full_dense')
+# ``patch_global`` (z_G = Pool(H)) is SAID-ExGAP's primary image representation; ``legacy_cls``
+# is the native CLIP embedding and is reported as a diagnostic only.
+IMAGE_REPRESENTATIONS = ('patch_global', 'legacy_cls')
 MANIFEST_SEED = 26
 N_IMAGES = 1000
 CANONICAL_SIMILARITY_CHUNK = DEFAULT_SIMILARITY_CHUNK  # 512
@@ -152,15 +156,25 @@ def rng_snapshot() -> dict:
 @torch.inference_mode()
 def evaluate_variant(model, samples: List[dict], image_root, variant: str, preprocess,
                      batch_size: int = 64, similarity_chunk: int = CANONICAL_SIMILARITY_CHUNK,
-                     device=None) -> Dict:
-    """Standard retrieval + representation diagnostics for one caption variant."""
+                     device=None, image_representation: str = 'legacy_cls',
+                     global_pool: str = 'mean') -> Dict:
+    """Standard retrieval + representation diagnostics for one caption variant.
+
+    ``image_representation`` decides which image embedding enters the retrieval ranking:
+    ``legacy_cls`` (native CLIP ``encode_image``, the historical default) or ``patch_global``
+    (SAID-ExGAP's ``z_G = Pool(H)``, from ``SALUModel.encode_exgap_global``). **Both** are always
+    computed in the same pass and returned under ``retrieval_by_representation``; ``retrieval``
+    mirrors the requested primary one. The two are never merged into a single column.
+    """
     if variant not in VARIANTS:
         raise ValueError('unknown caption variant %r' % (variant,))
+    if image_representation not in IMAGE_REPRESENTATIONS:
+        raise ValueError('unknown image representation %r' % (image_representation,))
     device = torch.device(device or next(model.parameters()).device)
     core = model.module if hasattr(model, 'module') else model
     image_root = Path(image_root)
 
-    standard_images, router_images, patches, texts = [], [], [], []
+    standard_images, patch_global_images, router_images, patches, texts = [], [], [], [], []
     equivalence = 0.0
     for start in range(0, len(samples), batch_size):
         chunk = samples[start:start + batch_size]
@@ -175,7 +189,12 @@ def evaluate_variant(model, samples: List[dict], image_root, variant: str, prepr
             equivalence = float((standard - full).abs().max())
             if equivalence > 1e-6:
                 raise RuntimeError('encode_router_input does not match encode_image (%.3e)' % equivalence)
+        # the primary representation must come from the shared implementation (model API when the
+        # model provides it, otherwise the same formula the API calls), and is cross-checked
+        # against that formula below
+        patch_global, patch_global_source = patch_global_features(core, tensor, global_pool)
         standard_images.append(F.normalize(standard.float(), dim=-1).cpu())
+        patch_global_images.append(F.normalize(patch_global.float(), dim=-1).cpu())
         router_images.append(F.normalize(full.float(), dim=-1).cpu())
         patches.append(patch.float().cpu())
         captions = [sample['captions'][variant] for sample in chunk]
@@ -183,9 +202,21 @@ def evaluate_variant(model, samples: List[dict], image_root, variant: str, prepr
         texts.append(F.normalize(core.encode_text(tokens).float(), dim=-1).cpu())
 
     z_standard = torch.cat(standard_images)
+    z_patch_global = torch.cat(patch_global_images)
     z_full = torch.cat(router_images)
     patch_bank = torch.cat(patches)
     text = torch.cat(texts)
+
+    # drift guard: the API result must equal what the training forward builds, bit-for-bit up to
+    # float noise. A mismatch means the evaluator and the objective read different z_G.
+    from model import exgap
+    with torch.no_grad():
+        manual = exgap.compute_global_representation(
+            exgap.normalize_patches(patch_bank.to(device)), pool='mean')[0].float().cpu()
+    drift = float((F.normalize(manual, dim=-1) - z_patch_global).abs().max())
+    if patch_global_source == 'model_api' and global_pool == 'mean' and drift > 1e-5:
+        raise RuntimeError('encode_exgap_global disagrees with the training z_G formula (%.3e)'
+                           % drift)
 
     _, said = core.said_router(text.to(device), patch_bank.to(device))
     said = F.normalize(said.float(), dim=-1).cpu()
@@ -193,8 +224,13 @@ def evaluate_variant(model, samples: List[dict], image_root, variant: str, prepr
     _, said_shuffled = core.said_router(shuffled_text.to(device), patch_bank.to(device))
     said_shuffled = F.normalize(said_shuffled.float(), dim=-1).cpu()
 
-    retrieval = retrieval_metrics(z_standard, text, captions_per_image=1,
-                                 similarity_chunk=similarity_chunk)
+    retrieval_by_representation = {
+        'legacy_cls': retrieval_metrics(z_standard, text, captions_per_image=1,
+                                        similarity_chunk=similarity_chunk),
+        'patch_global': retrieval_metrics(z_patch_global, text, captions_per_image=1,
+                                          similarity_chunk=similarity_chunk),
+    }
+    retrieval = retrieval_by_representation[image_representation]
     comparison = gap_comparison(z_full.numpy(), z_full.numpy(), said.numpy(),
                                 text.numpy(), said_shuffled.numpy())
     diagnostics = {
@@ -214,18 +250,26 @@ def evaluate_variant(model, samples: List[dict], image_root, variant: str, prepr
     }
     return {
         'retrieval': retrieval,
+        'retrieval_by_representation': retrieval_by_representation,
+        'image_representation': image_representation,
+        'global_pool': global_pool,
+        'patch_global_source': patch_global_source,
+        'z_patch_global_vs_training_formula_max_abs_diff': drift,
         'diagnostics': diagnostics,
         'n': len(samples),
         'caption_variant': variant,
         'similarity_chunk': similarity_chunk,
         'z_full_vs_encode_image_max_abs_diff': equivalence,
-        'note': 'Said features are used for diagnostics only and never enter the retrieval ranking',
+        'note': ('PRIMARY image representation for SAID-ExGAP is patch_global (z_G = Pool(H)); '
+                 'legacy_cls is a diagnostic only. Said features are used for diagnostics only '
+                 'and never enter the retrieval ranking'),
     }
 
 
 def evaluate_all_variants(model, samples, image_root, preprocess, variants=VARIANTS,
                           batch_size: int = 64, similarity_chunk: int = CANONICAL_SIMILARITY_CHUNK,
-                          device=None) -> Dict[str, Dict]:
+                          device=None, image_representation: str = 'legacy_cls',
+                          global_pool: str = 'mean') -> Dict[str, Dict]:
     """Run every caption variant inside one RNG guard."""
     results = {}
     with rng_guard():
@@ -233,7 +277,8 @@ def evaluate_all_variants(model, samples, image_root, preprocess, variants=VARIA
             started = time.time()
             result = evaluate_variant(model, samples, image_root, variant, preprocess,
                                       batch_size=batch_size, similarity_chunk=similarity_chunk,
-                                      device=device)
+                                      device=device, image_representation=image_representation,
+                                      global_pool=global_pool)
             result['wall_sec'] = time.time() - started
             results[variant] = result
     return results

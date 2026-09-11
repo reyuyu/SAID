@@ -140,13 +140,48 @@ def retrieval_metrics(image_features, text_features, captions_per_image=5,
     return out
 
 
+def patch_global_features(core, images, global_pool='mean'):
+    """``(z_G, source)`` for one image batch -- SAID-ExGAP's primary image representation.
+
+    Prefers ``SALUModel.encode_exgap_global`` (the API the training forward itself goes through).
+    A model without that API (a test stub, or an older wrapper) falls back to the *same* shared
+    functions the API calls -- ``exgap.normalize_patches`` + ``exgap.compute_global_representation``
+    -- so no second pooling implementation exists anywhere; ``source`` records which path ran, and
+    the caller cross-checks the two whenever the API is present.
+    """
+    from model import exgap
+
+    api = getattr(core, 'encode_exgap_global', None)
+    if api is not None:
+        return api(images, global_pool=global_pool), 'model_api'
+    if global_pool != 'mean':
+        raise ValueError("global_pool=%r needs encode_exgap_global (the parameter-free fallback "
+                         "only implements 'mean')" % (global_pool,))
+    _, patch_features = core.encode_router_input(images)
+    h = exgap.normalize_patches(patch_features)
+    return exgap.compute_global_representation(h, pool='mean')[0], 'training_formula'
+
+
 @torch.inference_mode()
-def evaluate_coco(model, preprocess, root=None, ann_file=None, batch_size=64,
-                  similarity_chunk=DEFAULT_SIMILARITY_CHUNK, device=None):
-    """COCO val2017 retrieval with the standard 5-caption protocol."""
+def evaluate_coco_representations(model, preprocess, root=None, ann_file=None, batch_size=64,
+                                  similarity_chunk=DEFAULT_SIMILARITY_CHUNK, device=None,
+                                  global_pool='mean',
+                                  representations=('patch_global', 'legacy_cls')):
+    """COCO val2017 retrieval for every requested image representation, in ONE image pass.
+
+    ``patch_global`` is SAID-ExGAP's **primary** image representation ``z_G = Pool(H)`` and comes
+    from ``SALUModel.encode_exgap_global`` (the same call the training forward makes);
+    ``legacy_cls`` is the native CLIP ``encode_image`` embedding and is a **diagnostic only**.
+    Both are produced from the same preprocessed batch, the same image order and the same text
+    features, so the two columns are directly comparable.
+    """
     from torchvision.datasets import CocoCaptions
     from model import longclip
 
+    unknown = [name for name in representations
+               if name not in ('patch_global', 'legacy_cls')]
+    if unknown:
+        raise ValueError('unknown image representation(s) %r' % (unknown,))
     root = root or os.path.join(os.environ.get('COCO_DATA_ROOT', '../../datasets/coco'), 'val2017')
     ann_file = ann_file or os.path.join(os.path.dirname(root), 'annotations', 'captions_val2017.json')
     dataset = CocoCaptions(root=root, annFile=ann_file, transform=preprocess)
@@ -154,23 +189,40 @@ def evaluate_coco(model, preprocess, root=None, ann_file=None, batch_size=64,
     core = model.module if hasattr(model, 'module') else model
     device = torch.device(device or next(core.parameters()).device)
 
-    image_features = []
+    banks = {name: [] for name in representations}
     text_features = []
     for start in range(0, len(dataset), batch_size):
         stop = min(start + batch_size, len(dataset))
         batch = [dataset[i] for i in range(start, stop)]
         images = torch.stack([item[0] for item in batch]).to(device)
         captions = [caption for _, caps in batch for caption in caps[:5]]
-        image_features.append(core.encode_image(images).detach().cpu().float())
+        if 'legacy_cls' in banks:
+            banks['legacy_cls'].append(core.encode_image(images).detach().cpu().float())
+        if 'patch_global' in banks:
+            features, _ = patch_global_features(core, images, global_pool=global_pool)
+            banks['patch_global'].append(features.detach().cpu().float())
         tokens = longclip.tokenize(captions, truncate=True).to(device)
         text_features.append(core.encode_text(tokens).detach().cpu().float())
 
-    return retrieval_metrics(
-        torch.cat(image_features),
-        torch.cat(text_features),
-        captions_per_image=5,
-        similarity_chunk=similarity_chunk,
-    )
+    texts = torch.cat(text_features)
+    return {name: retrieval_metrics(torch.cat(features), texts, captions_per_image=5,
+                                    similarity_chunk=similarity_chunk)
+            for name, features in banks.items()}
+
+
+@torch.inference_mode()
+def evaluate_coco(model, preprocess, root=None, ann_file=None, batch_size=64,
+                  similarity_chunk=DEFAULT_SIMILARITY_CHUNK, device=None,
+                  image_representation='legacy_cls', global_pool='mean'):
+    """COCO val2017 retrieval with the standard 5-caption protocol.
+
+    ``image_representation`` selects which image embedding is scored: ``legacy_cls`` (the
+    historical default, native CLIP CLS) or ``patch_global`` (SAID-ExGAP's ``z_G = Pool(H)``).
+    """
+    return evaluate_coco_representations(
+        model, preprocess, root=root, ann_file=ann_file, batch_size=batch_size,
+        similarity_chunk=similarity_chunk, device=device, global_pool=global_pool,
+        representations=(image_representation,))[image_representation]
 
 
 def evaluate_features(image_features, text_features, captions_per_image=5,

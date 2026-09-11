@@ -252,9 +252,9 @@ def build_exgap_log_fields(out):
         'loss_total', 'loss_said', 'loss_route', 'loss_evidence', 'loss_exgap',
         'loss_global', 'loss_unsaid',
         'S_gc_mean', 'S_sc_mean', 'S_uc_mean',
-        'S_sc_minus_S_gc_mean', 'S_gc_minus_S_uc_mean',
+        'S_sc_minus_S_gc_mean', 'S_gc_minus_S_uc_mean', 'S_uc_minus_S_gc_mean', 'D_U_mean',
         'S_gc_p50', 'S_sc_p50', 'S_uc_p50',
-        'explanatory_gap_raw_mean', 'explanatory_gap_norm_mean',
+        'explanatory_gap_raw_mean', 'explanatory_gap_norm_mean', 'gap_weight_mean',
         'explanatory_gap_positive_fraction',
         'gap_p25', 'gap_p50', 'gap_p75', 'gap_p90',
         'mask_keep_ratio', 'mask_drop_ratio',
@@ -271,6 +271,8 @@ def build_exgap_log_fields(out):
         # collapse monitors (the Full-Base arm collapsed: pairwise cosine -> 0.977)
         'global_pairwise_cos', 'said_pairwise_cos', 'unsaid_pairwise_cos',
         'global_pairwise_cos_max', 'said_pairwise_cos_max', 'unsaid_pairwise_cos_max',
+        # embedding spread on the fixed cohort (std of the cohort features, per dimension)
+        'global_embedding_std', 'said_embedding_std', 'unsaid_embedding_std',
     )}
     fields['objective_mode'] = out.get('objective_mode')
     fields['said_loss_mode'] = out.get('said_loss_mode')
@@ -769,6 +771,96 @@ def grad_contribution_norms(model, images, text_tokens, args, diagnostic_steps, 
     return contributions
 
 
+def exgap_grad_attribution(module, images, text_tokens, args, steps, completed):
+    """Per-term gradient norms for SAID-ExGAP on diagnostic steps only (Phase ExGAP-1B).
+
+    Measures, on a **fresh** graph built from the unwrapped module (so DDP's reducer is never
+    involved), the L2 norm of ``d L_S`` and of ``d L_ExGAP`` for every parameter group, and the
+    ratio ``R_grad = G_ExGAP / (G_S + eps)``. ``torch.autograd.grad`` is used per term instead of
+    two ``backward`` calls, so neither term's gradient can contaminate the other and the training
+    step's own gradients/synchronisation are untouched.
+
+    The ExGAP term is measured *even when* ``lambda_exgap == 0`` (the matched-control arm M0):
+    the forward always builds the full geometry, so ``G_ExGAP`` there answers "what would ExGAP
+    have done", while the training step itself ignores it. ``R_grad`` in M0 is therefore a
+    diagnostic, not an applied gradient.
+
+    Returns ``{}`` on every step that is not in ``steps``.
+    """
+    if completed not in set(steps):
+        return {}
+    groups = exgap_grad_groups(module)
+    with torch.enable_grad():
+        out = module(images, text_tokens, 0.0, args.lambda_said, lambda_unsaid=0.0,
+                     objective_mode='said_exgap', lambda_exgap=args.lambda_exgap,
+                     exgap_global_pool=args.exgap_global_pool,
+                     exgap_mask_threshold=args.exgap_mask_threshold,
+                     exgap_temperature=args.exgap_temperature,
+                     exgap_normalize_gap=args.exgap_normalize_gap)
+        record = {}
+        norms = {}
+        for term_name, term in (('said', out['loss_said']), ('exgap', out['loss_exgap'])):
+            term_norms = {}
+            for group, parameters in groups.items():
+                grads = torch.autograd.grad(term, parameters, retain_graph=True,
+                                            allow_unused=True)
+                total = 0.0
+                for grad in grads:
+                    if grad is not None:
+                        total += float(grad.detach().float().pow(2).sum())
+                term_norms[group] = math.sqrt(total)
+            norms[term_name] = term_norms
+            if term_name == 'said':
+                record['grad_attr_loss_said'] = float(term.detach())
+            else:
+                record['grad_attr_loss_exgap'] = float(term.detach())
+        for group in groups:
+            g_s = norms['said'][group]
+            g_e = norms['exgap'][group]
+            record['grad_attr_gS_%s' % group] = g_s
+            record['grad_attr_gE_%s' % group] = g_e
+            record['grad_attr_R_%s' % group] = g_e / (g_s + 1e-12)
+        record['grad_attr_lambda_exgap'] = float(args.lambda_exgap)
+        record['grad_attr_groups'] = ';'.join(
+            '%s=%d' % (group, len(parameters)) for group, parameters in groups.items())
+        del out
+    return record
+
+
+def exgap_grad_groups(module):
+    """Parameter groups used by the ExGAP gradient attribution.
+
+    The real architecture has no separate patch projection: the patch tokens come out of the ViT
+    itself, so the "patch pathway" IS ``clip.visual`` there. The test stub does expose
+    ``clip.patch_proj`` / ``clip.global_proj``, so both spellings are classified, and
+    ``patch_pathway`` is listed explicitly because the contract under test is "L_ExGAP reaches
+    the shared visual backbone and nothing else".
+    """
+    visual_prefixes = ('clip.visual.', 'clip.patch_proj', 'clip.global_proj')
+    patch_prefixes = ('clip.visual.', 'clip.patch_proj')
+    text_prefixes = ('clip.transformer.', 'clip.token_embedding.', 'clip.positional_embedding',
+                     'clip.ln_final', 'clip.text_projection', 'clip.text_proj')
+    groups = {'visual_backbone': [], 'patch_pathway': [], 'text_encoder': [],
+              'said_router': [], 'exgap_pooling': [], 'other': []}
+    for name, parameter in module.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        if name.startswith('said_router.'):
+            groups['said_router'].append(parameter)
+        elif name.startswith('exgap.'):
+            groups['exgap_pooling'].append(parameter)
+        elif name.startswith(text_prefixes):
+            groups['text_encoder'].append(parameter)
+        else:
+            if name.startswith(visual_prefixes):
+                groups['visual_backbone'].append(parameter)
+            if name.startswith(patch_prefixes):
+                groups['patch_pathway'].append(parameter)
+            if not name.startswith(visual_prefixes):
+                groups['other'].append(parameter)
+    return {group: parameters for group, parameters in groups.items() if parameters}
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description='Phase 2 Said-only training')
     parser.add_argument('--base_model', default='B16', help='B16 or L14')
@@ -817,8 +909,16 @@ def parse_args(argv=None):
     parser.add_argument('--output_dir', default='runs_salu')
     parser.add_argument('--save_every', type=int, default=1000,
                         help='save a checkpoint every N steps (0 = only at the end)')
-    parser.add_argument('--save_at', default='',
-                        help='comma-separated steps to checkpoint, e.g. "200,400"')
+    parser.add_argument('--save_at', default='',                        help='comma-separated steps to checkpoint, e.g. "200,400"')
+    parser.add_argument('--save_completed_steps', '--save-completed-steps',
+                        dest='save_completed_steps', default='',
+                        help='comma-separated numbers of COMPLETED optimizer updates to '
+                             'checkpoint as salu_exgap_step%06d.pt; 0 saves the initial state '
+                             'before the first update (matched-control provenance)')
+    parser.add_argument('--grad_attribution_steps', '--grad-attribution-steps',
+                        dest='grad_attribution_steps', default='20,100,500',
+                        help='completed-step numbers at which the per-term gradient attribution '
+                             '(G_S / G_ExGAP / R_grad) is measured on a fresh diagnostic graph')
     parser.add_argument('--log_every', type=int, default=10)
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--download_root', default=None)
@@ -947,6 +1047,8 @@ def main():
     elif args.base_model == 'L14':
         args.base_model = 'ViT-L/14'
     save_at = sorted({int(s) for s in args.save_at.split(',') if s.strip()})
+    save_completed = sorted({int(s) for s in args.save_completed_steps.split(',') if s.strip()})
+    grad_attribution_steps = {int(s) for s in args.grad_attribution_steps.split(',') if s.strip()}
 
     rank, local_rank = setup_distributed()
     device = torch.device('cuda', local_rank)
@@ -1093,6 +1195,22 @@ def main():
         if initial_objective is not None:
             initial_payload['objective_mode'] = initial_objective
         torch.save(initial_payload, os.path.join(args.output_dir, 'salu_initial.pt'))
+    if rank == 0 and 0 in save_completed and not args.resume:
+        # completed-step 0 = the exact initial state, before any optimizer update. Saved with the
+        # same file-name convention as every other completed step so a matched-control pair can be
+        # compared as (step 0, step 100, step 500) without special cases.
+        initial_phase, initial_objective = objective_checkpoint_metadata(args)
+        initial_payload = {'model': salu.state_dict(), 'args': vars(args), 'step': 0,
+                           'phase': initial_phase}
+        if initial_objective is not None:
+            initial_payload['objective_mode'] = initial_objective
+        initial_config = exgap.checkpoint_config(
+            args.exgap_global_pool, args.exgap_mask_threshold, args.exgap_temperature,
+            args.lambda_said, args.lambda_exgap, args.exgap_normalize_gap)
+        initial_payload['exgap_config'] = initial_config
+        initial_path = os.path.join(args.output_dir, 'salu_exgap_step%06d.pt' % 0)
+        torch.save(initial_payload, initial_path)
+        print('SAVED_EXGAP_STEP ' + initial_path, flush=True)
     ddp_model.train()
     step = start_step
     stopped = False
@@ -1235,6 +1353,12 @@ def main():
             # cheap: reads the gradients of the training backward pass, no extra backward
             grad_summary = grad_norm_summary(salu) if gap_mode else None
             optimizer.zero_grad(set_to_none=True)
+            # Phase ExGAP-1B: per-term gradient attribution on a fresh diagnostic graph, on the
+            # requested completed steps only. Runs after the training step (its own graph), on the
+            # unwrapped module, so it can never steer the matched-control pair.
+            grad_attribution = (exgap_grad_attribution(salu, images, text_tokens, args,
+                                                       grad_attribution_steps, step + 1)
+                                if exgap_mode else None)
             # per-term diagnostics build their own graph, so only on the requested steps
             grad_contributions = (grad_contribution_norms(ddp_model, images, text_tokens,
                                                           args, args.grad_contribution_steps,
@@ -1247,7 +1371,8 @@ def main():
                 (args.max_steps is not None and step == args.max_steps - 1)
                 or (args.max_steps is None and step == stop_steps - 1)
             )
-            if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step or step + 1 in save_at):
+            if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step
+                              or step + 1 in save_at or step + 1 in grad_attribution_steps):
                 throughput = summarize_throughput(global_batch, compute_times, wall_times)
                 if exgap_mode:
                     # SAID-ExGAP v1 payload: loss_global / loss_unsaid do not exist here and are
@@ -1262,6 +1387,9 @@ def main():
                         'unsaid_enabled': False,     # legacy alias only
                     }
                     record.update(build_exgap_log_fields(out))
+                    if grad_attribution:
+                        record.update(grad_attribution)
+                        record['grad_attribution_point'] = ('fresh_graph_after_optimizer_step')
                     gap_weight = record.get('global_pairwise_cos')
                     if gap_weight is not None and float(gap_weight) >= 0.9 and rank == 0:
                         print('WARNING REPRESENTATION_COLLAPSE global_pairwise_cos=%.4f at step %d'
@@ -1342,6 +1470,13 @@ def main():
                 ckpt_path = os.path.join(args.output_dir, 'salu_said_only_step%06d.pt' % step)
                 save_checkpoint(ckpt_path, ddp_model, optimizer, scaler, step, epoch, args, base_lrs, total_steps)
                 print('SAVED ' + ckpt_path, flush=True)
+            if rank == 0 and save_completed and step in save_completed:
+                # ``step`` is now the number of completed optimizer updates, so
+                # ``salu_exgap_step000100.pt`` unambiguously means "the model after 100 updates"
+                ckpt_path = os.path.join(args.output_dir, 'salu_exgap_step%06d.pt' % step)
+                save_checkpoint(ckpt_path, ddp_model, optimizer, scaler, step, epoch, args,
+                                base_lrs, total_steps)
+                print('SAVED_EXGAP_STEP ' + ckpt_path, flush=True)
 
             if (args.val_every > 0 and step % args.val_every == 0
                     and (args.val_sharegpt4v or args.eval_coco or args.val_coco)):

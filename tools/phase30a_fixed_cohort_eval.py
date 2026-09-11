@@ -24,6 +24,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 import time
 
@@ -97,6 +98,15 @@ def file_sha256(path):
         for block in iter(lambda: handle.read(1 << 20), b''):
             digest.update(block)
     return digest.hexdigest()
+
+
+def git_head():
+    """The repository commit this evaluation ran from (provenance only, never fatal)."""
+    try:
+        return subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=REPO, capture_output=True,
+                              text=True, check=True).stdout.strip()
+    except Exception:      # pragma: no cover - provenance must not break an evaluation
+        return None
 
 
 def normalise_state_dict(state, model_state):
@@ -543,11 +553,20 @@ def proxy_correlations(reference_rows, decomposition, scorer='unsaid_raw'):
 
 
 def evaluate_canonical(model, args, preprocess):
-    """Standard CLIP CLS retrieval: ShareGPT4V-1K (3 variants) and COCO val2017."""
-    from eval.validation_protocol import (evaluate_all_variants, load_or_create_manifest)
-    from eval.retrieval.coco_retrieval import evaluate_coco
+    """Standard retrieval: ShareGPT4V-1K (3 variants) and COCO val2017.
 
-    output = {}
+    ``--image-representation`` selects the PRIMARY image embedding that enters the ranking:
+    ``patch_global`` is SAID-ExGAP's ``z_G = Pool(H)`` (the primary metric for any SAID-ExGAP
+    checkpoint) and ``legacy_cls`` is the native CLIP ``encode_image`` embedding (a diagnostic
+    for SAID-ExGAP, and still the historical default for the other objectives). Both are always
+    computed and stored under separate keys, never merged into one column.
+    """
+    from eval.validation_protocol import (evaluate_all_variants, load_or_create_manifest)
+    from eval.retrieval.coco_retrieval import evaluate_coco_representations
+
+    representation = getattr(args, 'image_representation', 'legacy_cls')
+    global_pool = getattr(args, 'global_pool', 'mean')
+    output = {'image_representation': representation, 'global_pool': global_pool}
     if args.sharegpt4v_manifest:
         data_root = args.data_root
         json_name = os.environ.get('SHARE4V_JSON',
@@ -556,13 +575,26 @@ def evaluate_canonical(model, args, preprocess):
         manifest = load_or_create_manifest(args.sharegpt4v_manifest, json_path)
         variants = evaluate_all_variants(model, manifest['samples'], args.image_root,
                                          preprocess, batch_size=args.image_batch_size,
-                                         device=args.device)
+                                         device=args.device,
+                                         image_representation=representation,
+                                         global_pool=global_pool)
         output['sharegpt4v1k'] = {
-            variant: {'retrieval': result['retrieval']} for variant, result in variants.items()}
+            variant: {'retrieval': result['retrieval'],
+                      'retrieval_by_representation': result['retrieval_by_representation'],
+                      'image_representation': result['image_representation'],
+                      'global_pool': result['global_pool'],
+                      'patch_global_source': result['patch_global_source'],
+                      'z_patch_global_vs_training_formula_max_abs_diff':
+                          result['z_patch_global_vs_training_formula_max_abs_diff']}
+            for variant, result in variants.items()}
+        output['sharegpt4v1k_manifest_sha256'] = file_sha256(args.sharegpt4v_manifest)
     if args.coco:
-        output['coco_val2017'] = evaluate_coco(model, preprocess, root=args.coco_root,
-                                               batch_size=args.image_batch_size,
-                                               device=args.device)
+        by_representation = evaluate_coco_representations(
+            model, preprocess, root=args.coco_root, batch_size=args.image_batch_size,
+            device=args.device, global_pool=global_pool,
+            representations=('patch_global', 'legacy_cls'))
+        output['coco_val2017'] = by_representation[representation]
+        output['coco_val2017_by_representation'] = by_representation
     return output
 
 
@@ -603,20 +635,46 @@ def main():
     parser.add_argument('--coco_root', default=None)
     parser.add_argument('--sharegpt4v_manifest',
                         default='/root/SAID/outputs/validation/sharegpt4v1k_manifest.json')
+    parser.add_argument('--image_representation', '--image-representation',
+                        dest='image_representation', default='legacy_cls',
+                        choices=('patch_global', 'legacy_cls'),
+                        help='PRIMARY image embedding for canonical retrieval: patch_global '
+                             'is SAID-ExGAP z_G = Pool(H), legacy_cls is native CLIP CLS')
+    parser.add_argument('--global_pool', '--global-pool', dest='global_pool', default='mean',
+                        choices=('mean', 'attention'),
+                        help="pooling mode used by patch_global (must match the arm's "
+                             "--exgap-global-pool)")
     parser.add_argument('--base_model', default='ViT-B/16')
     parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu')
     args = parser.parse_args()
 
     image_root = args.image_root or args.data_root
-    manifest = load_or_create_usr_manifest(args.usr_manifest, args.source_manifest)
-    samples = cohort_samples(manifest['queries'])
-    cohort_sha = hashlib.sha256(json.dumps(samples, sort_keys=True).encode('utf-8')).hexdigest()
-    print('cohort: %d queries, candidate_pool=%d, sha256=%s'
-          % (len(samples), manifest['candidate_count'], cohort_sha[:16]), flush=True)
+    # ``evaluate_all_variants`` opens the cohort images through this path, so it must never stay
+    # ``None``: resolve the documented default (--data_root) once, here.
+    args.image_root = image_root
+    if args.canonical_only:
+        # Canonical retrieval does not use the Phase 2.9A USR cohort at all: loading (and thereby
+        # re-validating) its manifest would make a retrieval-only run fail for a reason that
+        # cannot affect any reported number. The cohort fields are recorded as explicitly
+        # skipped rather than fabricated.
+        manifest = None
+        samples = []
+        cohort_sha = None
+        print('cohort: SKIPPED (--canonical_only)', flush=True)
+    else:
+        manifest = load_or_create_usr_manifest(args.usr_manifest, args.source_manifest)
+        samples = cohort_samples(manifest['queries'])
+        cohort_sha = hashlib.sha256(json.dumps(samples, sort_keys=True).encode('utf-8')).hexdigest()
+        print('cohort: %d queries, candidate_pool=%d, sha256=%s'
+              % (len(samples), manifest['candidate_count'], cohort_sha[:16]), flush=True)
 
     clip_model, preprocess = longclip.load_from_clip(args.base_model, device='cpu', args=args)
     core = SALUModel(clip_model, tau_said=0.07, said_loss_mode='identifiable',
                      pair_chunk_size=64, said_feature_source='residual').float().to(args.device)
+    # register the SAID-ExGAP pooling agent so a said_exgap checkpoint's ``exgap.*`` tensors can
+    # actually load, and so ``--image-representation patch_global --global-pool attention`` is
+    # available. Legacy checkpoints simply lack those keys, which is allowed below.
+    core.build_exgap_module()
 
     payload = {
         'protocol': 'phase30a-1d-fixed-cohort',
@@ -627,7 +685,8 @@ def main():
         'usr_manifest_sha256': file_sha256(args.usr_manifest),
         'cohort_sha256': cohort_sha,
         'cohort_query_count': len(samples),
-        'cohort_candidate_pool': int(manifest['candidate_count']),
+        'cohort_candidate_pool': int(manifest['candidate_count']) if manifest else None,
+        'cohort_skipped': bool(manifest is None),
         'c_u_is_evaluation_target_only': True,
         'notes': ('z_U and the complete feature are built from (I, C_S) before any candidate '
                   'exists; score matrices are plain inner products over the full pool. '
@@ -769,14 +828,19 @@ def main():
         for tag, path in parse_checkpoints(args.checkpoints):
             if tag not in wanted:
                 continue
-            state, _ = load_checkpoint_state(path)
+            state, checkpoint_meta = load_checkpoint_state(path)
             state, skipped = normalise_state_dict(state, core.state_dict())
+            # HARD FAIL instead of the historical "strict=False silently loads zero tensors"
+            # failure mode: a checkpoint that matches nothing must stop the evaluation.
+            if not state:
+                raise RuntimeError('checkpoint %s matched ZERO tensors; refusing to report '
+                                   'retrieval numbers for an unloaded model' % path)
             incompatible = core.load_state_dict(state, strict=False)
             # The only keys a checkpoint may legitimately lack or carry extra are the objective
-            # heads: canonical CLS retrieval uses encode_image()/encode_text() and never touches
-            # the Said router (``said_router.*``) nor the SAID-ExGAP pooling agent
-            # (``exgap.*``), so their absence/presence cannot affect the measurement. Anything
-            # else is an error.
+            # heads: canonical retrieval uses encode_image()/encode_text()/encode_exgap_global()
+            # and never touches the Said router (``said_router.*``) nor the SAID-ExGAP pooling
+            # agent (``exgap.*``), so their absence/presence cannot affect the measurement.
+            # Anything else is an error.
             missing = [key for key in incompatible.missing_keys
                        if not key.startswith('said_router.')
                        and not key.startswith('exgap.')]
@@ -790,15 +854,43 @@ def main():
                                    if key.startswith('said_router.'))
             exgap_absent = sorted(key for key in incompatible.missing_keys
                                   if key.startswith('exgap.'))
+            unexpected_exgap = sorted(key for key in incompatible.unexpected_keys
+                                      if key.startswith('exgap.'))
+            checkpoint_args = checkpoint_meta.get('args') or {}
             key = labels.get(tag, tag)
-            payload['canonical'][key] = evaluate_canonical(core, args, preprocess)
-            payload['canonical'][key]['checkpoint'] = path
-            payload['canonical'][key]['skipped_keys'] = skipped
-            payload['canonical'][key]['absent_said_router_keys'] = router_absent
-            payload['canonical'][key]['absent_exgap_keys'] = exgap_absent
-            payload['canonical'][key]['loaded_tensors'] = len(state)
-            print('CANONICAL %-12s done (loaded %d tensors, skipped %d, router-absent %d)'
-                  % (key, len(state), len(skipped), len(router_absent)), flush=True)
+            entry = evaluate_canonical(core, args, preprocess)
+            entry.update({
+                'checkpoint': path,
+                # provenance: everything needed to reproduce this exact row
+                'checkpoint_sha256': file_sha256(path),
+                'checkpoint_step': checkpoint_meta.get('step'),
+                'checkpoint_objective_mode': checkpoint_args.get('objective_mode'),
+                'checkpoint_exgap_config': checkpoint_meta.get('exgap_config'),
+                'checkpoint_global_pool': (checkpoint_meta.get('exgap_config') or {}).get(
+                    'global_pool'),
+                'checkpoint_said_loss_mode': checkpoint_args.get('said_loss_mode'),
+                'checkpoint_said_feature_source': checkpoint_args.get('said_feature_source'),
+                'checkpoint_tau_said': checkpoint_args.get('tau_said'),
+                'git_head': git_head(),
+                'image_representation': args.image_representation,
+                'global_pool': args.global_pool,
+                'skipped_keys': skipped,
+                'absent_said_router_keys': router_absent,
+                'absent_exgap_keys': exgap_absent,
+                'unexpected_exgap_keys': unexpected_exgap,
+                'missing_keys': list(incompatible.missing_keys),
+                'unexpected_keys': list(incompatible.unexpected_keys),
+                'loaded_tensors': len(state),
+                'dataset_manifest_sha256': file_sha256(args.sharegpt4v_manifest)
+                if args.sharegpt4v_manifest else None,
+                'usr_manifest_sha256': file_sha256(args.usr_manifest)
+                if os.path.exists(args.usr_manifest) else None,
+            })
+            payload['canonical'][key] = entry
+            print('CANONICAL %-12s done (repr=%s pool=%s, loaded %d tensors, skipped %d, '
+                  'router-absent %d)'
+                  % (key, args.image_representation, args.global_pool, len(state), len(skipped),
+                     len(router_absent)), flush=True)
 
     output_path = args.output if os.path.isabs(args.output) else os.path.join(REPO, args.output)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

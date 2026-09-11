@@ -306,6 +306,30 @@ class SALUModel(nn.Module):
             return self.clip.encode_image_with_local_evidence(images)
         return self.clip.encode_image_with_patches(images)
 
+    def encode_exgap_global(self, images: torch.Tensor, global_pool: str = 'mean'):
+        """SAID-ExGAP primary image representation ``z_G = Pool(H)`` -> ``[B, D]``.
+
+        This is the *same* function the training forward calls, not a second implementation: the
+        patch set comes from ``encode_router_input`` -- exactly as in ``_forward_said_exgap`` --
+        and the pooling is ``exgap.compute_global_representation``, so an evaluator that reads
+        ``encode_exgap_global`` cannot drift away from the representation the objective trained.
+
+        ``mean`` is parameter-free (``z_G = Norm(mean_p h_p)``); ``attention`` uses the
+        image-only attention pooling agent and therefore needs that agent to exist. ``z_G`` never
+        sees a caption, so the image side of standard retrieval stays precomputable.
+        """
+        _, patch_features = self.encode_router_input(images)
+        h = exgap.normalize_patches(patch_features)
+        pooling = self.exgap_module(global_pool)
+        if pooling is None:
+            z_g, _ = exgap.compute_global_representation(h, pool='mean')
+        else:
+            z_g, _ = exgap.compute_global_representation(
+                h, pool='attention',
+                query=pooling.query.reshape(1, -1).expand(images.shape[0], -1),
+                w_query=pooling.w_query, w_key=pooling.w_key)
+        return z_g
+
     @property
     def logit_scale(self) -> torch.Tensor:
         return self.clip.logit_scale
@@ -1072,13 +1096,18 @@ class SALUModel(nn.Module):
                 'S_sc_mean': s_sc.detach().mean(),
                 'S_uc_mean': s_uc.detach().mean(),
                 'S_sc_minus_S_gc_mean': (s_sc - s_gc).detach().mean(),
+                'S_uc_minus_S_gc_mean': (s_uc - s_gc).detach().mean(),
                 'S_gc_minus_S_uc_mean': (s_gc - s_uc).detach().mean(),
+                # Phase ExGAP-1B causal separation: D_U = S_gc - S_uc (larger = the masked
+                # representation repeats the current caption less)
+                'D_U_mean': (s_gc - s_uc).detach().mean(),
                 'S_gc_p50': torch.quantile(s_gc.detach().float(), 0.5),
                 'S_sc_p50': torch.quantile(s_sc.detach().float(), 0.5),
                 'S_uc_p50': torch.quantile(s_uc.detach().float(), 0.5),
                 # explanatory gap
                 'explanatory_gap_raw_mean': gap['gap_raw'].mean(),
                 'explanatory_gap_norm_mean': gap['gap_weight'].mean(),
+                'gap_weight_mean': gap['gap_weight'].mean(),
                 'explanatory_gap_positive_fraction':
                     (gap['gap_raw'] > 0).float().mean(),
                 'gap_p25': gap_quantiles[0],
@@ -1169,6 +1198,9 @@ class SALUModel(nn.Module):
                 off = gram[~torch.eye(gram.shape[0], dtype=torch.bool, device=gram.device)]
                 metrics['%s_pairwise_cos' % name] = off.mean()
                 metrics['%s_pairwise_cos_max' % name] = off.max()
+                # spread of the cohort embeddings: a mean cosine near 1 can come from a genuinely
+                # collapsed code or from a low-variance one, and the std separates the two
+                metrics['%s_embedding_std' % name] = feature.detach().float().std(dim=0).mean()
             return metrics
         finally:
             if was_training:
