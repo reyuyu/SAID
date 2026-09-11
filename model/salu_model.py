@@ -78,7 +78,10 @@ from .gap_completion import (
     unsaid_feature_from_attention,
 )
 
-OBJECTIVE_MODES = ('legacy', 'gap_completion')
+# Phase 3.0A.2: SAID-ExGAP (explanatory-gap guided masked representation learning).
+from . import exgap
+
+OBJECTIVE_MODES = ('legacy', 'gap_completion', 'said_exgap')
 
 
 def gather_features_with_grad(features: torch.Tensor) -> torch.Tensor:
@@ -175,6 +178,25 @@ def identifiable_said_loss(
     }
 
 
+def gradient_route_report(model, loss, measured=None):
+    """Deterministic description of which variables SAID-ExGAP's loss is allowed to move.
+
+    Returned as plain data so it can be logged and asserted in tests: ``detached`` lists the
+    quantities that are stop-gradient by construction, ``flows_to`` describes the only direct
+    graph path, and ``measured_grads`` records what the last backward actually produced.
+    """
+    return {
+        'loss': float(loss.detach()) if torch.is_tensor(loss) else loss,
+        'detached': ['gap_weight (G_exp)', 's_gc_reference', 't_gap (text embedding)', 'mask M'],
+        'flows_to': 'z_U -> masked surviving patches -> shared visual backbone',
+        'note': ("in attention mode A^G also appears inside z_U, so the global pooling agent is "
+                 'a legitimate ExGAP target; the Said router never is'),
+        'never_flows_to': ['said_router (the gap cannot be shrunk by re-routing)',
+                           'text encoder', 'global CLS/global-feature reference'],
+        'measured_grads': measured or {},
+    }
+
+
 class SALUModel(nn.Module):
     """Said-only wrapper around a CLIP / SmartCLIP model.
 
@@ -224,6 +246,46 @@ class SALUModel(nn.Module):
             for param in self.clip.mask_net.parameters():
                 param.requires_grad_(False)
 
+        # ---------------------------------------------------------------- #
+        # SAID-ExGAP: image-only global attention pooling, built lazily by the said_exgap
+        # forward so that legacy / gap_completion checkpoints keep their exact state dict.
+        # The reference is stored through ``object.__setattr__`` on purpose: a plain
+        # ``self._exgap_module = module`` would ALSO register the module under that private
+        # name, registering it twice and making ``named_modules()`` de-duplicate the
+        # canonical ``exgap`` entry away.
+        # ---------------------------------------------------------------- #
+        object.__setattr__(self, '_exgap_module', None)
+
+    def build_exgap_module(self):
+        """Register (idempotently) the image-only attention pooling agent and return it.
+
+        Called by the training script **before** DDP wrapping whenever the objective is
+        ``said_exgap``, so that the agent is part of the process group and its parameters are
+        identical across ranks and across the pooling-mode arms. Creating it lazily inside the
+        first forward instead would leave it on the CPU (device mismatch) and outside DDP's
+        reducer (silently unsynchronised gradients).
+        """
+        module = object.__getattribute__(self, '_exgap_module')
+        if module is None:
+            reference = next(self.said_router.parameters())
+            module = exgap.ExGapModule(dim=int(self.said_router.dim)).to(
+                device=reference.device, dtype=reference.dtype)
+            self.add_module('exgap', module)
+            object.__setattr__(self, '_exgap_module', module)
+        return module
+
+    def exgap_module(self, global_pool: str):
+        """Return the image-only attention pooling agent for ``global_pool='attention'``.
+
+        Only ``global_pool='attention'`` needs parameters; ``'mean'`` is parameter-free and
+        returns ``None``. The agent is registered under the fixed submodule name ``exgap`` so the
+        checkpoint is self-describing and ``state_dict`` / ``named_parameters`` see it exactly
+        once.
+        """
+        if global_pool != 'attention':
+            return None
+        return self.build_exgap_module()
+
     # ------------------------------------------------------------------ #
     # standard inference: identical to the wrapped CLIP model
     # ------------------------------------------------------------------ #
@@ -249,12 +311,27 @@ class SALUModel(nn.Module):
         return self.clip.logit_scale
 
     def said_head_parameters(self):
-        """Parameters of the Said router only (optimizer group B)."""
-        return list(self.said_router.parameters())
+        """Parameters of the Said router plus the SAID-ExGAP pooling agent (optimizer group B).
+
+        The ExGAP pooling agent exists only in ``said_exgap`` runs (it is registered on demand by
+        ``build_exgap_module``), so this group is unchanged for every other objective. It is put
+        here rather than in the backbone group because it is a new *head* of the objective and
+        has to move at the head learning rate.
+        """
+        parameters = list(self.said_router.parameters())
+        module = object.__getattribute__(self, '_exgap_module')
+        if module is not None:
+            parameters.extend(module.parameters())
+        return parameters
 
     def backbone_parameters(self):
-        """Trainable parameters outside the Said router (optimizer group A)."""
-        head_ids = {id(p) for p in self.said_router.parameters()}
+        """Trainable parameters outside the objective head (optimizer group A).
+
+        Excludes every parameter of ``said_head_parameters()`` -- the Said router *and* the
+        SAID-ExGAP pooling agent when it exists -- so that no parameter is ever placed in both
+        optimizer groups (which would update it twice per step).
+        """
+        head_ids = {id(p) for p in self.said_head_parameters()}
         return [p for p in self.parameters() if p.requires_grad and id(p) not in head_ids]
 
     # ------------------------------------------------------------------ #
@@ -282,6 +359,12 @@ class SALUModel(nn.Module):
         lambda_gap_discover: float = 1.0,
         lambda_global_absorb: float = 1.0,
         gap_anti_temperature: float = 1.0,
+        lambda_exgap: float = 1.0,
+        exgap_global_pool: str = 'mean',
+        exgap_mask_threshold: float = exgap.DEFAULT_MASK_THRESHOLD,
+        exgap_temperature: float = exgap.DEFAULT_GAP_TEMPERATURE,
+        exgap_normalize_gap: bool = True,
+        collapse_cohort: Optional[torch.Tensor] = None,
     ) -> Dict[str, torch.Tensor]:
         # Phase 3.0A: a new keyword keeps every existing positional call site valid.
         if objective_mode not in OBJECTIVE_MODES:
@@ -307,6 +390,29 @@ class SALUModel(nn.Module):
                 lambda_gap_discover=lambda_gap_discover,
                 lambda_global_absorb=lambda_global_absorb,
                 gap_anti_temperature=gap_anti_temperature,
+            )
+        if objective_mode == 'said_exgap':
+            # SAID-ExGAP v1 reads Global / Said / Masked-Unsaid from the SAME patch set and has
+            # no global-text CLIP loss and no Phase 2.x Unsaid branch, so those weights are
+            # configuration errors rather than no-ops.
+            if float(lambda_global) != 0.0:
+                raise ValueError("objective_mode='said_exgap' requires lambda_global == 0, got %r"
+                                 % (lambda_global,))
+            if float(lambda_unsaid) != 0.0:
+                raise ValueError("objective_mode='said_exgap' requires lambda_unsaid == 0, got %r"
+                                 % (lambda_unsaid,))
+            if global_caption_view != 'prefix':
+                raise ValueError("objective_mode='said_exgap' requires global_caption_view == "
+                                 "'prefix', got %r" % (global_caption_view,))
+            return self._forward_said_exgap(
+                images, texts,
+                lambda_said=lambda_said,
+                lambda_exgap=lambda_exgap,
+                exgap_global_pool=exgap_global_pool,
+                exgap_mask_threshold=exgap_mask_threshold,
+                exgap_temperature=exgap_temperature,
+                exgap_normalize_gap=exgap_normalize_gap,
+                collapse_cohort=collapse_cohort,
             )
 
         # lambda_unsaid == 0 must stay bit-for-bit the Said-only path: the branch is
@@ -853,6 +959,272 @@ class SALUModel(nn.Module):
             out['gap_said_to_said_text'] = _gap(z_s_own, t)
             # C_S is the only text view in this objective, so there is no full-caption gap.
             out['gap_global_to_full_text'] = None
+        return out
+
+    # ------------------------------------------------------------------ #
+    # SAID-ExGAP v1: Explanatory-Gap Guided Masked Representation Learning
+    # ------------------------------------------------------------------ #
+    def _forward_said_exgap(
+        self,
+        images: torch.Tensor,
+        texts: torch.Tensor,
+        lambda_said: float = 1.0,
+        lambda_exgap: float = 1.0,
+        exgap_global_pool: str = 'mean',
+        exgap_mask_threshold: float = exgap.DEFAULT_MASK_THRESHOLD,
+        exgap_temperature: float = exgap.DEFAULT_GAP_TEMPERATURE,
+        exgap_normalize_gap: bool = True,
+        collapse_cohort: Optional[torch.Tensor] = None,
+    ) -> Dict[str, torch.Tensor]:
+        """``L = lambda_said * L_S + lambda_exgap * L_ExGAP`` on ``(I, C)`` only.
+
+        Global, Said and Masked-Unsaid all read the **same** projected patch set ``H``; there is
+        no CLS/patch dual space, no global-text CLIP loss, no reconstruction and no Phase 2.x
+        Unsaid branch. See ``model/exgap.py`` for the math and the gradient-isolation contract.
+        """
+        if int(images.shape[0]) < 2:
+            raise ValueError('said_exgap needs batch >= 2 for the identifiable Said loss, got %d'
+                             % int(images.shape[0]))
+        if images.shape[0] != texts.shape[0]:
+            raise ValueError('batch mismatch: %d images vs %d texts'
+                             % (int(images.shape[0]), int(texts.shape[0])))
+        if float(lambda_said) <= 0.0:
+            raise ValueError('lambda_said must be positive, got %r' % (lambda_said,))
+
+        # one visual pass; the CLS output of this same call is ignored on purpose -- Global comes
+        # from the patch set so that all three representations live in one space
+        _, patch_features = self.encode_router_input(images)
+        t = F.normalize(self.encode_text(texts), dim=-1)
+        h = exgap.normalize_patches(patch_features)
+
+        pooling = self.exgap_module(exgap_global_pool)
+        if pooling is None:
+            z_g, a_g = exgap.compute_global_representation(h, pool='mean')
+        else:
+            z_g, a_g = exgap.compute_global_representation(
+                h, pool='attention', query=pooling.query.expand(images.shape[0], -1),
+                w_query=pooling.w_query, w_key=pooling.w_key)
+
+        said = exgap.compute_said_representation(t, h, self.said_router.q_proj,
+                                                 self.said_router.k_proj,
+                                                 tau_said=self.tau_said)
+        z_s = said['said_feature']
+        mask, mask_diagnostics = exgap.compute_said_mask(
+            said['said_relevance'], threshold=exgap_mask_threshold)
+        z_u, a_u = exgap.compute_masked_unsaid_representation(h, mask, a_g)
+
+        s_gc = (z_g * t).sum(dim=-1)
+        s_sc = (z_s * t).sum(dim=-1)
+        # The cosine that L_ExGAP actually optimises uses a DETACHED text embedding: ``s_uc`` is
+        # a function of both ``z_U`` and ``t``, and without this detach the objective would also
+        # push the text encoder to lower the similarity instead of only shaping ``z_U`` (spec
+        # section 12: ``t_gap = t.detach()``). The forward value is unchanged -- the loss is
+        # numerically identical -- only the text-encoder gradient path is removed.
+        t_gap = t.detach()
+        s_uc = (z_u * t_gap).sum(dim=-1)
+
+        gap = exgap.compute_explanatory_gap(s_sc, s_gc, normalize=exgap_normalize_gap)
+        gap_loss = exgap.compute_exgap_loss(s_uc, s_gc, gap['gap_weight'],
+                                            temperature=exgap_temperature)
+
+        scale = self.clip.logit_scale.exp().clamp(max=100)
+        z_pair, _ = self.said_router.route_pairwise(t, patch_features,
+                                                    chunk_size=self.pair_chunk_size)
+        said_loss = identifiable_said_loss(z_pair, t, scale)
+        loss_said = said_loss['loss_said']
+        loss_total = float(lambda_said) * loss_said + float(lambda_exgap) * gap_loss['loss']
+
+        with torch.no_grad():
+            relevance = said['said_relevance'].detach().float()
+            attention = said['said_attention'].detach().float()
+            entropy_said = SaidRouter.attention_entropy(attention)
+            entropy_global = SaidRouter.attention_entropy(a_g.detach().float())
+            pair_percentiles = (0.25, 0.50, 0.75, 0.90)
+            gap_weight_flat = gap['gap_weight'].detach().float()
+            gap_quantiles = torch.quantile(
+                gap_weight_flat,
+                torch.tensor(pair_percentiles, device=gap_weight_flat.device,
+                             dtype=gap_weight_flat.dtype))
+            out = {
+                'loss_said': loss_said,
+                'loss_route': said_loss['loss_route'].detach(),
+                'loss_evidence': said_loss['loss_evidence'].detach(),
+                'loss_exgap': gap_loss['loss'],
+                'loss_total': loss_total,
+                'loss_global': None,
+                'loss_unsaid': None,
+                'objective_mode': 'said_exgap',
+                'said_loss_mode': self.said_loss_mode,
+                'global_text_alignment_enabled': False,
+                'unsaid_enabled': False,
+                'exgap_global_pool': exgap_global_pool,
+                'exgap_mask_threshold': float(exgap_mask_threshold),
+                'exgap_temperature': float(exgap_temperature),
+                'exgap_normalize_gap': bool(exgap_normalize_gap),
+                'lambda_said': float(lambda_said),
+                'lambda_exgap': float(lambda_exgap),
+                'route_top1_acc': said_loss['route_top1_acc'].detach(),
+                'evidence_top1_acc': said_loss['evidence_top1_acc'].detach(),
+                'route_margin': said_loss['route_margin'].detach(),
+                'evidence_margin': said_loss['evidence_margin'].detach(),
+                # three per-sample similarities and their differences
+                'S_gc_mean': s_gc.detach().mean(),
+                'S_sc_mean': s_sc.detach().mean(),
+                'S_uc_mean': s_uc.detach().mean(),
+                'S_sc_minus_S_gc_mean': (s_sc - s_gc).detach().mean(),
+                'S_gc_minus_S_uc_mean': (s_gc - s_uc).detach().mean(),
+                'S_gc_p50': torch.quantile(s_gc.detach().float(), 0.5),
+                'S_sc_p50': torch.quantile(s_sc.detach().float(), 0.5),
+                'S_uc_p50': torch.quantile(s_uc.detach().float(), 0.5),
+                # explanatory gap
+                'explanatory_gap_raw_mean': gap['gap_raw'].mean(),
+                'explanatory_gap_norm_mean': gap['gap_weight'].mean(),
+                'explanatory_gap_positive_fraction':
+                    (gap['gap_raw'] > 0).float().mean(),
+                'gap_p25': gap_quantiles[0],
+                'gap_p50': gap_quantiles[1],
+                'gap_p75': gap_quantiles[2],
+                'gap_p90': gap_quantiles[3],
+                # mask / relevance monitors
+                'said_relevance_mean': relevance.mean(),
+                'said_relevance_std': relevance.std(unbiased=False),
+                'said_attention_entropy': entropy_said.mean(),
+                'said_effective_patch_count': entropy_said.exp().mean(),
+                # global-pooling monitors: entropy log(N) means A^G is still exactly uniform, so
+                # the attention arm has not left the mean-pooling baseline. The L1 deviation is
+                # the sensitive one (it is O(delta), the entropy change is O(delta^2)).
+                'global_attention_entropy': entropy_global.mean(),
+                'global_effective_patch_count': entropy_global.exp().mean(),
+                'global_attention_l1_deviation':
+                    (a_g.detach().float()
+                     - 1.0 / float(h.shape[1])).abs().sum(dim=-1).mean(),
+                'global_attention_max_deviation':
+                    (a_g.detach().float()
+                     - 1.0 / float(h.shape[1])).abs().max(),
+                'said_feature_norm': z_s.detach().float().norm(dim=-1).mean(),
+                'global_feature_norm': z_g.detach().float().norm(dim=-1).mean(),
+                'unsaid_feature_norm': z_u.detach().float().norm(dim=-1).mean(),
+                'router_input_feature_norm': patch_features.detach().float().norm(dim=-1).mean(),
+                'exgap_valid_fraction': gap_loss['valid_fraction'],
+                'loss_said_only_reference': loss_said.detach(),
+                # per-sample mask / relevance payload (the return contract of the module API)
+                'said_relevance': relevance,
+                'said_attention': attention,
+                'said_logits': said['said_logits'].detach().float(),
+                'mask': mask.detach().float(),
+                'global_attention': a_g.detach().float(),
+                'unsaid_attention': a_u.detach().float(),
+            }
+            for key, value in mask_diagnostics.items():
+                out[key] = (value.float() if torch.is_tensor(value) and value.dtype == torch.bool
+                            else value)
+            # raw (pre-normalisation) magnitude of the two pools, for monitoring
+            pooled_g = torch.einsum('bn,bnd->bd', a_g.detach().float(),
+                                    h.detach().float())
+            pooled_u = torch.einsum('bn,bnd->bd', a_u.detach().float(),
+                                    h.detach().float())
+            out['global_raw_pool_norm'] = pooled_g.norm(dim=-1).mean()
+            out['unsaid_raw_pool_norm'] = pooled_u.norm(dim=-1).mean()
+            out['patch_norm_deviation'] = (
+                h.detach().float().norm(dim=-1) - exgap.EXPECTED_PATCH_NORM).abs().mean()
+            if collapse_cohort is not None:
+                out.update(self._exgap_collapse_metrics(collapse_cohort, exgap_global_pool))
+        return out
+
+    @torch.no_grad()
+    def _exgap_collapse_metrics(self, images: torch.Tensor,
+                                exgap_global_pool: str) -> Dict[str, torch.Tensor]:
+        """Representation-geometry monitor on a fixed cohort (the Full-Base arm collapsed).
+
+        Reports the mean off-diagonal cosine of ``z_G`` / ``z_S`` / ``z_U`` over the cohort. A
+        rising ``global_pairwise_cos`` (say beyond 0.9) is the collapse signature and must be read
+        as a warning regardless of how well the losses look.
+        """
+        was_training = self.training
+        self.eval()
+        try:
+            _, patch_features = self.encode_router_input(images)
+            h = exgap.normalize_patches(patch_features)
+            pooling = self.exgap_module(exgap_global_pool)
+            if pooling is None:
+                z_g, a_g = exgap.compute_global_representation(h, pool='mean')
+            else:
+                z_g, a_g = exgap.compute_global_representation(
+                    h, pool='attention', query=pooling.query.expand(images.shape[0], -1),
+                    w_query=pooling.w_query, w_key=pooling.w_key)
+            # the collapse monitor is caption-independent: it uses a fixed neutral probe text so
+            # the number can be compared across steps without confounding from the batch text
+            probe = torch.zeros(images.shape[0], h.shape[-1], device=h.device)
+            probe[:, 0] = 1.0
+            said = exgap.compute_said_representation(probe, h, self.said_router.q_proj,
+                                                     self.said_router.k_proj,
+                                                     tau_said=self.tau_said)
+            mask, _ = exgap.compute_said_mask(said['said_relevance'],
+                                              threshold=exgap.DEFAULT_MASK_THRESHOLD)
+            z_u, _ = exgap.compute_masked_unsaid_representation(h, mask, a_g)
+            metrics = {}
+            for name, feature in (('global', z_g), ('said', said['said_feature']),
+                                  ('unsaid', z_u)):
+                gram = feature @ feature.t()
+                off = gram[~torch.eye(gram.shape[0], dtype=torch.bool, device=gram.device)]
+                metrics['%s_pairwise_cos' % name] = off.mean()
+                metrics['%s_pairwise_cos_max' % name] = off.max()
+            return metrics
+        finally:
+            if was_training:
+                self.train()
+
+    def encode_said_exgap(
+        self,
+        images: torch.Tensor,
+        said_texts: torch.Tensor,
+        exgap_global_pool: str = 'mean',
+        exgap_mask_threshold: float = exgap.DEFAULT_MASK_THRESHOLD,
+        exgap_temperature: float = exgap.DEFAULT_GAP_TEMPERATURE,
+        return_details: bool = False,
+    ) -> Dict[str, torch.Tensor]:
+        """Inference API for SAID-ExGAP: ``(I, C) -> z_G / z_S / z_U`` and the gap terms.
+
+        ``said_texts`` is the tokenised caption; the caption never enters the global pooling, so
+        ``z_G`` is a pure function of the image and the image side stays precomputable.
+        """
+        _, patch_features = self.encode_router_input(images)
+        t = F.normalize(self.encode_text(said_texts), dim=-1)
+        h = exgap.normalize_patches(patch_features)
+        pooling = self.exgap_module(exgap_global_pool)
+        if pooling is None:
+            z_g, a_g = exgap.compute_global_representation(h, pool='mean')
+        else:
+            z_g, a_g = exgap.compute_global_representation(
+                h, pool='attention', query=pooling.query.expand(images.shape[0], -1),
+                w_query=pooling.w_query, w_key=pooling.w_key)
+        said = exgap.compute_said_representation(t, h, self.said_router.q_proj,
+                                                 self.said_router.k_proj,
+                                                 tau_said=self.tau_said)
+        mask, _ = exgap.compute_said_mask(said['said_relevance'],
+                                          threshold=exgap_mask_threshold)
+        z_u, a_u = exgap.compute_masked_unsaid_representation(h, mask, a_g)
+        out = {
+            'global_feature': z_g,
+            'said_feature': said['said_feature'],
+            'unsaid_feature': z_u,
+            'said_relevance': said['said_relevance'],
+            'said_attention': said['said_attention'],
+            'global_attention': a_g,
+            'unsaid_attention': a_u,
+            'mask': mask,
+        }
+        if return_details:
+            s_gc = (z_g * t).sum(dim=-1)
+            s_sc = (said['said_feature'] * t).sum(dim=-1)
+            # Same contract as the training path: the similarity that L_ExGAP optimises uses a
+            # DETACHED text embedding, so this inference API reports the identical quantity and
+            # cannot be used to route an ExGAP gradient into the text encoder.
+            s_uc = (z_u * t.detach()).sum(dim=-1)
+            gap = exgap.compute_explanatory_gap(s_sc, s_gc)
+            out.update({'said_logits': said['said_logits'], 's_gc': s_gc, 's_sc': s_sc,
+                        's_uc': s_uc, 'gap_raw': gap['gap_raw'],
+                        'gap_weight': gap['gap_weight']})
         return out
 
     def encode_said_unsaid(

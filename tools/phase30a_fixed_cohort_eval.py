@@ -772,22 +772,30 @@ def main():
             state, _ = load_checkpoint_state(path)
             state, skipped = normalise_state_dict(state, core.state_dict())
             incompatible = core.load_state_dict(state, strict=False)
-            # The only keys a non-SALU checkpoint may legitimately lack are the Said router's:
-            # canonical CLS retrieval uses encode_image()/encode_text() and never touches the
-            # router, so its absence cannot affect the measurement. Anything else is an error.
+            # The only keys a checkpoint may legitimately lack or carry extra are the objective
+            # heads: canonical CLS retrieval uses encode_image()/encode_text() and never touches
+            # the Said router (``said_router.*``) nor the SAID-ExGAP pooling agent
+            # (``exgap.*``), so their absence/presence cannot affect the measurement. Anything
+            # else is an error.
             missing = [key for key in incompatible.missing_keys
-                       if not key.startswith('said_router.')]
-            if missing or list(incompatible.unexpected_keys):
+                       if not key.startswith('said_router.')
+                       and not key.startswith('exgap.')]
+            unexpected = [key for key in incompatible.unexpected_keys
+                          if not key.startswith('exgap.')]
+            if missing or unexpected:
                 raise RuntimeError(
                     'checkpoint %s did not load cleanly: missing %r, unexpected %r'
-                    % (path, missing, list(incompatible.unexpected_keys)))
+                    % (path, missing, unexpected))
             router_absent = sorted(key for key in incompatible.missing_keys
                                    if key.startswith('said_router.'))
+            exgap_absent = sorted(key for key in incompatible.missing_keys
+                                  if key.startswith('exgap.'))
             key = labels.get(tag, tag)
             payload['canonical'][key] = evaluate_canonical(core, args, preprocess)
             payload['canonical'][key]['checkpoint'] = path
             payload['canonical'][key]['skipped_keys'] = skipped
             payload['canonical'][key]['absent_said_router_keys'] = router_absent
+            payload['canonical'][key]['absent_exgap_keys'] = exgap_absent
             payload['canonical'][key]['loaded_tensors'] = len(state)
             print('CANONICAL %-12s done (loaded %d tensors, skipped %d, router-absent %d)'
                   % (key, len(state), len(skipped), len(router_absent)), flush=True)

@@ -405,10 +405,14 @@ def test_c_gap_mode_rejects_a_non_prefix_global_caption_view():
 def test_c_gap_mode_rejects_an_unknown_objective_mode():
     model = build_model()
     images, texts = make_batch()
-    assert OBJECTIVE_MODES == ('legacy', 'gap_completion')
+    # the objective list grows with each phase; what matters is that an unknown mode fails
+    assert 'legacy' in OBJECTIVE_MODES and 'gap_completion' in OBJECTIVE_MODES
     with pytest.raises(ValueError):
         model.forward_train(images, texts, 0.0, 1.0, lambda_unsaid=0.0,
                             objective_mode='base_gap_completion')
+    with pytest.raises(ValueError):
+        model.forward_train(images, texts, 0.0, 1.0, lambda_unsaid=0.0,
+                            objective_mode='not_a_mode')
 
 
 def test_c_gap_mode_rejects_a_batch_smaller_than_two():
