@@ -80,8 +80,10 @@ from .gap_completion import (
 
 # Phase 3.0A.2: SAID-ExGAP (explanatory-gap guided masked representation learning).
 from . import exgap
+# SAID-ExGAP v1.5: pre-final evidence routing read out by the original final block.
+from . import final_cls_routing
 
-OBJECTIVE_MODES = ('legacy', 'gap_completion', 'said_exgap')
+OBJECTIVE_MODES = ('legacy', 'gap_completion', 'said_exgap', 'said_exgap_finalcls')
 
 
 def gather_features_with_grad(features: torch.Tensor) -> torch.Tensor:
@@ -255,6 +257,10 @@ class SALUModel(nn.Module):
         # canonical ``exgap`` entry away.
         # ---------------------------------------------------------------- #
         object.__setattr__(self, '_exgap_module', None)
+        # SAID-ExGAP v1.5: the CLS-only readout of the ORIGINAL final visual block. It owns no
+        # parameter (it only references the vision tower), so it is cached the same way and is
+        # never registered as a submodule.
+        object.__setattr__(self, '_final_cls_readout', None)
 
     def build_exgap_module(self):
         """Register (idempotently) the image-only attention pooling agent and return it.
@@ -388,7 +394,10 @@ class SALUModel(nn.Module):
         exgap_mask_threshold: float = exgap.DEFAULT_MASK_THRESHOLD,
         exgap_temperature: float = exgap.DEFAULT_GAP_TEMPERATURE,
         exgap_normalize_gap: bool = True,
+        finalcls_pair_chunk_size: int = 32,
         collapse_cohort: Optional[torch.Tensor] = None,
+        collapse_cohort_texts: Optional[torch.Tensor] = None,
+        global_identity_check: bool = False,
     ) -> Dict[str, torch.Tensor]:
         # Phase 3.0A: a new keyword keeps every existing positional call site valid.
         if objective_mode not in OBJECTIVE_MODES:
@@ -414,6 +423,30 @@ class SALUModel(nn.Module):
                 lambda_gap_discover=lambda_gap_discover,
                 lambda_global_absorb=lambda_global_absorb,
                 gap_anti_temperature=gap_anti_temperature,
+            )
+        if objective_mode == 'said_exgap_finalcls':
+            # SAID-ExGAP v1.5 reads the SAME native final-block CLS for Global / Said / Unsaid and
+            # has no global-text CLIP loss and no Phase 2.x Unsaid branch, so those weights are
+            # configuration errors rather than no-ops.
+            if float(lambda_global) != 0.0:
+                raise ValueError("objective_mode='said_exgap_finalcls' requires lambda_global == 0, "
+                                 'got %r' % (lambda_global,))
+            if float(lambda_unsaid) != 0.0:
+                raise ValueError("objective_mode='said_exgap_finalcls' requires lambda_unsaid == 0, "
+                                 'got %r' % (lambda_unsaid,))
+            if global_caption_view != 'prefix':
+                raise ValueError("objective_mode='said_exgap_finalcls' requires "
+                                 "global_caption_view == 'prefix', got %r" % (global_caption_view,))
+            return self._forward_said_exgap_finalcls(
+                images, texts,
+                lambda_said=lambda_said,
+                lambda_exgap=lambda_exgap,
+                exgap_temperature=exgap_temperature,
+                exgap_normalize_gap=exgap_normalize_gap,
+                finalcls_pair_chunk_size=finalcls_pair_chunk_size,
+                collapse_cohort=collapse_cohort,
+                collapse_cohort_texts=collapse_cohort_texts,
+                global_identity_check=global_identity_check,
             )
         if objective_mode == 'said_exgap':
             # SAID-ExGAP v1 reads Global / Said / Masked-Unsaid from the SAME patch set and has
@@ -984,6 +1017,291 @@ class SALUModel(nn.Module):
             # C_S is the only text view in this objective, so there is no full-caption gap.
             out['gap_global_to_full_text'] = None
         return out
+
+    # ------------------------------------------------------------------ #
+    # SAID-ExGAP v1.5: pre-final (H11) evidence routing + native final CLS readout
+    # ------------------------------------------------------------------ #
+    def encode_visual_prefinal(self, images: torch.Tensor):
+        """``(c11_raw, patch11_raw, x11_raw)`` -- the tokens entering the final visual block."""
+        return self.clip.encode_visual_prefinal(images)
+
+    def prefinal_route_features(self, patch11_raw: torch.Tensor) -> torch.Tensor:
+        """``H11_route = Norm(LN_post(H11_raw) W_V)`` -- routing features, **no new parameter**.
+
+        The Said router already consumed ``Norm(LN_post(H12) W_V)``; v1.5 keeps exactly that
+        projection and only moves its *input* to the pre-final tokens, so the routing space is the
+        one the router was trained in and no second projection is introduced.
+        """
+        visual = self.clip.visual
+        features = visual.ln_post(patch11_raw)
+        if visual.proj is not None:
+            features = features @ visual.proj
+        return F.normalize(features, dim=-1)
+
+    def final_cls_readout(self):
+        """The CLS-only readout of the original final block (parameter-free, lazily built).
+
+        Cached through ``object.__setattr__`` and deliberately **not** registered as a submodule:
+        it owns no parameter, and registering a module that only holds a reference to the vision
+        tower would duplicate every visual parameter in ``named_parameters`` / ``state_dict``.
+        """
+        readout = object.__getattribute__(self, '_final_cls_readout')
+        if readout is None:
+            readout = final_cls_routing.FinalBlockCLSReadout(self.clip.visual)
+            object.__setattr__(self, '_final_cls_readout', readout)
+        return readout
+
+    def said_final_cls(
+        self,
+        images: torch.Tensor,
+        said_texts: torch.Tensor,
+        pair_chunk_size: int = 32,
+        return_details: bool = False,
+    ) -> Dict[str, torch.Tensor]:
+        """Diagnostic inference API for v1.5: ``g`` / ``z_S`` / ``z_U`` from the native final block.
+
+        ``g`` is read with the *unmodified* native attention, so it equals ``clip.encode_image``
+        (the standard inference path is untouched; this API exists for analysis only).
+        """
+        pre = self.encode_visual_prefinal(images)
+        route = self.prefinal_route_features(pre['patch11_raw'])
+        t = F.normalize(self.encode_text(said_texts), dim=-1)
+        readout = self.final_cls_readout()
+        prepared = readout.prepare(pre['x11_raw'])
+        g = readout.read_global(prepared)
+        logits = exgap.said_relevance_logits(t, route, self.said_router.q_proj,
+                                             self.said_router.k_proj, tau_said=self.tau_said)
+        relevance = final_cls_routing.said_relevance_from_logits(logits)
+        z_s = F.normalize(readout.read_said(prepared, relevance), dim=-1)
+        z_u = F.normalize(readout.read_unsaid(prepared, relevance.detach()), dim=-1)
+        g = F.normalize(g, dim=-1)
+        out = {'global_feature': g, 'said_feature': z_s, 'unsaid_feature': z_u,
+               'said_relevance': relevance,
+               'said_logits': logits.detach()}
+        if return_details:
+            s_gc = (g * t).sum(dim=-1)
+            s_sc = (z_s * t).sum(dim=-1)
+            s_uc = (z_u * t.detach()).sum(dim=-1)
+            gap = exgap.compute_explanatory_gap(s_sc, s_gc)
+            out.update({'s_gc': s_gc, 's_sc': s_sc, 's_uc': s_uc,
+                        'gap_raw': gap['gap_raw'], 'gap_weight': gap['gap_weight']})
+        return out
+
+    def _forward_said_exgap_finalcls(
+        self,
+        images: torch.Tensor,
+        texts: torch.Tensor,
+        lambda_said: float = 1.0,
+        lambda_exgap: float = 1.0,
+        exgap_temperature: float = exgap.DEFAULT_GAP_TEMPERATURE,
+        exgap_normalize_gap: bool = True,
+        finalcls_pair_chunk_size: int = 32,
+        collapse_cohort: Optional[torch.Tensor] = None,
+        collapse_cohort_texts: Optional[torch.Tensor] = None,
+        global_identity_check: bool = False,
+    ) -> Dict[str, torch.Tensor]:
+        """``L = lambda_said * L_S + lambda_exgap * L_ExGAP`` on ``(I, C)`` only.
+
+        H11 decides the evidence; the **original** final block produces the representation. The
+        three representations are the CLS row of the same block under three attention gates
+        (native / ``log r`` / ``log(1 - sg(r))``); no patch pooling, no reconstruction, no new
+        projection head, no global-text CLIP loss.
+        """
+        if int(images.shape[0]) < 2:
+            raise ValueError('said_exgap_finalcls needs batch >= 2 for the identifiable Said '
+                             'loss, got %d' % int(images.shape[0]))
+        if images.shape[0] != texts.shape[0]:
+            raise ValueError('batch mismatch: %d images vs %d texts'
+                             % (images.shape[0], texts.shape[0]))
+        if float(lambda_said) <= 0.0:
+            raise ValueError('lambda_said must be positive, got %r' % (lambda_said,))
+
+        pre = self.encode_visual_prefinal(images)
+        x11 = pre['x11_raw']
+        route_patches = self.prefinal_route_features(pre['patch11_raw'])
+        t = F.normalize(self.encode_text(texts), dim=-1)
+        readout = self.final_cls_readout()
+        prepared = readout.prepare(x11)
+
+        # the native readout must be the CLIP global feature; reported so a mismatch is visible
+        g_raw = readout.read_global(prepared)
+        g = F.normalize(g_raw, dim=-1)
+
+        # own-caption relevance (LIVE: L_S trains the router through it)
+        own_logits = exgap.said_relevance_logits(t, route_patches, self.said_router.q_proj,
+                                                 self.said_router.k_proj,
+                                                 tau_said=self.tau_said)
+        own_relevance = final_cls_routing.said_relevance_from_logits(own_logits)
+        z_s = F.normalize(readout.read_said(prepared, own_relevance), dim=-1)
+        # complementary branch: the complement is a CONSTANT, so ExGAP cannot move the router
+        relevance_detached = own_relevance.detach()
+        z_u = F.normalize(readout.read_unsaid(prepared, relevance_detached), dim=-1)
+
+        # pairwise Said readout for the unchanged identifiable objective (chunked)
+        pair_relevance = final_cls_routing.pairwise_said_relevance(
+            t, route_patches, self.said_router.q_proj, self.said_router.k_proj,
+            tau_said=self.tau_said, chunk_size=finalcls_pair_chunk_size)
+        z_pair = F.normalize(readout.read_pairwise_said(prepared, pair_relevance,
+                                                        chunk_size=finalcls_pair_chunk_size),
+                             dim=-1)
+
+        s_gc = (g * t).sum(dim=-1)
+        s_sc = (z_s * t).sum(dim=-1)
+        # ExGAP's own similarity uses a DETACHED text embedding: the objective may shape z_U but
+        # must never push the text encoder (v1's contract, unchanged).
+        s_uc = (z_u * t.detach()).sum(dim=-1)
+
+        gap = exgap.compute_explanatory_gap(s_sc, s_gc, normalize=exgap_normalize_gap)
+        gap_loss = exgap.compute_exgap_loss(s_uc, s_gc, gap['gap_weight'],
+                                           temperature=exgap_temperature)
+
+        scale = self.clip.logit_scale.exp().clamp(max=100)
+        said_loss = identifiable_said_loss(z_pair, t, scale)
+        loss_said = said_loss['loss_said']
+        loss_total = float(lambda_said) * loss_said + float(lambda_exgap) * gap_loss['loss']
+
+        with torch.no_grad():
+            relevance = own_relevance.detach().float()
+            complement = (1.0 - relevance).clamp(min=0.0)
+            pair_percentiles = (0.10, 0.25, 0.50, 0.75, 0.90)
+            gap_weight_flat = gap['gap_weight'].detach().float()
+            gap_quantiles = torch.quantile(
+                gap_weight_flat,
+                torch.tensor(pair_percentiles, device=gap_weight_flat.device,
+                             dtype=gap_weight_flat.dtype))
+            rel_quantiles = torch.quantile(
+                relevance.reshape(-1),
+                torch.tensor((0.10, 0.25, 0.50, 0.75, 0.90), device=relevance.device,
+                             dtype=relevance.dtype))
+            z_s_detached = z_s.detach().float()
+            z_u_detached = z_u.detach().float()
+            g_detached = g.detach().float()
+            out = {
+                'loss_said': loss_said,
+                'loss_route': said_loss['loss_route'].detach(),
+                'loss_evidence': said_loss['loss_evidence'].detach(),
+                'loss_exgap': gap_loss['loss'],
+                'loss_total': loss_total,
+                'loss_global': None,
+                'loss_unsaid': None,
+                'objective_mode': 'said_exgap_finalcls',
+                'said_loss_mode': self.said_loss_mode,
+                'global_text_alignment_enabled': False,
+                'unsaid_enabled': False,
+                'finalcls_pair_chunk_size': int(finalcls_pair_chunk_size),
+                'exgap_temperature': float(exgap_temperature),
+                'exgap_normalize_gap': bool(exgap_normalize_gap),
+                'lambda_said': float(lambda_said),
+                'lambda_exgap': float(lambda_exgap),
+                'route_top1_acc': said_loss['route_top1_acc'].detach(),
+                'evidence_top1_acc': said_loss['evidence_top1_acc'].detach(),
+                'route_margin': said_loss['route_margin'].detach(),
+                'evidence_margin': said_loss['evidence_margin'].detach(),
+                # three similarities of the SAME representation family (final-block CLS)
+                'S_gc_mean': s_gc.detach().mean(),
+                'S_sc_mean': s_sc.detach().mean(),
+                'S_uc_mean': s_uc.detach().mean(),
+                'S_sc_minus_S_gc_mean': (s_sc - s_gc).detach().mean(),
+                'S_uc_minus_S_gc_mean': (s_uc - s_gc).detach().mean(),
+                'S_gc_minus_S_uc_mean': (s_gc - s_uc).detach().mean(),
+                'D_U_mean': (s_gc - s_uc).detach().mean(),
+                'S_gc_p50': torch.quantile(s_gc.detach().float(), 0.5),
+                'S_sc_p50': torch.quantile(s_sc.detach().float(), 0.5),
+                'S_uc_p50': torch.quantile(s_uc.detach().float(), 0.5),
+                # explanatory gap (formula unchanged from v1)
+                'explanatory_gap_raw_mean': gap['gap_raw'].mean(),
+                'explanatory_gap_norm_mean': gap['gap_weight'].mean(),
+                'gap_weight_mean': gap['gap_weight'].mean(),
+                'explanatory_gap_positive_fraction': (gap['gap_raw'] > 0).float().mean(),
+                'gap_p10': gap_quantiles[0],
+                'gap_p25': gap_quantiles[1],
+                'gap_p50': gap_quantiles[2],
+                'gap_p75': gap_quantiles[3],
+                'gap_p90': gap_quantiles[4],
+                # soft-gate diagnostics (0.6 is a DIAGNOSTIC threshold only, never a train mask)
+                'said_relevance_mean': relevance.mean(),
+                'said_relevance_std': relevance.std(unbiased=False),
+                'said_relevance_p10': rel_quantiles[0],
+                'said_relevance_p25': rel_quantiles[1],
+                'said_relevance_p50': rel_quantiles[2],
+                'said_relevance_p75': rel_quantiles[3],
+                'said_relevance_p90': rel_quantiles[4],
+                'said_fraction_gt_0_6': (relevance > 0.6).float().mean(),
+                'said_fraction_gt_0_7': (relevance > 0.7).float().mean(),
+                'diagnostic_threshold': 0.6,
+                # soft effective patch counts (participation ratio, NOT a hard mask count)
+                'said_effective_patch_count': (
+                    relevance.sum(dim=-1).pow(2)
+                    / (relevance.pow(2).sum(dim=-1) + exgap.DEFAULT_EPS)).mean(),
+                'unsaid_effective_patch_count': (
+                    complement.sum(dim=-1).pow(2)
+                    / (complement.pow(2).sum(dim=-1) + exgap.DEFAULT_EPS)).mean(),
+                # final CLS intervention geometry
+                'said_to_global_cos': (z_s_detached * g_detached).sum(dim=-1).mean(),
+                'unsaid_to_global_cos': (z_u_detached * g_detached).sum(dim=-1).mean(),
+                'said_to_unsaid_cos': (z_s_detached * z_u_detached).sum(dim=-1).mean(),
+                'said_minus_global_l2': (z_s_detached - g_detached).norm(dim=-1).mean(),
+                'unsaid_minus_global_l2': (z_u_detached - g_detached).norm(dim=-1).mean(),
+                'said_to_global_cos_std': (z_s_detached * g_detached).sum(dim=-1).std(
+                    unbiased=False),
+                'global_feature_norm': g_detached.norm(dim=-1).mean(),
+                'said_feature_norm': z_s_detached.norm(dim=-1).mean(),
+                'unsaid_feature_norm': z_u_detached.norm(dim=-1).mean(),
+                'router_input_feature_norm': route_patches.detach().float().norm(dim=-1).mean(),
+                'patch11_norm': pre['patch11_raw'].detach().float().norm(dim=-1).mean(),
+                'exgap_valid_fraction': gap_loss['valid_fraction'],
+                'loss_said_only_reference': loss_said.detach(),
+                # per-sample payload
+                'said_relevance': relevance,
+                'said_logits': own_logits.detach().float(),
+                'mask': (relevance > 0.6).float(),      # diagnostics / visualisation only
+            }
+            if collapse_cohort is not None:
+                out.update(self._finalcls_collapse_metrics(collapse_cohort,
+                                                           collapse_cohort_texts))
+            if global_identity_check:
+                # Gate 0: the CLS-only readout of the ORIGINAL final block must reproduce the
+                # native CLIP image feature. Measured on the same batch, in the same configuration,
+                # on every rank (so the graph stays rank-independent).
+                native = self.encode_image(images).detach().float()
+                out['global_identity_max_abs_diff'] = (
+                    native - g_raw.detach().float()).abs().max()
+                out['global_identity_relative'] = (
+                    (native - g_raw.detach().float()).abs().max()
+                    / native.abs().max().clamp(min=1e-12))
+        return out
+
+    @torch.no_grad()
+    def _finalcls_collapse_metrics(self, images: torch.Tensor,
+                                   texts: Optional[torch.Tensor] = None
+                                   ) -> Dict[str, torch.Tensor]:
+        """Native-CLS geometry on the fixed cohort (v1.5 primary representation).
+
+        The global representation here is exactly ``clip.encode_image`` -- not a patch pool -- so
+        the numbers are directly comparable with the CLIP retrieval readout. When the cohort's own
+        tokenised captions are supplied, the 64-way image-to-text R@1 is computed too.
+        """
+        was_training = self.training
+        self.eval()
+        try:
+            g = F.normalize(self.encode_image(images).detach().float(), dim=-1)
+            gram = g @ g.t()
+            off = gram[~torch.eye(gram.shape[0], dtype=torch.bool, device=gram.device)]
+            metrics = {
+                'global_cls_pairwise_cos': off.mean(),
+                'global_cls_pairwise_cos_max': off.max(),
+                'global_cls_std': g.std(dim=0).mean(),
+            }
+            if texts is not None and int(texts.shape[0]) == int(images.shape[0]):
+                t = F.normalize(self.encode_text(texts).detach().float(), dim=-1)
+                similarity = g @ t.t()
+                labels = torch.arange(similarity.shape[0], device=similarity.device)
+                metrics['64way_i2t_at1'] = (similarity.argmax(dim=1) == labels).float().mean()
+                metrics['64way_t2i_at1'] = (similarity.argmax(dim=0) == labels).float().mean()
+        finally:
+            if was_training:
+                self.train()
+        return metrics
 
     # ------------------------------------------------------------------ #
     # SAID-ExGAP v1: Explanatory-Gap Guided Masked Representation Learning

@@ -230,9 +230,12 @@ class VisionTransformer(nn.Module):
 			raise NotImplementedError('local evidence does not support use_checkpoint=True')
 		return self.forward(x, return_local_evidence=True)
 
-	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False, return_local_evidence=False):
-		if return_local_evidence and (use_checkpoint or return_patches):
-			raise ValueError('local evidence requires its separate non-checkpoint interface')
+	def _token_sequence(self, x: torch.Tensor) -> torch.Tensor:
+		"""Patch-embed + CLS + positional embedding + ``ln_pre`` -> ``[B, L, width]``.
+
+		Extracted from ``forward`` so the pre-final interface and the native forward share exactly
+		one preamble (no second, drifting implementation of the token construction).
+		"""
 		x = self.conv1(x)  # shape = [*, width, grid, grid]
 		x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
 		x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
@@ -240,7 +243,36 @@ class VisionTransformer(nn.Module):
 			[self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device),
 			 x], dim=1)  # shape = [*, grid ** 2 + 1, width]
 		x = x + self.positional_embedding.to(x.dtype)
-		x = self.ln_pre(x)
+		return self.ln_pre(x)
+
+	def forward_prefinal(self, x: torch.Tensor, use_checkpoint=False):
+		"""Tokens ENTERING the last transformer block: ``(c11_raw, patch11_raw, x11_raw)``.
+
+		``x11_raw`` is the true input of ``transformer.resblocks[-1]``: blocks 0..10 (the first 11
+		of 12) have run and block 11 (the 12th) has **not**. It is never a by-product of the final
+		block's output, which is what SAID-ExGAP v1.5 requires: H11 decides the evidence, the
+		native final block produces the representation.
+
+		All three tensors stay in the raw hidden space (width=768 for ViT-B/16); the routing
+		projection is applied separately by the caller.
+		"""
+		if use_checkpoint:
+			raise NotImplementedError('pre-final tokens do not support use_checkpoint=True')
+		tokens = self._token_sequence(x)
+		tokens = tokens.permute(1, 0, 2)  # NLD -> LND
+		for block in self.transformer.resblocks[:-1]:
+			tokens = block(tokens)
+		tokens = tokens.permute(1, 0, 2)  # LND -> NLD
+		return {
+			'cls11_raw': tokens[:, 0, :],
+			'patch11_raw': tokens[:, 1:, :],
+			'x11_raw': tokens,
+		}
+
+	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False, return_local_evidence=False):
+		if return_local_evidence and (use_checkpoint or return_patches):
+			raise ValueError('local evidence requires its separate non-checkpoint interface')
+		x = self._token_sequence(x)
 
 		x = x.permute(1, 0, 2)  # NLD -> LND
 		if return_local_evidence:
@@ -442,6 +474,16 @@ class CLIP(nn.Module):
 		if not isinstance(self.visual, VisionTransformer):
 			raise NotImplementedError('local evidence supports VisionTransformer only')
 		return self.visual.forward_with_local_evidence(image.type(self.dtype), use_checkpoint=use_checkpoint)
+
+	def encode_visual_prefinal(self, image, use_checkpoint=False):
+		"""SAID-ExGAP v1.5: the token sequence entering the final visual block.
+
+		Returns ``cls11_raw`` [B, width], ``patch11_raw`` [B, N, width] and ``x11_raw``
+		[B, N+1, width] in the raw visual hidden space. ``encode_image`` is untouched.
+		"""
+		if not isinstance(self.visual, VisionTransformer):
+			raise NotImplementedError('pre-final tokens support VisionTransformer only')
+		return self.visual.forward_prefinal(image.type(self.dtype), use_checkpoint=use_checkpoint)
 
 	def encode_text_with_checkpoint(self, text):
 		x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]

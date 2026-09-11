@@ -223,17 +223,22 @@ def resolve_gap_mode(args):
 def resolve_objective_mode(args):
     """``(gap_mode, exgap_mode, tri_mode, caption_views, collate_fn)`` for the chosen objective.
 
-    ``gap_completion`` and ``said_exgap`` both consume only ``(I, C_S)``, so both ask the dataset
-    for ``caption_views=False`` and keep the default collate; only the Phase 2.9A suffix branch
-    builds the tri-caption view dicts.
+    ``gap_completion``, ``said_exgap`` and ``said_exgap_finalcls`` all consume only ``(I, C_S)``, so
+    they ask the dataset for ``caption_views=False`` and keep the default collate; only the Phase
+    2.9A suffix branch builds the tri-caption view dicts.
     """
     objective = getattr(args, 'objective_mode', 'legacy')
-    exgap_mode = objective == 'said_exgap'
+    exgap_mode = objective in ('said_exgap', 'said_exgap_finalcls')
     gap_mode = objective == 'gap_completion'
     tri_mode = getattr(args, 'unsaid_mode', 'residual') == 'debiased_suffix'
     caption_views = bool(tri_mode) and not (gap_mode or exgap_mode)
     return gap_mode, exgap_mode, tri_mode, caption_views, \
         (tri_caption_collate if caption_views else None)
+
+
+def resolve_finalcls_mode(args):
+    """``True`` when the SAID-ExGAP v1.5 (pre-final routing + native final CLS) objective runs."""
+    return getattr(args, 'objective_mode', 'legacy') == 'said_exgap_finalcls'
 
 
 def build_exgap_log_fields(out):
@@ -278,6 +283,55 @@ def build_exgap_log_fields(out):
     fields['said_loss_mode'] = out.get('said_loss_mode')
     fields['exgap_global_pool'] = out.get('exgap_global_pool')
     fields['exgap_mask_threshold'] = out.get('exgap_mask_threshold')
+    fields['exgap_temperature'] = out.get('exgap_temperature')
+    fields['lambda_said'] = out.get('lambda_said')
+    fields['lambda_exgap'] = out.get('lambda_exgap')
+    fields['global_text_alignment_enabled'] = bool(
+        out.get('global_text_alignment_enabled', False))
+    return fields
+
+
+def build_finalcls_log_fields(out):
+    """Logger payload of one ``said_exgap_finalcls`` (v1.5) step.
+
+    No ``loss_global`` / ``loss_unsaid`` exist here (v1.5 has no global-text CLIP loss and no
+    Phase 2.x Unsaid branch); they stay ``None`` so the record carries ``null`` instead of a
+    fabricated number. ``said_fraction_gt_0_6`` is a DIAGNOSTIC threshold fraction, never the
+    training mask: v1.5 trains with the live soft gate ``log r``.
+    """
+    def _value(key):
+        value = out.get(key)
+        if value is None:
+            return None
+        return float(value.detach()) if torch.is_tensor(value) else value
+
+    fields = {key: _value(key) for key in (
+        'loss_total', 'loss_said', 'loss_route', 'loss_evidence', 'loss_exgap',
+        'loss_global', 'loss_unsaid',
+        'S_gc_mean', 'S_sc_mean', 'S_uc_mean',
+        'S_sc_minus_S_gc_mean', 'S_uc_minus_S_gc_mean', 'S_gc_minus_S_uc_mean', 'D_U_mean',
+        'S_gc_p50', 'S_sc_p50', 'S_uc_p50',
+        'explanatory_gap_raw_mean', 'explanatory_gap_norm_mean', 'gap_weight_mean',
+        'explanatory_gap_positive_fraction',
+        'gap_p10', 'gap_p25', 'gap_p50', 'gap_p75', 'gap_p90',
+        'said_relevance_mean', 'said_relevance_std',
+        'said_relevance_p10', 'said_relevance_p25', 'said_relevance_p50',
+        'said_relevance_p75', 'said_relevance_p90',
+        'said_fraction_gt_0_6', 'said_fraction_gt_0_7', 'diagnostic_threshold',
+        'said_effective_patch_count', 'unsaid_effective_patch_count',
+        'said_to_global_cos', 'unsaid_to_global_cos', 'said_to_unsaid_cos',
+        'said_to_global_cos_std', 'said_minus_global_l2', 'unsaid_minus_global_l2',
+        'route_top1_acc', 'evidence_top1_acc', 'route_margin', 'evidence_margin',
+        'global_feature_norm', 'said_feature_norm', 'unsaid_feature_norm',
+        'router_input_feature_norm', 'patch11_norm', 'exgap_valid_fraction',
+        # native-CLS geometry on the fixed cohort (v1.5 primary representation)
+        'global_cls_pairwise_cos', 'global_cls_pairwise_cos_max', 'global_cls_std',
+        '64way_i2t_at1', '64way_t2i_at1',
+        'global_identity_max_abs_diff', 'global_identity_relative',
+    )}
+    fields['objective_mode'] = out.get('objective_mode')
+    fields['said_loss_mode'] = out.get('said_loss_mode')
+    fields['finalcls_pair_chunk_size'] = out.get('finalcls_pair_chunk_size')
     fields['exgap_temperature'] = out.get('exgap_temperature')
     fields['lambda_said'] = out.get('lambda_said')
     fields['lambda_exgap'] = out.get('lambda_exgap')
@@ -566,6 +620,8 @@ def objective_checkpoint_metadata(args):
         return 'phase3.0a-gap-completion', 'gap_completion'
     if getattr(args, 'objective_mode', 'legacy') == 'said_exgap':
         return 'said-exgap-v1', 'said_exgap'
+    if getattr(args, 'objective_mode', 'legacy') == 'said_exgap_finalcls':
+        return 'said-exgap-v1.5-finalcls', 'said_exgap_finalcls'
     return 'phase2-said-only', None
 
 
@@ -601,7 +657,55 @@ def validate_resume_objective(checkpoint, args, path='<checkpoint>'):
         if differences:
             raise ValueError('resume exgap_config mismatch (stored, current): %r (%s)'
                              % (differences, path))
+    if current == 'said_exgap_finalcls':
+        stored_config = checkpoint.get('finalcls_config')
+        if stored_config is None:
+            raise ValueError('resume of a said_exgap_finalcls checkpoint without finalcls_config: '
+                             '%s' % path)
+        current_config = finalcls_checkpoint_config(args)
+        differences = {key: (stored_config.get(key), current_config[key])
+                       for key in current_config if stored_config.get(key) != current_config[key]}
+        if differences:
+            raise ValueError('resume finalcls_config mismatch (stored, current): %r (%s)'
+                             % (differences, path))
     return str(stored)
+
+
+def finalcls_checkpoint_config(args):
+    """Configuration block that makes two v1.5 runs comparable (travels with the checkpoint)."""
+    return {
+        'objective_mode': 'said_exgap_finalcls',
+        'pair_chunk_size': int(getattr(args, 'finalcls_pair_chunk_size', 32)),
+        'temperature': float(args.exgap_temperature),
+        'lambda_said': float(args.lambda_said),
+        'lambda_exgap': float(args.lambda_exgap),
+        'normalize_gap': bool(args.exgap_normalize_gap),
+        'route_source': 'H11_raw -> ln_post -> proj',
+        'readout': 'original final block, CLS row only',
+    }
+
+
+def validate_finalcls_args(args):
+    """Reject an illegal SAID-ExGAP v1.5 configuration before any model or data is built."""
+    problems = []
+    if int(getattr(args, 'finalcls_pair_chunk_size', 32)) <= 0:
+        problems.append('--finalcls-pair-chunk-size must be positive, got %r'
+                        % (args.finalcls_pair_chunk_size,))
+    if float(args.exgap_temperature) <= 0.0:
+        problems.append('--exgap-temperature must be positive, got %r'
+                        % (args.exgap_temperature,))
+    if float(args.lambda_said) <= 0.0:
+        problems.append('--lambda-said must be positive, got %r' % (args.lambda_said,))
+    if not 0.0 <= float(args.lambda_exgap) < float('inf'):
+        problems.append('--lambda-exgap must be finite and >= 0, got %r' % (args.lambda_exgap,))
+    if float(args.lambda_global) != 0.0:
+        problems.append('--lambda-global must be 0 for said_exgap_finalcls (v1.5 has no '
+                        'global-text CLIP loss), got %r' % (args.lambda_global,))
+    if float(args.lambda_unsaid) != 0.0:
+        problems.append('--lambda-unsaid must be 0 for said_exgap_finalcls (no Phase 2.x Unsaid '
+                        'branch), got %r' % (args.lambda_unsaid,))
+    if problems:
+        raise ValueError('illegal said_exgap_finalcls configuration: ' + '; '.join(problems))
 
 
 def save_checkpoint(path, ddp_model, optimizer, scaler, step, epoch, args, base_lrs, total_steps):
@@ -635,6 +739,8 @@ def save_checkpoint(path, ddp_model, optimizer, scaler, step, epoch, args, base_
             lambda_exgap=args.lambda_exgap,
             normalize_gap=args.exgap_normalize_gap,
         )
+    if objective_mode == 'said_exgap_finalcls':
+        payload['finalcls_config'] = finalcls_checkpoint_config(args)
     torch.save(payload, path)
     # a plain CLIP-only state dict so standard tooling (eval/retrieval/coco.py)
     # can load the backbone without knowing about SALU
@@ -789,15 +895,25 @@ def exgap_grad_attribution(module, images, text_tokens, args, steps, completed):
     """
     if completed not in set(steps):
         return {}
+    objective = getattr(args, 'objective_mode', 'said_exgap')
     groups = exgap_grad_groups(module)
+    if objective == 'said_exgap_finalcls':
+        forward_kwargs = dict(objective_mode='said_exgap_finalcls',
+                              lambda_exgap=args.lambda_exgap,
+                              exgap_temperature=args.exgap_temperature,
+                              exgap_normalize_gap=args.exgap_normalize_gap,
+                              finalcls_pair_chunk_size=args.finalcls_pair_chunk_size)
+    else:
+        forward_kwargs = dict(objective_mode='said_exgap',
+                              lambda_exgap=args.lambda_exgap,
+                              exgap_global_pool=args.exgap_global_pool,
+                              exgap_mask_threshold=args.exgap_mask_threshold,
+                              exgap_temperature=args.exgap_temperature,
+                              exgap_normalize_gap=args.exgap_normalize_gap)
     with torch.enable_grad():
         out = module(images, text_tokens, 0.0, args.lambda_said, lambda_unsaid=0.0,
-                     objective_mode='said_exgap', lambda_exgap=args.lambda_exgap,
-                     exgap_global_pool=args.exgap_global_pool,
-                     exgap_mask_threshold=args.exgap_mask_threshold,
-                     exgap_temperature=args.exgap_temperature,
-                     exgap_normalize_gap=args.exgap_normalize_gap)
-        record = {}
+                     **forward_kwargs)
+        record = {'grad_attr_objective_mode': objective}
         norms = {}
         for term_name, term in (('said', out['loss_said']), ('exgap', out['loss_exgap'])):
             term_norms = {}
@@ -838,9 +954,10 @@ def exgap_grad_groups(module):
     """
     visual_prefixes = ('clip.visual.', 'clip.patch_proj', 'clip.global_proj')
     patch_prefixes = ('clip.visual.', 'clip.patch_proj')
+    final_block_prefix = 'clip.visual.transformer.resblocks.11.'
     text_prefixes = ('clip.transformer.', 'clip.token_embedding.', 'clip.positional_embedding',
                      'clip.ln_final', 'clip.text_projection', 'clip.text_proj')
-    groups = {'visual_backbone': [], 'patch_pathway': [], 'text_encoder': [],
+    groups = {'visual_backbone': [], 'patch_pathway': [], 'final_block': [], 'text_encoder': [],
               'said_router': [], 'exgap_pooling': [], 'other': []}
     for name, parameter in module.named_parameters():
         if not parameter.requires_grad:
@@ -856,6 +973,8 @@ def exgap_grad_groups(module):
                 groups['visual_backbone'].append(parameter)
             if name.startswith(patch_prefixes):
                 groups['patch_pathway'].append(parameter)
+            if name.startswith(final_block_prefix):
+                groups['final_block'].append(parameter)
             if not name.startswith(visual_prefixes):
                 groups['other'].append(parameter)
     return {group: parameters for group, parameters in groups.items() if parameters}
@@ -919,6 +1038,10 @@ def parse_args(argv=None):
                         dest='grad_attribution_steps', default='20,100,500',
                         help='completed-step numbers at which the per-term gradient attribution '
                              '(G_S / G_ExGAP / R_grad) is measured on a fresh diagnostic graph')
+    parser.add_argument('--finalcls_pair_chunk_size', '--finalcls-pair-chunk-size',
+                        dest='finalcls_pair_chunk_size', type=int, default=32,
+                        help='caption candidates per chunk for the v1.5 pairwise final-CLS readout '
+                             '(never materialises [B, B, 197, 768])')
     parser.add_argument('--log_every', type=int, default=10)
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--download_root', default=None)
@@ -950,10 +1073,11 @@ def parse_args(argv=None):
     # Phase 3.0A base objective: Said-Conditioned Visual Complement Discovery
     # ------------------------------------------------------------------ #
     parser.add_argument('--objective_mode', default='legacy',
-                        choices=['legacy', 'gap_completion', 'said_exgap'],
+                        choices=['legacy', 'gap_completion', 'said_exgap', 'said_exgap_finalcls'],
                         help="legacy = Phase 2 losses (L_global + L_said [+ L_unsaid]); "
-                             "gap_completion = Phase 3.0A base objective on (I, C_S) only, "
-                             "requires --lambda_global 0 --lambda_unsaid 0")
+                             "gap_completion = Phase 3.0A base objective on (I, C_S) only; "
+                             "said_exgap = v1 (patch-space ExGAP); said_exgap_finalcls = v1.5 "
+                             "(pre-final H11 routing + native final-block CLS readout)")
     parser.add_argument('--lambda_gap_discover', type=float, default=1.0,
                         help='weight of L_gap_discover = mean(gap_after) (gap_completion only)')
     parser.add_argument('--lambda_global_absorb', type=float, default=1.0,
@@ -1004,6 +1128,11 @@ def validate_objective_args(args):
         # SAID-ExGAP v1 has no global-text CLIP loss and no Phase 2.x Unsaid branch, and it
         # reads Global / Said / Masked-Unsaid from one patch set, so those weights are errors.
         exgap.validate_exgap_config(args)
+        return args
+    if args.objective_mode == 'said_exgap_finalcls':
+        # v1.5 keeps the v1 loss contract and adds the pre-final routing / native final-CLS
+        # configuration, so both validators run.
+        validate_finalcls_args(args)
         return args
     if args.objective_mode != 'gap_completion':
         return args
@@ -1105,6 +1234,7 @@ def main():
     # the only producer of C_F / C_U / has_unsaid, so the gap run asks for False and keeps
     # the default collate (never ``tri_caption_collate``).
     gap_mode, exgap_mode, tri_mode, caption_views, train_collate = resolve_objective_mode(args)
+    finalcls_mode = resolve_finalcls_mode(args)
     train_set = share4v_train_dataset(caption_views=caption_views, suffix_seed=args.seed)
     sampler = DistributedSampler(train_set, shuffle=True, seed=args.seed)
     loader_generator = torch.Generator().manual_seed(args.seed + rank)
@@ -1134,19 +1264,30 @@ def main():
     # rank; it never participates in training.
     # ---------------------------------------------------------------- #
     collapse_cohort = None
+    collapse_cohort_texts = None
     if exgap_mode and args.exgap_collapse_every:
         try:
             indices = list(range(64))
             tensors = []
+            captions = []
             for index in indices:
                 sample = train_set[index]
                 tensors.append(sample[0] if isinstance(sample, (tuple, list)) else sample['image'])
+                captions.append(sample[1] if isinstance(sample, (tuple, list))
+                                else sample['caption_said'])
             collapse_cohort = torch.stack(tensors).to(device)
+            # v1.5 also reports the 64-way image-to-text R@1 on this cohort, which needs the
+            # cohort's own captions. Tokenised once, on rank 0 only (identical on every rank).
+            if finalcls_mode and rank == 0:
+                collapse_cohort_texts = longclip.tokenize(
+                    captions, truncate=True).to(device)
             if rank == 0:
-                print('COLLAPSE_COHORT %r from dataset indices 0-%d'
-                      % (tuple(collapse_cohort.shape), indices[-1]), flush=True)
+                print('COLLAPSE_COHORT %r from dataset indices 0-%d texts=%s'
+                      % (tuple(collapse_cohort.shape), indices[-1],
+                         'yes' if collapse_cohort_texts is not None else 'no'), flush=True)
         except Exception as error:      # never let monitoring break training
             collapse_cohort = None
+            collapse_cohort_texts = None
             if rank == 0:
                 print('COLLAPSE_COHORT unavailable: %r' % (error,), flush=True)
 
@@ -1244,7 +1385,7 @@ def main():
             texts_full = texts_unsaid = has_unsaid = None
             gap_batch = None
             if exgap_mode:
-                # SAID-ExGAP v1 consumes exactly (I, C): no full caption, no unsaid text
+                # SAID-ExGAP v1 / v1.5 consume exactly (I, C): no full caption, no unsaid text
                 gap_batch = build_gap_train_batch(
                     batch, lambda captions: longclip.tokenize(captions, truncate=True).to(device))
                 images = gap_batch['images']
@@ -1307,18 +1448,25 @@ def main():
             t_compute0 = time.time()
             with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=use_amp):
                 if exgap_mode:
-                    # ExGAP gets (I, C) plus its own hyper-parameters; no global / Unsaid term
+                    # ExGAP gets (I, C) plus its own hyper-parameters; no global / Unsaid term.
+                    # v1.5 keeps the same outer contract and swaps the representation family.
                     out = ddp_model(images, text_tokens, 0.0, args.lambda_said,
                                     lambda_unsaid=0.0,
-                                    objective_mode='said_exgap',
+                                    objective_mode=('said_exgap_finalcls' if finalcls_mode
+                                                    else 'said_exgap'),
                                     lambda_exgap=args.lambda_exgap,
                                     exgap_global_pool=args.exgap_global_pool,
                                     exgap_mask_threshold=args.exgap_mask_threshold,
                                     exgap_temperature=args.exgap_temperature,
                                     exgap_normalize_gap=args.exgap_normalize_gap,
+                                    finalcls_pair_chunk_size=args.finalcls_pair_chunk_size,
                                     collapse_cohort=collapse_cohort
                                     if (args.exgap_collapse_every
-                                        and step % args.exgap_collapse_every == 0) else None)
+                                        and step % args.exgap_collapse_every == 0) else None,
+                                    collapse_cohort_texts=collapse_cohort_texts
+                                    if (finalcls_mode and args.exgap_collapse_every
+                                        and step % args.exgap_collapse_every == 0) else None,
+                                    global_identity_check=(finalcls_mode and step == 0))
                 elif gap_mode:
                     # the gap objective gets (I, C_S) and its own weights; no texts_full,
                     # no texts_unsaid, no has_unsaid, no global / Unsaid term
@@ -1374,7 +1522,28 @@ def main():
             if rank == 0 and (step % args.log_every == 0 or step == 0 or is_last_step
                               or step + 1 in save_at or step + 1 in grad_attribution_steps):
                 throughput = summarize_throughput(global_batch, compute_times, wall_times)
-                if exgap_mode:
+                if finalcls_mode:
+                    # SAID-ExGAP v1.5 payload: the native final-CLS readout is the primary
+                    # representation, so the collapse monitor is the NATIVE CLS geometry.
+                    record = {
+                        'step': step,
+                        'completed_steps': step + 1,
+                        'epoch': epoch,
+                        'lr_scale': scale_factor,
+                        'backbone_lr': optimizer.param_groups[0]['lr'],
+                        'head_lr': optimizer.param_groups[1]['lr'],
+                        'unsaid_enabled': False,     # legacy alias only
+                        'image_representation': 'native_final_cls',
+                    }
+                    record.update(build_finalcls_log_fields(out))
+                    if grad_attribution:
+                        record.update(grad_attribution)
+                        record['grad_attribution_point'] = 'fresh_graph_after_optimizer_step'
+                    cls_cos = record.get('global_cls_pairwise_cos')
+                    if cls_cos is not None and float(cls_cos) >= 0.9 and rank == 0:
+                        print('WARNING REPRESENTATION_COLLAPSE global_cls_pairwise_cos=%.4f '
+                              'at step %d' % (float(cls_cos), step), flush=True)
+                elif exgap_mode:
                     # SAID-ExGAP v1 payload: loss_global / loss_unsaid do not exist here and are
                     # written as JSON null; the legacy 2.8A/2.9A monitors are not part of it.
                     record = {
@@ -1394,6 +1563,8 @@ def main():
                     if gap_weight is not None and float(gap_weight) >= 0.9 and rank == 0:
                         print('WARNING REPRESENTATION_COLLAPSE global_pairwise_cos=%.4f at step %d'
                               % (float(gap_weight), step), flush=True)
+                elif finalcls_mode:
+                    raise AssertionError('unreachable: the v1.5 payload is handled first')
                 elif gap_mode:
                     # Phase 3.0A payload: loss_global / loss_unsaid do not exist here and
                     # are written as JSON null (never ``out[...].detach()`` on a missing
