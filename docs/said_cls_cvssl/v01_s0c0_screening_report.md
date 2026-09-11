@@ -5,11 +5,16 @@ Scope: **performance screening only.** One startup blocker was fixed, S0 (`lambd
 retrieval was run on Initial / step100 / step500. G0 and R0 were **not** started. No algorithm,
 hyper-parameter, augmentation or tolerance was changed.
 
-* branch `codex/said-cls-cvssl-v01`, screening run at the startup-fix commit (recorded per run as
-  `git_head`; the fix commit itself is the one that carries this report)
+* branch `codex/said-cls-cvssl-v01`
+* provenance precision: both 500-step runs record `git_head = dc333d5` because the two startup
+  fixes of §1 were still uncommitted in the working tree when they ran; the only difference between
+  that tree and the pushed commit `007c524` (which carries this report) is exactly those two
+  NameError fixes plus the startup dtype-audit print, i.e. launch-path code that does not touch the
+  objective, the optimizer, the schedule or the data. Every other file was identical
 * shared init: `runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt`,
   `INIT_STATE_SHA256 = caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf`
-  (matches the historical SmartCLIP reproduction's `initial_state_sha256`)
+  (matches the historical SmartCLIP reproduction's `initial_state_sha256`), and that same digest was
+  re-verified from the loaded state dict before the runs
 * raw results: `outputs/cvssl_screening/{S0,C0}_canonical.json`,
   `runs_salu/said_cls_cvssl/{ddpcheck_step20_*,ddpfix_step500_*}/`
 
