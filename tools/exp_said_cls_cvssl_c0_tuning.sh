@@ -61,6 +61,9 @@ case "$MODE" in
     [ -f "$CKPT" ] || { echo "MISSING $CKPT"; exit 1; }
     export CUDA_VISIBLE_DEVICES=0
     W=/root/SAID-gap-completion
+    # the evaluator runs from /root/SAID (it resolves the frozen manifests relatively), so every
+    # checkpoint path handed to it must be absolute
+    CKPT=$W/$CKPT
     EOUT=$W/outputs/cvssl_screening/c0_tuning
     mkdir -p "$EOUT"
     cd /root/SAID || exit 1
