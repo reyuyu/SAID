@@ -41,6 +41,22 @@ ARM_LAMBDA_U = {'S0_smartclip': 0.0, 'G0_global_vssl': 1.0,
                 'R0_random_vssl': 1.0, 'C0_complement_vssl': 1.0}
 
 
+def effective_lambda_u(lambda_target: float, completed_steps: int, warmup_steps: int) -> float:
+    """The U weight actually applied at this update.
+
+    ``warmup_steps = 0`` reproduces the historical constant-weight behaviour exactly. Otherwise the
+    weight ramps linearly over the first ``warmup_steps`` updates: step 1
+    (``completed_steps = 0``) gets ``lambda_target / warmup_steps``, and update ``warmup_steps`` and
+    everything after it gets ``lambda_target``.
+    """
+    target = float(lambda_target)
+    warmup = int(warmup_steps)
+    if warmup <= 0:
+        return target
+    return target * min((int(completed_steps) + 1) / float(warmup), 1.0)
+
+
+
 def said_mask_from_hidden(mask_net, text_hidden: torch.Tensor, soft_mask: bool = False
                           ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """``(m_s, soft_mask_tensor, mask_logits)`` -- the reference mask pipeline, unchanged.
@@ -158,14 +174,15 @@ class SaidClsCvsslTrainModule(nn.Module):
 
     def forward(self, image_a: torch.Tensor, image_b: torch.Tensor, text: torch.Tensor,
                 image_ids: torch.Tensor, random_generator=None, mask_seed=None,
-                mask_override=None):
+                mask_override=None, effective_lambda_u=None):
         v_a = self._encode_view(image_a)
         v_b = self._encode_view(image_b)
         return self.objective.forward_from_features(v_a, v_b, text, image_ids,
                                                     random_generator=random_generator,
                                                     image_a=image_a, image_b=image_b,
                                                     mask_seed=mask_seed,
-                                                    mask_override=mask_override)
+                                                    mask_override=mask_override,
+                                                    effective_lambda_u=effective_lambda_u)
 
 
 class SaidClsCvsslObjective:
@@ -209,6 +226,7 @@ class SaidClsCvsslObjective:
     def forward(self, image_a: torch.Tensor, image_b: torch.Tensor, text: torch.Tensor,
                 image_ids: torch.Tensor, random_generator: Optional[torch.Generator] = None,
                 mask_seed: Optional[int] = None,
+                effective_lambda_u: Optional[float] = None,
                 ) -> Dict[str, torch.Tensor]:
         encoder = (self.clip.encode_image_with_checkpoint if self.grad_checkpoint_views
                    else self.clip.encode_image)
@@ -217,7 +235,8 @@ class SaidClsCvsslObjective:
         return self.forward_from_features(v_a, v_b, text, image_ids,
                                           random_generator=random_generator,
                                           image_a=image_a, image_b=image_b,
-                                          mask_seed=mask_seed)
+                                          mask_seed=mask_seed,
+                                          effective_lambda_u=effective_lambda_u)
 
     def forward_from_features(self, v_a: torch.Tensor, v_b: torch.Tensor, text: torch.Tensor,
                               image_ids: torch.Tensor,
@@ -226,6 +245,7 @@ class SaidClsCvsslObjective:
                               image_b: Optional[torch.Tensor] = None,
                               mask_seed: Optional[int] = None,
                               mask_override: Optional[torch.Tensor] = None,
+                              effective_lambda_u: Optional[float] = None,
                               ) -> Dict[str, torch.Tensor]:
         """The objective on already-encoded views (so the caller can own the view encoding).
 
@@ -245,6 +265,9 @@ class SaidClsCvsslObjective:
             mask_seed=0 if mask_seed is None else int(mask_seed),
             override=mask_override)
 
+        # the weight schedule only changes this scalar; which branch runs is decided by the
+        # *target*, so a small early effective weight never switches the training path
+        weight = self.lambda_u if effective_lambda_u is None else float(effective_lambda_u)
         if self.lambda_u > 0.0:
             u = cvssl.complement_visual_contrastive_loss(
                 v_a, v_b, mask_u, image_ids, tau_u=self.tau_u, eps=self.eps, rank=self.rank,
@@ -259,7 +282,7 @@ class SaidClsCvsslObjective:
                     eps=self.eps, rank=self.rank, ddp_gradient_averaging=False,
                     duplicate_policy=self.duplicate_policy)
 
-        loss_total = smart['loss_smart'] + self.lambda_u * u['loss']
+        loss_total = smart['loss_smart'] + weight * u['loss']
         with torch.no_grad():
             global_similarity = F.cosine_similarity(
                 F.normalize(mask_u * v_a.detach(), dim=-1, eps=self.eps),
@@ -277,7 +300,7 @@ class SaidClsCvsslObjective:
                 dim=-1) / total_energy
             smart_norm = smart['loss_smart'].detach()
             u_norm = u['global_mean_loss'].detach()
-            weighted_ratio = (self.lambda_u * u_norm / smart_norm.clamp_min(1e-12))
+            weighted_ratio = (weight * u_norm / smart_norm.clamp_min(1e-12))
         out = {
             'loss_total': loss_total,
             'loss_total_for_backward': loss_total,   # what the trainer back-propagates
@@ -288,7 +311,9 @@ class SaidClsCvsslObjective:
             'loss_dism': smart['loss_dism'],
             'loss_sparsity': smart['loss_sparsity'],
             'loss_vssl_raw': u['global_mean_loss'],
-            'loss_vssl_weighted': self.lambda_u * u['loss'],
+            'loss_vssl_weighted': weight * u['loss'],
+            'lambda_U_target': self.lambda_u,
+            'lambda_U_effective': weight,
             'vssl_loss_scale': u['loss_scale'],
             'sidm_top1': smart['sidm_top1'],
             'dism_top1': smart['dism_top1'],
@@ -312,7 +337,7 @@ class SaidClsCvsslObjective:
             'global_sample_count': u['global_sample_count'],
             'loss_smart_global_mean': smart['loss_smart'].detach(),
             'loss_vssl_global_mean': u['global_mean_loss'].detach(),
-            'loss_vssl_for_backward_local': self.lambda_u * u['loss'],
+            'loss_vssl_for_backward_local': weight * u['loss'],
             'loss_total_for_backward_local': loss_total.detach(),
             'mask_u_histogram_matches_complement':
                 mask_diag['mask_value_histogram_identical_to_complement'],

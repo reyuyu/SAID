@@ -44,7 +44,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import complement_visual_ssl as cvssl  # noqa: E402
 from model import longclip  # noqa: E402
 from model.said_cls_cvssl import (ARMS, ARM_LAMBDA_U, ARM_MASK, SaidClsCvsslObjective,  # noqa: E402
-                                  SaidClsCvsslTrainModule, LAMBDA_ALIGN, LAMBDA_SPARSE)
+                                  SaidClsCvsslTrainModule, effective_lambda_u,
+                                  LAMBDA_ALIGN, LAMBDA_SPARSE)
 from said_cvssl_data import Share4VCvsslDataset, cvssl_collate, stateless_seed  # noqa: E402
 from scheduler import cosine_lr  # noqa: E402
 
@@ -131,6 +132,20 @@ def load_init_state(model, path: str, rank: int):
                  ignored[:5]), flush=True)
 
 
+def inspected_module(model):
+    """The underlying module: works for a DDP wrapper and for the bare module."""
+    return getattr(model, 'module', model)
+
+
+def lambda_target_of(model) -> float:
+    """The configured (target) U weight of the training module passed in."""
+    module = inspected_module(model)
+    objective = getattr(module, 'objective', None)
+    if objective is not None:
+        return float(objective.lambda_u)
+    return float(getattr(module, 'lambda_u', 0.0))
+
+
 def build_optimizers(model, args):
     mask_net_ids = {id(parameter) for parameter in model.mask_net.parameters()}
     backbone, mask_net = [], []
@@ -194,7 +209,8 @@ def grad_probe(objective, batch, device, args):
 
 def cvssl_train_step(ddp_model, batch, optimizer, mask_optimizer, device, amp_dtype,
                      amp_enabled: bool = True, mask_rng_seed: int = 0,
-                     capture_grads: bool = False, mask_override=None):
+                     capture_grads: bool = False, mask_override=None,
+                     completed_steps: int = 0, u_weight_warmup_steps: int = 0):
     """One real training step: DDP forward -> backward -> both optimizer steps.
 
     This is the *production* step function; the distributed acceptance tests call it directly so
@@ -214,10 +230,13 @@ def cvssl_train_step(ddp_model, batch, optimizer, mask_optimizer, device, amp_dt
     with torch.no_grad():
         text = longclip.tokenize(batch['caption_said'], truncate=True).to(device)
     generator = torch.Generator().manual_seed(int(mask_rng_seed))
+    lambda_effective = effective_lambda_u(lambda_target_of(ddp_model), completed_steps,
+                                          u_weight_warmup_steps)
     device_type = 'cuda' if device.type == 'cuda' else 'cpu'
     with torch.autocast(device_type=device_type, dtype=amp_dtype, enabled=amp_enabled):
         out = ddp_model(image_a, image_b, text, image_ids, generator,
-                        mask_seed=int(mask_rng_seed), mask_override=mask_override)
+                        mask_seed=int(mask_rng_seed), mask_override=mask_override,
+                        effective_lambda_u=lambda_effective)
         loss = out['loss_total_for_backward']
     loss.backward()
     if capture_grads:
@@ -262,6 +281,10 @@ def main():
     parser.add_argument('--save_completed_steps', default='0')
     parser.add_argument('--log_every', type=int, default=50)
     parser.add_argument('--grad_probe_steps', default='')
+    parser.add_argument('--u_weight_warmup_steps', type=int, default=0,
+                        help='0 (default) = constant U weight, i.e. the historical behaviour; '
+                             'w>0 ramps the U weight linearly to --lambda_U over the first w '
+                             'optimizer steps: update s gets lambda_U * min((s+1)/w, 1)')
     parser.add_argument('--num_workers', type=int, default=8)
     parser.add_argument('--amp_dtype', default='bf16', choices=['bf16', 'fp32'])
     parser.add_argument('--grad_checkpoint_views', type=int, default=1,
@@ -421,7 +444,8 @@ def main():
             out = cvssl_train_step(
                 ddp_model, batch, optimizer, mask_optimizer, device, amp_dtype,
                 amp_enabled=use_amp,
-                mask_rng_seed=stateless_seed(args.seed, 'mask_rng', completed, args.arm))
+                mask_rng_seed=stateless_seed(args.seed, 'mask_rng', completed, args.arm),
+                completed_steps=completed, u_weight_warmup_steps=args.u_weight_warmup_steps)
             image_a = batch['image_a']
             image_ids = batch['image_id'].to(device)
             completed += 1
@@ -456,6 +480,11 @@ def main():
                     'global_image_views': int(image_a.shape[0]) * world * 2,
                     'world_size': world,
                     'lambda_U': args.lambda_U,
+            'u_weight_warmup_steps': int(args.u_weight_warmup_steps),
+                    'lambda_U_target': float(out.get('lambda_U_target', args.lambda_U)),
+                    'lambda_U_effective': float(out.get('lambda_U_effective', args.lambda_U)),
+                    'u_weight_warmup_steps': int(args.u_weight_warmup_steps),
+                    'optimizer_steps_before_update': int(completed) - 1,
                     'ddp_gradient_averaging': bool(args.ddp_gradient_averaging),
                     'grad_checkpoint_views': bool(args.grad_checkpoint_views),
                     'global_valid_ab': float(out.get('vssl_valid_ab', 0.0)),
