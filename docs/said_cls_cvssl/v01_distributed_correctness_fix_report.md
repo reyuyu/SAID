@@ -116,7 +116,23 @@ switch. Keeping the factor is the correct reading of the global objective; it wa
 | --- | --- |
 | `tests/test_said_cls_cvssl.py` + `tests/test_complement_visual_ssl_ddp.py` | 30 passed |
 | `tests/test_cvssl_ddp_trainer.py` (rewritten, real production step) | 25 passed |
-| `pytest tests/ -q` | **523 passed, 2 skipped** |
+| `tests/test_cvssl_dtype_audit.py` (new) | 4 passed |
+| `pytest tests/ -q` | **528 passed, 1 skipped** |
+
+### Dtype audit (new)
+
+* every trainable parameter and every AdamW state is fp32, and the two `build_optimizers` groups
+  contain exactly the backbone / `mask_net` parameters;
+* `fp32_context` really disables autocast inside the block and the masked-cosine core returns
+  fp32 tensors;
+* the documented multipliers hold exactly in the production step
+  (`loss_smart == 10*(sidm+dism) + 2*sparsity`) and every captured gradient is fp32 and finite.
+* **Declared limitation:** the bf16 autocast numerics of the two-view forward are **NOT RUN** on
+  this host. Measured: CPU autocast reports enabled inside `torch.autocast('cpu', bf16)` while some
+  ops warn that the dtype is unsupported and fall back, and in the trainer's call
+  (`torch.autocast(..., dtype=torch.float32, enabled=True)`) torch warns and disables autocast
+  outright. The audit on CPU therefore certifies the dtype contract, not the bf16 numerics; that has
+  to be exercised on the GPU run, and is listed as open.
 
 ### Tolerance policy (declared, not tuned to pass)
 
