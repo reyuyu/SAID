@@ -510,7 +510,14 @@ def test_all_four_arms_run_and_log_the_required_fields():
                 'positive_minus_negative_margin', 'vssl_valid_anchor_fraction',
                 'invalid_norm_count', 'valid_negative_count', 'mask_s_keep_ratio',
                 'mask_u_keep_ratio', 'cos_u_g', 'view_pixel_distance',
-                'unmasked_crossview_cos')
+                'unmasked_crossview_cos',
+                # retained ENERGY of the representation (features, not mask coordinates)
+                'said_retained_energy', 'unsaid_retained_energy',
+                'said_retained_energy_p10', 'unsaid_retained_energy_p10',
+                # global-mean loss vs the local backward scalar
+                'loss_smart_global_mean', 'loss_vssl_global_mean',
+                'loss_vssl_for_backward_local', 'loss_total_for_backward_local',
+                'global_sample_count')
     for arm in ARMS:
         objective = SaidClsCvsslObjective(model, arm=arm, lambda_u=ARM_LAMBDA_U[arm])
         out = objective(data['image_a'], data['image_b'], text, data['image_id'],
@@ -518,6 +525,13 @@ def test_all_four_arms_run_and_log_the_required_fields():
         for key in required:
             assert key in out, (arm, key)
             assert torch.isfinite(torch.as_tensor(float(out[key]))), (arm, key)
+        # energy fractions are real fractions of the representation energy
+        assert 0.0 <= float(out['said_retained_energy']) <= 1.0 + 1e-5, arm
+        assert 0.0 <= float(out['unsaid_retained_energy']) <= 1.0 + 1e-5, arm
+        assert 0.0 <= float(out['vssl_valid_anchor_fraction']) <= 1.0, arm
+        # the local backward scalar is NOT the global mean when the world size is > 1
+        assert abs(float(out['loss_vssl_for_backward_local'])
+                   - float(out['loss_vssl_weighted'])) < 1e-8
         if ARM_LAMBDA_U[arm] > 0:
             assert float(out['loss_vssl_raw']) > 0.0
         else:

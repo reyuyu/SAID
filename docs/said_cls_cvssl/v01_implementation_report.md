@@ -15,7 +15,7 @@ changed after the fact; every number below is measured.
 | `steps_per_epoch` | the reference DataLoader has **no** `drop_last`, so `len(loader) = 1217` (not 1216); the last batch is ragged (180/rank) | computed from the live loader, logged, ragged batch supported |
 | view-a preprocessing | `share4v_train_dataset(preprocess=None)` builds the transform with openai-`clip.load('ViT-L/14')`; `_transform(224)` is Resize(224,BICUBIC)+CenterCrop(224)+RGB+ToTensor+CLIP-Normalize, and it is **tensor-identical** to the LongCLIP ViT-B/16 transform (measured `torch.equal == True`) | view a is rebuilt with the same ops and proven identical in a unit test |
 | reference trainer device handling | `train/train.py::train_epoch` at HEAD calls `self.model(images, ...)` **without moving `images` to CUDA**; that call fails (`RuntimeError: Input type (torch.FloatTensor) and weight type (torch.cuda.HalfTensor)`), yet the historical 3-epoch SmartCLIP run produced 3 checkpoints and `loss.txt` with 600+ iterations | **interface inconsistency reported**: the committed reference trainer is not directly runnable; the new trainer moves inputs explicitly. `CLIP.forward` itself is unaffected and is what the equivalence gate compares against |
-| `logit_scale` | `train/train.py:71` replaces it with `ones * 4.6052`; `CLIP.forward` never uses it (the scale is the fixed 100) | reproduced (it receives no gradient and only decays); the model is therefore **not** DDP-wrapped, exactly like the reference |
+| `logit_scale` | `train/train.py:71` replaces it with `ones * 4.6052`; `CLIP.forward` never uses it (the scale is the fixed 100) | reproduced (it receives no gradient and only decays). **Correction (see `v01_ddp_debug_matrix.md`, `v01_distributed_correctness_fix_report.md`):** the reference trainer *does* wrap the model in `DistributedDataParallel` (`train/train.py:171`) and calls `_set_static_graph()` (`train/train.py:173`). The claim that it does not was wrong, and the CVSSL trainer added in `9a7c086` performed no parameter-gradient synchronisation at all; both are fixed and verified in the follow-up round. |
 | init state | `runs_salu/phase30a_2_A_said_only/salu_initial.pt` → complete shared state, digest `caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf`, **identical to the historical SmartCLIP reproduction's `initial_state_sha256`**, mask_net present (0 missing) | all four arms load this one file |
 
 ## 2. Implementation
@@ -37,7 +37,7 @@ changed after the fact; every number below is measured.
   zero-valid rank executes every collective and returns a connected zero (tested, 2 ranks, no
   deadlock).
 * Cross-rank scaling: `1/V_global` per direction (`--ddp_gradient_averaging 0`, the trainer's
-  convention, since there is no DDP wrapper); `W` is applied when the flag is 1.
+  convention of this objective); `W` is applied when the flag is 1 **and the model is DDP-wrapped** -- measured to give the exact global-mean U gradient (`norm ratio 1.000000` with it, `0.500000` without), see `v01_ddp_debug_matrix.md` §4.
 
 ## 3. Evidence that ran
 
@@ -73,7 +73,11 @@ changed after the fact; every number below is measured.
 
 ## 5. Verdict (single seed, short horizon)
 
-* Implementation: **PASS** for the parts that ran (tests, S0 equivalence, DDP equivalence, smoke).
+* Implementation: **PASS** for the parts that ran (tests, S0 equivalence, smoke), with one
+  correction from the follow-up round: the DDP equivalence reported here was measured with a
+  *feature-level* gather only. Parameter-gradient synchronisation was missing in `9a7c086`; the
+  corrected trainer and its acceptance tests are in `v01_distributed_correctness_fix_report.md`.
+  The 20-step numbers produced before that fix are engineering records only and are superseded.
 * Retrieval: **UNRESOLVED** — no retrieval evaluation was completed in this round.
 * Complementary semantic preservation: **NOT ESTABLISHED**. No withheld/attribute/concept
   benchmark was run; cross-view top-1, mask differences and loss decreases are **not** accepted

@@ -31,6 +31,8 @@ rho > 0 makes the plain ``M`` form wrong.
 from contextlib import contextmanager
 from typing import Dict, Optional, Tuple
 
+import sys
+
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
@@ -71,23 +73,48 @@ def build_complement_mask(m_s: torch.Tensor, rho: float = DEFAULT_RHO) -> torch.
     return 1.0 - (1.0 - float(rho)) * m_s.detach().float()
 
 
-def build_random_mask(m_u: torch.Tensor, generator: torch.Generator) -> torch.Tensor:
+def build_random_mask(m_u: torch.Tensor, generator: Optional[torch.Generator] = None,
+                      sample_ids: Optional[torch.Tensor] = None,
+                      mask_seed: int = 0) -> torch.Tensor:
     """R0 control: independently permute the coordinates of *this sample's* complementary mask.
 
-    The permutation is per sample, applied identically to both directions (the caller passes the
-    same tensor), so every candidate of one anchor row still shares one mask and the shuffled
-    mask keeps the sample's own value histogram / hard keep count.
+    The permutation is derived from ``hash(mask_seed, global_sample_id)`` -- **not** from a stream of
+    draws over local rows. A stream is batch-layout dependent: with a per-rank local batch the
+    generator would hand row 0 of rank 1 the permutation that row 0 of rank 0 got, so the same
+    sample would be masked differently in a single-process global-batch run and in a 2-rank run.
+    Seeding per sample makes the mask a function of the sample alone, which is what R0 means.
+
+    ``generator`` is accepted (and ignored when ``sample_ids`` is given) only for callers that still
+    pass one; the permutation is always per sample. Applied identically to both directions (the
+    caller passes the same tensor), so every candidate of one anchor row shares one mask and the
+    shuffled mask keeps the sample's own value histogram / hard keep count.
     """
     if m_u.dim() != 2:
         raise ValueError('m_u must be [b, D], got %r' % (tuple(m_u.shape),))
-    scores = torch.rand(m_u.shape, generator=generator, device='cpu').to(m_u.device)
+    rows, dim = m_u.shape
+    if sample_ids is None:
+        if generator is None:
+            raise ValueError("arm 'random' needs sample_ids or an explicit generator")
+        scores = torch.rand((rows, dim), generator=generator, device='cpu')
+    else:
+        sample_ids = torch.as_tensor(sample_ids).reshape(-1)
+        if sample_ids.numel() != rows:
+            raise ValueError('sample_ids %r must have one entry per row (%d)'
+                             % (tuple(sample_ids.shape), rows))
+        scores = torch.empty((rows, dim), dtype=torch.float32)
+        for index in range(rows):
+            local = torch.Generator().manual_seed(
+                int(mask_seed) + 1000003 * int(sample_ids[index]))
+            scores[index] = torch.rand((dim,), generator=local)
     order = scores.argsort(dim=-1)
-    shuffled = torch.gather(m_u, 1, order)
+    shuffled = torch.gather(m_u, 1, order.to(m_u.device))
     return shuffled
 
 
 def build_arm_mask(m_s: torch.Tensor, arm: str, rho: float = DEFAULT_RHO,
-                   generator: Optional[torch.Generator] = None) -> Tuple[torch.Tensor, Dict]:
+                   generator: Optional[torch.Generator] = None,
+                   sample_ids: Optional[torch.Tensor] = None, mask_seed: int = 0,
+                   override: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, Dict]:
     """``(m_U, diagnostics)`` for one experiment arm (S0 / G0 / R0 / C0).
 
     * ``ones``       -- G0: no coordinate selection at all.
@@ -98,12 +125,15 @@ def build_arm_mask(m_s: torch.Tensor, arm: str, rho: float = DEFAULT_RHO,
     if arm not in ARM_MASKS:
         raise ValueError('arm mask must be one of %r, got %r' % (ARM_MASKS, arm))
     complement = build_complement_mask(m_s, rho)
-    if arm == 'ones':
+    if override is not None:
+        # test-only hook: lets the degenerate no-valid-anchor path be exercised at trainer level.
+        # It changes no default behaviour (the default is ``override=None``).
+        mask = torch.as_tensor(override).to(complement.dtype).to(complement.device)
+    elif arm == 'ones':
         mask = torch.ones_like(complement)
     elif arm == 'random':
-        if generator is None:
-            raise ValueError("arm 'random' needs an explicit generator (independent RNG)")
-        mask = build_random_mask(complement, generator)
+        mask = build_random_mask(complement, generator, sample_ids=sample_ids,
+                                 mask_seed=mask_seed)
     else:
         mask = complement
     diagnostics = {
@@ -299,6 +329,40 @@ def cvssl_direction(anchor_raw: torch.Tensor, candidate_raw_global: torch.Tensor
 # --------------------------------------------------------------------------- #
 # full two-direction objective
 # --------------------------------------------------------------------------- #
+def assert_equal_local_batch(local_batch: int) -> None:
+    """Fail loudly if the ranks hold *different* local batch sizes.
+
+    Same-size local batches (including a smaller ragged last batch) are supported because every
+    rank then contributes the same number of anchors per all-gather. Genuinely different per-rank
+    batch sizes would make the gather layout ambiguous, so they are rejected instead of being
+    silently mis-indexed.
+    """
+    if not is_distributed():
+        return
+    local = torch.tensor([float(local_batch)])
+    world = dist.get_world_size()
+    if torch.cuda.is_available() and torch.cuda.is_initialized():
+        local = local.cuda()
+    gathered = [torch.zeros_like(local) for _ in range(world)]
+    dist.all_gather(gathered, local)          # every rank participates, so every rank learns
+    sizes = {int(value.item()) for value in gathered}
+    if len(sizes) != 1:
+        message = ('ragged distributed batch is not supported: per-rank sizes %r'
+                   % (sorted(sizes),))
+        # torchrun hides the traceback of a child that dies after this point; make the reason
+        # visible in the run log on EVERY rank before raising.
+        sys.stderr.write('CVSSL_RAGGED_BATCH %s\n' % message)
+        sys.stderr.flush()
+        raise ValueError(message)
+
+
+def global_sample_count(local_batch: int) -> int:
+    """Number of original pairs in the global batch (equal local batches assumed)."""
+    if is_distributed():
+        return int(local_batch) * dist.get_world_size()
+    return int(local_batch)
+
+
 def complement_visual_contrastive_loss(v_a: torch.Tensor, v_b: torch.Tensor,
                                        mask_u: torch.Tensor,
                                        image_ids: torch.Tensor,
@@ -327,6 +391,8 @@ def complement_visual_contrastive_loss(v_a: torch.Tensor, v_b: torch.Tensor,
         raise ValueError('mask_u %r must match features %r'
                          % (tuple(mask_u.shape), tuple(v_a.shape)))
     local_batch = v_a.shape[0]
+    assert_equal_local_batch(local_batch)
+    n_global = global_sample_count(local_batch)
 
     a_global = all_gather_detached(v_a)
     b_global = all_gather_detached(v_b)
@@ -371,7 +437,10 @@ def complement_visual_contrastive_loss(v_a: torch.Tensor, v_b: torch.Tensor,
         'invalid_norm_count': ab['invalid_norm_count'] + ba['invalid_norm_count'],
         'duplicate_candidates': ab['duplicate_candidates'],
         'valid_negative_count': 0.5 * (ab['mean_valid_negatives'] + ba['mean_valid_negatives']),
-        'vssl_valid_anchor_fraction': total_valid / max(2.0 * float(local_batch), 1.0),
+        # (V_ab + V_ba) / (2 * N_global): the fraction of global anchors that are usable in each
+        # direction -- always in [0, 1] (the old form divided a global count by a LOCAL batch).
+        'vssl_valid_anchor_fraction': total_valid / max(2.0 * float(n_global), 1.0),
+        'global_sample_count': float(n_global),
     }
     if not torch.isfinite(results['loss']).all():                 # pragma: no cover - guard
         raise RuntimeError('CVSSL loss is not finite')

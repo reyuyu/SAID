@@ -43,14 +43,30 @@ run_arm () {
     --lambda_align 10 --lambda_sparse 2 \
     --seed 0 --init_state "$INIT" \
     --output_dir "$OUT/${TAG}_${arm}" \
-    --max_steps "$STEPS" --save_completed_steps "0" \
+    --max_steps "$STEPS" --save_completed_steps "0,$STEPS" \
     --log_every 5 --grad_probe_steps "" --num_workers 8 --amp_dtype bf16
-  echo "ARM_EXIT arm=$arm lambda_U=$lambda_u exit=$?"
+  local status=$?
+  echo "ARM_EXIT arm=$arm lambda_U=$lambda_u exit=$status"
+  if [ "$status" -ne 0 ]; then
+    return 1
+  fi
+  local ckpt="$OUT/${TAG}_${arm}/cvssl_${arm}_step$(printf '%06d' "$STEPS").pt"
+  if [ ! -f "$ckpt" ]; then
+    echo "ARM_CHECK_FAIL arm=$arm missing final checkpoint $ckpt"
+    return 1
+  fi
+  echo "ARM_CHECK_OK arm=$arm checkpoint=$ckpt"
+  return 0
 }
 
-run_arm S0_smartclip 0.0
-run_arm G0_global_vssl 1.0
-run_arm R0_random_vssl 1.0
-run_arm C0_complement_vssl 1.0
+FAILED=0
+run_arm S0_smartclip 0.0 || FAILED=1
+run_arm G0_global_vssl 1.0 || FAILED=1
+run_arm R0_random_vssl 1.0 || FAILED=1
+run_arm C0_complement_vssl 1.0 || FAILED=1
+if [ "$FAILED" -ne 0 ]; then
+  echo "CVSSL_SMOKE_FAILED tag=$TAG (at least one arm failed or lost its final checkpoint)"
+  exit 1
+fi
 echo "ALL_CVSSL_SMOKE_DONE tag=$TAG"
 date -Is

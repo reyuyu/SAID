@@ -41,6 +41,7 @@ import torch.distributed as dist
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from model import complement_visual_ssl as cvssl  # noqa: E402
 from model import longclip  # noqa: E402
 from model.said_cls_cvssl import (ARMS, ARM_LAMBDA_U, ARM_MASK, SaidClsCvsslObjective,  # noqa: E402
                                   LAMBDA_ALIGN, LAMBDA_SPARSE)
@@ -191,6 +192,47 @@ def grad_probe(objective, batch, device, args):
     }
 
 
+def cvssl_train_step(ddp_model, batch, optimizer, mask_optimizer, device, amp_dtype,
+                     amp_enabled: bool = True, mask_rng_seed: int = 0,
+                     capture_grads: bool = False, mask_override=None):
+    """One real training step: DDP forward -> backward -> both optimizer steps.
+
+    This is the *production* step function; the distributed acceptance tests call it directly so
+    that what is verified is what is run. ``mask_rng_seed`` must be identical on every rank (the
+    random-mask permutation is part of the objective, not of the data stream).
+
+    Returns the (rank-local) output dict. With ``capture_grads`` the post-backward,
+    pre-optimizer gradients of every trainable parameter are attached under ``'_grads'`` --
+    a read-only test hook that does not change the update.
+    """
+    image_a = batch['image_a'].to(device, non_blocking=True)
+    image_b = batch['image_b'].to(device, non_blocking=True)
+    image_ids = batch['image_id'].to(device)
+    # the ragged-batch guard must run BEFORE the first cross-rank gather: otherwise gloo aborts
+    # with a length mismatch instead of reporting the real problem
+    cvssl.assert_equal_local_batch(int(image_a.shape[0]))
+    with torch.no_grad():
+        text = longclip.tokenize(batch['caption_said'], truncate=True).to(device)
+    generator = torch.Generator().manual_seed(int(mask_rng_seed))
+    device_type = 'cuda' if device.type == 'cuda' else 'cpu'
+    with torch.autocast(device_type=device_type, dtype=amp_dtype, enabled=amp_enabled):
+        out = ddp_model(image_a, image_b, text, image_ids, generator,
+                        mask_seed=int(mask_rng_seed), mask_override=mask_override)
+        loss = out['loss_total_for_backward']
+    loss.backward()
+    if capture_grads:
+        # ``ddp_model`` is the DDP wrapper in training and the bare module in single-process runs;
+        # ``.module`` is read-only diagnostics, never used for the training forward.
+        inspected = getattr(ddp_model, 'module', ddp_model)
+        out['_grads'] = {name: (None if parameter.grad is None else parameter.grad.detach().clone())
+                         for name, parameter in inspected.named_parameters()}
+    optimizer.step()
+    mask_optimizer.step()
+    optimizer.zero_grad(set_to_none=True)
+    mask_optimizer.zero_grad(set_to_none=True)
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description='SAID-CLS-CVSSL v0.1')
     parser.add_argument('--arm', default='C0_complement_vssl', choices=list(ARMS))
@@ -201,7 +243,9 @@ def main():
     parser.add_argument('--soft_mask', type=float, default=0.0)
     parser.add_argument('--lambda_align', type=float, default=LAMBDA_ALIGN)
     parser.add_argument('--lambda_sparse', type=float, default=LAMBDA_SPARSE)
-    parser.add_argument('--ddp_gradient_averaging', type=int, default=0)
+    parser.add_argument('--ddp_gradient_averaging', type=int, default=1,
+                        help='1 (default): the CVSSL term is scaled by the world size and the '
+                             'module is DDP-wrapped, so its backward value is the global mean')
     parser.add_argument('--duplicate_policy', default='exclude', choices=['exclude', 'none'])
     parser.add_argument('--base_model', default='B16')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=256)
@@ -250,6 +294,18 @@ def main():
         load_init_state(model, args.init_state, rank)
     initial_digest = state_digest(model.state_dict())
 
+    train_module = SaidClsCvsslTrainModule(
+        model, rank=rank, arm=args.arm, lambda_u=args.lambda_U, tau_u=args.tau_U, rho=args.rho,
+        soft_mask=bool(args.soft_mask), lambda_align=args.lambda_align,
+        lambda_sparse=args.lambda_sparse, duplicate_policy=args.duplicate_policy,
+        ddp_gradient_averaging=bool(args.ddp_gradient_averaging),
+        grad_checkpoint_views=bool(args.grad_checkpoint_views)).to(device)
+    ddp_model = torch.nn.parallel.DistributedDataParallel(
+        train_module, device_ids=[local_rank], output_device=local_rank,
+        find_unused_parameters=True)
+    ddp_model._set_static_graph()
+    model = train_module.clip                       # read-only handle (checkpoints, logging)
+
     optimizer, mask_optimizer, n_backbone, n_mask = build_optimizers(model, args)
     use_amp = args.amp_dtype == 'bf16'
     amp_dtype = torch.bfloat16
@@ -268,14 +324,8 @@ def main():
     mask_scheduler = cosine_lr(mask_optimizer, base_lr=args.mask_lr, warmup_length=0,
                                steps=total_steps)
 
-    objective = SaidClsCvsslObjective(model, rank=rank, arm=args.arm, lambda_u=args.lambda_U,
-                                      tau_u=args.tau_U, rho=args.rho,
-                                      soft_mask=bool(args.soft_mask),
-                                      lambda_align=args.lambda_align,
-                                      lambda_sparse=args.lambda_sparse,
-                                      duplicate_policy=args.duplicate_policy,
-                                      ddp_gradient_averaging=bool(args.ddp_gradient_averaging),
-                                      grad_checkpoint_views=bool(args.grad_checkpoint_views))
+    objective = ddp_model          # training ALWAYS goes through the DDP forward
+    objective_module = train_module
 
     os.makedirs(args.output_dir, exist_ok=True)
     log_path = os.path.join(args.output_dir, 'salu_log.jsonl')
@@ -348,23 +398,12 @@ def main():
             t0 = time.time()
             scheduler(completed)
             mask_scheduler(completed)
-            image_a = batch['image_a'].to(device, non_blocking=True)
-            image_b = batch['image_b'].to(device, non_blocking=True)
+            out = cvssl_train_step(
+                ddp_model, batch, optimizer, mask_optimizer, device, amp_dtype,
+                amp_enabled=use_amp,
+                mask_rng_seed=stateless_seed(args.seed, 'mask_rng', completed, args.arm))
+            image_a = batch['image_a']
             image_ids = batch['image_id'].to(device)
-            with torch.no_grad():
-                text = longclip.tokenize(batch['caption_said'], truncate=True).to(device)
-            view_generator = torch.Generator().manual_seed(
-                stateless_seed(args.seed, 'mask_rng', completed, args.arm))
-
-            with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=use_amp):
-                out = objective(image_a, image_b, text, image_ids,
-                                random_generator=view_generator)
-                loss = out['loss_total']
-            loss.backward()
-            optimizer.step()
-            mask_optimizer.step()
-            optimizer.zero_grad(set_to_none=True)
-            mask_optimizer.zero_grad(set_to_none=True)
             completed += 1
             compute_times.append(time.time() - t0)
 
@@ -379,7 +418,7 @@ def main():
             # The gradient probe re-runs the objective, whose loss contains distributed collectives:
             # it must therefore run on EVERY rank at the same step (a rank-0-only probe would hang
             # the others). Only rank 0 logs it.
-            probe = grad_probe(objective, batch, device, args) \
+            probe = grad_probe(objective_module, batch, device, args) \
                 if completed in grad_probe_steps else None
             is_last = args.max_steps is not None and completed >= args.max_steps
             if rank == 0 and (completed % args.log_every == 0 or completed == 1 or is_last
@@ -394,6 +433,13 @@ def main():
                     'batch_size_local': int(image_a.shape[0]),
                     'global_pairs': int(image_a.shape[0]) * world,
                     'global_image_views': int(image_a.shape[0]) * world * 2,
+                    'world_size': world,
+                    'lambda_U': args.lambda_U,
+                    'ddp_gradient_averaging': bool(args.ddp_gradient_averaging),
+                    'grad_checkpoint_views': bool(args.grad_checkpoint_views),
+                    'global_valid_ab': float(out.get('vssl_valid_ab', 0.0)),
+                    'global_valid_ba': float(out.get('vssl_valid_ba', 0.0)),
+                    'rank_param_digest': state_digest(model.state_dict())[:16],
                     'sec_per_step': compute_times[-1],
                     'samples_per_sec': float(image_a.shape[0]) * world / max(compute_times[-1], 1e-9),
                     'peak_memory_gb': torch.cuda.max_memory_allocated(device) / (1024 ** 3),
@@ -423,8 +469,16 @@ def main():
                     'mask_optimizer': mask_optimizer.state_dict(),
                     'completed_steps': completed,
                     'epoch': epoch,
+                    'step_in_epoch': i,
                     'phase': 'said-cls-cvssl-v0.1',
+                    'objective': 'said_cls_cvssl',
                     'config': config,
+                    'precision': 'fp32 master + %s autocast' % args.amp_dtype,
+                    'ddp': {'wrapped': True, 'find_unused_parameters': True, 'static_graph': True,
+                            'world_size': world, 'gradient_averaging_scaled_u': bool(
+                                args.ddp_gradient_averaging)},
+                    'lr_horizon_steps': total_steps,
+                    'git_head': config['git_head'],
                     'digests': {
                         'initial_state_sha256': initial_digest,
                         'caption_stream_sha256': caption_digest.hexdigest(),
