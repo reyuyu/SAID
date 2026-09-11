@@ -1,0 +1,117 @@
+{
+  "checkpoints": {
+    "A epoch3": {
+      "coco_val2017": {
+        "image2text_R1": 0.5224,
+        "image2text_R10": 0.8508,
+        "image2text_R5": 0.7644,
+        "text2image_R1": 0.34228,
+        "text2image_R10": 0.7054,
+        "text2image_R5": 0.60112
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "image2text_R1": 0.618,
+          "image2text_R10": 0.934,
+          "image2text_R5": 0.861,
+          "text2image_R1": 0.619,
+          "text2image_R10": 0.927,
+          "text2image_R5": 0.859
+        },
+        "fixed_sparse": {
+          "image2text_R1": 0.828,
+          "image2text_R10": 0.986,
+          "image2text_R5": 0.964,
+          "text2image_R1": 0.846,
+          "text2image_R10": 0.983,
+          "text2image_R5": 0.963
+        },
+        "full_dense": {
+          "image2text_R1": 0.922,
+          "image2text_R10": 0.998,
+          "image2text_R5": 0.995,
+          "text2image_R1": 0.928,
+          "text2image_R10": 0.997,
+          "text2image_R5": 0.993
+        }
+      },
+      "tag": "Aend"
+    },
+    "C epoch3": {
+      "coco_val2017": {
+        "image2text_R1": 0.0144,
+        "image2text_R10": 0.0742,
+        "image2text_R5": 0.0384,
+        "text2image_R1": 0.21016,
+        "text2image_R10": 0.55964,
+        "text2image_R5": 0.44144
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "image2text_R1": 0.09,
+          "image2text_R10": 0.333,
+          "image2text_R5": 0.241,
+          "text2image_R1": 0.474,
+          "text2image_R10": 0.841,
+          "text2image_R5": 0.765
+        },
+        "fixed_sparse": {
+          "image2text_R1": 0.051,
+          "image2text_R10": 0.182,
+          "image2text_R5": 0.122,
+          "text2image_R1": 0.704,
+          "text2image_R10": 0.954,
+          "text2image_R5": 0.92
+        },
+        "full_dense": {
+          "image2text_R1": 0.374,
+          "image2text_R10": 0.726,
+          "image2text_R5": 0.631,
+          "text2image_R1": 0.771,
+          "text2image_R10": 0.983,
+          "text2image_R5": 0.957
+        }
+      },
+      "tag": "Cend"
+    },
+    "initial": {
+      "coco_val2017": {
+        "image2text_R1": 0.517,
+        "image2text_R10": 0.8428,
+        "image2text_R5": 0.7662,
+        "text2image_R1": 0.32692,
+        "text2image_R10": 0.68232,
+        "text2image_R5": 0.5776
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "image2text_R1": 0.544,
+          "image2text_R10": 0.859,
+          "image2text_R5": 0.774,
+          "text2image_R1": 0.514,
+          "text2image_R10": 0.814,
+          "text2image_R5": 0.748
+        },
+        "fixed_sparse": {
+          "image2text_R1": 0.746,
+          "image2text_R10": 0.953,
+          "image2text_R5": 0.92,
+          "text2image_R1": 0.74,
+          "text2image_R10": 0.949,
+          "text2image_R5": 0.918
+        },
+        "full_dense": {
+          "image2text_R1": 0.758,
+          "image2text_R10": 0.952,
+          "image2text_R5": 0.92,
+          "text2image_R1": 0.776,
+          "text2image_R10": 0.973,
+          "text2image_R5": 0.948
+        }
+      },
+      "tag": "initial"
+    }
+  },
+  "note": "Standard CLIP CLS image-text retrieval with the frozen protocols: ShareGPT4V-1K via eval/validation_protocol.py (3 caption variants) and COCO val2017 via eval/retrieval/coco_retrieval.py (5-caption). No optimizer step. The base objective contains no Global-text InfoNCE, so this measures whether full training damaged canonical retrieval.",
+  "protocol": "phase30a-2-canonical-retrieval"
+}

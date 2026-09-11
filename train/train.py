@@ -28,6 +28,38 @@ from datetime import datetime
 from torch.cuda.amp import GradScaler
 from train_utils import LossManager, prepare_sub_directories, get_run_id, eval_coco
 
+# --------------------------------------------------------------------------- #
+# SmartCLIP reproduction support (Phase 3.0A baseline validation)
+#
+# These helpers are opt-in: with no ``--output_dir`` the trainer behaves exactly as the
+# original (``./runs/<auto id>``) and, with no ``--seed``, the RNG state is left untouched.
+# Nothing here changes the loss, the mask, the optimizer grouping, the scheduler, the model
+# forward or the dataset caption sampling.
+# --------------------------------------------------------------------------- #
+def seed_everything(seed):
+	"""Fix python / numpy / torch RNGs. Called only when ``--seed`` is given."""
+	import random
+	random.seed(seed)
+	np.random.seed(seed)
+	torch.manual_seed(seed)
+	if torch.cuda.is_available():
+		torch.cuda.manual_seed_all(seed)
+
+
+def state_digest(state_dict):
+	"""Deterministic SHA-256 over a state dict (weights only, no RNG consumed)."""
+	import hashlib
+	digest = hashlib.sha256()
+	for key in sorted(state_dict):
+		tensor = state_dict[key]
+		digest.update(key.encode('utf-8'))
+		if torch.is_tensor(tensor):
+			digest.update(tensor.detach().float().cpu().contiguous().numpy().tobytes())
+		else:
+			digest.update(repr(tensor).encode('utf-8'))
+	return digest.hexdigest()
+
+
 class CLIP_Clean_Train():
 	def __init__(self, rank, local_rank, args):
 		self.rank = rank
@@ -38,6 +70,35 @@ class CLIP_Clean_Train():
 		self.model.train()
 		self.model.logit_scale = torch.nn.Parameter(torch.ones([]) * args.log_scale)
 		self.model = self.model.cuda()
+		if getattr(args, 'init_state', None):
+			# opt-in: load a frozen initial state dict so a comparison run starts from exactly
+			# the same weights as the reference models. The `clip.`-prefixed SALU layout and a
+			# bare CLIP layout are both accepted; only mask_net may be absent (a bare CLIP
+			# checkpoint has none), and anything else must match or we fail loudly.
+			state = torch.load(args.init_state, map_location='cpu', weights_only=False)
+			if isinstance(state, dict) and 'model' in state:
+				state = state['model']
+			target = set(self.model.state_dict())
+			# accept the SALU layout (``clip.*`` + ``said_router.*``) as well as a bare CLIP
+			# layout: map each source key onto a target key by name, with or without the
+			# evaluator's ``clip.`` prefix
+			mapped = {}
+			for key, value in state.items():
+				if key in target:
+					mapped[key] = value
+				elif key.startswith('clip.') and key[len('clip.'):] in target:
+					mapped[key[len('clip.'):]] = value
+				elif ('clip.' + key) in target:
+					mapped['clip.' + key] = value
+			if not mapped:
+				raise ValueError('--init_state %s matches no model parameter' % args.init_state)
+			missing, unexpected = self.model.load_state_dict(mapped, strict=False)
+			bad_missing = [k for k in missing if not k.startswith('mask_net')]
+			if bad_missing or list(unexpected):
+				raise RuntimeError('--init_state did not load cleanly: missing %r unexpected %r'
+				                   % (bad_missing, list(unexpected)))
+			print('INIT_STATE_LOADED %s tensors=%d mask_net_absent=%d'
+			      % (args.init_state, len(mapped), len(missing)), flush=True)
 
 		self.batch_size = args.batch_size
 		self.num_epoch = args.epochs
@@ -50,6 +111,9 @@ class CLIP_Clean_Train():
 		run_id, args.base_model[-2:], args.lambda_sparse, args.lambda_align,
 		args.mask_lr, 'soft' if args.soft_mask else 'hard'
 		)
+		if getattr(args, 'output_dir', None):
+			# opt-in: a caller-chosen directory instead of the auto-numbered ./runs/<id>
+			target_dir = args.output_dir
 		self.logdir = target_dir
 		if self.rank == 0:
 			os.makedirs(target_dir, exist_ok=True)
@@ -57,6 +121,44 @@ class CLIP_Clean_Train():
 			self.loss_manager = LossManager(file_path=os.path.join(target_dir, "loss.txt"))
 			self.metric_manager = LossManager(file_path=os.path.join(target_dir, "metric.txt"))
 			print(args)
+			if getattr(args, 'output_dir', None):
+				# reproducibility record: initial-state digest + the effective configuration.
+				# Everything here is computed locally: it must NOT construct another dataset
+				# instance (that would consume the RNG stream the training data uses) and it
+				# must not depend on attributes the constructor sets later.
+				import json as _json
+				_world = torch.distributed.get_world_size()
+				_accum = 1024 // args.batch_size // _world
+				record = {
+					'run': 'smartclip-reproduction',
+					'base_model': args.base_model,
+					'initial_state_sha256': state_digest(self.model.state_dict()),
+					'world_size': _world,
+					'batch_size_per_gpu': args.batch_size,
+					'accumulation_steps': _accum,
+					'effective_batch_size': args.batch_size * _accum * _world,
+					'epochs': args.epochs,
+					'lr': args.lr,
+					'mask_lr': args.mask_lr,
+					'weight_decay': args.weight_decay,
+					'lambda_sparse': args.lambda_sparse,
+					'lambda_align': args.lambda_align,
+					'soft_mask': args.soft_mask,
+					'warmup_length': args.warmup_length,
+					'seed': getattr(args, 'seed', None),
+					'log_scale': args.log_scale,
+					'max_steps': args.max_steps,
+					'dataset_json': os.environ.get('SHARE4V_JSON'),
+					'dataset_json_size_bytes': (os.path.getsize(os.path.join(
+						os.environ.get('SHARE4V_DATA_ROOT', '../datasets/ShareGPT4V'),
+						os.environ.get('SHARE4V_JSON', '')))
+						if os.environ.get('SHARE4V_JSON') else None),
+				}
+				with open(os.path.join(target_dir, 'reproducibility.json'), 'w') as handle:
+					_json.dump(record, handle, indent=2, sort_keys=True)
+				print('REPRO_INITIAL_STATE_SHA256', record['initial_state_sha256'], flush=True)
+				print('EFFECTIVE_BATCH_SIZE', record['effective_batch_size'],
+				      'ACCUMULATION_STEPS', record['accumulation_steps'], flush=True)
 		self.target_dir = target_dir
 
 		self.writer = SummaryWriter(self.logdir)
@@ -207,6 +309,21 @@ class CLIP_Clean_Train():
 		train_sampler = DistributedSampler(dataset=trainset, shuffle=True)
 		train_loader = torch.utils.data.DataLoader(trainset, batch_size=self.batch_size, sampler=train_sampler,
 		                                           num_workers=8, pin_memory=True)
+		if self.rank == 0 and getattr(args, 'output_dir', None):
+			# read-only record of the data scale actually used (Full Data Gate evidence)
+			import json as _json
+			with open(os.path.join(self.target_dir, 'data_scale.json'), 'w') as handle:
+				_json.dump({'dataset_size': len(trainset),
+				            'steps_per_epoch': len(train_loader),
+				            'batch_size_per_gpu': self.batch_size,
+				            'world_size': torch.distributed.get_world_size(),
+				            'effective_global_batch': self.effective_batch_size,
+				            'epochs': self.num_epoch,
+				            'dataset_json': os.environ.get('SHARE4V_JSON'),
+				            'dataset_root': os.environ.get('SHARE4V_DATA_ROOT')},
+				           handle, indent=2, sort_keys=True)
+			print('DATASET_SIZE %d STEPS_PER_EPOCH %d EFFECTIVE_GLOBAL_BATCH %d'
+			      % (len(trainset), len(train_loader), self.effective_batch_size), flush=True)
 		self.scheduler = cosine_lr(self.optimizer, base_lr=self.lr, warmup_length=warmup_length,
 		                           steps=self.num_epoch * len(train_loader))
 		self.mask_net_scheduler = cosine_lr(self.mask_net_optimizer, base_lr=self.mask_lr, warmup_length=0,
@@ -303,11 +420,23 @@ if __name__ == "__main__":
 	)
 	parser.add_argument("--download-root", default=None, help="CLIP Base Model download root")
 	parser.add_argument('--max_steps', default=None, type=int, help='debug: early-stop after N training iterations (None = official full training)')
+	# SmartCLIP reproduction (Phase 3.0A baseline validation): both are opt-in and default to
+	# the original behaviour; neither touches the loss, mask, optimizer, scheduler or data.
+	parser.add_argument('--output_dir', default=None, type=str,
+	                    help='opt-in fixed run directory (default: original ./runs/<auto id>)')
+	parser.add_argument('--seed', default=None, type=int,
+	                    help='opt-in RNG seed (default: leave the RNGs untouched)')
+	parser.add_argument('--init_state', default=None, type=str,
+	                    help='opt-in frozen initial state dict to start from (default: the '
+	                         'trainer initialises the model as it always did)')
 	args = parser.parse_args()
 	if args.base_model == 'L14':
 		args.base_model = 'ViT-L/14'
 	elif args.base_model == 'B16':
 		args.base_model = 'ViT-B/16'
+	# must happen before the model is built so the initial weights are deterministic
+	if args.seed is not None:
+		seed_everything(args.seed)
 	rank, local_rank = setup_distributed()
 	print("DDP Done")
 

@@ -99,6 +99,57 @@ def file_sha256(path):
     return digest.hexdigest()
 
 
+def normalise_state_dict(state, model_state):
+    """Map a checkpoint's key names onto the evaluator model's key names.
+
+    ``train_salu.py`` saves ``SALUModel.state_dict()`` (``clip.*`` + ``said_router.*``), while
+    the original SmartCLIP ``train.py`` saves the state dict of a *bare* ``CLIP`` module
+    (``visual.*``, ``transformer.*``, ``ln_final``, ...). ``load_state_dict(strict=False)``
+    would silently load nothing in the second case, so the prefix is added explicitly and any
+    key the evaluator cannot accept is reported instead of being ignored.
+    """
+    target_keys = set(model_state)
+    if all(key in target_keys for key in state):
+        return {key: value for key, value in state.items() if key in target_keys}, []
+    prefixed = {}
+    for key, value in state.items():
+        candidate = 'clip.' + key
+        if candidate in target_keys:
+            prefixed[candidate] = value
+    if not prefixed:
+        raise ValueError('checkpoint keys match neither the SALU nor the bare-CLIP layout; '
+                         'refusing to load nothing silently')
+    skipped = sorted(key for key in state
+                     if ('clip.' + key) not in target_keys and key not in target_keys)
+    return prefixed, skipped
+
+
+def load_checkpoint_state(path):
+    """Load a checkpoint and return ``(weight_state_dict, metadata_dict)``.
+
+    Two on-disk conventions exist in this repository: ``train_salu.py`` writes a wrapper
+    dict containing ``model`` / ``optimizer`` / ``step`` / ``phase``, while the original
+    SmartCLIP ``train.py`` writes the bare ``state_dict`` under a ``smartclip_epochN.pt``
+    name. Both must be loadable so the two methods can be compared with one evaluator.
+    """
+    payload = torch.load(path, map_location='cpu', weights_only=False)
+    if isinstance(payload, dict) and 'model' in payload:
+        return payload['model'], payload
+    if isinstance(payload, dict):
+        # a bare state dict: every value is a tensor, so there is no extra metadata
+        return payload, {'step': None, 'phase': None, 'objective_mode': None}
+    raise ValueError('unsupported checkpoint format at %s: %r' % (path, type(payload)))
+
+
+def parse_tag_list(value):
+    """``'initial,Aend'`` -> ``['initial', 'Aend']`` (empty -> ``[]``, meaning the default)."""
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [part.strip() for part in str(value).split(',') if part.strip()]
+
+
 def parse_checkpoints(spec):
     entries = []
     for entry in str(spec).split(','):
@@ -373,6 +424,43 @@ def resolve_tag(available, tag):
     return None
 
 
+# scorers compared between the two full-training arms at every matched step
+CROSS_ARM_SCORERS = ('unsaid_raw', 'unsaid_centered', 'global', 'centroid', 'said_raw',
+                     'anti_minus_said')
+# matched-step suffixes to pair up automatically (A<step> vs C<step>)
+CROSS_ARM_STEPS = ('initial', '100', '200', '500', '1000', '1216', '1800', '2432', '3000',
+                   'end')
+
+
+def cross_arm_comparisons(decomposition_by_tag, replicates, seed):
+    """Every ``C<step> - A<step>`` comparison on the fixed cohort, with paired CIs.
+
+    The two full-training arms are matched by construction, so each matched step is an exact
+    paired comparison on the same queries and the same 868-candidate pool.
+    """
+    available = set(decomposition_by_tag)
+    output = {}
+    for step in CROSS_ARM_STEPS:
+        left_tag = 'C%s' % step if step != 'initial' else 'initial'
+        right_tag = 'A%s' % step if step != 'initial' else 'initial'
+        left_key = resolve_tag(available, left_tag)
+        right_key = resolve_tag(available, right_tag)
+        if left_key is None or right_key is None or left_key == right_key:
+            continue
+        for scorer in CROSS_ARM_SCORERS:
+            label = 'C%s_minus_A%s_%s' % (step, step, scorer)
+            output[label] = {
+                'step': step,
+                'scorer': scorer,
+                'left': {'checkpoint': left_key, 'scorer': scorer},
+                'right': {'checkpoint': right_key, 'scorer': scorer},
+                **compare_methods(decomposition_by_tag[left_key]['matrices'][scorer],
+                                  decomposition_by_tag[right_key]['matrices'][scorer],
+                                  replicates=replicates, seed=seed),
+            }
+    return output
+
+
 def paired_comparisons(decomposition_by_tag, replicates, seed):
     """Paired bootstrap + McNemar for every comparison that has both checkpoints present."""
     available = set(decomposition_by_tag)
@@ -497,6 +585,15 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--image_batch_size', type=int, default=32)
     parser.add_argument('--canonical', action='store_true')
+    parser.add_argument('--canonical_only', action='store_true',
+                        help='skip the cohort (USR / gap / decomposition) passes entirely and '
+                             'run only the canonical retrieval evaluation')
+    parser.add_argument('--canonical_tags', type=parse_tag_list, default=[],
+                        help='comma-separated checkpoint tags to evaluate canonically; empty '
+                             'means initial/step100/final')
+    parser.add_argument('--canonical_names', type=parse_tag_list, default=[],
+                        help='optional display names matching --canonical_tags, used only to '
+                             'label the canonical results (the run/label is unchanged)')
     parser.add_argument('--decomposition', action='store_true',
                         help='also score the 8 common-mode decomposition scorers and run the '
                              'paired bootstrap / proxy correlations')
@@ -542,6 +639,10 @@ def main():
     reference_by_tag = {}
     per_query_outcomes = {}
     for tag, path in parse_checkpoints(args.checkpoints):
+        if args.canonical_only:
+            # canonical retrieval does not need the cohort passes at all: skip the USR and
+            # gap work entirely so this mode is cheap
+            continue
         checkpoint = torch.load(path, map_location='cpu', weights_only=False)
         missing, unexpected = core.load_state_dict(checkpoint['model'], strict=False)
         if list(missing) or list(unexpected):
@@ -635,6 +736,16 @@ def main():
             'comparisons': paired_comparisons(decomposition_by_tag, args.bootstrap_replicates,
                                               args.bootstrap_seed),
         }
+        payload['cross_arm_paired_statistics'] = {
+            'replicates': int(args.bootstrap_replicates),
+            'seed': int(args.bootstrap_seed),
+            'note': ('C - A at every matched step, on the same 868 queries and the same '
+                     '868-candidate pool. Paired bootstrap over query indices with one shared '
+                     'resample, plus exact two-sided McNemar on R@1.'),
+            'comparisons': cross_arm_comparisons(decomposition_by_tag,
+                                                 args.bootstrap_replicates,
+                                                 args.bootstrap_seed),
+        }
         payload['proxy_correlation'] = {}
         for rank_token in sorted(decomposition_by_tag, key=rank_key):
             reference = reference_by_tag[rank_token]
@@ -651,13 +762,35 @@ def main():
 
     if args.canonical:
         payload['canonical'] = {}
+        wanted = set(args.canonical_tags) if args.canonical_tags else {'initial', 'step100',
+                                                                      'final'}
+        labels = dict(zip(args.canonical_tags, args.canonical_names)) \
+            if args.canonical_names else {}
         for tag, path in parse_checkpoints(args.checkpoints):
-            if tag not in ('initial', 'step100', 'final'):
+            if tag not in wanted:
                 continue
-            checkpoint = torch.load(path, map_location='cpu', weights_only=False)
-            core.load_state_dict(checkpoint['model'], strict=False)
-            payload['canonical'][tag] = evaluate_canonical(core, args, preprocess)
-            print('CANONICAL %-10s done' % tag, flush=True)
+            state, _ = load_checkpoint_state(path)
+            state, skipped = normalise_state_dict(state, core.state_dict())
+            incompatible = core.load_state_dict(state, strict=False)
+            # The only keys a non-SALU checkpoint may legitimately lack are the Said router's:
+            # canonical CLS retrieval uses encode_image()/encode_text() and never touches the
+            # router, so its absence cannot affect the measurement. Anything else is an error.
+            missing = [key for key in incompatible.missing_keys
+                       if not key.startswith('said_router.')]
+            if missing or list(incompatible.unexpected_keys):
+                raise RuntimeError(
+                    'checkpoint %s did not load cleanly: missing %r, unexpected %r'
+                    % (path, missing, list(incompatible.unexpected_keys)))
+            router_absent = sorted(key for key in incompatible.missing_keys
+                                   if key.startswith('said_router.'))
+            key = labels.get(tag, tag)
+            payload['canonical'][key] = evaluate_canonical(core, args, preprocess)
+            payload['canonical'][key]['checkpoint'] = path
+            payload['canonical'][key]['skipped_keys'] = skipped
+            payload['canonical'][key]['absent_said_router_keys'] = router_absent
+            payload['canonical'][key]['loaded_tensors'] = len(state)
+            print('CANONICAL %-12s done (loaded %d tensors, skipped %d, router-absent %d)'
+                  % (key, len(state), len(skipped), len(router_absent)), flush=True)
 
     output_path = args.output if os.path.isabs(args.output) else os.path.join(REPO, args.output)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
