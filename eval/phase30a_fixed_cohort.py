@@ -72,6 +72,11 @@ def common_mode_metrics(patch_features: torch.Tensor,
         mean_patch_norm = patches.norm(dim=-1).mean(dim=-1)
         said_norm = pooled_said.norm(dim=-1).clamp_min(eps)
         unsaid_norm = pooled_unsaid.norm(dim=-1).clamp_min(eps)
+        # ``||mu|| / ||p||`` is a ratio of norms, not a fraction of anything: it can legally
+        # exceed 1 because ``p`` is a signed combination (``mu + delta``) and the cancellation
+        # can make ``||p|| < ||mu||``. Hence the official names are ``*_norm_ratio_*``.
+        norm_ratio_said = centroid_norm / said_norm
+        norm_ratio_unsaid = centroid_norm / unsaid_norm
         return {
             'patch_centroid_norm': float(centroid_norm.mean()),
             'common_mode_ratio': float((centroid_norm / mean_patch_norm.clamp_min(eps)).mean()),
@@ -83,8 +88,14 @@ def common_mode_metrics(patch_features: torch.Tensor,
             'raw_pool_cosine': float((F.normalize(pooled_said, dim=-1, eps=eps)
                                       * F.normalize(pooled_unsaid, dim=-1, eps=eps)
                                       ).sum(dim=-1).mean()),
-            'common_mode_fraction_said': float((centroid_norm / said_norm).mean()),
-            'common_mode_fraction_unsaid': float((centroid_norm / unsaid_norm).mean()),
+            'common_mode_norm_ratio_said': float(norm_ratio_said.mean()),
+            'common_mode_norm_ratio_unsaid': float(norm_ratio_unsaid.mean()),
+            'common_mode_norm_ratio_said_max': float(norm_ratio_said.max()),
+            'common_mode_norm_ratio_unsaid_max': float(norm_ratio_unsaid.max()),
+            # deprecated aliases: the old names are kept so existing artefacts stay readable,
+            # but reports and docs use the norm_ratio names only
+            'common_mode_fraction_said': float(norm_ratio_said.mean()),
+            'common_mode_fraction_unsaid': float(norm_ratio_unsaid.mean()),
         }
 
 
@@ -198,6 +209,74 @@ def targeted_upper_bound_matrix(*args, **kwargs):
     helper exists so the constraint is explicit and testable rather than implicit.
     """
     raise NotImplementedError(
-        'candidate-conditioned USR scoring is deliberately not implemented in Phase 3.0A.1d; '
+        'candidate-conditioned USR scoring is deliberately not implemented in Phase 3.0A.1e; '
         'use the target-independent phase3_scorer_matrices, and label any Phase 2.9 '
         'comparison explicitly as a target-conditioned upper bound')
+
+
+# --------------------------------------------------------------------------- #
+# Phase 3.0A.1e: common-mode semantic decomposition
+# --------------------------------------------------------------------------- #
+DECOMPOSITION_SCORERS = ('global', 'said_raw', 'unsaid_raw', 'centroid', 'said_centered',
+                         'unsaid_centered', 'anti_minus_said', 'complete_existing')
+
+# features that are L2-normalised before scoring (deterministic naming for tests)
+DECOMPOSITION_FEATURE_KEYS = ('global', 'said_raw', 'unsaid_raw', 'centroid', 'said_centered',
+                              'unsaid_centered', 'anti_minus_said', 'complete_existing')
+
+
+def decomposition_features(patch_features: torch.Tensor, said_attention: torch.Tensor,
+                           unsaid_attention: torch.Tensor, global_feature: torch.Tensor,
+                           said_feature: torch.Tensor, complete_feature: torch.Tensor,
+                           eps: float = DEFAULT_EPS) -> Dict[str, torch.Tensor]:
+    """Centre/deviate/contrast decomposition of the two poolings (all detached).
+
+    With ``mu = mean_p h_p``, ``p_S = sum A_S h``, ``p_U = sum A_U h``:
+
+        delta_S = sum A_S (h - mu)      delta_U = sum A_U (h - mu)
+        p_S = mu + delta_S              p_U = mu + delta_U
+        contrast = p_U - p_S = delta_U - delta_S
+
+    Returns the eight normalised scorers plus the raw pieces they are built from.
+    """
+    if patch_features.dim() != 3:
+        raise ValueError('patch_features must be [B, P, D], got %r'
+                         % (tuple(patch_features.shape),))
+    if said_attention.dim() != 2 or unsaid_attention.dim() != 2:
+        raise ValueError('attention must be [B, P]')
+    with torch.no_grad():
+        patches = patch_features.detach().float()
+        a_said = said_attention.detach().float()
+        a_unsaid = unsaid_attention.detach().float()
+        centroid = patches.mean(dim=1)
+        centered = patches - centroid.unsqueeze(1)
+        delta_said = torch.einsum('bp,bpd->bd', a_said, centered)
+        delta_unsaid = torch.einsum('bp,bpd->bd', a_unsaid, centered)
+        pooled_said = torch.einsum('bp,bpd->bd', a_said, patches)
+        pooled_unsaid = torch.einsum('bp,bpd->bd', a_unsaid, patches)
+        contrast = pooled_unsaid - pooled_said
+        return {
+            'global': F.normalize(global_feature.detach().float(), dim=-1, eps=eps),
+            'said_raw': F.normalize(pooled_said, dim=-1, eps=eps),
+            'unsaid_raw': F.normalize(pooled_unsaid, dim=-1, eps=eps),
+            'centroid': F.normalize(centroid, dim=-1, eps=eps),
+            'said_centered': F.normalize(delta_said, dim=-1, eps=eps),
+            'unsaid_centered': F.normalize(delta_unsaid, dim=-1, eps=eps),
+            'anti_minus_said': F.normalize(contrast, dim=-1, eps=eps),
+            'complete_existing': F.normalize(complete_feature.detach().float(), dim=-1, eps=eps),
+            # raw pieces, kept for the identity checks and the common-mode metrics
+            'centroid_vector': centroid,
+            'delta_said_vector': delta_said,
+            'delta_unsaid_vector': delta_unsaid,
+            'pooled_said_vector': pooled_said,
+            'pooled_unsaid_vector': pooled_unsaid,
+            'contrast_vector': contrast,
+        }
+
+
+def decomposition_scorer_matrices(features: Dict[str, torch.Tensor],
+                                  candidate_text_features: torch.Tensor,
+                                  logit_scale: float = 1.0) -> Dict[str, torch.Tensor]:
+    """One score matrix per decomposition scorer, all over the full candidate pool."""
+    return {name: scorer_matrix(features[name], candidate_text_features, logit_scale)
+            for name in DECOMPOSITION_SCORERS}

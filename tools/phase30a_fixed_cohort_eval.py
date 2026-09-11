@@ -27,6 +27,7 @@ import os
 import sys
 import time
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 from PIL import Image
@@ -37,10 +38,14 @@ for _p in (REPO, os.path.join(REPO, 'train')):
         sys.path.insert(0, _p)
 
 from eval.phase30a_fixed_cohort import (  # noqa: E402
+    DECOMPOSITION_FEATURE_KEYS,
+    DECOMPOSITION_SCORERS,
     PHASE3_SCORERS,
     cohort_mean,
     common_mode_diagnosis,
     common_mode_metrics,
+    decomposition_features,
+    decomposition_scorer_matrices,
     phase3_scorer_matrices,
     precompute_query_features,
 )
@@ -60,6 +65,8 @@ from model.gap_completion import (  # noqa: E402
 from model.salu_model import SALUModel  # noqa: E402
 from model.unsaid_core import attention_jsd, attention_overlap  # noqa: E402
 from model.salu_modules import SaidRouter  # noqa: E402
+from eval.paired_statistics import compare_methods, margin_per_query  # noqa: E402
+from eval.unsaid_retrieval import rank_of, retrieval_report  # noqa: E402
 
 # per-sample keys produced by evaluate_cohort_gap; the cohort report exposes them with the
 # same names the training log uses (``*_mean``) so the two are directly comparable
@@ -118,13 +125,20 @@ def cohort_samples(queries):
 
 
 @torch.no_grad()
-def evaluate_cohort_gap(model, samples, image_root, preprocess, device, batch_size,
-                        gap_anti_temperature):
-    """Per-sample internal gap + geometry metrics on one frozen cohort (weights fixed)."""
+def cohort_pass(model, samples, image_root, preprocess, device, batch_size,
+                gap_anti_temperature, collect_decomposition=False):
+    """One forward pass per sample over the frozen cohort; weights are never updated.
+
+    Returns ``(rows, decomposition)`` where ``rows`` holds the per-sample gap / geometry
+    metrics and ``decomposition`` (only when requested) holds the stacked query-side feature
+    tensors of the common-mode decomposition. Every query feature is computed here, from
+    ``(I, C_S)`` alone -- the candidate pool is not touched until scoring.
+    """
     core = model.module if hasattr(model, 'module') else model
     was_training = core.training
     core.eval()
     rows = []
+    collected = {key: [] for key in DECOMPOSITION_FEATURE_KEYS}
     try:
         for start in range(0, len(samples), batch_size):
             chunk = samples[start:start + batch_size]
@@ -193,9 +207,25 @@ def evaluate_cohort_gap(model, samples, image_root, preprocess, device, batch_si
                 row['patch_pair_cosine_mean'] = float(homogeneity['patch_pair_cosine_mean'])
                 row['patch_centered_energy'] = float(homogeneity['patch_centered_energy'])
                 rows.append(row)
+            if collect_decomposition:
+                pieces = decomposition_features(patches, a_said, a_unsaid, z_global, z_said,
+                                                F.normalize(z_said + terms['u_new'],
+                                                            dim=-1))
+                for key in DECOMPOSITION_FEATURE_KEYS:
+                    collected[key].append(pieces[key].detach().float().cpu())
     finally:
         if was_training:
             core.train()
+    decomposition = {key: torch.cat(value) for key, value in collected.items()} \
+        if collect_decomposition else None
+    return rows, decomposition
+
+
+def evaluate_cohort_gap(model, samples, image_root, preprocess, device, batch_size,
+                        gap_anti_temperature):
+    """Per-sample internal gap + geometry metrics on one frozen cohort (weights fixed)."""
+    rows, _ = cohort_pass(model, samples, image_root, preprocess, device, batch_size,
+                          gap_anti_temperature)
     return rows
 
 
@@ -274,6 +304,156 @@ def evaluate_cohort_usr(model, samples, image_root, preprocess, device, batch_si
             core.train()
 
 
+def evaluate_decomposition(features, candidate_features, logit_scale, samples):
+    """Score every decomposition scorer over the full pool and add per-query margins.
+
+    All eight scorers come from the same precomputed query features, so none of them can be
+    candidate-conditioned; ``C_U`` enters only as the candidate text.
+    """
+    matrices = decomposition_scorer_matrices(features, candidate_features, logit_scale)
+    reports, margins_mean, margins_best = {}, {}, {}
+    for name in DECOMPOSITION_SCORERS:
+        reports[name] = retrieval_report(matrices[name])
+        margins_mean[name] = margin_per_query(matrices[name], 'mean')
+        margins_best[name] = margin_per_query(matrices[name], 'best')
+    return {'reports': reports,
+            'margin_mean': margins_mean,
+            'margin_best': margins_best,
+            'matrices': matrices,
+            'candidate_pool': int(candidate_features.shape[0]),
+            'query_count': int(len(samples))}
+
+
+# checkpoints that take part in the decomposition comparison (initial / A / B / C / D)
+DECOMPOSITION_TAGS = ('initial', 'A100', 'A_step100', 'B100', 'B_step100', 'C100',
+                      'C_step100', 'D100', 'D_step100')
+
+
+def rank_key(run_tag):
+    """Ordinal position of a checkpoint label (initial < A < B < C < D)."""
+    if run_tag.startswith('initial'):
+        return 0
+    if run_tag.startswith('A'):
+        return 1
+    if run_tag.startswith('B'):
+        return 2
+    if run_tag.startswith('C'):
+        return 3
+    if run_tag.startswith('D'):
+        return 4
+    return 5
+
+
+# (label, left tag, left scorer, right tag, right scorer); tags are rank tokens
+COMPARISONS = (
+    ('B_minus_A_zU_unsaid_raw', 'B', 'unsaid_raw', 'A', 'unsaid_raw'),
+    ('C_minus_B_global', 'C', 'global', 'B', 'global'),
+    ('C_minus_A_global', 'C', 'global', 'A', 'global'),
+    ('C_minus_A_zU_unsaid_raw', 'C', 'unsaid_raw', 'A', 'unsaid_raw'),
+    ('unsaid_centered_minus_centroid', 'C', 'unsaid_centered', 'C', 'centroid'),
+    ('anti_minus_said_vs_unsaid_raw', 'C', 'anti_minus_said', 'C', 'unsaid_raw'),
+    ('unsaid_centered_vs_said_centered', 'C', 'unsaid_centered', 'C', 'said_centered'),
+    ('initial_minus_C_zU_unsaid_raw', 'initial', 'unsaid_raw', 'C', 'unsaid_raw'),
+    ('C_minus_B_zU_unsaid_raw', 'C', 'unsaid_raw', 'B', 'unsaid_raw'),
+    ('D_minus_C_zU_unsaid_raw', 'D', 'unsaid_raw', 'C', 'unsaid_raw'),
+)
+
+
+def resolve_tag(available, tag):
+    """Map a short comparison tag (``A``) onto the key the run actually stored (``A100``).
+
+    Checkpoints are labelled with a step suffix so a multi-checkpoint run can hold both the
+    initial state and step 100 of the same arm, which makes the exact key depend on the
+    caller's ``--checkpoints`` spelling. Accepting the plausible spellings keeps the
+    comparison list readable without silently skipping a pair.
+    """
+    for candidate in (tag, '%s100' % tag, '%s_step100' % tag, '%s_step100' % tag.lower()):
+        if candidate in available:
+            return candidate
+    return None
+
+
+def paired_comparisons(decomposition_by_tag, replicates, seed):
+    """Paired bootstrap + McNemar for every comparison that has both checkpoints present."""
+    available = set(decomposition_by_tag)
+    output = {}
+    for label, left_tag, left_scorer, right_tag, right_scorer in COMPARISONS:
+        left_key = resolve_tag(available, left_tag)
+        right_key = resolve_tag(available, right_tag)
+        if left_key is None or right_key is None:
+            continue
+        left = decomposition_by_tag[left_key]['matrices'][left_scorer]
+        right = decomposition_by_tag[right_key]['matrices'][right_scorer]
+        output[label] = {
+            'left': {'checkpoint': left_key, 'scorer': left_scorer},
+            'right': {'checkpoint': right_key, 'scorer': right_scorer},
+            **compare_methods(left, right, replicates=replicates, seed=seed),
+        }
+    return output
+
+
+def proxy_from_outcomes(reference_rows, outcomes, scorer='unsaid_raw'):
+    """Proxy correlations from the stored per-query outcomes (no score matrices needed).
+
+    ``reference_rows`` holds the internal per-sample numbers; ``outcomes`` holds the semantic
+    per-query ranks and margins for every scorer. A useful proxy would correlate with
+    ``-rank`` positively and with ``gap_after`` negatively.
+    """
+    from eval.paired_statistics import spearman
+    ranks = outcomes['ranks'][scorer]
+    margin_mean = outcomes['margin_mean'][scorer]
+    margin_best = outcomes['margin_best'][scorer]
+    if not (len(reference_rows) == len(ranks) == len(margin_mean) == len(margin_best)):
+        raise ValueError('internal rows and per-query outcomes must cover the same queries')
+    closure = [row['gap_closure_ratio'] for row in reference_rows]
+    reduction = [row['gap_reduction'] for row in reference_rows]
+    gap_after = [row['gap_after'] for row in reference_rows]
+    negative_rank = [-float(value) for value in ranks]
+    return {
+        'scorer': scorer,
+        'closure_vs_negative_rank': spearman(closure, negative_rank),
+        'closure_vs_margin_mean': spearman(closure, margin_mean),
+        'closure_vs_margin_best': spearman(closure, margin_best),
+        'gap_reduction_vs_negative_rank': spearman(reduction, negative_rank),
+        'gap_reduction_vs_margin_mean': spearman(reduction, margin_mean),
+        'gap_after_vs_rank': spearman(gap_after, ranks),
+        'gap_after_vs_margin_mean': spearman(gap_after, margin_mean),
+        'rank_mean': float(sum(ranks) / len(ranks)),
+        'rank_median': float(sorted(ranks)[len(ranks) // 2]),
+        'query_count': len(reference_rows),
+    }
+
+
+def proxy_correlations(reference_rows, decomposition, scorer='unsaid_raw'):
+    """Does the internal gap track withheld-semantic quality, per query?
+
+    ``closure_i``, ``gap_reduction_i`` and ``gap_after_i`` are the internal numbers;
+    ``-rank_i``, ``margin_mean_i`` and ``margin_best_i`` are the semantic ones. A useful proxy
+    would correlate with ``-rank`` positively and with ``gap_after`` negatively.
+    """
+    from eval.paired_statistics import spearman
+    if len(reference_rows) != decomposition['query_count']:
+        raise ValueError('internal rows and decomposition features must cover the same queries')
+    closure = [row['gap_closure_ratio'] for row in reference_rows]
+    reduction = [row['gap_reduction'] for row in reference_rows]
+    gap_after = [row['gap_after'] for row in reference_rows]
+    ranks = rank_of(decomposition['matrices'][scorer]).float()
+    negative_rank = (-ranks).tolist()
+    margin_mean = decomposition['margin_mean'][scorer].tolist()
+    margin_best = decomposition['margin_best'][scorer].tolist()
+    return {
+        'scorer': scorer,
+        'closure_vs_negative_rank': spearman(closure, negative_rank),
+        'closure_vs_margin_mean': spearman(closure, margin_mean),
+        'closure_vs_margin_best': spearman(closure, margin_best),
+        'gap_reduction_vs_negative_rank': spearman(reduction, negative_rank),
+        'gap_reduction_vs_margin_mean': spearman(reduction, margin_mean),
+        'gap_after_vs_rank': spearman(gap_after, ranks.tolist()),
+        'gap_after_vs_margin_mean': spearman(gap_after, margin_mean),
+        'rank_distribution': {'mean': float(ranks.mean()), 'median': float(ranks.median())},
+    }
+
+
 def evaluate_canonical(model, args, preprocess):
     """Standard CLIP CLS retrieval: ShareGPT4V-1K (3 variants) and COCO val2017."""
     from eval.validation_protocol import (evaluate_all_variants, load_or_create_manifest)
@@ -300,7 +480,9 @@ def evaluate_canonical(model, args, preprocess):
 
 def main():
     parser = argparse.ArgumentParser(description='Phase 3.0A.1d fixed-cohort evaluation')
-    parser.add_argument('--checkpoints', required=True, help='comma-separated "tag:path"')
+    parser.add_argument('--checkpoints', required=True,
+                        help='comma-separated "tag:path"; tag a step100 checkpoint as '
+                             'A100/B100/C100/D100 so it enters the paired comparison')
     parser.add_argument('--label', required=True, help='arm label, e.g. A_said_only')
     parser.add_argument('--gap_anti_temperature', type=float, required=True,
                         help='the trained arm temperature; must match the arm')
@@ -315,6 +497,11 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--image_batch_size', type=int, default=32)
     parser.add_argument('--canonical', action='store_true')
+    parser.add_argument('--decomposition', action='store_true',
+                        help='also score the 8 common-mode decomposition scorers and run the '
+                             'paired bootstrap / proxy correlations')
+    parser.add_argument('--bootstrap_replicates', type=int, default=10000)
+    parser.add_argument('--bootstrap_seed', type=int, default=20260911)
     parser.add_argument('--coco', action='store_true')
     parser.add_argument('--coco_root', default=None)
     parser.add_argument('--sharegpt4v_manifest',
@@ -351,19 +538,22 @@ def main():
                   'step is taken during evaluation.'),
         'checkpoints': {},
     }
+    decomposition_by_tag = {}
+    reference_by_tag = {}
+    per_query_outcomes = {}
     for tag, path in parse_checkpoints(args.checkpoints):
         checkpoint = torch.load(path, map_location='cpu', weights_only=False)
         missing, unexpected = core.load_state_dict(checkpoint['model'], strict=False)
         if list(missing) or list(unexpected):
             raise RuntimeError('checkpoint %s does not match the model' % path)
         started = time.time()
-        rows = evaluate_cohort_gap(core, samples, image_root, preprocess, args.device,
-                                   args.image_batch_size, args.gap_anti_temperature)
+        rows, _ = cohort_pass(core, samples, image_root, preprocess, args.device,
+                              args.image_batch_size, args.gap_anti_temperature)
         internal = aggregate_cohort(rows)
         internal['common_mode_diagnosis'] = common_mode_diagnosis(internal)
         usr = evaluate_cohort_usr(core, samples, image_root, preprocess, args.device,
                                   args.image_batch_size, args.gap_anti_temperature)
-        payload['checkpoints'][tag] = {
+        entry = {
             'checkpoint': path,
             'checkpoint_sha256': file_sha256(path),
             'checkpoint_step': int(checkpoint.get('step', 0)),
@@ -373,6 +563,58 @@ def main():
             'usr': usr,
             'wall_sec': time.time() - started,
         }
+        if args.decomposition and tag in DECOMPOSITION_TAGS:
+            # a second pass: the decomposition needs the query features themselves, which
+            # are far too large to keep for the whole cohort in one go
+            _, features = cohort_pass(core, samples, image_root, preprocess, args.device,
+                                      args.image_batch_size, args.gap_anti_temperature,
+                                      collect_decomposition=True)
+            candidate_blocks = []
+            candidate_texts = [sample['target_text'] for sample in samples]
+            for start in range(0, len(candidate_texts), 256):
+                block = candidate_texts[start:start + 256]
+                tokens = longclip.tokenize(block, truncate=True).to(args.device)
+                candidate_blocks.append(core.encode_text(tokens).detach().float().cpu())
+            candidate_features = torch.cat(candidate_blocks)
+            logit_scale = float(core.clip.logit_scale.exp().clamp(max=100))
+            decomposition = evaluate_decomposition(features, candidate_features, logit_scale,
+                                                   samples)
+            rank_token = (tag.split('_')[0] if '_' in tag and not tag.startswith('initial')
+                          else tag)
+            if rank_token in decomposition_by_tag and rank_token != tag:
+                rank_token = tag
+            decomposition_by_tag[rank_token] = {
+                'matrices': decomposition['matrices'],
+                'reports': decomposition['reports'],
+                'margin_mean': decomposition['margin_mean'],
+                'margin_best': decomposition['margin_best'],
+                'query_count': decomposition['query_count'],
+                'candidate_pool': decomposition['candidate_pool'],
+            }
+            reference_by_tag[rank_token] = {
+                'rows': rows,
+                'query_count': decomposition['query_count'],
+                'candidate_pool': decomposition['candidate_pool'],
+            }
+            entry['decomposition'] = {
+                'reports': decomposition['reports'],
+                'query_count': decomposition['query_count'],
+                'candidate_pool': decomposition['candidate_pool'],
+                'scorers': list(DECOMPOSITION_SCORERS),
+                'rank_token': rank_token,
+            }
+            # per-query outcomes: the proxy correlations need the semantic side per query and
+            # cannot be recovered from the aggregate report, so store the ranks and margins
+            per_query_outcomes[rank_token] = {
+                'ranks': {name: rank_of(decomposition['matrices'][name]).tolist()
+                          for name in DECOMPOSITION_SCORERS},
+                'margin_mean': {name: decomposition['margin_mean'][name].tolist()
+                                for name in DECOMPOSITION_SCORERS},
+                'margin_best': {name: decomposition['margin_best'][name].tolist()
+                                for name in DECOMPOSITION_SCORERS},
+            }
+            del features
+        payload['checkpoints'][tag] = entry
         summary = usr['reports']
         print('EVAL %-10s %-10s closure=%+.6f gap_after=%.6f cos(zS,zU)=%.6f | '
               'USR global R@1=%.4f MRR=%.4f  unsaid R@1=%.4f MRR=%.4f  complete R@1=%.4f MRR=%.4f'
@@ -381,6 +623,31 @@ def main():
                  internal['cos_said_unsaid'], summary['global']['R@1'], summary['global']['MRR'],
                  summary['unsaid']['R@1'], summary['unsaid']['MRR'],
                  summary['complete']['R@1'], summary['complete']['MRR']), flush=True)
+
+    if args.decomposition and decomposition_by_tag:
+        payload['paired_statistics'] = {
+            'replicates': int(args.bootstrap_replicates),
+            'seed': int(args.bootstrap_seed),
+            'note': ('All methods are scored on the same 868 queries with the same frozen '
+                     '868-candidate pool, so every comparison is paired; the bootstrap '
+                     'resamples query indices once and applies the same resample to both '
+                     'methods. Independent binomial error bars are not used.'),
+            'comparisons': paired_comparisons(decomposition_by_tag, args.bootstrap_replicates,
+                                              args.bootstrap_seed),
+        }
+        payload['proxy_correlation'] = {}
+        for rank_token in sorted(decomposition_by_tag, key=rank_key):
+            reference = reference_by_tag[rank_token]
+            outcomes = per_query_outcomes[rank_token]
+            payload['proxy_correlation'][rank_token] = proxy_from_outcomes(
+                reference['rows'], outcomes, 'unsaid_raw')
+        payload['per_query_rank_statistics'] = {
+            rank_token: {'rank_mean': float(np.mean(outcomes['ranks']['unsaid_raw'])),
+                         'rank_median': float(np.median(outcomes['ranks']['unsaid_raw'])),
+                         'query_count': len(outcomes['ranks']['unsaid_raw'])}
+            for rank_token, outcomes in per_query_outcomes.items()}
+        print('PAIRED_STATISTICS %d comparisons' % len(payload['paired_statistics']['comparisons']),
+              flush=True)
 
     if args.canonical:
         payload['canonical'] = {}

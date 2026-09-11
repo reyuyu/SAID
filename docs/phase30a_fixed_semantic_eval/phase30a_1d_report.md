@@ -316,16 +316,22 @@ near-duplicate patches.
 
 ## 8. Scientific verdict
 
-**C. Complement differs geometrically but not semantically.**
+**C. Complement differs geometrically, while enrichment of withheld semantics beyond the
+Said-only control remains weak and is not yet statistically established.**
 **D. Internal gap metric is a poor proxy for withheld semantics.**
+(The 1d wording "not semantic" was too strong and is corrected here: `z_U` is well above
+chance at every checkpoint, so it *is* semantic — what is unestablished is the *enrichment
+beyond the control*. See `docs/phase30a_common_mode_semantics/` for the paired statistics
+that this section anticipated.)
 
 Evidence for **C**: the complement is geometrically real — attention JSD rises from 0.084 to
 0.171–0.238, overlap falls from 0.668 to 0.434–0.525, `cos(z_S,z_U)` falls from 0.991 to
 0.962–0.970, and the centred pools are strongly anti-aligned (`centered_pool_cosine`
-−0.90 … −0.98) even though the raw pools stay at 0.962–0.991. Semantically the gain is
-thin: `z_U` reaches only R@1 0.0449–0.0472 at step100 against a CLS baseline of 0.2684–0.2742
-on the very same queries and candidate pool, i.e. ~6x worse, and the `complete`
-(`z_S + u_new`) scorer does not beat `z_U` alone.
+−0.90 … −0.98) even though the raw pools stay at 0.962–0.991. `z_U` is far above chance
+(R@1 0.0380–0.0472 against 0.001152, i.e. 33–41x) so the complement is semantic too — but the
+enrichment over the Said-only control is thin and, as the paired bootstrap in
+`docs/phase30a_common_mode_semantics/paired_statistics.json` shows, not statistically
+established. The `complete` (`z_S + u_new`) scorer also does not beat `z_U` alone.
 
 Evidence for **D**: on the fixed cohort the internal closure ratio is negative in **every**
 arm, including the Said-only control that never optimizes it, and it becomes *more* negative
@@ -333,13 +339,16 @@ precisely in the arms where `z_U` withheld-semantic retrieval is *better* (A −
 R@1 0.0380; B −0.1451 / 0.0449; C −0.1617 / 0.0472). A metric that moves opposite to the
 semantic measurement on the same cohort cannot be used as a proxy for it.
 
-**A (Discovery + Absorption both supported) is NOT claimed.** The directional pattern is
-right — `B > A` on `z_U` retrieval, `C > B` on global retrieval and on `cos_global_said` —
-but the effect sizes (+0.0069 and +0.0058 R@1 on 868 queries, ±0.015 at 1σ) are inside
-cohort noise, and no arm separates from the others on the internal metric. **B (Discovery
-supported, Absorption not supported) is not claimed either**, for the same noise reason.
-**E (Inconclusive)** is the honest qualifier on the *attribution sizes*; the two selected
-verdicts are the ones the fixed-cohort evidence actually establishes.
+**A (Discovery + Absorption both supported) is NOT claimed.** `L_gap_discover` **partially
+preserves / recovers the withheld-semantic retrievability that Said-only optimization
+degrades** (initial 0.0588 → A 0.0380, B 0.0449, C 0.0472) — it does **not** learn new
+withheld semantics, and it has not yet exceeded the frozen initial value. Nor is it a
+statistically established improvement over the control at this cohort size.
+
+**Absorption: NOT ESTABLISHED.** The directional pattern is right — `C > B` on global
+retrieval and `cos_global_said` rises from 0.693 to 0.768 — but the global gain is inside the
+paired-bootstrap interval, so it is a hypothesis, not a result. **B (Discovery supported,
+Absorption not supported) is likewise not claimed** as a positive statement about Absorption.
 
 ## 9. Note on the gap objective's maths (Section 12)
 
