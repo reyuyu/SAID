@@ -8,11 +8,11 @@
   },
   "best": {
     "J": 0.50868,
-    "canonical_json": "outputs/cvssl_screening/c0_tuning/C_L03_canonical.json",
-    "checkpoint": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/c0_tuning/C_L03/cvssl_C0_complement_vssl_step000500.pt",
-    "delta_J_vs_S0": -0.00039999999999995595,
-    "passed": false,
-    "run": "C_L03"
+    "delta_J_vs_S0": -0.0004,
+    "lambda_target": 0.3,
+    "run": "C_L03",
+    "tau_U": 0.1,
+    "u_warmup": 0
   },
   "candidate_verdict": "C_L03 NOT PASSED (COCO I2T R@1 0.6046 < 0.6058 gate)",
   "candidates_launched": [
@@ -51,10 +51,17 @@
     {
       "J": 0.50868,
       "canonical_json": "outputs/cvssl_screening/c0_tuning/C_L03_canonical.json",
-      "checkpoint": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/c0_tuning/C_L03/cvssl_C0_complement_vssl_step000500.pt",
+      "checkpoint": "runs_salu/said_cls_cvssl/c0_tuning/C_L03/cvssl_C0_complement_vssl_step000500.pt",
+      "checkpoint_sha256": "bae2f576ba9f3be90f440e0edf771bfe8969f9fc5d03fc35bc6223718b74247c",
       "delta_J_vs_S0": -0.00039999999999995595,
+      "lambda_target": 0.3,
       "passed": false,
-      "run": "C_L03"
+      "peak_memory_gb": 27.05,
+      "run": "C_L03",
+      "tau_U": 0.1,
+      "train_wall_sec": 642.9,
+      "u_warmup": 0,
+      "verdict": "NOT PASSED (COCO I2T R@1 0.6046 < gate 0.6058; COCO T2I R@1 0.41276 >= 0.41236)"
     }
   ],
   "next_candidate": null,
