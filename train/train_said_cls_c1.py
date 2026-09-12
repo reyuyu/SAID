@@ -48,7 +48,8 @@ def build_decoder_optimizer(module, args):
 
 
 def c1_train_step(ddp_model, batch, optimizer, mask_optimizer, decoder_optimizer, device,
-                  amp_dtype, amp_enabled=True, world_size=1, capture_grads=False):
+                  amp_dtype, amp_enabled=True, world_size=1, capture_grads=False,
+                  completed_steps=0):
     """One real training step: DDP forward -> backward -> all three optimizer steps.
 
     Reconstruction scaling: the objective returns the local *mean* over this rank's valid samples.
@@ -65,7 +66,7 @@ def c1_train_step(ddp_model, batch, optimizer, mask_optimizer, decoder_optimizer
 
     device_type = 'cuda' if device.type == 'cuda' else 'cpu'
     with torch.autocast(device_type=device_type, dtype=amp_dtype, enabled=amp_enabled):
-        out = ddp_model(image_a, text, image_b)
+        out = ddp_model(image_a, text, image_b, completed_steps=completed_steps)
 
     rec_local = out['loss_rec']                       # mean over THIS rank's valid samples
     valid_local = out['rec_valid_count_tensor']       # tensor, so autograd/dtype stay intact
@@ -150,6 +151,7 @@ def main():
     parser.add_argument('--amp_dtype', default='bf16', choices=['bf16', 'fp32'])
     parser.add_argument('--grad_checkpoint_views', type=int, default=1)
     parser.add_argument('--resume', default=None)
+    parser.add_argument('--variant', default='C1', choices=['C1', 'C1-UN', 'C1-VWarm'])
     parser.add_argument('--reference_state_out', default=None,
                         help='optional path for the frozen reference state copy')
     args = parser.parse_args()
@@ -179,7 +181,8 @@ def main():
                                 decoder_seed=args.decoder_seed,
                                 duplicate_policy=args.duplicate_policy,
                                 ddp_gradient_averaging=True,
-                                grad_checkpoint_views=bool(args.grad_checkpoint_views)).to(device)
+                                grad_checkpoint_views=bool(args.grad_checkpoint_views),
+                                reconstruction_variant=args.variant).to(device)
     # 2. the reference was deep-copied from the student *after* the init load
     reference_digest = reference_fingerprint(train_module.reference_visual)
     reference_zero_storage_overlap = not any(
@@ -237,6 +240,7 @@ def main():
                                                              'reference_visual_state.pt')
     config = {
         'objective': 'said_cls_tcr',
+        'variant': args.variant,
         'arm': ARM,
         'lambda_rec': args.lambda_rec,
         'lambda_align': args.lambda_align,
@@ -296,10 +300,16 @@ def main():
         mask_optimizer.load_state_dict(payload['mask_optimizer'])
         decoder_optimizer.load_state_dict(payload['decoder_optimizer'])
         start_step = int(payload['completed_steps'])
+        start_epoch = int(payload.get('epoch', 0))
+        start_batch = int(payload.get('next_batch_index', start_step))
+        if payload.get('config', {}).get('variant', args.variant) != args.variant:
+            raise ValueError('resume variant mismatch')
         if rank == 0:
             print('RESUMED from %s at %d' % (args.resume, start_step), flush=True)
     else:
         start_step = 0
+        start_epoch = 0
+        start_batch = 0
 
     caption_digest = hashlib.sha256()
     sample_digest = hashlib.sha256()
@@ -311,9 +321,13 @@ def main():
     stopped = False
 
     for epoch in range(args.epochs):
+        if epoch < start_epoch:
+            continue
         dataset.set_epoch(epoch)
         sampler.set_epoch(epoch)
         for i, batch in enumerate(loader):
+            if epoch == start_epoch and i < start_batch:
+                continue
             if args.max_steps is not None and completed >= args.max_steps:
                 stopped = True
                 break
@@ -322,7 +336,8 @@ def main():
             mask_scheduler(completed)
             decoder_scheduler(completed)
             out = c1_train_step(ddp_model, batch, optimizer, mask_optimizer, decoder_optimizer,
-                                device, amp_dtype, amp_enabled=use_amp, world_size=world)
+                                device, amp_dtype, amp_enabled=use_amp, world_size=world,
+                                completed_steps=completed)
             image_a = batch['image_a']
             completed += 1
             compute_times.append(time.time() - t0)
@@ -339,7 +354,9 @@ def main():
                               or completed in save_completed):
                 record = {
                     'completed_steps': completed,
+                    'epoch': epoch, 'next_batch_index': i + 1,
                     'epoch': epoch,
+                    'next_batch_index': i + 1,
                     'step_in_epoch': i,
                     'arm': ARM,
                     'objective': 'said_cls_tcr',

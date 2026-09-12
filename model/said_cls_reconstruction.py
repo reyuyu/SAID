@@ -53,6 +53,12 @@ VALID_NORM_EPS = 1e-6
 ARM = 'C1_text_conditional_reconstruction'
 
 
+def reconstruction_alpha(completed_steps: int) -> float:
+    """Absolute-step visual reconstruction gradient gate for C1-VWarm."""
+    s = int(completed_steps) + 1
+    return 0.0 if s <= 100 else (1.0 if s >= 200 else (s - 100) / 100.0)
+
+
 def visual_embed_dim(clip_model: nn.Module) -> int:
     """The CLS embedding width, read from the real parameter rather than an assumed attribute.
 
@@ -140,7 +146,8 @@ class C1TrainModule(nn.Module):
                  lambda_align: float = LAMBDA_ALIGN, lambda_sparse: float = LAMBDA_SPARSE,
                  decoder_hidden: int = DECODER_HIDDEN, decoder_seed: int = 0,
                  duplicate_policy: str = 'exclude', eps: float = VALID_NORM_EPS,
-                 ddp_gradient_averaging: bool = True, grad_checkpoint_views: bool = False):
+                 ddp_gradient_averaging: bool = True, grad_checkpoint_views: bool = False,
+                 reconstruction_variant: str = 'C1'):
         super().__init__()
         self.clip = clip_model
         self.rank = int(rank)
@@ -151,6 +158,9 @@ class C1TrainModule(nn.Module):
         self.eps = float(eps)
         self.ddp_gradient_averaging = bool(ddp_gradient_averaging)
         self.grad_checkpoint_views = bool(grad_checkpoint_views)
+        if reconstruction_variant not in ('C1', 'C1-UN', 'C1-VWarm'):
+            raise ValueError('unknown reconstruction variant')
+        self.reconstruction_variant = reconstruction_variant
 
         # Order matters and is fixed: the reference is deep-copied from the student's *initial*
         # tower first, then the decoder is built. deepcopy consumes a variable number of ambient
@@ -180,7 +190,8 @@ class C1TrainModule(nn.Module):
     # -- one training step's forward ---------------------------------------- #
     def forward(self, image_a: torch.Tensor, text: torch.Tensor,
                 image_b: Optional[torch.Tensor] = None, image_ids: Optional[torch.Tensor] = None,
-                mask_override: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
+                mask_override: Optional[torch.Tensor] = None,
+                completed_steps: int = 0) -> Dict[str, torch.Tensor]:
         """``image_b`` is accepted only so the existing data pipeline can keep producing it; C1
         never feeds a second view to the student or to the reference.
 
@@ -218,7 +229,17 @@ class C1TrainModule(nn.Module):
             v32 = v_a.float()
             g = F.normalize(v32, dim=-1, eps=REFERENCE_EPS)
             m_u = 1.0 - m_s.detach().float()
-            r_u = g * m_u
+            masked_v = v32 * m_u
+            if self.reconstruction_variant == 'C1-UN':
+                r_u = F.normalize(masked_v, dim=-1, eps=REFERENCE_EPS)
+            else:
+                r_u = g * m_u
+            if self.reconstruction_variant == 'C1-VWarm':
+                alpha = reconstruction_alpha(completed_steps)
+                r_input = r_u.detach() + alpha * (r_u - r_u.detach())
+            else:
+                alpha = 1.0
+                r_input = r_u
             t_cond = F.normalize(t_raw.float(), dim=-1, eps=REFERENCE_EPS).detach()
 
             finite = torch.isfinite(v32).all(dim=-1) & torch.isfinite(t_cond).all(dim=-1)
@@ -226,7 +247,7 @@ class C1TrainModule(nn.Module):
             norm_r = r_u.norm(dim=-1)
             valid = finite & nonempty & (norm_r > self.eps)
 
-            pred = self.decoder(r_u, t_cond)
+            pred = self.decoder(r_input, t_cond)
             rec, info = reconstruction_loss(pred, target, valid)
             per_sample = info['per_sample']
             valid_count = info['valid_count']
@@ -271,6 +292,9 @@ class C1TrainModule(nn.Module):
             'reference_norm': ref_norm.mean() if ref_norm.numel() else rec.new_zeros(()),
             'cos_pred_reference': cosine[valid].mean() if bool(valid.any()) else cosine.sum() * 0.0,
             'r_u_norm': norm_r.mean(),
+            'masked_v_norm': masked_v.norm(dim=-1).mean(),
+            'r0_norm': g.mul(m_u).norm(dim=-1).mean(),
+            'rec_visual_alpha': rec.new_tensor(alpha),
             'g_norm': g_norm.mean(),
             'native_global_to_reference_cos': g_to_ref.mean(),
             'coordinate_fraction_said': coordinate_said,
