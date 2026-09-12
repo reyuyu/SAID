@@ -54,6 +54,11 @@ def main():
         (evaluation/('FP0_update%d_provenance.json'%step)).write_text(json.dumps(provenance,indent=2))
         del clip,payload
         label='FP0_update%d'%step
+        diag=evaluation/(label+'_diagnostics.json')
+        if not diag.exists():
+            subprocess.run([sys.executable,str(ROOT/'tools/fp0_cohort_diagnostics.py'),
+                            '--checkpoint',str(source),'--manifest',str(evaluation/'fixed64_manifest.json'),
+                            '--out',str(diag)],cwd=ROOT,check=True)
         canonical=evaluation/(label+'_canonical.json')
         if not canonical.exists():
             command=[sys.executable,str(ROOT/'tools/phase30a_fixed_cohort_eval.py'),
