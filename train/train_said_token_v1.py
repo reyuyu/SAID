@@ -370,8 +370,6 @@ def main():
     if args.arm == ARM_T0 and args.lambda_rec != 0.0:
         raise SystemExit('T0_said_token_only must run with --lambda_rec 0')
 
-    if args.resume:
-        raise SystemExit('fix_v2 requires shared_init; resume is unsupported (RNG/data-position restoration not implemented)')
     seed_everything(args.seed)
     rank, local_rank, world = setup_distributed()
     device = torch.device('cuda', local_rank)
@@ -537,6 +535,9 @@ def main():
             print('FIXED_COHORT n=%d sample_ids=%s' % (len(cohort['captions']),
                                                        cohort['sample_id'][:8]), flush=True)
 
+    start_epoch = 0
+    resume_step_in_epoch = -1
+    resume_source = None
     if args.resume:
         payload = torch.load(args.resume, map_location='cpu', weights_only=False)
         if payload.get('config', {}).get('arm') != args.arm:
@@ -549,7 +550,22 @@ def main():
         optimizer.load_state_dict(payload['optimizer'])
         module_optimizer.load_state_dict(payload['module_optimizer'])
         decoder_optimizer.load_state_dict(payload['decoder_optimizer'])
+        # Restore the separately frozen reference tower from its original artifact.
+        resume_source = payload.get('reference_state_path')
+        if not resume_source or not os.path.isfile(resume_source):
+            raise FileNotFoundError('resume reference_state_path missing: %s' % resume_source)
+        ref_payload = torch.load(resume_source, map_location='cpu', weights_only=False)
+        train_module.reference_visual.load_state_dict(ref_payload['reference_visual'], strict=True)
+        loaded_ref_digest = reference_fingerprint(train_module.reference_visual)
+        expected_ref_digest = payload.get('reference_visual_state_sha256') or ref_payload.get('sha256')
+        if expected_ref_digest and loaded_ref_digest != expected_ref_digest:
+            raise ValueError('resume reference fingerprint mismatch')
+        reference_digest = loaded_ref_digest
         start_step = int(payload['completed_steps'])
+        start_epoch = int(payload.get('epoch', 0))
+        resume_step_in_epoch = int(payload.get('step_in_epoch', -1))
+        if rank == 0:
+            print('RESUME_CURSOR epoch=%d next_batch=%d completed_steps=%d caption_rng=NOT_BITWISE_VERIFIED' % (start_epoch, resume_step_in_epoch + 1, start_step), flush=True)
         if rank == 0:
             print('RESUMED from %s at %d' % (args.resume, start_step), flush=True)
     else:
@@ -617,9 +633,13 @@ def main():
             torch.profiler.ProfilerActivity.CUDA], record_shapes=False, profile_memory=True)
         profiler.start()
     for epoch in range(args.epochs):
+        if args.resume and epoch < start_epoch:
+            continue
         dataset.set_epoch(epoch)
         sampler.set_epoch(epoch)
         for i, batch in enumerate(loader):
+            if args.resume and epoch == start_epoch and i <= resume_step_in_epoch:
+                continue
             if args.max_steps is not None and completed >= args.max_steps:
                 stopped = True
                 break
