@@ -462,8 +462,20 @@ def _completed_steps(run_dir):
         return None
 
 
+GATE_STEPS = 500
+GATE_I2T_R1 = 0.6058
+GATE_T2I_R1 = 0.41236
+GATE_RULE = 'COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher'
+
+
 def _conclusion(run_dir, steps):
-    """The gate verdict, recomputed from the produced evaluation files (never invented)."""
+    """The gate verdict, recomputed from the produced evaluation files (never invented).
+
+    The frozen promotion gate is defined at **500 optimizer updates only**. A continuation to a
+    longer budget is therefore not gate-decided: its numbers are reported, the gate value is
+    reported as a reference, and the verdict says so instead of pretending the 500-step rule
+    applies to a 1000-step run.
+    """
     canonical = os.path.join(run_dir, 'evaluation', '%s_step%06d_canonical.json' % (ARM, steps))
     try:
         with open(canonical, 'r', encoding='utf-8') as handle:
@@ -472,10 +484,19 @@ def _conclusion(run_dir, steps):
     except (ValueError, OSError, KeyError, TypeError) as error:
         return {'verdict': 'unknown', 'reason': 'cannot read %s (%s)' % (canonical, error)}
     i2t, t2i = inner['image2text_R1'], inner['text2image_R1']
-    passed = (i2t >= 0.6058 and t2i >= 0.41236 and (i2t > 0.6058 or t2i > 0.41236))
-    return {'verdict': 'PROMISING_AT_500' if passed else 'FAIL',
-            'coco_i2t_r1': i2t, 'coco_t2i_r1': t2i,
-            'gate': 'COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher'}
+    passed = (i2t >= GATE_I2T_R1 and t2i >= GATE_T2I_R1
+              and (i2t > GATE_I2T_R1 or t2i > GATE_T2I_R1))
+    body = {'coco_i2t_r1': i2t, 'coco_t2i_r1': t2i, 'gate': GATE_RULE,
+            'gate_applies': int(steps) == GATE_STEPS}
+    if int(steps) == GATE_STEPS:
+        body['verdict'] = 'PROMISING_AT_500' if passed else 'FAIL'
+    else:
+        body['verdict'] = 'GATE_NOT_APPLICABLE_AT_%d' % int(steps)
+        body['gate_would_say'] = 'PROMISING_AT_500' if passed else 'FAIL'
+        body['note'] = ('the frozen promotion gate is defined at %d optimizer updates; this run is '
+                        'a %d-step budget and the gate is NOT applied to it'
+                        % (GATE_STEPS, int(steps)))
+    return body
 
 
 if __name__ == '__main__':
