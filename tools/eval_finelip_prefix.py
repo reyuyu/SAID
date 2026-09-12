@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 import torch
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -30,7 +31,15 @@ def main():
         raise RuntimeError('exact two-epoch completion required before evaluation chain')
     evaluation=run/'evaluation'; evaluation.mkdir(exist_ok=True)
     exports=run/'export'; exports.mkdir(exist_ok=True)
-    for step in (0,1000,per_epoch,2*per_epoch):
+    timing_path=evaluation/'timings.json'
+    timings=json.loads(timing_path.read_text()) if timing_path.exists() else {}
+    def measured(key,command,cwd):
+        started=time.time()
+        subprocess.run(command,cwd=cwd,check=True)
+        timings[key]={'wall_seconds':time.time()-started,'started_unix':started,'gpu_count':1}
+        timing_path.write_text(json.dumps(timings,indent=2))
+    # User narrowed evaluation scope: retain update1000, do not evaluate it.
+    for step in (0,per_epoch,2*per_epoch):
         source=run/('FP0_update%06d.pt'%step)
         payload=torch.load(source,map_location='cpu',weights_only=False)
         if payload['objective']!='finelip_prefix' or payload['arm']!='FP0' or payload['optimizer_step']!=step:
@@ -50,15 +59,17 @@ def main():
                 raise ValueError('existing export differs from exact source')
         provenance={'optimizer_step':step,'parent_checkpoint':str(source),'checkpoint_sha256':file_sha(source),
                     'student_sha256':file_sha(out),'tensors':len(payload['model']),'strict_load':'PASS',
-                    'micro_step':payload['micro_step'],'sample_presentations':payload['sample_presentations']}
+                    'micro_step':payload['micro_step'],'sample_presentations':payload['sample_presentations'],
+                    'wall_seconds_since_init_checkpoint':source.stat().st_mtime-(run/'FP0_update000000.pt').stat().st_mtime,
+                    'wall_timing_scope':'checkpoint file timestamps; includes data wait and checkpoint save'}
         (evaluation/('FP0_update%d_provenance.json'%step)).write_text(json.dumps(provenance,indent=2))
         del clip,payload
         label='FP0_update%d'%step
         diag=evaluation/(label+'_diagnostics.json')
         if not diag.exists():
-            subprocess.run([sys.executable,str(ROOT/'tools/fp0_cohort_diagnostics.py'),
+            measured(label+'_diagnostics',[sys.executable,str(ROOT/'tools/fp0_cohort_diagnostics.py'),
                             '--checkpoint',str(source),'--manifest',str(evaluation/'fixed64_manifest.json'),
-                            '--out',str(diag)],cwd=ROOT,check=True)
+                            '--out',str(diag)],cwd=ROOT)
         canonical=evaluation/(label+'_canonical.json')
         if not canonical.exists():
             command=[sys.executable,str(ROOT/'tools/phase30a_fixed_cohort_eval.py'),
@@ -70,14 +81,14 @@ def main():
                      '--image_batch_size','64','--canonical','--canonical_only','--coco',
                      '--canonical_tags',str(step),'--canonical_names',label,
                      '--checkpoints',str(step)+':'+str(out),'--output',str(canonical)]
-            subprocess.run(command,cwd=ROOT,check=True)
+            measured(label+'_canonical',command,cwd=ROOT)
         urban=evaluation/(label+'_urban1k.json')
         if not urban.exists():
-            subprocess.run([sys.executable,'/root/SAID-gap-completion/tools/eval_urban1k_cls.py',
+            measured(label+'_urban1k',[sys.executable,'/root/SAID-gap-completion/tools/eval_urban1k_cls.py',
                             '--checkpoint',str(out),'--label',label,'--expect-steps',str(step),
                             '--base_model','ViT-B/16','--device','cuda','--batch_size','64',
                             '--urban_root','/root/datasets/Urban1k/Urban1k','--out',str(urban)],
-                           cwd='/root/SAID-gap-completion',check=True)
+                           cwd='/root/SAID-gap-completion')
         for path in (canonical,urban):
             json.loads(path.read_text())
         print('FP0_EVAL_DONE '+label,flush=True)

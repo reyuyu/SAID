@@ -14,4 +14,4 @@ LICENSE_NOT_IDENTIFIED / REUSE_PERMISSION_UNCONFIRMED；UPSTREAM_RUNTIME_PARITY:
 
 验证：聚合公式/可学习 scale、负 cosine、ranking 符号/公共平移/空集合、EOS/ID=0/重复前缀、累积尾部/恢复游标、两 rank 的真实 no_sync 累积梯度和 AdamW 更新。分布式更新参考使用 FP64，避免 softmax 平移不变的末层 bias 的近零舍入梯度被 AdamW eps 放大；没有扩大容差。生产核心仍 FP32。实际共享初始化 GPU 验收另核对 native CLS/EOS、40-token 形状与全主干 backward。
 
-运行与评估：tools/run_finelip_prefix.sh 新目录；先检查资源，再运行唯一两 epoch 配置，最后只评估 init/1000/epoch1/epoch2 的裸学生 CLS/EOS。COCO、Urban-1k 和现成 ShareGPT4V 固定1K结果分别命名。完整结果与预算在运行完成后写入报告。不自动延长六 epoch；UNSAID_SEMANTICS: NOT ESTABLISHED。
+运行与评估：tools/run_finelip_prefix.sh 新目录；先检查资源，再运行唯一两 epoch 配置。按用户后续要求，保留1000步checkpoint但跳过其评估，最后只评估 init/epoch1/epoch2 的裸学生 CLS/EOS。COCO、Urban-1k 和现成 ShareGPT4V 固定1K结果分别命名。完整结果与预算在运行完成后写入报告。不自动延长六 epoch；UNSAID_SEMANTICS: NOT ESTABLISHED。
