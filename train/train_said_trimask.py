@@ -528,6 +528,8 @@ def main():
     digests = {'caption_stream_sha256': None, 'sample_stream_sha256': None}
     completed = 0
     start_epoch, start_batch = 0, 0
+    start_step_of_run = 0
+    parent_digests = {}
     if args.resume:
         payload = torch.load(args.resume, map_location='cpu', weights_only=False)
         check_checkpoint_compatibility(payload, arm, objective, args.text_gate_mode,
@@ -537,14 +539,17 @@ def main():
         optimizer.load_state_dict(payload['optimizer'])
         mask_optimizer.load_state_dict(payload['mask_optimizer'])
         completed = int(payload['completed_steps'])
+        start_step_of_run = completed
         start_epoch = int(payload.get('epoch', 0))
         start_batch = int(payload.get('next_batch_index', int(payload.get('step_in_epoch', -1)) + 1))
         if completed != start_epoch * steps_per_epoch + start_batch:
             raise ValueError('resume cursor disagrees with completed steps')
         if int(payload['lr_horizon_steps']) != total_steps:
             raise ValueError('resume must preserve the LR horizon')
+        parent_digests = dict(payload.get('digests') or {})
         if rank == 0:
-            print('RESUMED from %s at %d' % (args.resume, completed), flush=True)
+            print('RESUMED from %s at %d (epoch %d, next batch index %d)'
+                  % (args.resume, completed, start_epoch, start_batch), flush=True)
     elif 0 in save_completed:
         # the shared initialisation itself, saved as step 0 before any update
         if rank == 0:
@@ -557,6 +562,10 @@ def main():
     t_start = time.time()
     compute_times = []
     stopped = False
+    replay_caption_digest = hashlib.sha256()
+    replay_sample_digest = hashlib.sha256()
+    replay_view_digest = hashlib.sha256()
+    replay_verified = not args.resume
     for epoch in range(args.epochs):
         if epoch < start_epoch:
             continue
@@ -564,7 +573,28 @@ def main():
         sampler.set_epoch(epoch)
         for i, batch in enumerate(loader):
             if epoch == start_epoch and i < start_batch:
+                # the batch is produced anyway, so every worker consumes exactly the random draws it
+                # consumed in the parent run and the caption stream stays aligned; it is not trained
+                # on. The digests below prove the alignment against the parent checkpoint.
+                replay_caption_digest.update(('\n'.join(batch['caption_said'])).encode('utf-8'))
+                replay_sample_digest.update(batch['sample_id'].numpy().tobytes())
+                replay_view_digest.update(batch['view_b_resample_size'].numpy().tobytes())
+                replay_view_digest.update(batch['view_b_blur_sigma'].numpy().tobytes())
                 continue
+            if not replay_verified:
+                if rank == 0:
+                    expected = parent_digests.get('caption_stream_sha256')
+                    if expected and replay_caption_digest.hexdigest() != expected:
+                        raise RuntimeError('resume replay mismatch: the replayed caption stream does '
+                                           'not match the parent checkpoint digest')
+                    sample_expected = parent_digests.get('sample_stream_sha256')
+                    if sample_expected and replay_sample_digest.hexdigest() != sample_expected:
+                        raise RuntimeError('resume replay mismatch: the replayed sample stream does '
+                                           'not match the parent checkpoint digest')
+                    print('REPLAY_VERIFIED skipped_batches=%d caption_sha=%s sample_sha=%s'
+                          % (i, replay_caption_digest.hexdigest(),
+                             replay_sample_digest.hexdigest()), flush=True)
+                replay_verified = True
             if args.max_steps is not None and completed >= args.max_steps:
                 stopped = True
                 break
@@ -669,6 +699,8 @@ def main():
             'epochs': args.epochs, 'wall_sec': time.time() - t_start,
             'mean_sec_per_step': sum(compute_times) / max(len(compute_times), 1),
             'steps_per_epoch': steps_per_epoch, 'lr_horizon_steps': total_steps,
+            'resume_parent': args.resume, 'resume_start_step': start_step_of_run,
+            'replay_verified': bool(replay_verified),
             'initial_state_sha256': initial_digest,
             'caption_stream_sha256': caption_digest.hexdigest(),
             'sample_stream_sha256': sample_digest.hexdigest(),

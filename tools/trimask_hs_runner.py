@@ -218,6 +218,11 @@ def main():
     parser.add_argument('--run-dir', required=True)
     parser.add_argument('--init-state', default=SHARED_INIT_DEFAULT)
     parser.add_argument('--steps', type=int, default=500)
+    parser.add_argument('--resume', default=None,
+                        help='continue from this checkpoint (default: train from the shared init)')
+    parser.add_argument('--save-steps', dest='save_steps', default=None,
+                        help='default: 0,20,100,250,<steps> for a fresh run and 750,<steps> when '
+                             '--resume is given')
     parser.add_argument('--python', default='/root/miniconda3/envs/said-smartclip/bin/python')
     parser.add_argument('--torchrun', default='torchrun',
                         help='a bare name means "the torchrun next to --python"; PATH is never '
@@ -238,6 +243,10 @@ def main():
     run_dir = os.path.abspath(args.run_dir)
     os.makedirs(run_dir, exist_ok=True)
     args.torchrun = resolve_torchrun(args.python, args.torchrun)
+    if args.save_steps is None:
+        args.save_steps = ('750,%d' % args.steps) if args.resume \
+            else ('0,20,100,250,%d' % args.steps)
+    save_steps = args.save_steps
     status_path = os.path.join(run_dir, 'run_status.json')
     log_path = os.path.join(run_dir, 'runner.log')
     lock_path = args.lock_file or (run_dir + '.lock')
@@ -269,6 +278,7 @@ def main():
                      arm=ARM, objective=OBJECTIVE, text_gate_mode=GATE_MODE,
                      lambda_sparse_t=args.lambda_sparse_t, max_steps=args.steps,
                      run_dir=run_dir, completed_steps=0, exit_codes={},
+                     resume=args.resume, save_steps=save_steps,
                      attempt=int(previous.get('attempt') or 0) + 1,
                      attempt_history=history[-5:], lock_file=lock_path, phases=phases,
                      **reset)
@@ -303,11 +313,13 @@ def main():
                           '--weight_decay', '1e-2', '--warmup_length', str(args.warmup_length),
                           '--seed', '0', '--init_state', args.init_state,
                           '--output_dir', run_dir, '--max_steps', str(args.steps),
-                          '--save_completed_steps', '0,20,100,250,%d' % args.steps,
+                          '--save_completed_steps', save_steps,
                           '--log_every', '10', '--heavy_log_every', '25',
-                          '--grad_health_steps', '1,20,100,250,%d' % args.steps,
+                          '--grad_health_steps', str(args.steps),
                           '--grad_checkpoint_views', '1', '--num_workers', '8',
                           '--amp_dtype', 'bf16']
+            if args.resume:
+                train_argv += ['--resume', args.resume]
             write_status(status_path, phase='training', commands={'train': sanitise_argv(train_argv)})
             exit_codes['train'] = run_command(train_argv, log_path, env=env)
             write_status(status_path, train_exit_code=exit_codes['train'],
