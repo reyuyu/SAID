@@ -65,6 +65,11 @@ def write_status(path, **fields):
     return payload
 
 
+# fields that describe one attempt and must never leak from an earlier failed run into a new one
+ATTEMPT_FIELDS = ('train_exit_code', 'export_exit_code', 'coco_exit_code', 'urban_exit_code',
+                  'failure_reason', 'checkpoint_problems', 'checkpoint_verified', 'conclusion')
+
+
 def sanitise_argv(argv):
     """The command actually run, with anything credential-looking removed."""
     cleaned, redact_next = [], False
@@ -244,13 +249,29 @@ def main():
     lock = acquire_lock(lock_path, clear_stale=args.clear_stale_lock)
     started = time.time()
     try:
+        previous = {}
+        if os.path.exists(status_path):
+            try:
+                with open(status_path, 'r', encoding='utf-8') as handle:
+                    previous = json.load(handle)
+            except (ValueError, OSError):
+                previous = {}
+        history = list(previous.get('attempt_history') or [])
+        if previous.get('phase') in ('failed', 'complete'):
+            history.append({'phase': previous.get('phase'),
+                            'finished_at': previous.get('finished_at'),
+                            'exit_codes': previous.get('exit_codes'),
+                            'failure_reason': previous.get('failure_reason')})
+        reset = {field: None for field in ATTEMPT_FIELDS}
         write_status(status_path, run_id=args.run_id, phase='starting', pid=os.getpid(),
                      started_at=started,
                      started_at_iso=time.strftime('%Y-%m-%dT%H:%M:%S%z', time.localtime(started)),
                      arm=ARM, objective=OBJECTIVE, text_gate_mode=GATE_MODE,
                      lambda_sparse_t=args.lambda_sparse_t, max_steps=args.steps,
-                     run_dir=run_dir, completed_steps=0, exit_codes={}, conclusion=None,
-                     lock_file=lock_path, phases=phases)
+                     run_dir=run_dir, completed_steps=0, exit_codes={},
+                     attempt=int(previous.get('attempt') or 0) + 1,
+                     attempt_history=history[-5:], lock_file=lock_path, phases=phases,
+                     **reset)
         if 'train' in phases:
             ok, detail = gpu_report()
             write_status(status_path, gpu_check=detail, gpu_ok=bool(ok))
