@@ -304,7 +304,7 @@ def input_dependency_diagnostics(ddp_model, cohort, device):
             results['diag_u_gate_kept'] = float(gate.sum(dim=-1).mean())
             results['diag_u_gate_unsaid'] = float(m_u.sum(dim=-1).mean())
             results['diag_gate_overlap_with_permuted'] = float(
-                (gate[permutation] * gate).sum(dim=-1).mean() / float(module.k_said))
+                (gate[permutation] * gate).sum(dim=-1).mean() / gate.sum(dim=-1).clamp_min(1).float().mean())
             results['diag_router_logit_std'] = float(scored['logits'].detach().std())
             results['diag_empty_text'] = int(empty.sum())
             results['diag_n_images'] = int(rows)
@@ -323,6 +323,8 @@ def main():
                              'and 0.0 for T0')
     parser.add_argument('--n_slots', type=int, default=N_SLOTS)
     parser.add_argument('--k_said', type=int, default=K_SAID)
+    parser.add_argument('--mask_mode', choices=['fixed_topk','adaptive_sigmoid'], default='fixed_topk')
+    parser.add_argument('--gate_threshold', type=float, default=0.5)
     parser.add_argument('--router_tau', type=float, default=0.07)
     parser.add_argument('--router_dim', type=int, default=128)
     parser.add_argument('--surrogate_eta', type=float, default=0.1)
@@ -365,6 +367,8 @@ def main():
         args.base_model = 'ViT-B/16'
     elif args.base_model == 'L14':
         args.base_model = 'ViT-L/14'
+    if args.mask_mode == 'adaptive_sigmoid':
+        args.k_said = None
     if args.lambda_rec is None:
         args.lambda_rec = ARM_LAMBDA_REC[args.arm]
     if args.arm == ARM_T0 and args.lambda_rec != 0.0:
@@ -386,7 +390,7 @@ def main():
 
     train_module = SaidTokenV1Module(model, rank=rank, arm=args.arm, lambda_rec=args.lambda_rec,
                                      margin=args.margin, n_slots=args.n_slots,
-                                     k_said=args.k_said, router_dim=args.router_dim,
+                                     k_said=args.k_said, mask_mode=args.mask_mode, gate_threshold=args.gate_threshold, router_dim=args.router_dim,
                                      router_tau=args.router_tau, surrogate_eta=args.surrogate_eta,
                                      seed=args.module_seed,
                                      grad_checkpoint_views=bool(args.grad_checkpoint_views),
@@ -457,6 +461,8 @@ def main():
         'pair_ownership': 'local image rows x global text candidates',
         'ddp_scaling': 'W*(local_i2t_sum+local_t2i_sum)/M; W*local_rec_sum/V',
         'arm': args.arm,
+        'mask_mode': args.mask_mode,
+        'gate_threshold': args.gate_threshold,
         'objective_line': 'L = L_Said + %g * L_rec' % args.lambda_rec,
         'lambda_rec': args.lambda_rec,
         'absent_by_design': [

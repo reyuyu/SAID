@@ -182,7 +182,13 @@ class TokenRouter(nn.Module):
             return (left @ right.T).permute(0, 2, 1) / tau
 
 
-def hard_gate(logits, k=K_SAID):
+def hard_gate(logits, k=K_SAID, mode="fixed_topk", threshold=0.5):
+    if mode == "adaptive_sigmoid":
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError("gate threshold must be in [0,1]")
+        return (torch.sigmoid(logits) >= threshold).to(logits.dtype)
+    if mode != "fixed_topk":
+        raise ValueError("unknown mask mode: %s" % mode)
     if not 0 <= k <= logits.shape[-1]:
         raise ValueError('invalid selected slot count')
     order = torch.argsort(-logits, dim=-1, stable=True)[..., :k]
@@ -244,8 +250,9 @@ def surrogate_said_score(visual_all, text_all, router_logits, eta=SURROGATE_ETA,
 
 
 class PairwiseScorer:
-    def __init__(self, module, tau=ROUTER_TAU, eta=SURROGATE_ETA, k_said=K_SAID):
+    def __init__(self, module, tau=ROUTER_TAU, eta=SURROGATE_ETA, k_said=K_SAID, mask_mode="fixed_topk", gate_threshold=0.5):
         self.module, self.tau, self.eta, self.k_said = module, tau, eta, k_said
+        self.mask_mode, self.gate_threshold = mask_mode, gate_threshold
 
     def prepare(self, visual_all, text_all):
         with torch.autocast(device_type=visual_all.device.type, enabled=False):
@@ -265,7 +272,7 @@ class PairwiseScorer:
                 c = _similarity_grid(visual, text)
                 logits = (projected_visual @ projected_text.T).permute(0, 2, 1) / self.tau
                 valid = text_valid[None]
-            gate = hard_gate(logits, self.k_said)
+            gate = hard_gate(logits, self.k_said, self.mask_mode, self.gate_threshold)
             hard, v2t, t2v = hard_from_grid(c, gate, valid)
             soft = soft_from_grid(c, logits, valid, self.eta)
             return {'score': hard + (soft - soft.detach()), 'hard': hard,
@@ -372,7 +379,8 @@ class SaidTokenV1Module(nn.Module):
     def __init__(self, clip_model, rank: int = 0, arm: str = ARM_T1, lambda_rec: float = LAMBDA_REC,
                  margin: float = MARGIN, n_slots: int = N_SLOTS, k_said: int = K_SAID,
                  router_dim: int = ROUTER_DIM, router_tau: float = ROUTER_TAU,
-                 surrogate_eta: float = SURROGATE_ETA, seed: int = 0,
+                 surrogate_eta: float = SURROGATE_ETA,
+                 mask_mode: str = "fixed_topk", gate_threshold: float = 0.5, seed: int = 0,
                  grad_checkpoint_views: bool = False, chunk_image: int = 8,
                  chunk_text: int = 32, checkpoint_pairwise: bool = True):
         super().__init__()
@@ -384,7 +392,9 @@ class SaidTokenV1Module(nn.Module):
         self.lambda_rec = float(lambda_rec)
         self.margin = float(margin)
         self.n_slots = int(n_slots)
-        self.k_said = int(k_said)
+        self.k_said = int(k_said) if k_said is not None else None
+        self.mask_mode = mask_mode
+        self.gate_threshold = float(gate_threshold)
         self.router_tau = float(router_tau)
         self.surrogate_eta = float(surrogate_eta)
         self.grad_checkpoint_views = bool(grad_checkpoint_views)
@@ -412,7 +422,7 @@ class SaidTokenV1Module(nn.Module):
         if hasattr(clip_model, 'logit_scale'):
             clip_model.logit_scale.requires_grad_(False)
         self.scorer = PairwiseScorer(self, tau=self.router_tau, eta=self.surrogate_eta,
-                                     k_said=self.k_said)
+                                     k_said=self.k_said if self.k_said is not None else 0, mask_mode=self.mask_mode, gate_threshold=self.gate_threshold)
 
     # -- invariants ---------------------------------------------------------- #
     def train(self, mode: bool = True):
