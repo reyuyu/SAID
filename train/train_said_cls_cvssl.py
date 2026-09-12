@@ -389,19 +389,40 @@ def main():
         if payload.get('config', {}).get('arm') != args.arm:
             raise ValueError('resume arm mismatch: %r vs %r'
                              % (payload.get('config', {}).get('arm'), args.arm))
+        if int(payload['lr_horizon_steps']) != total_steps:
+            raise ValueError('resume must preserve the LR horizon: checkpoint %r vs run %r'
+                             % (payload['lr_horizon_steps'], total_steps))
         model.load_state_dict(payload['model'])
         optimizer.load_state_dict(payload['optimizer'])
         mask_optimizer.load_state_dict(payload['mask_optimizer'])
         start_step = int(payload['completed_steps'])
+        # continuation cursor: the parent stopped after training batch `step_in_epoch`, so the run
+        # must resume at the NEXT batch of the same epoch. Restarting the loop from batch 0 would
+        # silently retrain on data the parent already saw, which is not a continuation.
+        start_epoch = int(payload.get('epoch', 0))
+        start_batch = int(payload.get('next_batch_index',
+                                      int(payload.get('step_in_epoch', -1)) + 1))
+        if start_step != start_epoch * steps_per_epoch + start_batch:
+            raise ValueError('resume cursor disagrees with completed steps: %d != %d * %d + %d'
+                             % (start_step, start_epoch, steps_per_epoch, start_batch))
+        parent_digests = dict(payload.get('digests') or {})
         if rank == 0:
-            print('RESUMED from %s at completed step %d' % (args.resume, start_step), flush=True)
+            print('RESUMED from %s at completed step %d (epoch %d, next batch index %d)'
+                  % (args.resume, start_step, start_epoch, start_batch), flush=True)
     else:
         start_step = 0
+        start_epoch = 0
+        start_batch = 0
+        parent_digests = {}
 
     caption_digest = hashlib.sha256()
     sample_digest = hashlib.sha256()
     view_digest = hashlib.sha256()
     image_id_digest = hashlib.sha256()
+    replay_caption_digest = hashlib.sha256()
+    replay_sample_digest = hashlib.sha256()
+    replay_view_digest = hashlib.sha256()
+    replay_verified = False
     view_pixels_sha = None
     completed = start_step
     t_start = time.time()
@@ -409,9 +430,39 @@ def main():
     stopped = False
 
     for epoch in range(args.epochs):
+        if epoch < start_epoch:
+            continue
         dataset.set_epoch(epoch)
         sampler.set_epoch(epoch)
         for i, batch in enumerate(loader):
+            if epoch == start_epoch and i < start_batch:
+                # the batch is still produced by the loader, so every worker consumes exactly the
+                # random draws it consumed in the parent run and the caption stream stays aligned;
+                # it is simply not trained on. The digests prove the alignment.
+                replay_caption_digest.update(('\n'.join(batch['caption_said'])).encode('utf-8'))
+                replay_sample_digest.update(batch['sample_id'].numpy().tobytes())
+                replay_view_digest.update(batch['view_b_resample_size'].numpy().tobytes())
+                replay_view_digest.update(batch['view_b_blur_sigma'].numpy().tobytes())
+                continue
+            if not replay_verified:
+                if rank == 0:
+                    expected_caption = parent_digests.get('caption_stream_sha256')
+                    expected_sample = parent_digests.get('sample_stream_sha256')
+                    expected_view = parent_digests.get('view_b_param_stream_sha256')
+                    if expected_caption and replay_caption_digest.hexdigest() != expected_caption:
+                        raise RuntimeError('resume replay mismatch: the replayed caption stream does '
+                                           'not match the parent checkpoint digest')
+                    if expected_sample and replay_sample_digest.hexdigest() != expected_sample:
+                        raise RuntimeError('resume replay mismatch: the replayed sample stream does '
+                                           'not match the parent checkpoint digest')
+                    if expected_view and replay_view_digest.hexdigest() != expected_view:
+                        raise RuntimeError('resume replay mismatch: the replayed view-b parameters do '
+                                           'not match the parent checkpoint digest')
+                    print('REPLAY_VERIFIED skipped_batches=%d caption_sha=%s sample_sha=%s view_sha=%s'
+                          % (i, replay_caption_digest.hexdigest(),
+                             replay_sample_digest.hexdigest(), replay_view_digest.hexdigest()),
+                          flush=True)
+                replay_verified = True
             if args.max_steps is not None and completed >= args.max_steps:
                 stopped = True
                 break
@@ -491,6 +542,8 @@ def main():
                     'completed_steps': completed,
                     'epoch': epoch,
                     'step_in_epoch': i,
+                    'next_batch_index': i + 1,
+                    'resume_parent': args.resume,
                     'phase': 'said-cls-cvssl-v0.1',
                     'objective': 'said_cls_cvssl',
                     'config': config,
@@ -525,6 +578,10 @@ def main():
             'wall_sec': time.time() - t_start,
             'mean_sec_per_step': sum(compute_times) / max(len(compute_times), 1),
             'steps_per_epoch': steps_per_epoch, 'lr_horizon_steps': total_steps,
+            'resume_parent': args.resume,
+            'resume_start_step': start_step,
+            'resume_start_batch_index': start_batch,
+            'replay_verified': bool(replay_verified),
             'initial_state_sha256': initial_digest,
             'caption_stream_sha256': caption_digest.hexdigest(),
             'sample_stream_sha256': sample_digest.hexdigest(),
