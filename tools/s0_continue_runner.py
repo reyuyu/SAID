@@ -158,6 +158,12 @@ def main():
     parser.add_argument('--init-state', default=SHARED_INIT)
     parser.add_argument('--steps', type=int, default=1000)
     parser.add_argument('--save-steps', dest='save_steps', default=None)
+    parser.add_argument('--grad-probe-steps', dest='grad_probe_steps', default='',
+                        help="steps at which to run the trainer's gradient probe. Default '' (no "
+                             'probe), which is what the frozen S0 run used: the probe keeps several '
+                             'retained backward graphs alive and OOMed all four ranks at 79.1/79.3 '
+                             'GiB when it was scheduled at step 750. It yields diagnostics only, so '
+                             'the continuation runs without it rather than changing the budget.')
     parser.add_argument('--python', default='/root/miniconda3/envs/said-smartclip/bin/python')
     parser.add_argument('--torchrun', default='torchrun')
     parser.add_argument('--nproc', type=int, default=4)
@@ -248,9 +254,10 @@ def main():
                           '--seed', '0', '--init_state', args.init_state,
                           '--output_dir', run_dir, '--max_steps', str(args.steps),
                           '--save_completed_steps', save_steps, '--log_every', '10',
-                          '--grad_probe_steps', '750,1000', '--grad_checkpoint_views', '1',
-                          '--num_workers', '8', '--amp_dtype', 'bf16',
+                          '--grad_checkpoint_views', '1', '--num_workers', '8', '--amp_dtype', 'bf16',
                           '--resume', args.resume]
+            if args.grad_probe_steps:
+                train_argv += ['--grad_probe_steps', args.grad_probe_steps]
             write_status(status_path, phase='training',
                          commands={'train': sanitise_argv(train_argv)})
             exit_codes['train'] = run_command(train_argv, log_path, env=env)
