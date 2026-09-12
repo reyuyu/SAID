@@ -1,0 +1,1270 @@
+{
+  "experiment": "FineLIP-Prefix FP0",
+  "description": "依据FineLIP方法与公开技术说明独立实现的前缀监督基线",
+  "config": {
+    "init_state": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+    "output_dir": "/root/SAID-finelip-prefix-v01/runs_salu/finelip_prefix/FP0_20260912",
+    "resume": null,
+    "batch_size": 32,
+    "accumulation": 4,
+    "workers": 8,
+    "schedule_epochs": 6,
+    "run_epochs": 2,
+    "seed": 0,
+    "base_model": "ViT-B/16",
+    "arm": "FP0",
+    "objective": "finelip_prefix",
+    "world_size": 4,
+    "dataset_size": 1245901,
+    "loader_batches": 9734,
+    "updates_per_epoch": 2434,
+    "lr_horizon_updates": 14604,
+    "warmup_updates": 200,
+    "matching_candidates": 128,
+    "slots": 39,
+    "backbone_lr": 1e-06,
+    "aggregation_lr": 0.0002,
+    "weight_decay": 0.01,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "margin": 0.2,
+    "reduction": "SUM",
+    "init_sha256": "c1a4a2be1b212f38677f729a4f03160d788a6d6db79ca5021a43022af0f5cba8",
+    "initial_state_digest": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "manifest": "/root/datasets/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "manifest_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "upstream_sha": "2118312c9d640c71904379e90129649a46e6f2dd",
+    "git_sha": "2dec367f7e2194365a504b690c7db6ebab502602",
+    "implementation": "independent mathematical implementation",
+    "UPSTREAM_RUNTIME_PARITY": "NOT RUN",
+    "LICENSE_NOT_IDENTIFIED": true,
+    "REUSE_PERMISSION_UNCONFIRMED": true,
+    "precision": "FP32 master; bf16 backbone; FP32 aggregation/scoring/ranking",
+    "worker_rng": "fresh workers per epoch; explicit rank/epoch generator; replay consumed batches on resume",
+    "caption_stream_matches_legacy": "NOT CLAIMED"
+  },
+  "run_summary": {
+    "optimizer_step": 4868,
+    "micro_step": 19468,
+    "sample_presentations": 2491808,
+    "wall_seconds": 2409.4893441200256,
+    "compute_seconds": 2165.641859769821,
+    "gpu_compute_hours": 2.406268733077579,
+    "config": {
+      "init_state": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+      "output_dir": "/root/SAID-finelip-prefix-v01/runs_salu/finelip_prefix/FP0_20260912",
+      "resume": null,
+      "batch_size": 32,
+      "accumulation": 4,
+      "workers": 8,
+      "schedule_epochs": 6,
+      "run_epochs": 2,
+      "seed": 0,
+      "base_model": "ViT-B/16",
+      "arm": "FP0",
+      "objective": "finelip_prefix",
+      "world_size": 4,
+      "dataset_size": 1245901,
+      "loader_batches": 9734,
+      "updates_per_epoch": 2434,
+      "lr_horizon_updates": 14604,
+      "warmup_updates": 200,
+      "matching_candidates": 128,
+      "slots": 39,
+      "backbone_lr": 1e-06,
+      "aggregation_lr": 0.0002,
+      "weight_decay": 0.01,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "margin": 0.2,
+      "reduction": "SUM",
+      "init_sha256": "c1a4a2be1b212f38677f729a4f03160d788a6d6db79ca5021a43022af0f5cba8",
+      "initial_state_digest": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+      "manifest": "/root/datasets/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+      "manifest_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+      "upstream_sha": "2118312c9d640c71904379e90129649a46e6f2dd",
+      "git_sha": "2dec367f7e2194365a504b690c7db6ebab502602",
+      "implementation": "independent mathematical implementation",
+      "UPSTREAM_RUNTIME_PARITY": "NOT RUN",
+      "LICENSE_NOT_IDENTIFIED": true,
+      "REUSE_PERMISSION_UNCONFIRMED": true,
+      "precision": "FP32 master; bf16 backbone; FP32 aggregation/scoring/ranking",
+      "worker_rng": "fresh workers per epoch; explicit rank/epoch generator; replay consumed batches on resume",
+      "caption_stream_matches_legacy": "NOT CLAIMED"
+    }
+  },
+  "retrieval_curve": [
+    {
+      "label": "FP0_update0",
+      "coco": {
+        "image2text_R1": 0.517,
+        "image2text_R10": 0.8428,
+        "image2text_R5": 0.7662,
+        "text2image_R1": 0.32692,
+        "text2image_R10": 0.68232,
+        "text2image_R5": 0.5776
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.6820000410079956,
+          "R10": 0.9440000653266907,
+          "R5": 0.8950000405311584
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.527999997138977,
+          "R10": 0.8480000495910645,
+          "R5": 0.7740000486373901
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.544,
+            "image2text_R10": 0.859,
+            "image2text_R5": 0.774,
+            "text2image_R1": 0.514,
+            "text2image_R10": 0.814,
+            "text2image_R5": 0.748
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.544,
+              "image2text_R10": 0.859,
+              "image2text_R5": 0.774,
+              "text2image_R1": 0.514,
+              "text2image_R10": 0.814,
+              "text2image_R5": 0.748
+            },
+            "patch_global": {
+              "image2text_R1": 0.128,
+              "image2text_R10": 0.346,
+              "image2text_R5": 0.273,
+              "text2image_R1": 0.322,
+              "text2image_R10": 0.681,
+              "text2image_R5": 0.573
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.1920928955078125e-07
+        },
+        "fixed_sparse": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.746,
+            "image2text_R10": 0.953,
+            "image2text_R5": 0.92,
+            "text2image_R1": 0.74,
+            "text2image_R10": 0.949,
+            "text2image_R5": 0.918
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.746,
+              "image2text_R10": 0.953,
+              "image2text_R5": 0.92,
+              "text2image_R1": 0.74,
+              "text2image_R10": 0.949,
+              "text2image_R5": 0.918
+            },
+            "patch_global": {
+              "image2text_R1": 0.135,
+              "image2text_R10": 0.36,
+              "image2text_R5": 0.29,
+              "text2image_R1": 0.496,
+              "text2image_R10": 0.835,
+              "text2image_R5": 0.758
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.1920928955078125e-07
+        },
+        "full_dense": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.758,
+            "image2text_R10": 0.952,
+            "image2text_R5": 0.92,
+            "text2image_R1": 0.776,
+            "text2image_R10": 0.973,
+            "text2image_R5": 0.948
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.758,
+              "image2text_R10": 0.952,
+              "image2text_R5": 0.92,
+              "text2image_R1": 0.776,
+              "text2image_R10": 0.973,
+              "text2image_R5": 0.948
+            },
+            "patch_global": {
+              "image2text_R1": 0.126,
+              "image2text_R10": 0.356,
+              "image2text_R5": 0.264,
+              "text2image_R1": 0.542,
+              "text2image_R10": 0.879,
+              "text2image_R5": 0.786
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.1920928955078125e-07
+        }
+      },
+      "provenance": {
+        "optimizer_step": 0,
+        "parent_checkpoint": "/root/SAID-finelip-prefix-v01/runs_salu/finelip_prefix/FP0_20260912/FP0_update000000.pt",
+        "checkpoint_sha256": "9039cea3596b9375ea692f921acd8e4eb4fe0f43e22126ab4b4233c1077b3e76",
+        "student_sha256": "9ea7a0202dc5d5052b1891ff7fe557b4289b3c245fb87d910959eadf41add675",
+        "tensors": 317,
+        "strict_load": "PASS",
+        "micro_step": 0,
+        "sample_presentations": 0,
+        "wall_seconds_since_init_checkpoint": 0.0,
+        "wall_timing_scope": "checkpoint file timestamps; includes data wait and checkpoint save"
+      },
+      "diagnostics": {
+        "optimizer_step": 0,
+        "n": 64,
+        "scope": "training-cohort diagnostic; not canonical retrieval",
+        "image_scale": 1.0,
+        "text_scale": 1.0,
+        "image_slot_cos": 0.9996235370635986,
+        "text_slot_cos": 0.9983554482460022,
+        "image_aggregation_entropy": 5.270930290222168,
+        "text_aggregation_entropy": 4.284483909606934,
+        "native_cls_eos": {
+          "I2T_R1": 0.953125,
+          "T2I_R1": 0.953125
+        },
+        "finegrain": {
+          "I2T_R1": 0.40625,
+          "T2I_R1": 0.65625
+        }
+      }
+    },
+    {
+      "label": "FP0_update2434",
+      "coco": {
+        "image2text_R1": 0.5678,
+        "image2text_R10": 0.875,
+        "image2text_R5": 0.799,
+        "text2image_R1": 0.39864,
+        "text2image_R10": 0.75572,
+        "text2image_R5": 0.65728
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8250000476837158,
+          "R10": 0.9810000658035278,
+          "R5": 0.9570000171661377
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8040000200271606,
+          "R10": 0.9690000414848328,
+          "R5": 0.9450000524520874
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.675,
+            "image2text_R10": 0.969,
+            "image2text_R5": 0.924,
+            "text2image_R1": 0.671,
+            "text2image_R10": 0.956,
+            "text2image_R5": 0.895
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.675,
+              "image2text_R10": 0.969,
+              "image2text_R5": 0.924,
+              "text2image_R1": 0.671,
+              "text2image_R10": 0.956,
+              "text2image_R5": 0.895
+            },
+            "patch_global": {
+              "image2text_R1": 0.396,
+              "image2text_R10": 0.809,
+              "image2text_R5": 0.707,
+              "text2image_R1": 0.51,
+              "text2image_R10": 0.89,
+              "text2image_R5": 0.8
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        },
+        "fixed_sparse": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.905,
+            "image2text_R10": 0.996,
+            "image2text_R5": 0.991,
+            "text2image_R1": 0.895,
+            "text2image_R10": 0.99,
+            "text2image_R5": 0.978
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.905,
+              "image2text_R10": 0.996,
+              "image2text_R5": 0.991,
+              "text2image_R1": 0.895,
+              "text2image_R10": 0.99,
+              "text2image_R5": 0.978
+            },
+            "patch_global": {
+              "image2text_R1": 0.525,
+              "image2text_R10": 0.924,
+              "image2text_R5": 0.837,
+              "text2image_R1": 0.774,
+              "text2image_R10": 0.975,
+              "text2image_R5": 0.949
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        },
+        "full_dense": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.964,
+            "image2text_R10": 1.0,
+            "image2text_R5": 0.999,
+            "text2image_R1": 0.956,
+            "text2image_R10": 0.999,
+            "text2image_R5": 0.998
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.964,
+              "image2text_R10": 1.0,
+              "image2text_R5": 0.999,
+              "text2image_R1": 0.956,
+              "text2image_R10": 0.999,
+              "text2image_R5": 0.998
+            },
+            "patch_global": {
+              "image2text_R1": 0.798,
+              "image2text_R10": 0.985,
+              "image2text_R5": 0.961,
+              "text2image_R1": 0.854,
+              "text2image_R10": 0.996,
+              "text2image_R5": 0.983
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        }
+      },
+      "provenance": {
+        "optimizer_step": 2434,
+        "parent_checkpoint": "/root/SAID-finelip-prefix-v01/runs_salu/finelip_prefix/FP0_20260912/FP0_update002434.pt",
+        "checkpoint_sha256": "92ac0369fd00231e62c47fab9cff4b2c8dcbc237913200497c81edba9d1c3174",
+        "student_sha256": "b4a98663653b5d577a4f1e883ef09ef2934c60b9623527b1b888cad56a2a5a7f",
+        "tensors": 317,
+        "strict_load": "PASS",
+        "micro_step": 9734,
+        "sample_presentations": 1245904,
+        "wall_seconds_since_init_checkpoint": 1208.0259358882904,
+        "wall_timing_scope": "checkpoint file timestamps; includes data wait and checkpoint save"
+      },
+      "diagnostics": {
+        "optimizer_step": 2434,
+        "n": 64,
+        "scope": "training-cohort diagnostic; not canonical retrieval",
+        "image_scale": 1.055643916130066,
+        "text_scale": 1.0467242002487183,
+        "image_slot_cos": 0.9998705387115479,
+        "text_slot_cos": 0.9992687106132507,
+        "image_aggregation_entropy": 2.065458297729492,
+        "text_aggregation_entropy": 3.5549676418304443,
+        "native_cls_eos": {
+          "I2T_R1": 0.984375,
+          "T2I_R1": 0.984375
+        },
+        "finegrain": {
+          "I2T_R1": 1.0,
+          "T2I_R1": 0.984375
+        }
+      }
+    },
+    {
+      "label": "FP0_update4868",
+      "coco": {
+        "image2text_R1": 0.5652,
+        "image2text_R10": 0.873,
+        "image2text_R5": 0.7988,
+        "text2image_R1": 0.39904,
+        "text2image_R10": 0.76412,
+        "text2image_R5": 0.66036
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8350000381469727,
+          "R10": 0.9810000658035278,
+          "R5": 0.9640000462532043
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8170000314712524,
+          "R10": 0.971000075340271,
+          "R5": 0.9450000524520874
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.712,
+            "image2text_R10": 0.974,
+            "image2text_R5": 0.933,
+            "text2image_R1": 0.681,
+            "text2image_R10": 0.961,
+            "text2image_R5": 0.912
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.712,
+              "image2text_R10": 0.974,
+              "image2text_R5": 0.933,
+              "text2image_R1": 0.681,
+              "text2image_R10": 0.961,
+              "text2image_R5": 0.912
+            },
+            "patch_global": {
+              "image2text_R1": 0.44,
+              "image2text_R10": 0.852,
+              "image2text_R5": 0.752,
+              "text2image_R1": 0.535,
+              "text2image_R10": 0.899,
+              "text2image_R5": 0.83
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        },
+        "fixed_sparse": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.915,
+            "image2text_R10": 0.998,
+            "image2text_R5": 0.993,
+            "text2image_R1": 0.908,
+            "text2image_R10": 0.99,
+            "text2image_R5": 0.981
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.915,
+              "image2text_R10": 0.998,
+              "image2text_R5": 0.993,
+              "text2image_R1": 0.908,
+              "text2image_R10": 0.99,
+              "text2image_R5": 0.981
+            },
+            "patch_global": {
+              "image2text_R1": 0.601,
+              "image2text_R10": 0.958,
+              "image2text_R5": 0.894,
+              "text2image_R1": 0.793,
+              "text2image_R10": 0.98,
+              "text2image_R5": 0.963
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        },
+        "full_dense": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.97,
+            "image2text_R10": 1.0,
+            "image2text_R5": 0.999,
+            "text2image_R1": 0.971,
+            "text2image_R10": 0.999,
+            "text2image_R5": 0.998
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.97,
+              "image2text_R10": 1.0,
+              "image2text_R5": 0.999,
+              "text2image_R1": 0.971,
+              "text2image_R10": 0.999,
+              "text2image_R5": 0.998
+            },
+            "patch_global": {
+              "image2text_R1": 0.852,
+              "image2text_R10": 0.994,
+              "image2text_R5": 0.979,
+              "text2image_R1": 0.867,
+              "text2image_R10": 0.998,
+              "text2image_R5": 0.992
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        }
+      },
+      "provenance": {
+        "optimizer_step": 4868,
+        "parent_checkpoint": "/root/SAID-finelip-prefix-v01/runs_salu/finelip_prefix/FP0_20260912/FP0_update004868.pt",
+        "checkpoint_sha256": "7321ffbab1e4f8e0ba01c5c3731c473d2d0c08ae06b93d63a1244ee5c64d4e37",
+        "student_sha256": "65687562d87e6d65907ab9d5172f96c5d44ad74176611a30cf2577dc2ba99261",
+        "tensors": 317,
+        "strict_load": "PASS",
+        "micro_step": 19468,
+        "sample_presentations": 2491808,
+        "wall_seconds_since_init_checkpoint": 2408.766808986664,
+        "wall_timing_scope": "checkpoint file timestamps; includes data wait and checkpoint save"
+      },
+      "diagnostics": {
+        "optimizer_step": 4868,
+        "n": 64,
+        "scope": "training-cohort diagnostic; not canonical retrieval",
+        "image_scale": 1.0565252304077148,
+        "text_scale": 1.0429726839065552,
+        "image_slot_cos": 0.9999515414237976,
+        "text_slot_cos": 0.9994548559188843,
+        "image_aggregation_entropy": 2.0003509521484375,
+        "text_aggregation_entropy": 3.4479146003723145,
+        "native_cls_eos": {
+          "I2T_R1": 1.0,
+          "T2I_R1": 1.0
+        },
+        "finegrain": {
+          "I2T_R1": 1.0,
+          "T2I_R1": 0.984375
+        }
+      }
+    }
+  ],
+  "reused_baselines": {
+    "Initial": {
+      "coco": {
+        "image2text_R1": 0.517,
+        "image2text_R10": 0.8428,
+        "image2text_R5": 0.7662,
+        "text2image_R1": 0.32692,
+        "text2image_R10": 0.68232,
+        "text2image_R5": 0.5776
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.544,
+            "image2text_R10": 0.859,
+            "image2text_R5": 0.774,
+            "text2image_R1": 0.514,
+            "text2image_R10": 0.814,
+            "text2image_R5": 0.748
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.544,
+              "image2text_R10": 0.859,
+              "image2text_R5": 0.774,
+              "text2image_R1": 0.514,
+              "text2image_R10": 0.814,
+              "text2image_R5": 0.748
+            },
+            "patch_global": {
+              "image2text_R1": 0.128,
+              "image2text_R10": 0.346,
+              "image2text_R5": 0.273,
+              "text2image_R1": 0.322,
+              "text2image_R10": 0.681,
+              "text2image_R5": 0.573
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.1920928955078125e-07
+        },
+        "fixed_sparse": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.746,
+            "image2text_R10": 0.953,
+            "image2text_R5": 0.92,
+            "text2image_R1": 0.74,
+            "text2image_R10": 0.949,
+            "text2image_R5": 0.918
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.746,
+              "image2text_R10": 0.953,
+              "image2text_R5": 0.92,
+              "text2image_R1": 0.74,
+              "text2image_R10": 0.949,
+              "text2image_R5": 0.918
+            },
+            "patch_global": {
+              "image2text_R1": 0.135,
+              "image2text_R10": 0.36,
+              "image2text_R5": 0.29,
+              "text2image_R1": 0.496,
+              "text2image_R10": 0.835,
+              "text2image_R5": 0.758
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.1920928955078125e-07
+        },
+        "full_dense": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.758,
+            "image2text_R10": 0.952,
+            "image2text_R5": 0.92,
+            "text2image_R1": 0.776,
+            "text2image_R10": 0.973,
+            "text2image_R5": 0.948
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.758,
+              "image2text_R10": 0.952,
+              "image2text_R5": 0.92,
+              "text2image_R1": 0.776,
+              "text2image_R10": 0.973,
+              "text2image_R5": 0.948
+            },
+            "patch_global": {
+              "image2text_R1": 0.126,
+              "image2text_R10": 0.356,
+              "image2text_R5": 0.264,
+              "text2image_R1": 0.542,
+              "text2image_R10": 0.879,
+              "text2image_R5": 0.786
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.1920928955078125e-07
+        }
+      },
+      "source_path": "/root/SAID-gap-completion/outputs/cvssl_screening/S0_canonical.json",
+      "source_sha256": "7268994c508c35be1582abe36dea8193daa42c3b17de265ea0f90688690f092c",
+      "checkpoint_sha256": "c1a4a2be1b212f38677f729a4f03160d788a6d6db79ca5021a43022af0f5cba8",
+      "manifest_sha256": "c521192355dd7ee5479a6816bd5a3f918318b3af6f1b2704a4f3ed5aeeed8ae9",
+      "image_representation": "legacy_cls",
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.6820000410079956,
+          "R10": 0.9440000653266907,
+          "R5": 0.8950000405311584
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.527999997138977,
+          "R10": 0.8480000495910645,
+          "R5": 0.7740000486373901
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "urban_source_path": "/root/SAID-gap-completion/outputs/cvssl_screening/baseline_urban1k/Initial_urban1k.json",
+      "urban_source_sha256": "1caf532df32cc37a56ec3767fe98e7f98fb553c30b11c222d644b032fd62212c"
+    },
+    "S0@500": {
+      "coco": {
+        "image2text_R1": 0.6058,
+        "image2text_R10": 0.8906,
+        "image2text_R5": 0.822,
+        "text2image_R1": 0.41236,
+        "text2image_R10": 0.7662,
+        "text2image_R5": 0.67092
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.662,
+            "image2text_R10": 0.952,
+            "image2text_R5": 0.894,
+            "text2image_R1": 0.635,
+            "text2image_R10": 0.929,
+            "text2image_R5": 0.858
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.662,
+              "image2text_R10": 0.952,
+              "image2text_R5": 0.894,
+              "text2image_R1": 0.635,
+              "text2image_R10": 0.929,
+              "text2image_R5": 0.858
+            },
+            "patch_global": {
+              "image2text_R1": 0.106,
+              "image2text_R10": 0.339,
+              "image2text_R5": 0.243,
+              "text2image_R1": 0.399,
+              "text2image_R10": 0.762,
+              "text2image_R5": 0.668
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.7881393432617188e-07
+        },
+        "fixed_sparse": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.901,
+            "image2text_R10": 0.997,
+            "image2text_R5": 0.982,
+            "text2image_R1": 0.879,
+            "text2image_R10": 0.982,
+            "text2image_R5": 0.971
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.901,
+              "image2text_R10": 0.997,
+              "image2text_R5": 0.982,
+              "text2image_R1": 0.879,
+              "text2image_R10": 0.982,
+              "text2image_R5": 0.971
+            },
+            "patch_global": {
+              "image2text_R1": 0.107,
+              "image2text_R10": 0.354,
+              "image2text_R5": 0.258,
+              "text2image_R1": 0.658,
+              "text2image_R10": 0.914,
+              "text2image_R5": 0.86
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.7881393432617188e-07
+        },
+        "full_dense": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.965,
+            "image2text_R10": 0.999,
+            "image2text_R5": 0.998,
+            "text2image_R1": 0.962,
+            "text2image_R10": 0.999,
+            "text2image_R5": 0.997
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.965,
+              "image2text_R10": 0.999,
+              "image2text_R5": 0.998,
+              "text2image_R1": 0.962,
+              "text2image_R10": 0.999,
+              "text2image_R5": 0.997
+            },
+            "patch_global": {
+              "image2text_R1": 0.45,
+              "image2text_R10": 0.822,
+              "image2text_R5": 0.706,
+              "text2image_R1": 0.723,
+              "text2image_R10": 0.965,
+              "text2image_R5": 0.924
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 1.7881393432617188e-07
+        }
+      },
+      "source_path": "/root/SAID-gap-completion/outputs/cvssl_screening/S0_canonical.json",
+      "source_sha256": "7268994c508c35be1582abe36dea8193daa42c3b17de265ea0f90688690f092c",
+      "checkpoint_sha256": "758dcdd2a9112d54ccb8784e211d329297209c5d7be26cd7a89e68185867c743",
+      "manifest_sha256": "c521192355dd7ee5479a6816bd5a3f918318b3af6f1b2704a4f3ed5aeeed8ae9",
+      "image_representation": "legacy_cls",
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8700000643730164,
+          "R10": 0.9880000352859497,
+          "R5": 0.971000075340271
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8420000672340393,
+          "R10": 0.9810000658035278,
+          "R5": 0.9670000672340393
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "urban_source_path": "/root/SAID-gap-completion/outputs/cvssl_screening/baseline_urban1k/S0_step500_urban1k.json",
+      "urban_source_sha256": "effe0163e75d3b5d1a724bff0846be757c75768c177bf26466f0cc01bf95c0eb"
+    },
+    "T1_fix_v2@500": {
+      "coco": {
+        "image2text_R1": 0.5728,
+        "image2text_R10": 0.8788,
+        "image2text_R5": 0.808,
+        "text2image_R1": 0.37816,
+        "text2image_R10": 0.7368,
+        "text2image_R5": 0.631
+      },
+      "sharegpt4v1k": {
+        "first_sentence": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.622,
+            "image2text_R10": 0.917,
+            "image2text_R5": 0.851,
+            "text2image_R1": 0.581,
+            "text2image_R10": 0.875,
+            "text2image_R5": 0.8
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.622,
+              "image2text_R10": 0.917,
+              "image2text_R5": 0.851,
+              "text2image_R1": 0.581,
+              "text2image_R10": 0.875,
+              "text2image_R5": 0.8
+            },
+            "patch_global": {
+              "image2text_R1": 0.207,
+              "image2text_R10": 0.641,
+              "image2text_R5": 0.489,
+              "text2image_R1": 0.461,
+              "text2image_R10": 0.799,
+              "text2image_R5": 0.734
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        },
+        "fixed_sparse": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.834,
+            "image2text_R10": 0.983,
+            "image2text_R5": 0.964,
+            "text2image_R1": 0.831,
+            "text2image_R10": 0.974,
+            "text2image_R5": 0.948
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.834,
+              "image2text_R10": 0.983,
+              "image2text_R5": 0.964,
+              "text2image_R1": 0.831,
+              "text2image_R10": 0.974,
+              "text2image_R5": 0.948
+            },
+            "patch_global": {
+              "image2text_R1": 0.409,
+              "image2text_R10": 0.839,
+              "image2text_R5": 0.728,
+              "text2image_R1": 0.696,
+              "text2image_R10": 0.945,
+              "text2image_R5": 0.898
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        },
+        "full_dense": {
+          "global_pool": "mean",
+          "image_representation": "legacy_cls",
+          "patch_global_source": "model_api",
+          "retrieval": {
+            "image2text_R1": 0.891,
+            "image2text_R10": 0.997,
+            "image2text_R5": 0.991,
+            "text2image_R1": 0.883,
+            "text2image_R10": 0.996,
+            "text2image_R5": 0.989
+          },
+          "retrieval_by_representation": {
+            "legacy_cls": {
+              "image2text_R1": 0.891,
+              "image2text_R10": 0.997,
+              "image2text_R5": 0.991,
+              "text2image_R1": 0.883,
+              "text2image_R10": 0.996,
+              "text2image_R5": 0.989
+            },
+            "patch_global": {
+              "image2text_R1": 0.594,
+              "image2text_R10": 0.941,
+              "image2text_R5": 0.864,
+              "text2image_R1": 0.747,
+              "text2image_R10": 0.974,
+              "text2image_R5": 0.938
+            }
+          },
+          "z_patch_global_vs_training_formula_max_abs_diff": 5.960464477539063e-08
+        }
+      },
+      "source_path": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/evaluation/T1_fix_v2_step500_canonical.json",
+      "source_sha256": "fd63e3cb33b34f03985bf282445ddcaa706d92c4d0e503587dce97282f2855c9",
+      "checkpoint_sha256": "3c45ed84f3a4729451210094dd719bddec7eddfec055f66b2da321907cb57b45",
+      "manifest_sha256": "c521192355dd7ee5479a6816bd5a3f918318b3af6f1b2704a4f3ed5aeeed8ae9",
+      "image_representation": "legacy_cls",
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.7640000581741333,
+          "R10": 0.9630000591278076,
+          "R5": 0.9290000200271606
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.7130000591278076,
+          "R10": 0.9380000233650208,
+          "R5": 0.8940000534057617
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "urban_source_path": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/evaluation/T1_fix_v2_step500_urban1k.json",
+      "urban_source_sha256": "7533949b57f0ce3099e9d373a7d0c8a5ccca2cf16787f29131369e49e9aa9fed"
+    },
+    "AM@500": {
+      "coco": {
+        "image2text_R1": 0.5502,
+        "image2text_R10": 0.867,
+        "image2text_R5": 0.7858,
+        "text2image_R1": 0.38868,
+        "text2image_R10": 0.74156,
+        "text2image_R5": 0.64192
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.7280000448226929,
+          "R10": 0.9530000686645508,
+          "R5": 0.9200000166893005
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.7510000467300415,
+          "R10": 0.9430000185966492,
+          "R5": 0.9080000519752502
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      },
+      "source_path": "/root/SAID-token-adaptive-v01/runs_salu/said_token_adaptive_v01/am_step500_20260912/evaluation",
+      "checkpoint_sha256": "d2808213118105d75c2fc9d3332a63d3c21f9c510df8fe18c3574486bd575841"
+    }
+  },
+  "initial_coco_delta_vs_historical": {
+    "image2text_R1": 0.0,
+    "image2text_R10": 0.0,
+    "image2text_R5": 0.0,
+    "text2image_R1": 0.0,
+    "text2image_R10": 0.0,
+    "text2image_R5": 0.0
+  },
+  "epoch_tail_records": [
+    {
+      "optimizer_step": 2434,
+      "micro_step": 9734,
+      "epoch": 0,
+      "next_batch_index": 9734,
+      "actual_group_size": 2,
+      "group_samples": 208,
+      "sample_presentations": 1245904,
+      "micro_sum_group_average": 1.7302201986312866,
+      "group_objective": 1.729933596254987,
+      "pair_mean_display_only": 0.00015327960654068804,
+      "I2T_sum": 0.7746843099594116,
+      "T2I_sum": 0.955535888671875,
+      "I2T_active": 0.0013288447909284196,
+      "T2I_active": 0.0010630758327427356,
+      "positive_score": 0.9089010678804837,
+      "negative_score": 0.03349562117091989,
+      "alpha_micro_last": 0.9998972673104581,
+      "backbone_lr": 9.418634224877701e-07,
+      "aggregation_lr": 0.00018837268449755403,
+      "image_scale": 1.055643916130066,
+      "text_scale": 1.0467242002487183,
+      "last_micro_seconds": 0.10631942749023438,
+      "update_wall_seconds": 0.2234034538269043,
+      "peak_memory_gib": 7.840751647949219,
+      "core_dtype": "torch.float32",
+      "backbone_autocast": "bfloat16"
+    },
+    {
+      "optimizer_step": 4868,
+      "micro_step": 19468,
+      "epoch": 1,
+      "next_batch_index": 9734,
+      "actual_group_size": 2,
+      "group_samples": 208,
+      "sample_presentations": 2491808,
+      "micro_sum_group_average": 1.5308946371078491,
+      "group_objective": 1.5308946371078491,
+      "pair_mean_display_only": 0.00013562142426540123,
+      "I2T_sum": 0.6231821775436401,
+      "T2I_sum": 0.907712459564209,
+      "I2T_active": 0.00039865343727852584,
+      "T2I_active": 0.000885896527285613,
+      "positive_score": 0.9771104959341196,
+      "negative_score": 0.03129755259405038,
+      "alpha_micro_last": 1.0,
+      "backbone_lr": 7.625776633679252e-07,
+      "aggregation_lr": 0.00015251553267358505,
+      "image_scale": 1.0565252304077148,
+      "text_scale": 1.0429726839065552,
+      "last_micro_seconds": 0.10208988189697266,
+      "update_wall_seconds": 0.21857309341430664,
+      "peak_memory_gib": 7.840751647949219,
+      "core_dtype": "torch.float32",
+      "backbone_autocast": "bfloat16"
+    }
+  ],
+  "implementation_sha": "2dec367f7e2194365a504b690c7db6ebab502602",
+  "report_parent_sha": "89ae4661d1547b8109bf8e3c753b27656212f1b8",
+  "validation": {
+    "formula_ddp_cli": {
+      "stdout": "......                                                                   [100%]\n=============================== warnings summary ===============================\nmodel/longclip.py:6\n  /root/SAID-finelip-prefix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.\n    from pkg_resources import packaging\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n6 passed, 1 warning in 6.32s\nusage: train_finelip_prefix.py [-h] --init_state INIT_STATE --output_dir\n                               OUTPUT_DIR [--resume RESUME]\n                               [--batch_size BATCH_SIZE]\n                               [--accumulation ACCUMULATION]\n                               [--workers WORKERS]\n                               [--schedule_epochs SCHEDULE_EPOCHS]\n                               [--run_epochs RUN_EPOCHS] [--seed SEED]\n\noptions:\n  -h, --help            show this help message and exit\n  --init_state INIT_STATE\n  --output_dir OUTPUT_DIR\n  --resume RESUME\n  --batch_size BATCH_SIZE\n  --accumulation ACCUMULATION\n  --workers WORKERS\n  --schedule_epochs SCHEDULE_EPOCHS\n  --run_epochs RUN_EPOCHS\n  --seed SEED\n",
+      "stderr": "/root/SAID-finelip-prefix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.\n  from pkg_resources import packaging\n",
+      "exit": 0
+    },
+    "native_gpu": {
+      "stdout": "INIT_STATE_LOADED /root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt tensors=317 mask_net_absent=0 ignored=[]\n{\"native_interface\": \"PASS\", \"actual_backbone_backward\": \"PASS\", \"master_dtype\": \"torch.float32\", \"aggregation_dtype\": \"torch.float32\", \"score_dtype\": \"torch.float32\", \"output_shape\": [2, 40, 512], \"initial_state_digest\": \"caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf\", \"unconnected_trainable_parameters\": []}\n",
+      "stderr": "/root/SAID-finelip-prefix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.\n  from pkg_resources import packaging\n",
+      "exit": 0
+    }
+  },
+  "NOT_RUN": [
+    "UPSTREAM_RUNTIME_PARITY",
+    "update1000 evaluation omitted at user request",
+    "full formal worker-resume experiment",
+    "six-epoch training"
+  ],
+  "license_status": [
+    "LICENSE_NOT_IDENTIFIED",
+    "REUSE_PERMISSION_UNCONFIRMED"
+  ],
+  "no_upstream_code_runtime_dependency": true,
+  "UNSAID_SEMANTICS": "NOT ESTABLISHED",
+  "training_peak_memory_gib": 7.840751647949219,
+  "median_logged_update_wall_seconds": 0.490215539932251,
+  "evaluation_timings": {
+    "FP0_update0_diagnostics": {
+      "wall_seconds": 17.58858633041382,
+      "started_unix": 1789226502.529441,
+      "gpu_count": 1
+    },
+    "FP0_update0_canonical": {
+      "wall_seconds": 205.4037733078003,
+      "started_unix": 1789226520.1183183,
+      "gpu_count": 1
+    },
+    "FP0_update0_urban1k": {
+      "wall_seconds": 18.3019962310791,
+      "started_unix": 1789226725.522397,
+      "gpu_count": 1
+    },
+    "FP0_update2434_diagnostics": {
+      "wall_seconds": 8.96617603302002,
+      "started_unix": 1789226751.161287,
+      "gpu_count": 1
+    },
+    "FP0_update2434_canonical": {
+      "wall_seconds": 204.45793342590332,
+      "started_unix": 1789226760.1278098,
+      "gpu_count": 1
+    },
+    "FP0_update2434_urban1k": {
+      "wall_seconds": 17.751128673553467,
+      "started_unix": 1789226964.5860958,
+      "gpu_count": 1
+    },
+    "FP0_update4868_diagnostics": {
+      "wall_seconds": 9.40979266166687,
+      "started_unix": 1789226989.2498064,
+      "gpu_count": 1
+    },
+    "FP0_update4868_canonical": {
+      "wall_seconds": 203.99320483207703,
+      "started_unix": 1789226998.6600125,
+      "gpu_count": 1
+    },
+    "FP0_update4868_urban1k": {
+      "wall_seconds": 18.49331045150757,
+      "started_unix": 1789227202.6535723,
+      "gpu_count": 1
+    }
+  },
+  "baseline_budget": {
+    "optimizer_updates": 500,
+    "sample_presentations": 512000,
+    "matching_candidates": 1024,
+    "timing": {
+      "T1_fix_v2@500": {
+        "wall_seconds": 1022.2694272994995,
+        "estimated_synchronized_gpu_hours": 1.10527792374293,
+        "timing_scope": "CUDA synchronized train step including transfer/tokenization/forward/backward/optimizer/global logs; excludes loader wait, checkpoint save and cohort diagnostics"
+      },
+      "AM@500": {
+        "wall_seconds": 1015.4026358127594,
+        "estimated_synchronized_gpu_hours": 1.0961238275633918,
+        "timing_scope": "CUDA synchronized train step including transfer/tokenization/forward/backward/optimizer/global logs; excludes loader wait, checkpoint save and cohort diagnostics"
+      },
+      "S0@500": {
+        "gpu_hours": "NOT RECORDED IN REUSED METRICS"
+      }
+    }
+  },
+  "paper_reference": {
+    "url": "https://arxiv.org/html/2504.01916v1",
+    "version": "arXiv v1, Table 1",
+    "FineLIP_B16_Urban1k_I2T": [
+      0.907,
+      0.983,
+      0.995
+    ],
+    "FineLIP_B16_Urban1k_T2I": [
+      0.893,
+      0.975,
+      0.987
+    ],
+    "training_epochs": 6,
+    "comparison": "external paper reference, not same training budget or prefix protocol"
+  }
+}
