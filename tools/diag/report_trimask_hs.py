@@ -76,6 +76,27 @@ def coco_block(payload, name):
             't2i_r5': inner['text2image_R5'], 't2i_r10': inner['text2image_R10']}
 
 
+def normalise_baseline_coco(block):
+    """The frozen baseline JSONs use ``image2text_R1``-style keys; normalise to the r1/r5/r10 form."""
+    result = {}
+    for key, value in block.items():
+        name = key.replace('image2text_', 'i2t_').replace('text2image_', 't2i_').lower()
+        result[name] = value
+    return result
+
+
+def flatten(value, prefix=''):
+    """Flatten a nested JSON value so two runs can be compared field by field."""
+    if isinstance(value, dict):
+        out = {}
+        for key, item in value.items():
+            out.update(flatten(item, prefix + '/' + str(key)))
+        return out
+    if isinstance(value, list):
+        return {prefix: json.dumps(value, sort_keys=True)}
+    return {prefix: value}
+
+
 def urban_block(payload):
     block = payload['urban1k']
     return {'i2t_r1': block['image2text']['R1'], 'i2t_r5': block['image2text']['R5'],
@@ -131,8 +152,7 @@ def main():
     urban_metrics = urban_block(urban)
 
     s0_source = read(parsed.s0)['retrieval']['S0@500']
-    s0 = {'coco': {key.replace('image2text_', 'i2t_').replace('text2image_', 't2i_'):
-                   value for key, value in s0_source['coco'].items()},
+    s0 = {'coco': normalise_baseline_coco(s0_source['coco']),
           'urban': {'i2t_r1': s0_source['urban1k']['image2text']['R1'],
                     'i2t_r5': s0_source['urban1k']['image2text']['R5'],
                     'i2t_r10': s0_source['urban1k']['image2text']['R10'],
@@ -142,8 +162,7 @@ def main():
     soft_results = read(parsed.soft)
     soft_retrieval = soft_results['retrieval'][
         next(key for key in soft_results['retrieval'] if key.startswith('S0_TriMask@'))]
-    soft = {'coco': {key.replace('image2text_', 'i2t_').replace('text2image_', 't2i_'):
-                     value for key, value in soft_retrieval['coco'].items()},
+    soft = {'coco': normalise_baseline_coco(soft_retrieval['coco']),
             'urban': {'i2t_r1': soft_retrieval['urban1k']['image2text']['R1'],
                       'i2t_r5': soft_retrieval['urban1k']['image2text']['R5'],
                       'i2t_r10': soft_retrieval['urban1k']['image2text']['R10'],
@@ -314,6 +333,20 @@ def main():
                  '两个评估的 checkpoint_sha256 都等于导出裸学生的 SHA256。\n')
     lines.append('仅使用 normalize(encode_image(I)) 与 normalize(encode_text(C))；'
                  '没有 mask reranking、三路分数融合、教师或 decoder。\n')
+
+    lines.append('\n## 运行过程与可复现性\n')
+    lines.append('- 第一次启动失败：runner 当时从 PATH 解析到 `/usr/local/bin/torchrun`（python3.11，'
+                 '没有 ftfy），训练脚本以错误解释器启动立刻报错。runner 保留真实退出码、把状态写成 '
+                 '`failed` 并**没有**继续评估不存在的 checkpoint；修复为“取 `--python` 同目录的 '
+                 'torchrun”后重新启动，训练恰好 500 次更新。\n')
+    lines.append('- 评估阶段用修复后的 runner 又跑了一次（`--phases export,coco,urban`）：'
+                 '两次的指标逐位相同，唯一不同的字段是写进 JSON 的 `git_head`'
+                 '（`d002086` → `74073f4`），所以文件哈希不同但**指标可复现**。\n')
+    lines.append('- `run_status.json` 由 runner 原子写入（临时文件 + `os.replace`），包含 phase、'
+                 '各阶段真实退出码、checkpoint 校验结果与最终结论；本次尝试记在 `attempt`，'
+                 '上一次完成的尝试保留在 `attempt_history`。\n')
+    lines.append('- 只读面板与训练完全解耦：它在 127.0.0.1:8765 提供服务，不 import torch、'
+                 '不加载 checkpoint、不占 GPU，训练跑完后面板继续以只读方式展示完成结果。\n')
 
     lines.append('\n## 归因边界与限制\n')
     lines.append('- 本轮**同时**把文本门从软重加权换成硬前向+直通梯度，并加入了 λ_sparse_T = 0.2，'
