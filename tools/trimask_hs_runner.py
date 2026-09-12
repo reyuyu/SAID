@@ -179,6 +179,24 @@ def verify_coco_environment():
     return annotations, images
 
 
+def resolve_torchrun(python, torchrun):
+    """Resolve ``torchrun`` next to ``--python`` instead of trusting ``PATH``.
+
+    The host has an unrelated ``/usr/local/bin/torchrun`` (python3.11) earlier in ``PATH``; using it
+    launches the training script in the wrong interpreter and fails on the first import. A bare name
+    therefore means "the launcher that ships with ``--python``".
+    """
+    if os.sep in torchrun or (os.altsep and os.altsep in torchrun):
+        if not os.path.exists(torchrun):
+            raise SystemExit('--torchrun %s does not exist' % torchrun)
+        return torchrun
+    sibling = os.path.join(os.path.dirname(os.path.abspath(python)), torchrun)
+    if not os.path.exists(sibling):
+        raise SystemExit('cannot find %r next to --python %s; pass an absolute --torchrun'
+                         % (torchrun, python))
+    return sibling
+
+
 def run_command(argv, log_path, env=None):
     """Run a subprocess, tee its output into the runner log, and return the real exit code."""
     with open(log_path, 'a', encoding='utf-8') as handle:
@@ -196,7 +214,9 @@ def main():
     parser.add_argument('--init-state', default=SHARED_INIT_DEFAULT)
     parser.add_argument('--steps', type=int, default=500)
     parser.add_argument('--python', default='/root/miniconda3/envs/said-smartclip/bin/python')
-    parser.add_argument('--torchrun', default='torchrun')
+    parser.add_argument('--torchrun', default='torchrun',
+                        help='a bare name means "the torchrun next to --python"; PATH is never '
+                             'trusted because an unrelated system torchrun may come first')
     parser.add_argument('--nproc', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=256)
     parser.add_argument('--epochs', type=int, default=3)
@@ -212,6 +232,7 @@ def main():
 
     run_dir = os.path.abspath(args.run_dir)
     os.makedirs(run_dir, exist_ok=True)
+    args.torchrun = resolve_torchrun(args.python, args.torchrun)
     status_path = os.path.join(run_dir, 'run_status.json')
     log_path = os.path.join(run_dir, 'runner.log')
     lock_path = args.lock_file or (run_dir + '.lock')

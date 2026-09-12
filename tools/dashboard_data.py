@@ -232,16 +232,26 @@ class DashboardData:
             tail = self.reader.read(self.registry.path(run_id, 'log'),
                                     after=cursor['available'] - 1, limit=1)
             last = tail['records'][0] if tail['records'] else None
+        warnings = list(cursor['warnings'])
+        if status:
+            phase = status.get('phase', 'unknown')
+        elif last:
+            # records exist but no status file: this run was not launched by the runner, so its
+            # phase genuinely cannot be known -- it is reported as unknown, never as "not started"
+            phase = 'unknown'
+            warnings.append('缺少 run_status.json（该 run 不是由 runner 启动），阶段无法判定')
+        else:
+            phase = 'not_started'
         return {
             'run_id': run_id, 'label': record['label'], 'demo': record['demo'],
             'directory': record['directory'],
-            'phase': (status or {}).get('phase', 'unknown' if status else 'not_started'),
-            'phase_label': PHASE_LABELS.get((status or {}).get('phase', 'not_started'), '未知'),
+            'phase': phase,
+            'phase_label': PHASE_LABELS.get(phase, '未知'),
             'completed_steps': (status or {}).get('completed_steps',
                                                   (last or {}).get('completed_steps')),
             'objective': record['objective'] or (status or {}).get('objective'),
             'arm': record['arm'] or (status or {}).get('arm'),
-            'warnings': cursor['warnings'],
+            'warnings': warnings,
         }
 
     # ---------------------------------------------------------------- status
