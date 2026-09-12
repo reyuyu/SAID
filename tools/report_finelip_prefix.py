@@ -33,6 +33,12 @@ def main():
     am_c=read(am/'T1_fix_v2_step500_canonical.json')['canonical']['T1_fix_v2_step500']
     baselines['AM@500']={'coco':am_c['coco_val2017'],'urban1k':read(am/'T1_fix_v2_step500_urban1k.json')['urban1k'],
                          'source_path':str(am),'checkpoint_sha256':am_c['checkpoint_sha256']}
+    baseline_timing={}
+    for name,record in [('T1_fix_v2@500',prior['run_summary']),('AM@500',read(am.parent/'run_summary.json'))]:
+        baseline_timing[name]={'wall_seconds':record['wall_sec'],
+                              'estimated_synchronized_gpu_hours':record['mean_sec_per_step']*record['completed_steps']*4/3600,
+                              'timing_scope':record['timing_scope']}
+    baseline_timing['S0@500']={'gpu_hours':'NOT RECORDED IN REUSED METRICS'}
     metrics=[json.loads(line) for line in (run/'metrics.jsonl').read_text().splitlines()]
     tails=[x for x in metrics if x['next_batch_index']==config['loader_batches']]
     if len(tails)!=2 or any(x['actual_group_size']!=2 for x in tails): raise ValueError('missing exact epoch tails')
@@ -47,6 +53,9 @@ def main():
             'no_upstream_code_runtime_dependency':True,'UNSAID_SEMANTICS':'NOT ESTABLISHED',
             'training_peak_memory_gib':max(x['peak_memory_gib'] for x in metrics),
             'median_logged_update_wall_seconds':statistics.median(x['update_wall_seconds'] for x in metrics if x['optimizer_step']>20),
+            'evaluation_timings':read(ev/'timings.json'),
+            'baseline_budget':{'optimizer_updates':500,'sample_presentations':512000,'matching_candidates':1024,
+                               'timing':baseline_timing},
             'paper_reference':{'url':'https://arxiv.org/html/2504.01916v1','version':'arXiv v1, Table 1',
                                'FineLIP_B16_Urban1k_I2T':[.907,.983,.995],'FineLIP_B16_Urban1k_T2I':[.893,.975,.987],
                                'training_epochs':6,'comparison':'external paper reference, not same training budget or prefix protocol'}}
@@ -70,8 +79,10 @@ def main():
         text.append('')
     text+=['ShareGPT4V 固定1K 的 first_sentence/fixed_sparse/full_dense 各自结果完整保存在 results.json 的 sharegpt4v1k 字段，不混入 COCO 或 Urban-1k。','',
            '## 预算与性能','',
-           'FP0@1000呈现512000对，checkpoint保留但按用户要求不评估。第一/第二epoch分别呈现1245904/2491808对，超过旧S0/T1/AM@500的512000对预算；候选池为128对1024，不能称等预算比较。','',
+           'FP0@1000呈现512000对，checkpoint保留但按用户要求不评估。第一/第二epoch分别呈现%d/%d对，超过旧S0/T1/AM@500的512000对预算；常规候选池为128对1024，不能称等预算比较。FP0每epoch末的最后一个microbatch有80个全局样本；按实际大小处理。'%(tails[0]['sample_presentations'],summary['sample_presentations']),'',
+           '复用的T1/AM同步训练计时分别折算为%.3f/%.3f GPU小时，计时范围见JSON；S0原复用指标中无GPU耗时，标记NOT RECORDED。'%(baseline_timing['T1_fix_v2@500']['estimated_synchronized_gpu_hours'],baseline_timing['AM@500']['estimated_synchronized_gpu_hours']),'',
            '两epoch呈现 %d 对（含DistributedSampler每epoch为对齐rank补齐的3条重复），训练墙钟 %.1f 秒，累计四卡计算 %.3f GPU小时；峰值显存 %.2f GiB，日志更新耗时中位数 %.3f 秒。'%(summary['sample_presentations'],summary['wall_seconds'],summary['gpu_compute_hours'],result['training_peak_memory_gib'],result['median_logged_update_wall_seconds']),'',
+           '评估分阶段单卡墙钟记录在results.json的evaluation_timings。训练gpu_compute_hours为rank0同步计时乘四卡的估算；检查点时间戳累计耗时另在每个provenance记录，包含数据等待和保存开销。','',
            '## 固定64前缀诊断','',
            '| update | image scale | text scale | image slot cos | text slot cos | native I2T/T2I R1 | finegrain I2T/T2I R1 |',
            '|---|---|---|---|---|---|---|']
