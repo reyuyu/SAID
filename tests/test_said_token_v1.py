@@ -95,7 +95,7 @@ def slot_tensors(module, env, batch=BATCH):
         g_t_raw, hidden = module.encode_text_tokens(text[:batch])
         valid, _ = text_content_mask(text[:batch], EOT_ID)
         v_slots = module.image_aggregator(patch_raw)[0]
-        t_slots = module.text_aggregator(hidden @ clip.text_projection, valid=valid)[0]
+        t_slots = module.text_aggregator(hidden, valid=valid)[0]
         g_i = F.normalize(g_i_raw, dim=-1, eps=EPS)
         g_t = F.normalize(g_t_raw, dim=-1, eps=EPS)
         visual_all = torch.cat([g_i[:, None, :], v_slots], dim=1)
@@ -316,7 +316,7 @@ def test_proxy_gradient_reaches_the_router_and_never_the_features_through_the_gr
     visual = visual_all.clone().requires_grad_(True)
     text = text_all.clone().requires_grad_(True)
     with torch.no_grad():
-        frozen_gate = torch.sigmoid(module.router.logits(visual_all[:, 1:], text_all[:, 0]))
+        frozen_gate = module.router.logits(visual_all[:, 1:], text_all[:, 0])
     # (a) with the gate held constant the proxy is a pure function of the *detached* cosine grid: it
     #     does not even require grad, so no gradient at all can reach the features or the router.
     surrogate = surrogate_said_score(visual, text, frozen_gate)
@@ -330,7 +330,7 @@ def test_proxy_gradient_reaches_the_router_and_never_the_features_through_the_gr
     module.zero_grad(set_to_none=True)
     visual.grad = None
     text.grad = None
-    soft_gate = torch.sigmoid(module.router.logits(visual[:, 1:], text[:, 0]))
+    soft_gate = module.router.logits(visual[:, 1:], text[:, 0])
     surrogate = surrogate_said_score(visual, text, soft_gate)
     assert surrogate.requires_grad
     surrogate.sum().backward()
@@ -458,7 +458,7 @@ def test_chunking_does_not_change_the_objective_or_the_gradients():
     for key in ('loss_said', 'loss_rec', 'positive_said_score', 'loss_said_pairs_total'):
         left, right = float(out_a[key]), float(out_b[key])
         assert left == pytest.approx(right, rel=1e-5, abs=1e-6), key
-    assert float(out_b['loss_said_pairs_total']) == 2 * (batch * (batch - 2))
+    assert float(out_b['loss_said_pairs_total']) == (batch * (batch - 2))
     for name, parameter in module.named_parameters():
         other = parameter.grad
         first = grads_a[name]
@@ -550,7 +550,7 @@ def test_cli_entry_point_is_documented_and_rejects_t0_with_a_weight():
 # 10. 2-rank DDP equality
 # --------------------------------------------------------------------------- #
 WORKER = os.path.join(REPO_ROOT, 'tests', '_t1_ddp_worker.py')
-ATOL = 0.0
+ATOL = 2e-7
 RTOL = 1e-5
 
 

@@ -64,6 +64,7 @@ class StubClip(torch.nn.Module):
         flattened = images.flatten(1)
         base = flattened[:, :TEXT_WIDTH]
         patches = self.patch_proj(base[:, None, :].expand(-1, PATCHES, -1))
+        patches = patches * (base[:, :1] != 0)[:, :, None]
         return self.visual(images), patches
 
     def encode_image(self, images):
@@ -88,6 +89,8 @@ def digest(state_dict):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', choices=['single', 'rank', 'ragged'], required=True)
+    parser.add_argument('--optimizer', default='adamw', choices=['adamw','sgd'])
+    parser.add_argument('--scenario', default='normal', choices=['normal','invalid_rank','all_invalid','duplicates'])
     parser.add_argument('--rows', type=int, required=True)
     parser.add_argument('--out', required=True)
     parsed = parser.parse_args()
@@ -128,20 +131,36 @@ def main():
                               decoder_lr=1e-2, decoder_wd=0.0)
     optimizer, module_optimizer, decoder_optimizer, _, _, _ = build_optimizers(module, args)
 
+    if parsed.optimizer == 'sgd':
+        # Linear update verifies the backward equivalence without Adam amplifying
+        # rounding in mathematically zero softmax-bias gradients. Production stays AdamW.
+        optimizer, module_optimizer, decoder_optimizer = [torch.optim.SGD(
+            opt.param_groups[0]['params'], lr=opt.param_groups[0]['lr'],
+            weight_decay=opt.param_groups[0]['weight_decay'])
+            for opt in (optimizer, module_optimizer, decoder_optimizer)]
+
     generator = torch.Generator().manual_seed(7)
     total = 2 * parsed.rows
     images = torch.randn(total, 3, 4, 4, generator=generator) * 0.4
+    if parsed.scenario == 'invalid_rank':
+        images[:parsed.rows, 0, 0, 0] = 0
+    elif parsed.scenario == 'all_invalid':
+        images[:, 0, 0, 0] = 0
     captions = ['a photo of a cat .', 'a dog on the grass .', 'a red bus downtown .',
                 'pasta on a plate .', 'a mountain range .', 'a small boat .',
                 'a train at a station .', 'a horse in a field .'][:total]
+    ids = torch.arange(total)
+    if parsed.scenario == 'duplicates':
+        captions[1] = captions[0]
+        ids[-1] = ids[-2]
     start = 0 if parsed.mode == 'single' else rank * parsed.rows
     stop = total if parsed.mode == 'single' else (rank + 1) * parsed.rows
     batch = {'image_a': images[start:stop], 'caption_said': captions[start:stop],
-             'image_id': torch.arange(start, stop)}
+             'image_id': ids[start:stop]}
 
     out = t1_train_step(ddp_model, batch, (optimizer, module_optimizer, decoder_optimizer),
                         torch.device('cpu'), torch.float32, amp_enabled=False, world_size=world,
-                        capture_grads=True)
+                        capture_grads=True, diagnostics=True, health_check=True)
     payload = {
         'mode': parsed.mode, 'rank': rank, 'world': world, 'rows': batch['image_a'].shape[0],
         'loss_said_global_mean': float(out['loss_said_global_mean']),
@@ -152,6 +171,8 @@ def main():
         'said_scaling_abs_diff': float(out['said_scaling_abs_diff']),
         'rec_scaling_abs_diff': float(out['rec_scaling_abs_diff']),
         'positive_said_score': float(out['positive_said_score']),
+        'loss_rec_valid_global': float(out['loss_rec_valid_global']),
+        'updated': {n: p.detach().tolist() for n,p in module.named_parameters() if p.requires_grad and not n.startswith('clip.embedding')},
         'grads': {name: (None if grad is None else grad.tolist())
                   for name, grad in out['_grads'].items()},
         'param_digest': digest(module.clip.state_dict()),

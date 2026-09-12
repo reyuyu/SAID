@@ -29,7 +29,7 @@ Frozen specification implemented here:
   re-evaluates the router, so the mask is a function of *that* candidate text.
 * hard-forward / score-layer-backward proxy -- ``s = s_hard + (s_tilde - sg(s_tilde))`` with
   ``s_tilde`` built from a detached cosine matrix, so the forward value is exactly the hard score and
-  only the router's ``sigmoid(a)`` receives the proxy gradient. Biased straight-through proxy, not the
+  the proxy follows router logits, including their feature inputs, but never the cosine grid. Biased straight-through proxy, not the
   exact derivative of top-k.
 * Said set -- ``{g_I} u {selected slots}`` (17) against ``{32 text slots} u {g_T}`` (33), per-token
   normalised, bidirectional max-similarity match, hinge margin 0.2, mean over valid negative pairs.
@@ -119,10 +119,9 @@ class SelfAggregator(nn.Module):
                 raise ValueError('valid mask %r does not match the token axis %r'
                                  % (tuple(valid.shape), (tokens.shape[0], tokens.shape[1])))
             dead = ~valid.any(dim=-1)
-            if bool(dead.any()):
-                fallback = torch.zeros_like(valid)
-                fallback[:, 0] = True
-                valid = torch.where(dead[:, None], fallback, valid)
+            fallback = torch.zeros_like(valid)
+            fallback[:, 0] = True
+            valid = torch.where(dead[:, None], fallback, valid)
             logits = logits.masked_fill(~valid[:, None, :], float('-inf'))
         return logits.softmax(dim=-1)
 
@@ -154,215 +153,186 @@ def text_content_mask(token_ids: torch.Tensor, eot_id: int) -> Tuple[torch.Tenso
 # --------------------------------------------------------------------------- #
 # 3. router, hard score and surrogate score
 # --------------------------------------------------------------------------- #
-class TokenRouter(nn.Module):
-    """Text-conditioned selection of the 16 Said visual slots, evaluated per candidate pair."""
+def core_dtype(x):
+    # FP64 is retained only for the continuous-formula finite-difference tests.
+    return x if x.dtype == torch.float64 else x.float()
 
-    def __init__(self, dim: int, out_dim: int = ROUTER_DIM, seed: int = 0):
+
+class TokenRouter(nn.Module):
+    def __init__(self, dim, out_dim=ROUTER_DIM, seed=0):
         super().__init__()
         with isolated_rng(seed):
             self.visual = nn.Linear(dim, out_dim, bias=False)
             self.text = nn.Linear(dim, out_dim, bias=False)
 
-    def logits(self, visual_slots: torch.Tensor, text_global: torch.Tensor,
-               tau: float = ROUTER_TAU) -> torch.Tensor:
-        """``[n, m, n_slots]``: the 32 image slots of ``n`` anchors against ``m`` candidate texts.
+    def project_visual(self, slots):
+        with torch.autocast(device_type=slots.device.type, enabled=False):
+            return F.normalize(self.visual(core_dtype(slots)), dim=-1, eps=EPS)
 
-        ``a[i, j, p] = <Norm(W_V V[i, p]), Norm(W_T g_T[j])> / tau``. The query is the candidate text's
-        *native global EOS feature* ``g_T``, a single vector per candidate: there is no text-token axis
-        and therefore nothing to reduce over. The top-k is taken by the caller over the trailing
-        visual-slot axis only, and the native CLS is not in this tensor at all.
+    def project_text(self, query):
+        if query.ndim != 2:
+            raise ValueError('router query must be native global EOS [m,d]')
+        with torch.autocast(device_type=query.device.type, enabled=False):
+            return F.normalize(self.text(core_dtype(query)), dim=-1, eps=EPS)
 
-        ``W_T g_T`` is 2-D (``[m, r]``), which is what keeps the n x m pairing unambiguous: with a 3-D
-        right operand a batched matmul would broadcast the leading axes against each other and silently
-        drop the candidate dimension (measured on this build), so the shapes are asserted as well.
-        """
-        if visual_slots.dim() != 3:
-            raise ValueError('visual slots must be [n, V, d], got %r' % (tuple(visual_slots.shape),))
-        if text_global.dim() != 2:
-            raise ValueError('router query must be the native global text feature [m, d], got %r'
-                             % (tuple(text_global.shape),))
-        if visual_slots.shape[-1] != text_global.shape[-1]:
-            raise ValueError('router widths differ: %d vs %d'
-                             % (visual_slots.shape[-1], text_global.shape[-1]))
-        left = F.normalize(self.visual(visual_slots), dim=-1, eps=EPS)        # [n, V, r]
-        right = F.normalize(self.text(text_global), dim=-1, eps=EPS)          # [m, r]
-        out = torch.matmul(left, right.transpose(-1, -2)) / tau               # [n, V, m]
-        out = out.permute(0, 2, 1).contiguous()                               # [n, m, V]
-        expected = (visual_slots.shape[0], text_global.shape[0], visual_slots.shape[1])
-        if tuple(out.shape) != expected:
-            raise RuntimeError('router logits have shape %r, expected %r'
-                               % (tuple(out.shape), expected))
-        return out
+    def logits(self, visual_slots, text_global, tau=ROUTER_TAU):
+        with torch.autocast(device_type=visual_slots.device.type, enabled=False):
+            left = self.project_visual(visual_slots)
+            right = self.project_text(text_global)
+            return (left @ right.T).permute(0, 2, 1) / tau
 
 
-def hard_gate(logits: torch.Tensor, k: int = K_SAID) -> torch.Tensor:
-    """Hard 0/1 gate with exactly ``k`` ones per row, deterministic on ties.
-
-    Ties are broken by **ascending slot index** through a stable sort of the negated logits. ``topk``
-    alone is not enough for that contract: it is deterministic for a given input, but with equal values
-    it is not guaranteed to keep the lowest indices (measured here: on an all-zero row it selected the
-    last ``k`` slots). No noise is injected either -- the mask must be a reproducible function of
-    (pair, parameters), never of the random stream.
-    """
-    if logits.shape[-1] < k:
-        raise ValueError('cannot select %d slots out of %d' % (k, logits.shape[-1]))
+def hard_gate(logits, k=K_SAID):
+    if not 0 <= k <= logits.shape[-1]:
+        raise ValueError('invalid selected slot count')
     order = torch.argsort(-logits, dim=-1, stable=True)[..., :k]
-    gate = torch.zeros_like(logits).scatter(-1, order, 1.0)
-    if not bool((gate.sum(dim=-1) == float(k)).all()):
-        raise RuntimeError('the hard gate did not select exactly %d slots' % k)
-    return gate
+    return torch.zeros_like(logits).scatter(-1, order, 1.0)
 
 
-def _candidate_mask(gate: torch.Tensor) -> torch.Tensor:
-    """``[..., 1+n_slots]`` boolean candidate keep-mask: CLS/EOS always kept, masked slots dropped.
-
-    Masked slots are *removed* from the candidate set. Setting them to zero and leaving them in the
-    max would let them win whenever every legal cosine is negative.
-    """
-    keep_tail = gate > 0.5
-    leading = torch.ones_like(keep_tail[..., :1], dtype=torch.bool)
-    return torch.cat([leading, keep_tail], dim=-1)
+def _candidate_mask(gate):
+    return torch.cat([torch.ones_like(gate[..., :1], dtype=torch.bool), gate > .5], -1)
 
 
-def _similarity_grid(visual: torch.Tensor, text: torch.Tensor
-                     ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """``(v2t_grid, t2v_grid)`` as ``[n, W, m, T]`` and ``[m, T, n, W]``.
-
-    Implemented with explicit reshapes and ``bmm`` rather than ``einsum``: on this torch build
-    (2.5.1) the einsum subscript form silently summed over a token axis whenever a letter was reused
-    between the operands, producing plausible but wrong shapes. The reshape form has no naming
-    ambiguity, and the assertions below turn any layout mistake into an immediate failure.
-
-    Callers pass *blocks*, never the whole global batch, so no ``[n, W, m, T]`` tensor for the full
-    1024x1024 pair grid is ever materialised.
-    """
-    if visual.dim() != 3 or text.dim() != 3:
-        raise ValueError('expected [n, W, d] and [m, T, d], got %r and %r'
-                         % (tuple(visual.shape), tuple(text.shape)))
-    n, width, dim = visual.shape
-    m, text_width, text_dim = text.shape
-    if dim != text_dim:
-        raise ValueError('embedding widths differ: %d vs %d' % (dim, text_dim))
-    v2t = torch.bmm(visual.reshape(1, n * width, dim),
-                    text.reshape(1, m * text_width, dim).transpose(1, 2))
-    v2t = v2t.reshape(n, width, m, text_width)
-    t2v = torch.bmm(text.reshape(1, m * text_width, dim),
-                    visual.reshape(1, n * width, dim).transpose(1, 2))
-    t2v = t2v.reshape(m, text_width, n, width)
-    if v2t.shape != (n, width, m, text_width):
-        raise RuntimeError('visual->text grid layout is wrong: %r' % (tuple(v2t.shape),))
-    if t2v.shape != (m, text_width, n, width):
-        raise RuntimeError('text->visual grid layout is wrong: %r' % (tuple(t2v.shape),))
-    return v2t, t2v
+def _similarity_grid(visual, text):
+    """One matmul, canonical layout [n,m,W,T]; inputs already normalized."""
+    n, w, d = visual.shape
+    m, t, _ = text.shape
+    return (visual.reshape(n*w, d) @ text.reshape(m*t, d).T).reshape(n, w, m, t).permute(0, 2, 1, 3)
 
 
-def hard_said_score(visual_all: torch.Tensor, text_all: torch.Tensor, gate: torch.Tensor
-                    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """``s_hard`` plus its two directional parts for ``[n, m]`` anchor/candidate pairs.
-
-    ``visual_all`` is ``[n, 1+n_slots, d]`` (index 0 = native CLS), ``text_all`` is
-    ``[m, 1+n_slots, d]`` (index 0 = native EOS), ``gate`` is ``[n, m, n_slots]``.
-
-    Masked visual slots are dropped from the candidate set *before* the max: zero-filling them and
-    leaving them in the max would let them win whenever every legal cosine is negative. In the
-    visual->text direction the dropped slots are excluded by the mean's denominator instead, which
-    is algebraically the same thing and avoids a second ``[n, W, m, T]`` tensor.
-    """
-    n, width = visual_all.shape[0], visual_all.shape[1]
-    m, text_width = text_all.shape[0], text_all.shape[1]
-    visual = F.normalize(visual_all, dim=-1, eps=EPS)
-    text = F.normalize(text_all, dim=-1, eps=EPS)
-    keep = _candidate_mask(gate)                                          # [n, m, W]
-    v2t_grid, t2v_grid = _similarity_grid(visual, text)
-    # visual -> text: best text token per (visual token, candidate), then mean over kept tokens.
-    # ``best_text`` and ``kept`` are both [n, W, m]: the sum *and* the denominator run over the visual
-    # token axis W (axis 1), never over the candidate axis.
-    best_text = v2t_grid.max(dim=3).values                                # [n, W, m]
-    kept = keep.permute(0, 2, 1)                                          # [n, W, m]
-    v2t = (best_text * kept).sum(dim=1) / kept.sum(dim=1)                 # [n, m]
-    # text -> visual: best KEPT visual token per (text token, candidate), then mean over text tokens.
-    # ``keep`` is [n, m, W] and ``t2v_grid`` is [m, T, n, W], so the mask has to broadcast as
-    # [m, 1, n, W]: permuting to [m, W, n] (or to [1, m, n, W]) would line the candidate axis up
-    # against the text-token axis and mask the wrong entries.
-    mask = keep.permute(1, 0, 2).unsqueeze(1)                             # [m, 1, n, W]
-    masked = t2v_grid.masked_fill(~mask, float('-inf'))                   # [m, T, n, W]
-    t2v = masked.max(dim=3).values.mean(dim=1).permute(1, 0)              # [n, m]
-    score = v2t + t2v
-    assert score.shape == (n, m), score.shape
-    return score, v2t, t2v
+def hard_from_grid(cosine, gate, text_valid):
+    keep = _candidate_mask(gate)
+    best_text = cosine.masked_fill(~text_valid[..., None, :], -torch.inf).max(-1).values
+    v2t = (best_text * keep).sum(-1) / keep.sum(-1)
+    best_visual = cosine.masked_fill(~keep[..., :, None], -torch.inf).max(-2).values
+    t2v = (best_visual * text_valid).sum(-1) / text_valid.sum(-1)
+    return v2t + t2v, v2t, t2v
 
 
-def surrogate_said_score(visual_all: torch.Tensor, text_all: torch.Tensor,
-                         soft_gate: torch.Tensor, eta: float = SURROGATE_ETA) -> torch.Tensor:
-    """Mask-learning-only proxy from ``C_bar = C.detach()``.
+def soft_from_grid(cosine, router_logits, text_valid=None, eta=SURROGATE_ETA):
+    """Continuous approved proxy: only C is detached, never log-weight arithmetic."""
+    with torch.autocast(device_type=cosine.device.type, enabled=False):
+        c = core_dtype(cosine).detach()
+        a = core_dtype(router_logits)
+        if text_valid is None:
+            text_valid = torch.ones_like(c[..., 0, :], dtype=torch.bool)
+        log_w = torch.cat([torch.zeros_like(a[..., :1]), F.logsigmoid(a)], -1)
+        log_den = torch.logsumexp(log_w, -1)
+        maxima = c.masked_fill(~text_valid[..., None, :], -torch.inf).max(-1).values
+        v2t = (torch.softmax(log_w, -1) * maxima).sum(-1)
+        numerator = torch.logsumexp(c / eta + log_w[..., :, None], -2)
+        t2v = eta * ((numerator - log_den[..., None]) * text_valid).sum(-1) / text_valid.sum(-1)
+        return v2t + t2v
 
-        s_v2t = sum_p w_p max_q C_bar_pq / sum_p w_p
-        s_t2v = (1/|T|) sum_q eta [logsumexp_p(C_bar_pq/eta + log w_p) - logsumexp_p(log w_p)]
 
-    ``w = [1; sigmoid(a)]`` has ``1 + n_slots`` entries per pair; the extra leading weight belongs to
-    the native CLS and its log-weight is exactly ``log 1 = 0`` (not special-cased). The similarity grid
-    is detached and the whole function is fp32, so this path reaches only ``sigmoid(a)``; the features
-    take their gradient from ``s_hard`` alone.
-    """
-    n, width = visual_all.shape[0], visual_all.shape[1]
-    m, text_width = text_all.shape[0], text_all.shape[1]
-    visual = F.normalize(visual_all.float(), dim=-1, eps=EPS)
-    text = F.normalize(text_all.float(), dim=-1, eps=EPS)
-    w = torch.cat([torch.ones_like(soft_gate[:, :, :1]), soft_gate], dim=-1)  # [n, m, W]
-    log_w = torch.log(w.clamp_min(EPS))
-    weight_sum = w.sum(dim=-1).clamp_min(EPS)                                 # [n, m]
-    with torch.no_grad():
-        v2t_grid, _ = _similarity_grid(visual.detach(), text.detach())
-        row_max = v2t_grid.max(dim=3).values                                 # [n, W, m]
-        scaled = v2t_grid.permute(0, 2, 1, 3) / eta                          # [n, m, W, T]
-        scaled = scaled + log_w[:, :, :, None]
-        lse = torch.logsumexp(scaled, dim=2)                                 # [n, m, T]
-    v2t = (w * row_max.permute(0, 2, 1)).sum(dim=-1) / weight_sum
-    t2v = eta * (lse - log_w.sum(dim=-1)[:, :, None]).mean(dim=-1)
-    out = (v2t + t2v).float()
-    assert out.shape == (n, m), out.shape
-    return out
+def hard_said_score(visual_all, text_all, gate, text_valid=None):
+    with torch.autocast(device_type=visual_all.device.type, enabled=False):
+        v = F.normalize(core_dtype(visual_all), dim=-1, eps=EPS)
+        t = F.normalize(core_dtype(text_all), dim=-1, eps=EPS)
+        c = _similarity_grid(v, t)
+        if text_valid is None:
+            text_valid = torch.ones(text_all.shape[:2], device=t.device, dtype=torch.bool)
+        return hard_from_grid(c, gate, text_valid[None])
+
+
+def surrogate_said_score(visual_all, text_all, router_logits, eta=SURROGATE_ETA, text_valid=None):
+    with torch.autocast(device_type=visual_all.device.type, enabled=False):
+        v = F.normalize(core_dtype(visual_all), dim=-1, eps=EPS)
+        t = F.normalize(core_dtype(text_all), dim=-1, eps=EPS)
+        c = _similarity_grid(v, t)
+        return soft_from_grid(c, router_logits, None if text_valid is None else text_valid[None], eta)
 
 
 class PairwiseScorer:
-    """Holds the student-side pieces needed to score one image-anchor/text-candidate block."""
+    def __init__(self, module, tau=ROUTER_TAU, eta=SURROGATE_ETA, k_said=K_SAID):
+        self.module, self.tau, self.eta, self.k_said = module, tau, eta, k_said
 
-    def __init__(self, module, tau: float = ROUTER_TAU, eta: float = SURROGATE_ETA,
-                 k_said: int = K_SAID):
-        self.module = module
-        self.tau = tau
-        self.eta = eta
-        self.k_said = k_said
+    def prepare(self, visual_all, text_all):
+        with torch.autocast(device_type=visual_all.device.type, enabled=False):
+            return (F.normalize(core_dtype(visual_all), dim=-1, eps=EPS),
+                    F.normalize(core_dtype(text_all), dim=-1, eps=EPS),
+                    self.module.router.project_visual(visual_all[:, 1:]),
+                    self.module.router.project_text(text_all[:, 0]))
 
-    def score(self, visual_all: torch.Tensor, text_all: torch.Tensor) -> Dict[str, torch.Tensor]:
-        """``visual_all`` ``[n, 1+V, d]`` anchors, ``text_all`` ``[m, 1+T, d]`` candidates.
+    def from_prepared(self, visual, text, projected_visual, projected_text, text_valid,
+                      matched=False):
+        with torch.autocast(device_type=visual.device.type, enabled=False):
+            if matched:
+                c = torch.bmm(visual, text.transpose(1, 2))
+                logits = (projected_visual * projected_text[:, None]).sum(-1) / self.tau
+                valid = text_valid
+            else:
+                c = _similarity_grid(visual, text)
+                logits = (projected_visual @ projected_text.T).permute(0, 2, 1) / self.tau
+                valid = text_valid[None]
+            gate = hard_gate(logits, self.k_said)
+            hard, v2t, t2v = hard_from_grid(c, gate, valid)
+            soft = soft_from_grid(c, logits, valid, self.eta)
+            return {'score': hard + (soft - soft.detach()), 'hard': hard,
+                    'hard_v2t': v2t, 'hard_t2v': t2v, 'logits': logits, 'gate': gate, 'soft': soft}
 
-        Index 0 of the visual side is the native CLS: never routed, never a top-k candidate, but still a
-        member of the Said matching set. Index 0 of the text side is the candidate's native global EOS
-        feature, and that -- not the aggregated text slots -- is the router's query.
+    def block_score(self, visual, text, projected_visual, projected_text, text_valid):
+        return self.from_prepared(visual, text, projected_visual, projected_text, text_valid)['score']
 
-        The returned score is the plain pair score of the given image and text, so both ranking
-        directions use one and the same evaluation: callers run the block once and read the result,
-        transposed, for the text-anchor role.
-        """
-        logits = self.module.router.logits(visual_all[:, 1:], text_all[:, 0], tau=self.tau)
-        gate = hard_gate(logits, self.k_said)                        # [n, m, V]
-        hard, v2t, t2v = hard_said_score(visual_all, text_all, gate)
-        soft_gate = torch.sigmoid(logits)
-        soft = surrogate_said_score(visual_all, text_all, soft_gate, self.eta)
-        score = hard + (soft - soft.detach())                        # forward == hard
-        return {'score': score, 'hard': hard, 'hard_v2t': v2t, 'hard_t2v': t2v,
-                'logits': logits, 'gate': gate, 'soft': soft}
+    def score(self, visual_all, text_all, text_valid=None, matched=False):
+        prepared = self.prepare(visual_all, text_all)
+        if text_valid is None:
+            text_valid = torch.ones(text_all.shape[:2], device=text_all.device, dtype=torch.bool)
+        return self.from_prepared(*prepared, text_valid, matched=matched)
+
+    def score_matched_pairs(self, visual_all, text_all, text_valid=None):
+        return self.score(visual_all, text_all, text_valid, matched=True)
 
 
-def _pairwise_cos(tokens: torch.Tensor) -> torch.Tensor:
-    """Mean off-diagonal pairwise cosine between slots (diagnostic only, no anti-collapse loss)."""
-    if tokens.shape[0] < 2 or tokens.shape[1] < 2:
-        return tokens.new_zeros(())
+def ranking_sums(scores, positive_rows, positive_columns, valid_pairs, margin=MARGIN):
+    """Symmetric legal ordered pairs: two directions SUM, no half factor."""
+    with torch.autocast(device_type=scores.device.type, enabled=False):
+        scores = core_dtype(scores)
+        first = F.relu(margin + scores - positive_rows[:, None]) * valid_pairs
+        second = F.relu(margin + scores - positive_columns[None, :]) * valid_pairs
+        return first.sum(), second.sum(), (first.detach() > 0).sum()
+
+
+def _pairwise_cos(tokens):
     flat = F.normalize(tokens.reshape(-1, tokens.shape[-1]).float(), dim=-1, eps=EPS)
-    similarity = flat @ flat.t()
-    mask = ~torch.eye(similarity.shape[0], dtype=torch.bool, device=similarity.device)
-    return similarity[mask].mean()
+    n = flat.shape[0]
+    return (flat.sum(0).square().sum() - flat.square().sum()) / max(n*(n-1), 1)
+
+
+def intra_image_slot_cos(tokens):
+    x = F.normalize(tokens.float(), dim=-1, eps=EPS)
+    k = x.shape[1]
+    return ((x.sum(1).square().sum(-1) - x.square().sum((1, 2))) / max(k*(k-1), 1)).mean()
+
+
+def complement_pool(slots, gate):
+    m = 1.0 - gate.detach().float()
+    count = m.sum(-1)
+    raw = (slots.float() * m[..., None]).sum(1) / count.clamp_min(1)[..., None]
+    valid = (count > 0) & (raw.norm(dim=-1) > EPS)
+    return raw, F.normalize(raw, dim=-1, eps=EPS), valid, m
+
+
+def gather_metadata(value, world):
+    if world == 1:
+        return value
+    result = [torch.empty_like(value) for _ in range(world)]
+    torch.distributed.all_gather(result, value.contiguous())
+    return torch.cat(result, 0)
+
+
+def caption_identity(token_ids, world):
+    """Exact effective token sequences (through EOS); padding never affects identity."""
+    length = torch.tensor([token_ids.shape[1]], device=token_ids.device, dtype=torch.long)
+    if world > 1:
+        torch.distributed.all_reduce(length, op=torch.distributed.ReduceOp.MAX)
+    pos = torch.arange(token_ids.shape[1], device=token_ids.device)[None]
+    canonical = token_ids.masked_fill(pos > token_ids.argmax(-1)[:, None], 0)
+    canonical = F.pad(canonical, (0, int(length.item()) - token_ids.shape[1]))
+    all_tokens = gather_metadata(canonical, world)
+    _, identity = torch.unique(all_tokens, dim=0, return_inverse=True)
+    return identity
+
 
 
 # --------------------------------------------------------------------------- #
@@ -404,7 +374,7 @@ class SaidTokenV1Module(nn.Module):
                  router_dim: int = ROUTER_DIM, router_tau: float = ROUTER_TAU,
                  surrogate_eta: float = SURROGATE_ETA, seed: int = 0,
                  grad_checkpoint_views: bool = False, chunk_image: int = 8,
-                 chunk_text: int = 32):
+                 chunk_text: int = 32, checkpoint_pairwise: bool = True):
         super().__init__()
         if arm not in ARMS:
             raise ValueError('arm must be one of %r' % (ARMS,))
@@ -420,6 +390,7 @@ class SaidTokenV1Module(nn.Module):
         self.grad_checkpoint_views = bool(grad_checkpoint_views)
         self.chunk_image = max(1, int(chunk_image))
         self.chunk_text = max(1, int(chunk_text))
+        self.checkpoint_pairwise = bool(checkpoint_pairwise)
         self.dim = cls_embedding_dim(clip_model)
 
         with isolated_rng(seed):
@@ -470,215 +441,149 @@ class SaidTokenV1Module(nn.Module):
                 return F.normalize(raw.float(), dim=-1, eps=EPS)
 
     # -- one training step's forward ----------------------------------------- #
-    def forward(self, images: torch.Tensor, text: torch.Tensor, image_ids: torch.Tensor,
-                eot_id: int, all_gather=None) -> Dict[str, torch.Tensor]:
-        world_size = 1
-        if torch.distributed.is_available() and torch.distributed.is_initialized():
-            world_size = torch.distributed.get_world_size()
-        gather = all_gather
-        if gather is None:
-            if world_size > 1:
-                def gather(value):
-                    """Differentiable all_gather (``torch.distributed.nn``).
+    def forward(self, images, text, image_ids, eot_id, all_gather=None, diagnostics=False):
+        import torch.distributed as dist
+        from torch.utils.checkpoint import checkpoint
+        from torch.profiler import record_function
+        world = dist.get_world_size() if dist.is_initialized() else 1
+        rank = dist.get_rank() if dist.is_initialized() else self.rank
+        local = images.shape[0]
+        sizes = gather_metadata(torch.tensor([local], device=images.device), world)
+        if not bool((sizes == local).all()):
+            raise RuntimeError('unequal per-rank batch sizes: %s' % sizes.tolist())
+        def gather_live(value):
+            if all_gather is not None:
+                return torch.cat(all_gather(value), 0)
+            if world == 1:
+                return value
+            from torch.distributed.nn.functional import all_gather as differentiable_gather
+            return torch.cat(differentiable_gather(value.contiguous()), 0)
 
-                    The Said term couples *every* anchor with *every* candidate, so the gathered features
-                    cannot be treated as constants: the functional collective's backward all-reduces the
-                    incoming gradients and gives each rank the part belonging to its own shard, which is
-                    what makes DDP's average over ranks reproduce the single-process gradient. Two
-                    alternatives were measured and rejected: a plain ``all_gather`` silently detached the
-                    local slice as well, leaving the text tower and the image projection with no gradient
-                    at all, and an "own anchors only" loss lost every candidate-side partial gradient
-                    (the two-rank equivalence test caught both).
-                    """
-                    import torch.distributed.nn.functional as distributed_nn
-                    result = distributed_nn.all_gather(value.contiguous())
-                    # this build returns a tuple of per-rank tensors; older/newer ones may return the
-                    # concatenation directly, so accept both rather than assume one
-                    return result if isinstance(result, tuple) else (result,)
-            else:
-                def gather(value):
-                    return (value,)
-
-        g_i_raw, patch_raw = self.encode_image_tokens(images)
-        g_t_raw, text_local = self.encode_text_tokens(text)
-        if patch_raw.shape[-1] != self.dim or g_i_raw.shape[-1] != self.dim:
-            raise RuntimeError('embedding width mismatch: patches %r, global %r, expected %d'
-                               % (tuple(patch_raw.shape), tuple(g_i_raw.shape), self.dim))
-
-        valid_text, empty_text = text_content_mask(text, eot_id)
-        v_slots, _ = self.image_aggregator(patch_raw)
-        t_slots, _ = self.text_aggregator(text_local, valid=valid_text)
-        g_i = F.normalize(g_i_raw, dim=-1, eps=EPS)
-        g_t = F.normalize(g_t_raw, dim=-1, eps=EPS)
-
-        visual_local = torch.cat([g_i[:, None, :], v_slots], dim=1)      # [b, 1+V, d]
-        text_local_all = torch.cat([g_t[:, None, :], t_slots], dim=1)    # [b, 1+T, d]
-
-        visual_global = torch.cat(gather(visual_local), dim=0)
-        text_global = torch.cat(gather(text_local_all), dim=0)
-        ids_global = torch.cat(gather(image_ids.reshape(-1, 1)), dim=0).reshape(-1)
-        local = visual_local.shape[0]
-        if visual_global.shape[0] != ids_global.shape[0] or text_global.shape[0] != ids_global.shape[0]:
-            raise RuntimeError('the gathered candidate pools disagree: visual %r text %r ids %r'
-                               % (tuple(visual_global.shape), tuple(text_global.shape),
-                                  tuple(ids_global.shape)))
-        # The per-anchor positive scores and the anchors' own windows are indexed by absolute position,
-        # so the gathered order has to be exactly the rank order, every rank included. That convention is
-        # checked -- with one tiny collective -- rather than assumed: a gather that silently dropped a
-        # rank would otherwise mis-rank candidates instead of failing.
-        global_index = self.rank * local + torch.arange(local, device=images.device)
-        order = torch.cat(gather(global_index.reshape(-1)), dim=0)
-        if not bool((order == torch.arange(ids_global.shape[0], device=images.device)).all()):
-            raise RuntimeError('gathered candidate order does not match rank order: rank %d, local %d'
-                               % (self.rank, local))
-
-        # ---- the true pairs, row-aligned: mask h_ii and score s_ii ------------- #
-        # One router evaluation of image i against text i. This is the only place the positive gate
-        # comes from, and the U branch uses exactly this mask (m_U = 1 - sg(h_ii)). The diagonal is the
-        # true pair, and the per-anchor positive score is gathered so that anchors owned by another rank
-        # can be ranked too. Advanced indexing is used rather than ``Tensor.diagonal``: the latter moves
-        # the diagonal to the *last* axis ([local, local, V] would come back as [V, local]).
-        local_rows = torch.arange(local, device=images.device)
-        positive_rows = self.scorer.score(visual_local, text_local_all)
-        positive_gate = positive_rows['gate'][local_rows, local_rows].detach()        # [local, V]
-        positive_score = positive_rows['score'][local_rows, local_rows].detach()      # [local]
-        positive_logits = positive_rows['logits'][local_rows, local_rows].detach()    # [local, V]
-        positive_global = torch.cat(gather(positive_score.reshape(-1)), dim=0).detach().reshape(-1)
-
-        # ---- chunked pair scoring over the global candidate grid ------------- #
-        # Every rank walks the *same* grid: this rank's anchors against the whole gathered candidate
-        # pool, so each (image, text) pair carries its own hard mask h[i, j, p] -- nothing reuses the
-        # positive pair's mask and nothing is transposed into the other role. The scores, the counts and
-        # therefore the loss are already global on every rank, so this term carries NO ``world_size``
-        # factor: the differentiable gather in ``gather`` is what makes the gradient correct under
-        # DDP's averaging. Only small score/gate blocks live in the graph; the full [B, B, 33, 33]
-        # tensor never exists.
-        sum_i2t = visual_local.new_zeros(())
-        sum_t2i = visual_local.new_zeros(())
-        count_i2t = visual_local.new_zeros(())
-        count_t2i = visual_local.new_zeros(())
-        sum_hinge_i2t = visual_local.new_zeros(())
-        sum_hinge_t2i = visual_local.new_zeros(())
-        margin_active = visual_local.new_zeros(())
-
-        for image_start in range(0, visual_global.shape[0], self.chunk_image):
-            image_stop = min(image_start + self.chunk_image, visual_global.shape[0])
-            image_block = visual_global[image_start:image_stop]
-            image_ids_block = ids_global[image_start:image_stop]
-            for text_start in range(0, text_global.shape[0], self.chunk_text):
-                text_stop = min(text_start + self.chunk_text, text_global.shape[0])
-                text_block = text_global[text_start:text_stop]
-                text_ids_block = ids_global[text_start:text_stop]
-                # A pair is a valid negative unless both sides belong to the same original image. That
-                # one test drops the true positive as well as any second caption of the same image, and
-                # it is the same matrix in both directions (the score of a pair does not depend on which
-                # side is called the anchor).
-                valid_pair = image_ids_block[:, None] != text_ids_block[None, :]   # [i_block, t_block]
-                rows = self.scorer.score(image_block, text_block)
-                # ---- image anchors x text candidates --------------------- #
-                block_positive = positive_global[image_start:image_stop, None]
-                hinge = F.relu(self.margin + rows['score'] - block_positive) * valid_pair
-                sum_hinge_i2t = sum_hinge_i2t + hinge.sum()
-                margin_active = margin_active + (hinge > 0).sum()
-                sum_i2t = sum_i2t + (rows['score'] * valid_pair).sum()
-                count_i2t = count_i2t + valid_pair.sum().float()
-                # ---- text anchors x image candidates --------------------- #
-                score_t = rows['score'].transpose(0, 1)                            # [t_block, i_block]
-                valid_t = valid_pair.transpose(0, 1)
-                block_positive_t = positive_global[text_start:text_stop, None]
-                hinge_t = F.relu(self.margin + score_t - block_positive_t) * valid_t
-                sum_hinge_t2i = sum_hinge_t2i + hinge_t.sum()
-                sum_t2i = sum_t2i + (score_t * valid_t).sum()
-                count_t2i = count_t2i + valid_t.sum().float()
-
-        # The counts and the hinge sums are already global on every rank (the whole grid was scored
-        # above), so they are used directly: all-reducing them would multiply the denominator by
-        # ``world_size``. No ``world_size`` factor appears here either -- the differentiable gather is
-        # what carries the cross-rank gradient.
-        count_i2t_global, count_t2i_global = count_i2t.detach(), count_t2i.detach()
-        loss_i2t = sum_hinge_i2t / count_i2t_global.clamp_min(1.0)
-        loss_t2i = sum_hinge_t2i / count_t2i_global.clamp_min(1.0)
-        loss_said = 0.5 * (loss_i2t + loss_t2i)
-
-        # ---- U branch: the true pairs only, mask from that same positive pair - #
-        # m_U = 1 - sg(h_ii); ``u`` averages the raw aggregated slots of the complementary set.
-        m_u = 1.0 - positive_gate.float()
-        u = (m_u[:, :, None] * v_slots).sum(dim=1) / self.k_said
-        u_norm = F.normalize(u, dim=-1, eps=EPS)
-        reference = self.reference_global(images)
-        prediction = self.decoder(u_norm, g_t.detach())
-        prediction_norm = F.normalize(prediction, dim=-1, eps=EPS)
-        per_sample = 1.0 - (prediction_norm * reference).sum(dim=-1)
-        valid_rec = u_norm.norm(dim=-1) > EPS
-        rec_sum = (per_sample * valid_rec).sum()
-        rec_count = valid_rec.sum().float()
-        if world_size > 1 and torch.distributed.is_initialized():
-            total = rec_count.detach().clone()
-            torch.distributed.all_reduce(total)
-            rec_count_global = total
-        else:
-            rec_count_global = rec_count.detach()
-        # The U branch is per sample: each sample's term is computed exactly once, by the rank that owns
-        # it, and never depends on another rank's features (the decoder input uses the same sample's
-        # detached g_T). That is why this term -- unlike the Said term -- carries an explicit
-        # ``world_size`` factor so DDP's average turns the summed per-rank contributions back into the
-        # global mean.
-        loss_rec = float(world_size) * rec_sum / rec_count_global.clamp_min(1.0)
-
-        loss_total = loss_said + self.lambda_rec * loss_rec
-        if not bool(torch.isfinite(loss_total) and torch.isfinite(prediction).all()):
-            raise RuntimeError('non-finite loss or prediction: a real error, not a degenerate case')
-
-        with torch.no_grad():
-            logits_pos = positive_logits
-            return {
-                'loss_total_for_backward': loss_total,
-                'loss_said': loss_said,
-                'loss_said_i2t': loss_i2t.detach(),
-                'loss_said_t2i': loss_t2i.detach(),
-                'loss_said_i2t_score_sum': sum_i2t.detach(),
-                'loss_said_t2i_score_sum': sum_t2i.detach(),
-                'loss_said_i2t_hinge_sum': sum_hinge_i2t.detach(),
-                'loss_said_t2i_hinge_sum': sum_hinge_t2i.detach(),
-                'loss_said_pairs_i2t': count_i2t_global,
-                'loss_said_pairs_t2i': count_t2i_global,
-                'loss_said_pairs_total': (count_i2t_global + count_t2i_global),
-                'loss_rec': loss_rec,
-                'loss_rec_sum_local': rec_sum.detach(),
-                'loss_rec_valid_local': rec_count.detach(),
-                'loss_rec_valid_global': rec_count_global,
-                'weighted_rec': (self.lambda_rec * loss_rec).detach(),
+        with record_function('t1_student_encoders_aggregators'):
+            g_i_raw, patches = self.encode_image_tokens(images)
+            g_t_raw, text_local = self.encode_text_tokens(text)
+            valid, empty = text_content_mask(text, eot_id)
+            v_slots, _ = self.image_aggregator(patches)
+            t_slots, _ = self.text_aggregator(text_local, valid)
+        with torch.autocast(device_type=images.device.type, enabled=False):
+            g_i = F.normalize(g_i_raw.float(), dim=-1, eps=EPS)
+            g_t = F.normalize(g_t_raw.float(), dim=-1, eps=EPS)
+            visual = torch.cat([g_i[:, None], v_slots.float()], 1)
+            text_all = torch.cat([g_t[:, None], t_slots.float()], 1)
+            text_valid = torch.cat([torch.ones_like(empty[:, None]),
+                                    (~empty[:, None]).expand(-1, self.n_slots)], 1)
+            with record_function('t1_prepare_and_collectives'):
+                vn, tn, vp, tp = self.scorer.prepare(visual, text_all)
+                global_tn, global_tp = gather_live(tn), gather_live(tp)
+                global_valid = gather_metadata(text_valid, world)
+                global_ids = gather_metadata(image_ids, world)
+                caption_ids = caption_identity(text, world)
+                offset = rank * local
+                valid_pairs = ((image_ids[:, None] != global_ids[None]) &
+                    (caption_ids[offset:offset+local, None] != caption_ids[None]))
+            with record_function('t1_matched_positives'):
+                positive = self.scorer.from_prepared(vn, tn, vp, tp, text_valid, matched=True)
+                positive_score_live = positive['score']
+                if torch.is_grad_enabled() and not positive_score_live.requires_grad:
+                    raise RuntimeError('positive ranking score lost its gradient')
+                if diagnostics and positive_score_live.requires_grad:
+                    positive_score_live.retain_grad()
+                    self._positive_live_for_check = positive_score_live
+                else:
+                    self._positive_live_for_check = None
+                positive_global_live = gather_live(positive_score_live)
+                # U is intentionally isolated from the gate; ranking positives remain live.
+                positive_gate = positive['gate'].detach()
+            # Connected zeros preserve all gather backward paths on a rank with no legal negatives.
+            first = (vn.sum() + global_tn.sum() + global_tp.sum() + positive_global_live.sum()) * 0
+            second = first * 0
+            negative_sum = first.detach().clone()
+            active = first.detach().clone()
+            with record_function('t1_pairwise_hard_proxy'):
+                for i in range(0, local, self.chunk_image):
+                    si = slice(i, min(i+self.chunk_image, local))
+                    for j in range(0, global_tn.shape[0], self.chunk_text):
+                        sj = slice(j, min(j+self.chunk_text, global_tn.shape[0]))
+                        args = (vn[si], global_tn[sj], vp[si], global_tp[sj], global_valid[sj])
+                        if self.checkpoint_pairwise and torch.is_grad_enabled():
+                            score = checkpoint(self.scorer.block_score, *args,
+                                               use_reentrant=False, preserve_rng_state=True)
+                        else:
+                            score = self.scorer.block_score(*args)
+                        legal = valid_pairs[si, sj]
+                        a, b, nactive = ranking_sums(score, positive_score_live[si],
+                                                    positive_global_live[sj], legal, self.margin)
+                        first, second = first+a, second+b
+                        negative_sum = negative_sum + (score.detach()*legal).sum()
+                        active = active + nactive
+            count_local = valid_pairs.sum().float()
+            count_global = count_local.clone()
+            if world > 1:
+                dist.all_reduce(count_global)
+            loss_i2t = world * first / count_global.clamp_min(1)
+            loss_t2i = world * second / count_global.clamp_min(1)
+            loss_said = loss_i2t + loss_t2i
+            with record_function('t1_frozen_reference_decoder'):
+                u_raw, u_norm, valid_rec, m_u = complement_pool(v_slots, positive_gate)
+                reference = self.reference_global(images)
+                prediction = self.decoder(u_norm, g_t.detach())
+                predicted = F.normalize(prediction, dim=-1, eps=EPS)
+                rec_each = 1 - (predicted * reference).sum(-1)
+                rec_sum = (rec_each * valid_rec).sum()
+                rec_count = valid_rec.sum().float()
+                rec_global = rec_count.clone()
+                if world > 1:
+                    dist.all_reduce(rec_global)
+                loss_rec = world * rec_sum / rec_global.clamp_min(1)
+            loss_total = loss_said + self.lambda_rec * loss_rec
+            finite = torch.stack([torch.isfinite(x).all() for x in
+                (g_i_raw, g_t_raw, v_slots, t_slots, u_raw, reference, prediction, loss_total)]).all().int()
+            if world > 1:
+                dist.all_reduce(finite, op=dist.ReduceOp.MIN)
+            if not bool(finite):
+                raise RuntimeError('non-finite input/features/target/prediction/loss')
+            logits = positive['logits'].detach()
+            result = {
+                'loss_total_for_backward': loss_total, 'loss_said': loss_said,
+                'loss_said_i2t': loss_i2t.detach(), 'loss_said_t2i': loss_t2i.detach(),
+                'loss_said_i2t_hinge_sum': first.detach(), 'loss_said_t2i_hinge_sum': second.detach(),
+                'loss_said_pairs_local': count_local, 'loss_said_pairs_total': count_global,
+                'loss_said_pairs_i2t': count_global, 'loss_said_pairs_t2i': count_global,
+                'loss_rec': loss_rec, 'loss_rec_sum_local': rec_sum.detach(),
+                'loss_rec_valid_local': rec_count, 'loss_rec_valid_global': rec_global,
+                'weighted_rec': (self.lambda_rec*loss_rec).detach(),
                 'lambda_rec': loss_total.new_tensor(self.lambda_rec),
-                'positive_said_score': positive_score.detach().mean(),
-                'negative_said_score': sum_i2t.detach() / count_i2t.clamp_min(1.0),
-                'margin_active_fraction': margin_active / count_i2t.clamp_min(1.0),
-                'router_logit_std': logits_pos.std(),
-                'router_logit_mean': logits_pos.mean(),
-                'soft_gate_mean': torch.sigmoid(logits_pos).mean(),
-                'said_token_count': positive_gate.detach().sum(dim=-1).mean(),
-                'unsaid_token_count': m_u.sum(dim=-1).mean(),
-                'selected_router_score': (logits_pos[positive_gate > 0.5].mean()
-                                          if bool((positive_gate > 0.5).any())
-                                          else logits_pos.sum() * 0.0),
-                'excluded_router_score': (logits_pos[positive_gate < 0.5].mean()
-                                          if bool((positive_gate < 0.5).any())
-                                          else logits_pos.sum() * 0.0),
-                'u_norm': u_norm.norm(dim=-1).mean(),
-                'u_raw_norm': u.norm(dim=-1).mean(),
+                'positive_score_sum_local': positive_score_live.detach().sum(),
+                'negative_score_sum_local': negative_sum, 'margin_active_local': active,
+                'positive_said_score': positive_score_live.detach().mean(),
+                'negative_said_score': negative_sum / count_local.clamp_min(1),
+                'margin_active_fraction': active / count_local.clamp_min(1),
+                'router_logit_std': logits.std(), 'router_logit_mean': logits.mean(),
+                'router_within_pair_logit_std': logits.std(-1).mean(),
+                'soft_gate_mean': logits.sigmoid().mean(),
+                'soft_gate_saturated_fraction': (logits.sigmoid() > .999).float().mean(),
+                'said_token_count': positive_gate.sum(-1).mean(),
+                'unsaid_token_count': m_u.sum(-1).mean(),
+                'selected_router_score': (logits*positive_gate).sum()/positive_gate.sum().clamp_min(1),
+                'excluded_router_score': (logits*m_u).sum()/m_u.sum().clamp_min(1),
+                'u_raw_norm': u_raw.norm(dim=-1).mean(), 'u_norm': u_norm.norm(dim=-1).mean(),
                 'prediction_norm': prediction.norm(dim=-1).mean(),
-                'cos_prediction_reference': (prediction_norm * reference).sum(dim=-1).mean(),
-                'reference_norm': reference.norm(dim=-1).mean(),
-                'rec_valid_fraction': rec_count / max(local, 1),
-                'empty_text_count': empty_text.sum(),
-                'native_cls_pairwise_cos': _pairwise_cos(g_i.detach()),
-                'aggregation_token_pairwise_cos': _pairwise_cos(v_slots.detach()),
-                # handles for the fixed-cohort diagnostics (no_grad consumers only)
-                'v_slots': v_slots.detach(),
-                't_slots': t_slots.detach(),
-                'g_i': g_i.detach(),
-                'g_t': g_t.detach(),
-                'gate_positive': positive_gate.detach(),
-                'm_u': m_u,
-                'u_norm_detached': u_norm.detach(),
-                'reference': reference,
+                'cos_prediction_reference': (predicted*reference).sum(-1).mean(),
+                'rec_valid_fraction': rec_count/max(local, 1), 'empty_text_count': empty.sum(),
+                'actual_global_candidates': float(global_tn.shape[0]),
+                'actual_local_image_rows': float(local),
+                'v_slots': v_slots.detach(), 't_slots': t_slots.detach(), 'g_i': g_i.detach(),
+                'g_t': g_t.detach(), 'gate_positive': positive_gate, 'm_u': m_u,
+                'u_norm_detached': u_norm.detach(), 'reference': reference,
+                'core_dtypes': {'student_image': str(g_i_raw.dtype), 'student_text': str(g_t_raw.dtype),
+                    'router_projection': str(vp.dtype), 'router_logits': str(positive['logits'].dtype),
+                    'matched_hard': str(positive['hard'].dtype), 'matched_proxy': str(positive['soft'].dtype),
+                    'ranking': str(loss_said.dtype), 'reference': str(reference.dtype),
+                    'decoder': str(prediction.dtype), 'reconstruction': str(loss_rec.dtype)},
             }
+            if diagnostics:
+                with torch.no_grad():
+                    result.update(native_cls_pairwise_cos=_pairwise_cos(g_i),
+                                  intra_image_slot_cos=intra_image_slot_cos(v_slots),
+                                  all_image_slot_cos=_pairwise_cos(v_slots))
+            return result

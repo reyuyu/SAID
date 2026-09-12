@@ -55,7 +55,7 @@
         "peak_memory_gb": 4.07,
         "loss_said_global_mean_step1": 0.0611,
         "loss_said_global_mean_step2": 0.1047,
-        "loss_rec_global_mean_step2": 1.0580,
+        "loss_rec_global_mean_step2": 1.058,
         "said_scaling_abs_diff": 0.0,
         "rec_scaling_abs_diff": 0.0,
         "said_token_count": 16.0,
@@ -76,7 +76,43 @@
       "stopped": "2026-09-12T18:05:18+08:00 (SIGTERM then SIGKILL at the user's request)",
       "steps_reached": 350,
       "last_checkpoint": "step 100 (save points were 0/20/100/500; run_summary.json does NOT exist because the run did not finish)",
-      "logged_steps": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350],
+      "logged_steps": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        25,
+        50,
+        75,
+        100,
+        125,
+        150,
+        175,
+        200,
+        225,
+        250,
+        275,
+        300,
+        325,
+        350
+      ],
       "log_integrity": "35 LOG lines, all parseable, 0 broken",
       "ddp_self_checks_all_steps": "said_scaling_abs_diff=0, rec_scaling_abs_diff=0, said_rank_spread=0, said_token_count=16, unsaid_token_count=16",
       "rate": "~21.7 s/step at batch 256/rank (1024 global pairs), 4 x A800, 55.6 GB peak per GPU, GPU utilisation 36-38%",
@@ -130,10 +166,30 @@
   },
   "existing_baselines_for_comparison": {
     "protocol_note": "native student CLS, R@1; COCO and Urban-1k numbers are not comparable to each other",
-    "Initial": {"coco_i2t_r1": 0.517, "coco_t2i_r1": 0.32692, "urban_i2t_r1": 0.682, "urban_t2i_r1": 0.528},
-    "S0_step500": {"coco_i2t_r1": 0.6058, "coco_t2i_r1": 0.41236, "urban_i2t_r1": 0.87, "urban_t2i_r1": 0.842},
-    "C0_step500": {"coco_i2t_r1": 0.6042, "coco_t2i_r1": 0.40724, "urban_i2t_r1": 0.873, "urban_t2i_r1": 0.834},
-    "C1_step500": {"coco_i2t_r1": 0.6038, "coco_t2i_r1": 0.41216, "urban_i2t_r1": 0.87, "urban_t2i_r1": 0.837}
+    "Initial": {
+      "coco_i2t_r1": 0.517,
+      "coco_t2i_r1": 0.32692,
+      "urban_i2t_r1": 0.682,
+      "urban_t2i_r1": 0.528
+    },
+    "S0_step500": {
+      "coco_i2t_r1": 0.6058,
+      "coco_t2i_r1": 0.41236,
+      "urban_i2t_r1": 0.87,
+      "urban_t2i_r1": 0.842
+    },
+    "C0_step500": {
+      "coco_i2t_r1": 0.6042,
+      "coco_t2i_r1": 0.40724,
+      "urban_i2t_r1": 0.873,
+      "urban_t2i_r1": 0.834
+    },
+    "C1_step500": {
+      "coco_i2t_r1": 0.6038,
+      "coco_t2i_r1": 0.41216,
+      "urban_i2t_r1": 0.87,
+      "urban_t2i_r1": 0.837
+    }
   },
   "open_items_for_review": [
     "cost: every candidate pair re-evaluates the router and rebuilds its own similarity grid (128 x 32 = 4096 blocks per step per rank at chunk 8/32); every rank walks the whole 1024-candidate global grid (4x redundancy, required by the differentiable-gather DDP scheme); _similarity_grid is built twice per block (hard_said_score and surrogate_said_score) and the transposed grid gets its own bmm. Measured 21.7 s/step with GPUs at 36-38% utilisation, i.e. memory/kernel-launch bound",
@@ -154,5 +210,55 @@
     "unsaid_semantics": "NOT ESTABLISHED",
     "u_reconstruction_incremental_contribution": "NOT ESTABLISHED (no T0 run)",
     "u_reconstruction_content_dependence": "NOT ESTABLISHED (measured: prediction variance ~1e-4, R@1 against the teacher bank at chance, worse than a constant predictor)"
+  },
+  "historical_run_validity": {
+    "status": "INVALID_FOR_T1_METHOD_COMPARISON",
+    "reason": "positive-score gradient detached; router proxy inconsistent with approved formula",
+    "run": "runs_salu/said_token_v1/t1_500step",
+    "preserved": true,
+    "source_head": "39612af4a7047933beae9153b4edaa2acdf1704b",
+    "note": "Historical tests/curves below describe the buggy implementation and do not establish T1 method performance. The flattened slot metric was not intra-image slot cosine."
+  },
+  "fix_v2": {
+    "status": "in_progress",
+    "audit_commit": "8bdb632f1465bd37bce3f332e731febea807688a",
+    "starting_head": "39612af4a7047933beae9153b4edaa2acdf1704b",
+    "old_processes": "already stopped; no T1 train/post/eval process at initial check",
+    "working_tree_at_start": "clean including untracked files",
+    "stages": {
+      "implementation": "done",
+      "mathematical_tests": "done",
+      "ddp_tests": "done",
+      "gpu_profile": "done",
+      "code_commit": "pending",
+      "run_500": "pending",
+      "retrieval": "pending",
+      "report": "pending"
+    },
+    "said_direction_reduction": "sum",
+    "constraints": "one corrected T1 from shared_init; no new losses; no T0/3epoch; global pairs1024",
+    "validation": {
+      "test_count": 41,
+      "commands": [
+        "OMP_NUM_THREADS=1 python -m pytest tests/test_said_token_v1.py tests/test_t1_correctness_fix.py tests/test_t1_ddp_fix.py -q"
+      ],
+      "details": "37 unaffected tests passed in final combined run; four DDP/health tests passed after correcting diagnostic access through DDP output sink",
+      "cli": "2 real-data single-GPU steps; import/logging/0,1,2 saves; frozen reference unchanged",
+      "profile_run": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_profile_32x64",
+      "profile_summary": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_profile_32x64/profile_summary.json",
+      "profile_steps": [
+        9.718662023544312,
+        2.470316171646118,
+        3.0029869079589844
+      ],
+      "profile_peak_gib": 42.41825532913208,
+      "selected_chunk": [
+        32,
+        64
+      ],
+      "precision": "actual GPU: student outputs bf16; projected router/logits/hard/proxy/ranking/reference/decoder/rec fp32",
+      "ddp_update_note": "Production AdamW normal-case gradients and rank-equal updates tested. Independent SGD update used for degenerate fixtures: Adam amplifies rounding in mathematically zero softmax-bias gradients via eps. SGD leaves production optimizer unchanged.",
+      "tolerances": "score 2e-6+2e-5 relative; reference parameter grads max_abs<=2e-6+3e-5*max_abs(ref); DDP grads/SGD update <=2e-7+2e-5*max_abs(ref); ranks exactly equal; continuous FP64 FD eps1e-6 atol1e-7 rtol1e-5"
+    }
   }
 }

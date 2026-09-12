@@ -37,7 +37,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import longclip  # noqa: E402
 from model.said_token_v1 import (ARM_LAMBDA_REC, ARM_T0, ARM_T1, ARMS, EPS,  # noqa: E402
                                  N_SLOTS, K_SAID, SaidTokenV1Module,
-                                 reference_fingerprint, text_content_mask)
+                                 reference_fingerprint, text_content_mask, complement_pool,
+                                 intra_image_slot_cos, _pairwise_cos)
 from said_cvssl_data import Share4VCvsslDataset, cvssl_collate  # noqa: E402
 from scheduler import cosine_lr  # noqa: E402
 from train_said_cls_cvssl import (git_head, load_init_state, seed_everything,  # noqa: E402
@@ -125,7 +126,7 @@ def check_equal_local_batch(batch_size, device, world_size):
 # one training step
 # --------------------------------------------------------------------------- #
 def t1_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabled=True,
-                  world_size=1, capture_grads=False):
+                  world_size=1, capture_grads=False, diagnostics=False, health_check=False):
     """DDP forward -> backward -> optimizer steps, plus the global means of both loss terms.
 
     The module already scales its backward value the way plain DDP averaging needs:
@@ -141,10 +142,44 @@ def t1_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabled=T
 
     device_type = 'cuda' if device.type == 'cuda' else 'cpu'
     with torch.autocast(device_type=device_type, dtype=amp_dtype, enabled=amp_enabled):
-        out = ddp_model(image_a, text, image_ids, EOT_ID)
+        out = ddp_model(image_a, text, image_ids, EOT_ID, diagnostics=diagnostics)
 
     loss = out['loss_total_for_backward']
-    loss.backward()
+    with torch.profiler.record_function('t1_backward_collectives'):
+        loss.backward()
+
+    if health_check:
+        module = inspected_module(ddp_model)
+        # DDP wraps returned tensors in its output sink; inspect the original graph tensor.
+        positive = module._positive_live_for_check
+        if positive is not None:
+            if positive.grad is None:
+                raise RuntimeError('positive score has no backward gradient')
+            positive_grad = positive.grad.detach()
+            out['positive_score_grad_mean'] = positive_grad.mean()
+            out['positive_score_grad_min'] = positive_grad.min()
+            out['positive_score_grad_max'] = positive_grad.max()
+            if bool((positive_grad > 1e-8).any()):
+                raise RuntimeError('positive score gradient has wrong sign')
+        norms = []
+        for prefix in ('clip.visual', 'clip.transformer', 'image_aggregator', 'text_aggregator', 'router', 'decoder'):
+            grads = [p.grad.detach().float() for n, p in module.named_parameters()
+                     if n.startswith(prefix) and p.grad is not None]
+            norm = torch.stack([g.square().sum() for g in grads]).sum().sqrt() if grads else loss.new_zeros(())
+            out['grad_norm_' + prefix.replace('.', '_')] = norm
+            norms.append(norm)
+        probe = torch.stack(norms)
+        finite = torch.isfinite(probe).all().int()
+        if world_size > 1:
+            dist.all_reduce(finite, op=dist.ReduceOp.MIN)
+            lo, hi = probe.clone(), probe.clone()
+            dist.all_reduce(lo, op=dist.ReduceOp.MIN)
+            dist.all_reduce(hi, op=dist.ReduceOp.MAX)
+            if not torch.allclose(lo, hi, atol=1e-6, rtol=1e-5):
+                raise RuntimeError('DDP gradient health check lost synchronization')
+            out['grad_norm_rank_max_diff'] = (hi-lo).abs().max()
+        if not bool(finite):
+            raise RuntimeError('non-finite gradients; optimizer step refused')
 
     if capture_grads:
         module = inspected_module(ddp_model)
@@ -158,37 +193,24 @@ def t1_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabled=T
     module_optimizer.zero_grad(set_to_none=True)
     decoder_optimizer.zero_grad(set_to_none=True)
 
-    # ---- global means of the two terms, with the two different DDP conventions ---- #
-    # Said: every rank scored the whole gathered grid, so its sums, its counts and therefore its loss
-    #   are already global. All-reducing them would multiply the denominator by world_size; instead the
-    #   module's own value is checked against the mean of its own sums, and one tiny MAX collective
-    #   shows that no rank drifted away from the others.
-    # Rec: the U branch runs on this rank's samples only, so its sum comes in work_size pieces that have
-    #   to be added up before the division.
-    said_global = 0.5 * (out['loss_said_i2t_hinge_sum'].detach()
-                         / out['loss_said_pairs_i2t'].detach().clamp_min(1.0)
-                         + out['loss_said_t2i_hinge_sum'].detach()
-                         / out['loss_said_pairs_t2i'].detach().clamp_min(1.0))
-    rec_totals = torch.stack([out['loss_rec_sum_local'].detach(), out['loss_rec_valid_local'].detach(),
-                              out['loss_rec'].detach()])
+    # Both objectives use local work sums and globally reduced valid counts.
+    totals = torch.stack([out['loss_said_i2t_hinge_sum'], out['loss_said_t2i_hinge_sum'],
+        out['loss_said_pairs_local'], out['loss_rec_sum_local'], out['loss_rec_valid_local'],
+        out['loss_said'].detach(), out['loss_rec'].detach(), out['positive_score_sum_local'],
+        out['negative_score_sum_local'], out['margin_active_local']])
     if world_size > 1 and dist.is_initialized():
-        dist.all_reduce(rec_totals, op=dist.ReduceOp.SUM)
-    rec_sum, rec_valid, rec_backward_sum = rec_totals
-    rec_global = rec_sum / rec_valid.clamp_min(1.0) if float(rec_valid) > 0 else rec_sum * 0.0
-    said_backward_global = out['loss_said'].detach().clone()
-    if world_size > 1 and dist.is_initialized():
-        probe = out['loss_said'].detach().clone()
-        dist.all_reduce(probe, op=dist.ReduceOp.MAX)
-        out['said_rank_spread'] = (probe - out['loss_said'].detach()).abs()
-    else:
-        out['said_rank_spread'] = out['loss_said'].detach() * 0.0
-    out['loss_said_global_mean'] = said_global.detach()
-    out['loss_rec_global_mean'] = rec_global.detach()
-    out['loss_total_global_mean'] = (said_global + float(out['lambda_rec']) * rec_global).detach()
-    out['said_scaling_abs_diff'] = (said_backward_global - said_global).abs().detach()
-    out['rec_scaling_abs_diff'] = (rec_backward_sum / float(world_size) - rec_global).abs().detach()
-    out['loss_said_backward_value'] = out['loss_said'].detach()
-    out['loss_rec_backward_value'] = out['loss_rec'].detach()
+        dist.all_reduce(totals)
+    first, second, pairs, rec_sum, rec_valid, said_bw, rec_bw, pos, neg, active = totals
+    said_global = (first + second) / pairs.clamp_min(1)
+    rec_global = rec_sum / rec_valid.clamp_min(1)
+    out.update(loss_said_global_mean=said_global, loss_rec_global_mean=rec_global,
+        loss_total_global_mean=said_global + float(out['lambda_rec'])*rec_global,
+        said_scaling_abs_diff=(said_bw/world_size-said_global).abs(),
+        rec_scaling_abs_diff=(rec_bw/world_size-rec_global).abs(),
+        loss_said_backward_value=out['loss_said'].detach(),
+        loss_rec_backward_value=out['loss_rec'].detach(),
+        positive_said_score=pos/(image_a.shape[0]*world_size),
+        negative_said_score=neg/pairs.clamp_min(1), margin_active_fraction=active/pairs.clamp_min(1))
     return out
 
 
@@ -238,14 +260,15 @@ def input_dependency_diagnostics(ddp_model, cohort, device):
             g_t = F.normalize(g_t_raw.float(), dim=-1, eps=EPS)
             visual_local = torch.cat([g_i[:, None, :], v_slots], dim=1)
             text_local_all = torch.cat([g_t[:, None, :], t_slots], dim=1)
-            scored = module.scorer.score(visual_local, text_local_all)
+            text_valid = torch.cat([torch.ones_like(empty[:, None]), (~empty[:, None]).expand(-1, module.n_slots)], 1)
+            scored = module.scorer.score_matched_pairs(visual_local, text_local_all, text_valid)
             index = torch.arange(rows, device=device)
-            gate = scored['gate'][index, index].detach().float()          # [rows, V]
+            gate = scored['gate'].detach().float()          # [rows, V]
             m_u = 1.0 - gate
-            u = (m_u[:, :, None] * v_slots).sum(dim=1) / float(module.k_said)
+            u = (m_u[:, :, None] * v_slots).sum(dim=1) / m_u.sum(-1).clamp_min(1)[:, None]
             u_norm = F.normalize(u, dim=-1, eps=EPS)
             permutation = torch.arange(rows, device=device).roll(1)
-            u_wrong = (m_u[:, :, None] * v_slots[permutation]).sum(dim=1) / float(module.k_said)
+            u_wrong = (m_u[:, :, None] * v_slots[permutation]).sum(dim=1) / m_u.sum(-1).clamp_min(1)[:, None]
             u_wrong_norm = F.normalize(u_wrong, dim=-1, eps=EPS)
             bank = module.reference_global(images)                        # frozen teacher bank
             bank_student = g_i
@@ -263,7 +286,10 @@ def input_dependency_diagnostics(ddp_model, cohort, device):
                 out['diag_pred_student_cls_cos_' + name] = float(
                     (prediction_norm * bank_student).sum(dim=-1).mean())
 
-            results = {}
+            results = {'diag_native_cls_pairwise_cos': float(_pairwise_cos(g_i)),
+                       'diag_intra_image_slot_cos': float(intra_image_slot_cos(v_slots)),
+                       'diag_all_image_slot_cos': float(_pairwise_cos(v_slots)),
+                       'diag_soft_gate_mean': float(scored['logits'].sigmoid().mean())}
             table(u_norm, g_t, 'normal', results)
             table(u_norm, torch.zeros_like(g_t), 'zero_text', results)
             table(torch.zeros_like(u_norm), g_t, 'zero_u', results)
@@ -279,7 +305,7 @@ def input_dependency_diagnostics(ddp_model, cohort, device):
             results['diag_u_gate_unsaid'] = float(m_u.sum(dim=-1).mean())
             results['diag_gate_overlap_with_permuted'] = float(
                 (gate[permutation] * gate).sum(dim=-1).mean() / float(module.k_said))
-            results['diag_router_logit_std'] = float(scored['logits'][index, index].detach().std())
+            results['diag_router_logit_std'] = float(scored['logits'].detach().std())
             results['diag_empty_text'] = int(empty.sum())
             results['diag_n_images'] = int(rows)
     return results
@@ -303,6 +329,8 @@ def main():
     parser.add_argument('--margin', type=float, default=0.2)
     parser.add_argument('--chunk_image', type=int, default=8)
     parser.add_argument('--chunk_text', type=int, default=32)
+    parser.add_argument('--checkpoint_pairwise', type=int, default=1)
+    parser.add_argument('--profile_steps', type=int, default=0)
     parser.add_argument('--module_seed', type=int, default=0)
     parser.add_argument('--base_model', default='B16')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=256)
@@ -342,6 +370,8 @@ def main():
     if args.arm == ARM_T0 and args.lambda_rec != 0.0:
         raise SystemExit('T0_said_token_only must run with --lambda_rec 0')
 
+    if args.resume:
+        raise SystemExit('fix_v2 requires shared_init; resume is unsupported (RNG/data-position restoration not implemented)')
     seed_everything(args.seed)
     rank, local_rank, world = setup_distributed()
     device = torch.device('cuda', local_rank)
@@ -363,7 +393,7 @@ def main():
                                      seed=args.module_seed,
                                      grad_checkpoint_views=bool(args.grad_checkpoint_views),
                                      chunk_image=args.chunk_image,
-                                     chunk_text=args.chunk_text).to(device)
+                                     chunk_text=args.chunk_text, checkpoint_pairwise=bool(args.checkpoint_pairwise)).to(device)
     # 2. the reference was deep-copied from the student *after* the init load
     reference_digest = reference_fingerprint(train_module.reference_visual)
     reference_zero_storage_overlap = not any(
@@ -424,6 +454,10 @@ def main():
                                                               'reference_visual_state.pt')
     config = {
         'objective': 'said_token',
+        'implementation_version': 'fix_v2',
+        'said_direction_reduction': 'sum',
+        'pair_ownership': 'local image rows x global text candidates',
+        'ddp_scaling': 'W*(local_i2t_sum+local_t2i_sum)/M; W*local_rec_sum/V',
         'arm': args.arm,
         'objective_line': 'L = L_Said + %g * L_rec' % args.lambda_rec,
         'lambda_rec': args.lambda_rec,
@@ -474,6 +508,7 @@ def main():
         'warmup_length': args.warmup_length,
         'chunk_image': args.chunk_image,
         'chunk_text': args.chunk_text,
+        'checkpoint_pairwise': bool(args.checkpoint_pairwise),
         'grad_checkpoint_views': bool(args.grad_checkpoint_views),
         'init_state': args.init_state,
         'initial_state_sha256': initial_digest,
@@ -557,6 +592,7 @@ def main():
     t_start = time.time()
     compute_times = []
     stopped = False
+    severe_checks = 0
 
     if rank == 0 and 0 in save_completed:
         # step-0 checkpoint: the exact initial state, so a later analysis never has to guess which
@@ -575,6 +611,11 @@ def main():
     if dist.is_initialized():
         dist.barrier()
 
+    profiler = None
+    if args.profile_steps:
+        profiler = torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
+            torch.profiler.ProfilerActivity.CUDA], record_shapes=False, profile_memory=True)
+        profiler.start()
     for epoch in range(args.epochs):
         dataset.set_epoch(epoch)
         sampler.set_epoch(epoch)
@@ -583,15 +624,31 @@ def main():
                 stopped = True
                 break
             check_equal_local_batch(batch['image_a'].shape[0], device, world)
+            torch.cuda.synchronize(device)
             t0 = time.time()
             scheduler(completed)
             module_scheduler(completed)
             decoder_scheduler(completed)
             out = t1_train_step(ddp_model, batch, (optimizer, module_optimizer, decoder_optimizer),
-                                device, amp_dtype, amp_enabled=use_amp, world_size=world)
+                                device, amp_dtype, amp_enabled=use_amp, world_size=world,
+                                diagnostics=(completed < 20 or (completed+1) % args.log_every == 0
+                                             or completed+1 in save_completed),
+                                health_check=(completed+1 in (1, 5, 20)))
+            torch.cuda.synchronize(device)
             image_a = batch['image_a']
             completed += 1
             compute_times.append(time.time() - t0)
+            if profiler is not None:
+                profiler.step()
+                if completed >= args.profile_steps:
+                    profiler.stop()
+                    if rank == 0:
+                        table = profiler.key_averages().table(sort_by='self_cuda_time_total', row_limit=30)
+                        print('PROFILE ' + table, flush=True)
+                        with open(os.path.join(args.output_dir, 'profile_table.txt'), 'w') as h:
+                            h.write(table)
+                        profiler.export_chrome_trace(os.path.join(args.output_dir, 'profile_trace.json'))
+                    profiler = None
 
             caption_digest.update(('\n'.join(batch['caption_said'])).encode('utf-8'))
             sample_digest.update(batch['sample_id'].numpy().tobytes())
@@ -602,6 +659,7 @@ def main():
             want_log = (completed % args.log_every == 0 or completed == 1 or is_last
                         or completed in save_completed
                         or (args.online_check_steps > 0 and completed <= args.online_check_steps))
+            failure = torch.zeros((), device=device, dtype=torch.int32)
             if rank == 0 and want_log:
                 record = {
                     'completed_steps': completed,
@@ -617,7 +675,8 @@ def main():
                     'global_pairs': int(image_a.shape[0]) * world,
                     'world_size': world,
                     'reference_visual_state_sha256': reference_digest,
-                    'rank_param_digest': state_digest(clip_model.state_dict())[:16],
+                    'core_dtypes': out['core_dtypes'],
+                    'said_direction_reduction': 'sum',
                     'sec_per_step': compute_times[-1],
                     'samples_per_sec': float(image_a.shape[0]) * world / max(compute_times[-1], 1e-9),
                     'peak_memory_gb': torch.cuda.max_memory_allocated(device) / (1024 ** 3),
@@ -629,6 +688,9 @@ def main():
                         record[key] = float(value.detach())
                     elif isinstance(value, float):
                         record[key] = value
+                record['loss_said'] = record['loss_said_global_mean']
+                record['loss_rec'] = record['loss_rec_global_mean']
+                record['weighted_rec'] = args.lambda_rec * record['loss_rec_global_mean']
                 want_diag = (completed in save_completed
                              or (args.diag_every > 0 and completed % args.diag_every == 0))
                 if want_diag and cohort is not None:
@@ -636,6 +698,25 @@ def main():
                 with open(log_path, 'a') as handle:
                     handle.write('LOG ' + json.dumps(record, sort_keys=True) + '\n')
                 print('LOG ' + json.dumps(record, sort_keys=True), flush=True)
+                # Conservative, predeclared stop on sustained total loss of discrimination.
+                # Never change parameters/objectives to rescue a run. Evaluate only at log points.
+                severe = (completed >= 100 and
+                    abs(record['positive_said_score']-record['negative_said_score']) < .005 and
+                    record.get('native_cls_pairwise_cos', 0) > .99 and
+                    record.get('all_image_slot_cos', 0) > .99 and
+                    record.get('intra_image_slot_cos', 0) > .99 and
+                    record['margin_active_fraction'] > .99)
+                severe_checks = severe_checks + 1 if severe else 0
+                if severe_checks >= 3:
+                    failure.fill_(1)
+                    path = os.path.join(args.output_dir, 'stopped_degenerate_step%06d.pt' % completed)
+                    torch.save(checkpoint_payload(completed, epoch, i), path)
+                    with open(os.path.join(args.output_dir, 'STOPPED_DEGENERATE.json'), 'w') as handle:
+                        json.dump({'completed_steps': completed, 'reason': 'three consecutive logged checks: score gap<.005, native/all/intra cosine>.99, active>.99', 'checkpoint': path}, handle)
+            if world > 1:
+                dist.broadcast(failure, src=0)
+            if bool(failure):
+                raise RuntimeError('sustained global representation degeneration; checkpoint saved; no automatic redesign')
 
             if rank == 0 and completed in save_completed:
                 path = os.path.join(args.output_dir,
@@ -647,6 +728,8 @@ def main():
         if stopped:
             break
 
+    if args.max_steps is not None and completed != args.max_steps:
+        raise RuntimeError('target step not reached: %d != %d' % (completed, args.max_steps))
     if rank == 0:
         final_reference_digest = reference_fingerprint(train_module.reference_visual)
         summary = {
@@ -654,6 +737,7 @@ def main():
             'lambda_rec': args.lambda_rec,
             'epochs': args.epochs, 'wall_sec': time.time() - t_start,
             'mean_sec_per_step': sum(compute_times) / max(len(compute_times), 1),
+            'timing_scope': 'CUDA synchronized train step including transfer/tokenization/forward/backward/optimizer/global logs; excludes loader wait, checkpoint save and cohort diagnostics',
             'steps_per_epoch': steps_per_epoch, 'lr_horizon_steps': total_steps,
             'initial_state_sha256': initial_digest,
             'reference_visual_state_sha256': reference_digest,

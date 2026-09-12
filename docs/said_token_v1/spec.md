@@ -81,53 +81,58 @@ top-k slice itself is not differentiable and the router is never left without a 
 * per-token normalisation, bidirectional **max**-similarity, `s_hard = mean over 17 + mean over 33`
   (no extra `/2`).
 * ranking loss, margin `0.2`, mean over all valid (anchor, negative) incidences, no mining:
-  `L_Said = 0.5 * (mean_i2t hinge + mean_t2i hinge)` with
+  `L_Said = mean_i2t hinge + mean_t2i hinge` with
   `hinge = [0.2 + s(anchor, negative) - s(anchor, anchor)]_+`.
 * valid negatives exclude every pair whose two sides belong to the same original image (that one test
-  drops the true positive as well as any duplicate caption of the same image).
+  drops the true positive). Identical effective caption sequences through EOS are also excluded,
+  ignoring padding. The legal ordered pair set is symmetric.
 
 ## 6. U branch and reconstruction
 
 ```
 m_U = 1 - sg(h_ii)
-u   = (1/16) Σ_p m_U,ip V_ip                (raw aggregated slots; normalised only afterwards)
+u   = Σ_p m_U,ip V_ip / max(Σ_p m_U,ip, 1) (raw aggregated slots; normalised only afterwards)
 ĝ   = D([Norm(u); sg(g_T,i)])               D = Linear(1024,512) -> GELU -> Linear(512,512)
 L_rec = mean_i (1 - <Norm(ĝ_i), sg(g0_i)>)
 g0  = Norm(E_I^0(I_a))                       frozen deep copy of the *initial* vision tower
 ```
 
-`EPS = 1e-6`; a sample whose `Norm(u)` is degenerate (norm ≤ EPS) is skipped, and if every sample is
+`EPS = 1e-6`; a sample whose raw `u` norm ≤ EPS or complement count is zero is skipped, and if every sample is
 invalid the loss stays a connected zero. A non-finite loss or prediction is a **hard error**
 (`nan_to_num` is never used).
 
-## 7. DDP conventions (measured, not assumed)
+## 7. Corrected row ownership and DDP scaling (fix_v2)
 
-* The Said term couples every anchor with every candidate, so the gathered features are gathered with the
-  **differentiable** functional collective (`torch.distributed.nn.functional.all_gather`). Its backward
-  all-reduces the incoming gradients and hands each rank the part belonging to its own shard, which is
-  what makes DDP's average over ranks reproduce the single-process gradient. The loss value therefore
-  carries **no** `world_size` factor, and the counts are global on every rank (all-reducing them would
-  multiply the denominator by `world_size`).
-* The U branch is per sample and never mixes ranks, so its term **does** carry the explicit
-  `world_size` factor (`W * Σ_local / V_global`), which is what turns DDP's average back into the global
-  mean.
-* Equal per-rank local batch sizes (including a ragged last batch) are required and checked with one
-  tiny collective **before** any large gather; a mismatch raises identically on every rank.
-* A single-process run keeps the identity gather, so the tests can compare a 2-rank step against a
-  1-process reference.
-* Two alternatives were implemented, measured and rejected in this round: a plain (non-differentiable)
-  `all_gather` silently detached the local slice too — the text tower and the image projection received
-  no gradient at all — and an "own anchors only" loss dropped every candidate-side partial gradient. Both
-  were caught by the 2-rank equivalence test.
+Each rank computes local image rows against all global text candidates. Every ordered pair s_ij
+contributes both [margin+s_ij-s_ii]+ and [margin+s_ij-s_jj]+. For the symmetric legal ordered set A
+this equals the original two-direction objective. M=|A|, not 2M.
+
+Text candidates, projected EOS queries and matched positive scores use autograd-aware gathers.
+Images remain local and live. IDs, caption identities and validity use metadata gathers.
+Said backward is W*(local_i2t_sum+local_t2i_sum)/max(M,1).
+Rec backward is W*local_rec_sum/max(V_global,1); its coefficient 0.1 is applied once.
+Logs reduce detached sums to true global means. A rank with no legal pairs or no valid U still
+participates in the same collectives. Equal small last batches are supported; unequal local batch
+sizes fail together before large gathers.
 
 ## 8. Chunking and precision
 
-* `chunk_image = 8`, `chunk_text = 32`; the candidate pool is the whole global batch. Only small
-  score/gate blocks live in the graph — the full `[B, B, 33, 33]` tensor is never materialised.
+* Chunk sizes are engineering settings; the candidate pool remains the whole global batch (1024).
+  Normalize tokens and project router inputs once per step. Each block creates one `[n,m,33,33]`
+  cosine grid, shared by the hard directions and the detached soft view. Matched positives create
+  `[b,33,33]`. Non-reentrant checkpointing recomputes large activations; collectives stay outside.
 * fp32 master weights + bf16 autocast for the student; the router proxy, the cosine and the
   reconstruction cores run in fp32 with autocast off; the frozen reference is fp32, `eval()`, `no_grad`.
 * standard `DistributedDataParallel(find_unused_parameters=True)`; `_set_static_graph()` is deliberately
   **not** called (the graph differs between the positive pass, the chunked grid and the U branch).
+
+This revision separately restores the originally approved Said directional SUM (removes the old 0.5).
+Positive-score detachment and the proxy formula/graph were two independent P0 errors. The corrected
+proxy uses stable logsigmoid(a), CLS log-weight zero, a live numerator, and logsumexp(log_w) as the
+normalizer. Only C is detached; gradients through router inputs are allowed. Empty captions match
+EOS alone; numerical aggregator fallback slots are invalid for matching. Slot diagnostics distinguish
+intra-image and all-image similarity without constructing an 8192×8192 matrix.
+Historical buggy runs are INVALID_FOR_T1_METHOD_COMPARISON.
 
 ## 9. Optimizer groups (fixed, no search this round)
 

@@ -11,7 +11,7 @@
 # Shared assets are referenced by ABSOLUTE path: this worktree does not contain the untracked
 # runs_salu/ tree, the frozen evaluation manifests, or the committed Urban-1k tooling of the C0
 # worktree (single source of truth for that dataset, so it is called there instead of copied here).
-set -u
+set -euo pipefail
 REPO=/root/SAID-token-v1
 cd "$REPO" || exit 1
 if [ ! -f "$REPO/train/train_said_token_v1.py" ]; then
@@ -20,7 +20,11 @@ fi
 
 ARM=T1_said_token_reconstruction
 INIT=/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt
-OUT=${OUT_DIR:-$REPO/runs_salu/said_token_v1/t1_500step}
+OUT=${OUT_DIR:-}
+if [ "${1:-check}" != check ] && [ -z "$OUT" ]; then
+  echo "OUT_DIR is required: explicitly select a new fix_v2 run"; exit 1
+fi
+EVAL_OUT=${EVAL_OUT_DIR:-$OUT/evaluation}
 STEPS=${STEPS:-500}
 C0=/root/SAID-gap-completion
 MAIN=/root/SAID
@@ -55,7 +59,7 @@ case "${1:-check}" in
       torchrun --nproc_per_node=4 --master_port="$port" "$REPO/train/train_said_token_v1.py" \
       --arm "$ARM" --objective said_token --lambda_rec 0.1 \
       --n_slots 32 --k_said 16 --router_tau 0.07 --router_dim 128 --surrogate_eta 0.1 \
-      --margin 0.2 --chunk_image 8 --chunk_text 32 --module_seed 0 \
+      --margin 0.2 --chunk_image "${CHUNK_IMAGE:-32}" --chunk_text "${CHUNK_TEXT:-64}" --checkpoint_pairwise 1 --module_seed 0 \
       --base_model B16 --batch-size 256 --epochs 3 \
       --lr 1e-6 --module_lr 2e-4 --module_wd 1e-2 --decoder_lr 1e-4 --decoder_wd 0 \
       --weight_decay 1e-2 --warmup_length 200 \
@@ -67,8 +71,9 @@ case "${1:-check}" in
     echo "PID $! log=$OUT/train.log"
     ;;
   smoke)
-    SOUT=$REPO/runs_salu/said_token_v1/cli_smoke
-    rm -rf "$SOUT"; mkdir -p "$SOUT"
+    SOUT=$OUT
+    [ ! -e "$SOUT" ] || { echo "REFUSING existing smoke dir $SOUT"; exit 1; }
+    mkdir -p "$SOUT"
     export CUDA_VISIBLE_DEVICES=0
     port=$(( 35200 + RANDOM % 200 ))
     echo "=== CLI SMOKE: 2 real steps, one GPU, real data, real save ==="
@@ -77,7 +82,7 @@ case "${1:-check}" in
       torchrun --nproc_per_node=1 --master_port="$port" "$REPO/train/train_said_token_v1.py" \
       --arm "$ARM" --objective said_token --lambda_rec 0.1 \
       --n_slots 32 --k_said 16 --router_tau 0.07 --router_dim 128 --surrogate_eta 0.1 \
-      --margin 0.2 --chunk_image 8 --chunk_text 32 --module_seed 0 \
+      --margin 0.2 --chunk_image "${CHUNK_IMAGE:-32}" --chunk_text "${CHUNK_TEXT:-64}" --checkpoint_pairwise 1 --module_seed 0 \
       --base_model B16 --batch-size 8 --epochs 3 \
       --lr 1e-6 --module_lr 2e-4 --module_wd 1e-2 --decoder_lr 1e-4 --decoder_wd 0 \
       --weight_decay 1e-2 --warmup_length 200 \
@@ -94,13 +99,13 @@ case "${1:-check}" in
     mkdir -p "$OUT/export"
     /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
       python "$REPO/tools/diag/export_t1_student.py" \
-      --checkpoint "$CKPT" --expect-steps "$STEPS" \
+      --checkpoint "$CKPT" --expect-steps "$STEPS" --expect-version fix_v2 \
       --out "$OUT/export/t1_student_step$(printf '%06d' "$STEPS").pt"
     ;;
   eval)
     CKPT=$OUT/export/t1_student_step$(printf '%06d' "$STEPS").pt
     [ -f "$CKPT" ] || { echo "MISSING $CKPT (run the export step first)"; exit 1; }
-    EOUT=$REPO/outputs/said_token_v1
+    EOUT=$EVAL_OUT
     mkdir -p "$EOUT"
     export CUDA_VISIBLE_DEVICES=0
     # the canonical protocol tool travels with this lineage: use this worktree's copy and pass the
@@ -110,15 +115,15 @@ case "${1:-check}" in
     date -Is
     /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
       python "$REPO/tools/phase30a_fixed_cohort_eval.py" \
-      --label said_token_v1 --gap_anti_temperature 1.0 \
+      --label said_token_v1_fix_v2 --gap_anti_temperature 1.0 \
       --usr_manifest "$MAIN/outputs/validation/sharegpt4v1k_usr_manifest.json" \
       --source_manifest "$MAIN/outputs/validation/sharegpt4v1k_manifest.json" \
       --sharegpt4v_manifest "$MAIN/outputs/validation/sharegpt4v1k_manifest.json" \
       --data_root "$SHARE4V_DATA_ROOT" --image_root "$SHARE4V_DATA_ROOT" \
       --image_batch_size 64 --canonical --canonical_only --coco \
-      --canonical_tags "step$STEPS" --canonical_names "T1_step$STEPS" \
+      --canonical_tags "step$STEPS" --canonical_names "T1_fix_v2_step$STEPS" \
       --checkpoints "step$STEPS:$CKPT" \
-      --output "$EOUT/T1_step${STEPS}_canonical.json"
+      --output "$EOUT/T1_fix_v2_step${STEPS}_canonical.json"
     status=$?
     echo "EVAL_EXIT exit=$status"
     date -Is
@@ -127,40 +132,30 @@ case "${1:-check}" in
   urban)
     CKPT=$OUT/export/t1_student_step$(printf '%06d' "$STEPS").pt
     [ -f "$CKPT" ] || { echo "MISSING $CKPT (run the export step first)"; exit 1; }
-    EOUT=$C0/outputs/cvssl_screening/baseline_urban1k
-    [ -d "$EOUT" ] || { echo "MISSING the shared Urban-1k result dir $EOUT"; exit 1; }
+    EOUT=$EVAL_OUT
+    mkdir -p "$EOUT"
     export CUDA_VISIBLE_DEVICES=0
     cd "$C0" || exit 1
     echo "=== EVAL Urban-1k T1@$STEPS ckpt=$CKPT ==="
     date -Is
     /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
       python "$C0/tools/eval_urban1k_cls.py" \
-      --checkpoint "$CKPT" --label "T1_step$STEPS" --expect-steps "$STEPS" \
+      --checkpoint "$CKPT" --label "T1_fix_v2_step$STEPS" --expect-steps "$STEPS" \
       --base_model 'ViT-B/16' --device cuda --batch_size 64 \
       --urban_root /root/datasets/Urban1k/Urban1k \
-      --out "$EOUT/T1_step${STEPS}_urban1k.json"
+      --out "$EOUT/T1_fix_v2_step${STEPS}_urban1k.json"
     status=$?
     echo "URBAN_EXIT exit=$status"
     date -Is
     exit $status
     ;;
   post)
-    # wait for the in-flight run, then do the whole post-processing chain in one background session:
-    # export -> canonical COCO -> Urban-1k -> summary table. Each step is skipped loudly on failure.
-    echo "=== waiting for the training process to exit ==="
-    date -Is
-    while pgrep -f train_said_token_v1.py > /dev/null; do sleep 60; done
-    date -Is
-    echo "log lines: $(wc -l < "$OUT/salu_log.jsonl")"
-    tail -1 "$OUT/run_summary.json"
-    STEPS=$STEPS bash "$REPO/tools/exp_said_token_v1.sh" export || { echo POST_FAILED_EXPORT; exit 1; }
-    STEPS=$STEPS bash "$REPO/tools/exp_said_token_v1.sh" eval || { echo POST_FAILED_EVAL; exit 1; }
-    STEPS=$STEPS bash "$REPO/tools/exp_said_token_v1.sh" urban || { echo POST_FAILED_URBAN; exit 1; }
-    /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
-      python "$REPO/tools/diag/t1_summary.py" --retrieval \
-      > "$REPO/outputs/said_token_v1/t1_summary_table.txt" 2>&1
-    tail -22 "$REPO/outputs/said_token_v1/t1_summary_table.txt"
-    echo POST_DONE
+    # Never watch arbitrary T1 processes or silently evaluate an older checkpoint.
+    CKPT=$OUT/t1_${ARM}_step$(printf '%06d' "$STEPS").pt
+    [ -f "$CKPT" ] || { echo "MISSING exact checkpoint $CKPT"; exit 1; }
+    bash "$REPO/tools/exp_said_token_v1.sh" export
+    bash "$REPO/tools/exp_said_token_v1.sh" eval
+    bash "$REPO/tools/exp_said_token_v1.sh" urban
     ;;
   diag)
     echo "fixed-cohort diagnostics: keys diag_* at every saved step (0, 20, 100, $STEPS)"

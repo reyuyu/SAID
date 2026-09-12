@@ -26,7 +26,7 @@ TRAJECTORY = ['loss_said_global_mean', 'loss_said_i2t', 'loss_said_t2i', 'loss_r
               'selected_router_score', 'excluded_router_score', 'u_raw_norm',
               'cos_prediction_reference', 'said_token_count', 'unsaid_token_count',
               'said_scaling_abs_diff', 'rec_scaling_abs_diff', 'said_rank_spread',
-              'native_cls_pairwise_cos', 'aggregation_token_pairwise_cos', 'empty_text_count',
+              'native_cls_pairwise_cos', 'intra_image_slot_cos', 'all_image_slot_cos', 'empty_text_count',
               'sec_per_step', 'peak_memory_gb']
 DIAGNOSTICS = ['diag_cos_error_normal', 'diag_delta_zero_text', 'diag_delta_zero_u',
                'diag_delta_permuted_text', 'diag_delta_wrong_u', 'diag_constant_baseline_error',
@@ -68,8 +68,11 @@ def load_canonical(path, name):
         return None
     payload = json.load(open(path))
     node = payload.get('canonical', {})
-    key = name if name in node else (sorted(node)[0] if node else None)
-    return node.get(key) if key else None
+    if name is None and len(node) == 1:
+        return next(iter(node.values()))
+    if name not in node:
+        raise ValueError('missing or ambiguous canonical entry %r in %s' % (name, path))
+    return node[name]
 
 
 def coco_pair(entry):
@@ -90,7 +93,7 @@ def urban_pair(path):
     return (node.get('image2text', {}).get('R1'), node.get('text2image', {}).get('R1'))
 
 
-def retrieval_table():
+def retrieval_table(eval_dir):
     sources = [
         ('Initial', os.path.join(C0, 'outputs/cvssl_screening/S0_canonical.json'), 'Initial',
          os.path.join(C0, 'outputs/cvssl_screening/baseline_urban1k/Initial_urban1k.json')),
@@ -100,8 +103,8 @@ def retrieval_table():
          os.path.join(C0, 'outputs/cvssl_screening/baseline_urban1k/C0_step500_urban1k.json')),
         ('C1@500', os.path.join(C1, 'outputs/cvssl_screening/c1_tcr/C1_step500_canonical.json'),
          None, os.path.join(C0, 'outputs/cvssl_screening/baseline_urban1k/C1_step500_urban1k.json')),
-        ('T1@500', os.path.join(OUT, 'T1_step500_canonical.json'), None,
-         os.path.join(C0, 'outputs/cvssl_screening/baseline_urban1k/T1_step500_urban1k.json')),
+        ('T1@500', os.path.join(eval_dir, 'T1_fix_v2_step500_canonical.json'), 'T1_fix_v2_step500',
+         os.path.join(eval_dir, 'T1_fix_v2_step500_urban1k.json')),
     ]
     table = {}
     print('=== native student CLS retrieval (R@1, full precision) ===')
@@ -139,13 +142,19 @@ def retrieval_table():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--run', default=RUN)
+    parser.add_argument('--run', required=True)
+    parser.add_argument('--eval-dir', default=None)
     parser.add_argument('--retrieval', action='store_true')
-    parser.add_argument('--out', default=os.path.join(OUT, 't1_summary.json'))
+    parser.add_argument('--out', default=None)
     parsed = parser.parse_args()
+    parsed.eval_dir = parsed.eval_dir or os.path.join(parsed.run, 'evaluation')
+    parsed.out = parsed.out or os.path.join(parsed.eval_dir, 't1_summary.json')
+    config = json.load(open(os.path.join(parsed.run, 'config.json')))
+    if config.get('implementation_version') != 'fix_v2':
+        raise ValueError('INVALID_FOR_T1_METHOD_COMPARISON: summary requires a corrected fix_v2 run')
 
     records = read_log(os.path.join(parsed.run, 'salu_log.jsonl'))
-    print_table(records, TRAJECTORY, 'training trajectory (fixed cohort, rank 0)')
+    print_table(records, TRAJECTORY, 'training batches (global loss means; rank0 feature diagnostics)')
     print_table(records, DIAGNOSTICS, 'input-dependency diagnostics (fixed 64-image cohort)')
     payload = {'steps_logged': [record['completed_steps'] for record in records],
                'steps': records}
@@ -153,7 +162,12 @@ def main():
     if os.path.exists(summary_path):
         payload['run_summary'] = json.load(open(summary_path))
     if parsed.retrieval:
-        table, deltas = retrieval_table()
+        if payload.get('run_summary', {}).get('completed_steps') != 500:
+            raise ValueError('exact step500 run summary is required for method comparison')
+        expected = os.path.join(parsed.run, 't1_T1_said_token_reconstruction_step000500.pt')
+        if not os.path.isfile(expected):
+            raise FileNotFoundError(expected)
+        table, deltas = retrieval_table(parsed.eval_dir)
         payload['retrieval'] = table
         payload['retrieval_deltas_vs_S0'] = deltas
     os.makedirs(os.path.dirname(parsed.out), exist_ok=True)

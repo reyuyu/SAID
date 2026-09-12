@@ -1,0 +1,85 @@
+{
+  "scope": "rank0, three full 4x256 steps, profiler enabled; kernel times are summed, may overlap, not wall clock",
+  "regions": {
+    "t1_backward_collectives": {
+      "calls": 3,
+      "cpu_inclusive_ms": 3894.125883,
+      "linked_kernel_ms": 1734.6304619999728
+    },
+    "t1_frozen_reference_decoder": {
+      "calls": 3,
+      "cpu_inclusive_ms": 382.106583,
+      "linked_kernel_ms": 2068.1267920000005
+    },
+    "t1_matched_positives": {
+      "calls": 3,
+      "cpu_inclusive_ms": 93.86698899999999,
+      "linked_kernel_ms": 161.747128
+    },
+    "t1_pairwise_hard_proxy": {
+      "calls": 3,
+      "cpu_inclusive_ms": 1470.14078,
+      "linked_kernel_ms": 262.22745700000337
+    },
+    "t1_prepare_and_collectives": {
+      "calls": 3,
+      "cpu_inclusive_ms": 278.260241,
+      "linked_kernel_ms": 196.594214
+    },
+    "t1_student_encoders_aggregators": {
+      "calls": 3,
+      "cpu_inclusive_ms": 5549.96475,
+      "linked_kernel_ms": 495.77879500000006
+    }
+  },
+  "top_kernels_ms": [
+    [
+      "ampere_sgemm_128x64_tn",
+      1476.316886
+    ],
+    [
+      "ncclDevKernel_AllGather_RING_LL(ncclDevComm*, unsigned long, ncclWork*)",
+      928.1489950000002
+    ],
+    [
+      "ncclDevKernel_AllReduce_Sum_f32_RING_LL(ncclDevComm*, unsigned long, ncclWork*)",
+      700.2795750000004
+    ],
+    [
+      "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1} const&)::{lambda(int)#1})",
+      150.49215600000005
+    ],
+    [
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1} const&)::{lambda(int)#1})",
+      142.06930700000052
+    ],
+    [
+      "ampere_bf16_s16816gemm_bf16_128x128_ldg8_relu_f2f_stages_32x5_tn",
+      112.32463999999999
+    ],
+    [
+      "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 3> >(int, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, at::detail::Array<char*, 3>)",
+      104.880814
+    ],
+    [
+      "ampere_bf16_s16816gemm_bf16_128x128_ldg8_f2f_stages_32x5_nn",
+      102.167767
+    ],
+    [
+      "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::MaxOps<float>, unsigned int, float, 4> >(at::native::ReduceOp<float, at::native::MaxOps<float>, unsigned int, float, 4>)",
+      93.84290599999976
+    ],
+    [
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, at::detail::Array<char*, 3>)",
+      88.45803500000007
+    ],
+    [
+      "fmha_cutlassF_f32_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<float, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)",
+      85.09115800000002
+    ],
+    [
+      "ncclDevKernel_ReduceScatter_Sum_f32_RING_LL(ncclDevComm*, unsigned long, ncclWork*)",
+      83.81555099999999
+    ]
+  ]
+}

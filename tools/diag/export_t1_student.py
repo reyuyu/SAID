@@ -27,13 +27,19 @@ def main():
     parser.add_argument('--checkpoint', required=True)
     parser.add_argument('--out', required=True)
     parser.add_argument('--expect-steps', type=int, default=None)
+    parser.add_argument('--expect-version', default=None)
     parser.add_argument('--base_model', default='ViT-B/16')
     parsed = parser.parse_args()
 
     payload = torch.load(parsed.checkpoint, map_location='cpu', weights_only=False)
     if parsed.expect_steps is not None:
         got = int(payload.get('completed_steps', -1))
-        assert got == parsed.expect_steps, 'completed_steps %d != %d' % (got, parsed.expect_steps)
+        if got != parsed.expect_steps:
+            raise ValueError('completed_steps %d != %d' % (got, parsed.expect_steps))
+    if parsed.expect_version is not None:
+        got = payload.get('config', {}).get('implementation_version')
+        if got != parsed.expect_version:
+            raise ValueError('implementation_version %r != %r' % (got, parsed.expect_version))
     state = payload['model']
     forbidden = [key for key in state if key.startswith(AUXILIARY_PREFIXES)]
     if forbidden:
