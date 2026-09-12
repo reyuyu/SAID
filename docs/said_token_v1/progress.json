@@ -9,7 +9,146 @@
     "ff893a9": "implementation + tests + specification (model/, train/, tests/, tools/, docs/said_token_v1/{spec.md,progress.json})",
     "8bdb632": "evaluation tooling (tools/diag/t1_summary.py), launcher fix + smoke/post cases, stage ledger"
   },
-  "stages": [
+  "artifacts_on_disk": {
+    "checkpoints": [
+      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000000.pt",
+      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000020.pt",
+      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000100.pt"
+    ],
+    "reference": "runs_salu/said_token_v1/t1_500step/reference_visual_state.pt (sha256 1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d)",
+    "log": "runs_salu/said_token_v1/t1_500step/salu_log.jsonl (35 lines), train.log, config.json",
+    "exports": [
+      "runs_salu/said_token_v1/t1_500step/export/t1_student_step000000.pt"
+    ],
+    "retrieval": [
+      "outputs/said_token_v1/T1_step0_canonical.json",
+      "/root/SAID-gap-completion/outputs/cvssl_screening/baseline_urban1k/T1_step0_urban1k.json"
+    ]
+  },
+  "existing_baselines_for_comparison": {
+    "protocol_note": "native student CLS, R@1; COCO and Urban-1k numbers are not comparable to each other",
+    "Initial": {
+      "coco_i2t_r1": 0.517,
+      "coco_t2i_r1": 0.32692,
+      "urban_i2t_r1": 0.682,
+      "urban_t2i_r1": 0.528
+    },
+    "S0_step500": {
+      "coco_i2t_r1": 0.6058,
+      "coco_t2i_r1": 0.41236,
+      "urban_i2t_r1": 0.87,
+      "urban_t2i_r1": 0.842
+    },
+    "C0_step500": {
+      "coco_i2t_r1": 0.6042,
+      "coco_t2i_r1": 0.40724,
+      "urban_i2t_r1": 0.873,
+      "urban_t2i_r1": 0.834
+    },
+    "C1_step500": {
+      "coco_i2t_r1": 0.6038,
+      "coco_t2i_r1": 0.41216,
+      "urban_i2t_r1": 0.87,
+      "urban_t2i_r1": 0.837
+    }
+  },
+  "historical_run_validity": {
+    "status": "INVALID_FOR_T1_METHOD_COMPARISON",
+    "reason": "positive-score gradient detached; router proxy inconsistent with approved formula",
+    "run": "runs_salu/said_token_v1/t1_500step",
+    "preserved": true,
+    "source_head": "39612af4a7047933beae9153b4edaa2acdf1704b",
+    "note": "Historical tests/curves below describe the buggy implementation and do not establish T1 method performance. The flattened slot metric was not intra-image slot cosine."
+  },
+  "fix_v2": {
+    "status": "done",
+    "audit_commit": "8bdb632f1465bd37bce3f332e731febea807688a",
+    "starting_head": "39612af4a7047933beae9153b4edaa2acdf1704b",
+    "old_processes": "already stopped; no T1 train/post/eval process at initial check",
+    "working_tree_at_start": "clean including untracked files",
+    "stages": {
+      "implementation": "done",
+      "mathematical_tests": "done",
+      "ddp_tests": "done",
+      "gpu_profile": "done",
+      "code_commit": "done",
+      "run_500": "done",
+      "retrieval": "done",
+      "report": "done",
+      "final_commit": "pending"
+    },
+    "said_direction_reduction": "sum",
+    "constraints": "one corrected T1 from shared_init; no new losses; no T0/3epoch; global pairs1024",
+    "validation": {
+      "test_count": 41,
+      "commands": [
+        "OMP_NUM_THREADS=1 python -m pytest tests/test_said_token_v1.py tests/test_t1_correctness_fix.py tests/test_t1_ddp_fix.py -q"
+      ],
+      "details": "37 unaffected tests passed in final combined run; four DDP/health tests passed after correcting diagnostic access through DDP output sink",
+      "cli": "2 real-data single-GPU steps; import/logging/0,1,2 saves; frozen reference unchanged",
+      "profile_run": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_profile_32x64",
+      "profile_summary": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_profile_32x64/profile_summary.json",
+      "profile_steps": [
+        9.718662023544312,
+        2.470316171646118,
+        3.0029869079589844
+      ],
+      "profile_peak_gib": 42.41825532913208,
+      "selected_chunk": [
+        32,
+        64
+      ],
+      "precision": "actual GPU: student outputs bf16; projected router/logits/hard/proxy/ranking/reference/decoder/rec fp32",
+      "ddp_update_note": "Production AdamW normal-case gradients and rank-equal updates tested. Independent SGD update used for degenerate fixtures: Adam amplifies rounding in mathematically zero softmax-bias gradients via eps. SGD leaves production optimizer unchanged.",
+      "tolerances": "score 2e-6+2e-5 relative; reference parameter grads max_abs<=2e-6+3e-5*max_abs(ref); DDP grads/SGD update <=2e-7+2e-5*max_abs(ref); ranks exactly equal; continuous FP64 FD eps1e-6 atol1e-7 rtol1e-5"
+    },
+    "code_sha": "063a49c666c29fd5a22a2baa320a2708d2166069",
+    "run_directory": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912",
+    "latest_logged_step": 500,
+    "launch": "=== TRAIN T1 arm=T1_said_token_reconstruction steps=500 dir=/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912 port=34665 ===\n    init=/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt\n2026-09-12T18:29:23+08:00\nPID 189368 log=/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/train.log\n",
+    "checkpoint_paths": [
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/t1_T1_said_token_reconstruction_step000000.pt",
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/t1_T1_said_token_reconstruction_step000020.pt",
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/t1_T1_said_token_reconstruction_step000100.pt",
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/t1_T1_said_token_reconstruction_step000500.pt"
+    ],
+    "run_summary": {
+      "arm": "T1_said_token_reconstruction",
+      "caption_stream_sha256": "1fe1a5dd3160e8024f25870f51ec8e0297d9e528d574281e6b2136de70999f49",
+      "completed_steps": 500,
+      "epochs": 3,
+      "initial_state_sha256": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+      "lambda_rec": 0.1,
+      "logit_scale_requires_grad": false,
+      "lr_horizon_steps": 3651,
+      "mask_net_requires_grad_any": false,
+      "mean_sec_per_step": 1.9895002627372742,
+      "objective": "said_token",
+      "peak_memory_gb": 42.45420551300049,
+      "reference_unchanged": true,
+      "reference_visual_state_sha256": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+      "reference_visual_state_sha256_final": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+      "sample_stream_sha256": "39c9885c41aaf11cd79a05b7828cf07b1cfa6af2d4ad507c978e870f3a422856",
+      "steps_per_epoch": 1217,
+      "timing_scope": "CUDA synchronized train step including transfer/tokenization/forward/backward/optimizer/global logs; excludes loader wait, checkpoint save and cohort diagnostics",
+      "view_a_pixels_sha256_step0": "da65b218915e42c2",
+      "wall_sec": 1022.2694272994995
+    },
+    "gate": {
+      "pass": false,
+      "rule": "COCO I2T>=.6058 and T2I>=.41236, at least one strictly higher; raw JSON full precision",
+      "i2t": 0.5728,
+      "t2i": 0.37816
+    },
+    "retrieval_artifacts": [
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/evaluation/T1_fix_v2_step500_canonical.json",
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/evaluation/T1_fix_v2_step500_urban1k.json",
+      "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_step500_20260912/evaluation/t1_summary.json"
+    ],
+    "results_path": "docs/said_token_v1/fix_v2_results.json",
+    "report_path": "docs/said_token_v1/fix_v2_report.md"
+  },
+  "historical_before_fix_v2_stages": [
     {
       "stage": "implementation",
       "status": "DONE",
@@ -148,57 +287,14 @@
       "reason": "the run stopped at step 350 with its last checkpoint at step 100"
     }
   ],
-  "artifacts_on_disk": {
-    "checkpoints": [
-      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000000.pt",
-      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000020.pt",
-      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000100.pt"
-    ],
-    "reference": "runs_salu/said_token_v1/t1_500step/reference_visual_state.pt (sha256 1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d)",
-    "log": "runs_salu/said_token_v1/t1_500step/salu_log.jsonl (35 lines), train.log, config.json",
-    "exports": [
-      "runs_salu/said_token_v1/t1_500step/export/t1_student_step000000.pt"
-    ],
-    "retrieval": [
-      "outputs/said_token_v1/T1_step0_canonical.json",
-      "/root/SAID-gap-completion/outputs/cvssl_screening/baseline_urban1k/T1_step0_urban1k.json"
-    ]
-  },
-  "existing_baselines_for_comparison": {
-    "protocol_note": "native student CLS, R@1; COCO and Urban-1k numbers are not comparable to each other",
-    "Initial": {
-      "coco_i2t_r1": 0.517,
-      "coco_t2i_r1": 0.32692,
-      "urban_i2t_r1": 0.682,
-      "urban_t2i_r1": 0.528
-    },
-    "S0_step500": {
-      "coco_i2t_r1": 0.6058,
-      "coco_t2i_r1": 0.41236,
-      "urban_i2t_r1": 0.87,
-      "urban_t2i_r1": 0.842
-    },
-    "C0_step500": {
-      "coco_i2t_r1": 0.6042,
-      "coco_t2i_r1": 0.40724,
-      "urban_i2t_r1": 0.873,
-      "urban_t2i_r1": 0.834
-    },
-    "C1_step500": {
-      "coco_i2t_r1": 0.6038,
-      "coco_t2i_r1": 0.41216,
-      "urban_i2t_r1": 0.87,
-      "urban_t2i_r1": 0.837
-    }
-  },
-  "open_items_for_review": [
+  "historical_before_fix_v2_open_items_for_review": [
     "cost: every candidate pair re-evaluates the router and rebuilds its own similarity grid (128 x 32 = 4096 blocks per step per rank at chunk 8/32); every rank walks the whole 1024-candidate global grid (4x redundancy, required by the differentiable-gather DDP scheme); _similarity_grid is built twice per block (hard_said_score and surrogate_said_score) and the transposed grid gets its own bmm. Measured 21.7 s/step with GPUs at 36-38% utilisation, i.e. memory/kernel-launch bound",
     "router saturation: soft_gate_mean reaches 1.000 while the within-pair selected-minus-excluded logit gap stays ~0.03 as the per-pair level grows; tau_r = 0.07 with no bound or normalisation on a",
     "slot collapse: the 32 aggregated visual slots are already ~0.81 collinear at step 1 and reach 1.0000 collinear by step 350; no term discourages it (orthogonality / energy terms are forbidden by the specification)",
     "representation collapse: native CLS pairwise cosine rises 0.43 -> 0.9961, which is what kills the Said ranking and would also wreck the native-CLS retrieval this architecture is judged on",
     "the hard gate tie-break is by ascending slot index, so once the slots collapse the mask becomes 'the first 16 slots' and the U branch becomes content-independent"
   ],
-  "not_run_this_round": [
+  "historical_before_fix_v2_not_run_this_round": [
     "T0_said_token_only training",
     "3-epoch runs",
     "hyper-parameter search",
@@ -206,59 +302,9 @@
     "gradient-angle probe",
     "comparison against ShareGPT4V results (user instruction)"
   ],
-  "semantic_claims": {
+  "historical_before_fix_v2_semantic_claims": {
     "unsaid_semantics": "NOT ESTABLISHED",
     "u_reconstruction_incremental_contribution": "NOT ESTABLISHED (no T0 run)",
     "u_reconstruction_content_dependence": "NOT ESTABLISHED (measured: prediction variance ~1e-4, R@1 against the teacher bank at chance, worse than a constant predictor)"
-  },
-  "historical_run_validity": {
-    "status": "INVALID_FOR_T1_METHOD_COMPARISON",
-    "reason": "positive-score gradient detached; router proxy inconsistent with approved formula",
-    "run": "runs_salu/said_token_v1/t1_500step",
-    "preserved": true,
-    "source_head": "39612af4a7047933beae9153b4edaa2acdf1704b",
-    "note": "Historical tests/curves below describe the buggy implementation and do not establish T1 method performance. The flattened slot metric was not intra-image slot cosine."
-  },
-  "fix_v2": {
-    "status": "in_progress",
-    "audit_commit": "8bdb632f1465bd37bce3f332e731febea807688a",
-    "starting_head": "39612af4a7047933beae9153b4edaa2acdf1704b",
-    "old_processes": "already stopped; no T1 train/post/eval process at initial check",
-    "working_tree_at_start": "clean including untracked files",
-    "stages": {
-      "implementation": "done",
-      "mathematical_tests": "done",
-      "ddp_tests": "done",
-      "gpu_profile": "done",
-      "code_commit": "pending",
-      "run_500": "pending",
-      "retrieval": "pending",
-      "report": "pending"
-    },
-    "said_direction_reduction": "sum",
-    "constraints": "one corrected T1 from shared_init; no new losses; no T0/3epoch; global pairs1024",
-    "validation": {
-      "test_count": 41,
-      "commands": [
-        "OMP_NUM_THREADS=1 python -m pytest tests/test_said_token_v1.py tests/test_t1_correctness_fix.py tests/test_t1_ddp_fix.py -q"
-      ],
-      "details": "37 unaffected tests passed in final combined run; four DDP/health tests passed after correcting diagnostic access through DDP output sink",
-      "cli": "2 real-data single-GPU steps; import/logging/0,1,2 saves; frozen reference unchanged",
-      "profile_run": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_profile_32x64",
-      "profile_summary": "/root/SAID-token-v1/runs_salu/said_token_v1/fix_v2_profile_32x64/profile_summary.json",
-      "profile_steps": [
-        9.718662023544312,
-        2.470316171646118,
-        3.0029869079589844
-      ],
-      "profile_peak_gib": 42.41825532913208,
-      "selected_chunk": [
-        32,
-        64
-      ],
-      "precision": "actual GPU: student outputs bf16; projected router/logits/hard/proxy/ranking/reference/decoder/rec fp32",
-      "ddp_update_note": "Production AdamW normal-case gradients and rank-equal updates tested. Independent SGD update used for degenerate fixtures: Adam amplifies rounding in mathematically zero softmax-bias gradients via eps. SGD leaves production optimizer unchanged.",
-      "tolerances": "score 2e-6+2e-5 relative; reference parameter grads max_abs<=2e-6+3e-5*max_abs(ref); DDP grads/SGD update <=2e-7+2e-5*max_abs(ref); ranks exactly equal; continuous FP64 FD eps1e-6 atol1e-7 rtol1e-5"
-    }
   }
 }
