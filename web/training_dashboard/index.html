@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S0-TriMask 训练面板（只读）</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>S0-TriMask / S0-TriMask-HS 训练面板</h1>
+    <p class="sub">只读 · 不 import 模型 · 不占 GPU · 不加载 checkpoint</p>
+  </div>
+  <div class="controls">
+    <label>运行
+      <select id="run-select"></select>
+    </label>
+    <span id="live-dot" class="dot" title="轮询状态"></span>
+    <span id="last-poll" class="muted"></span>
+  </div>
+</header>
+
+<main>
+  <section id="panel-overview" class="card">
+    <h2>A · 运行概览</h2>
+    <div id="overview-body" class="grid"></div>
+    <div class="progress-wrap">
+      <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+      <div id="progress-text" class="muted"></div>
+    </div>
+    <div id="phase-note" class="note"></div>
+  </section>
+
+  <section id="panel-curves" class="card">
+    <h2>B · 三路曲线</h2>
+    <div class="controls">
+      <label>方向
+        <select id="direction-select">
+          <option value="sum">双向和（I2T+T2I）</option>
+          <option value="i2t">仅 I2T</option>
+          <option value="t2i">仅 T2I</option>
+        </select>
+      </label>
+      <label>显示
+        <select id="smooth-select">
+          <option value="raw">原始记录</option>
+          <option value="ma">滑动平均（仅显示）</option>
+        </select>
+      </label>
+      <label>窗宽 <input id="window-input" type="number" min="2" max="50" value="5"></label>
+      <span class="legend"><i class="sw sw-1"></i>L1 ×10<i class="sw sw-2"></i>L2 ×1<i
+        class="sw sw-3"></i>L3 ×1</span>
+    </div>
+    <canvas id="canvas-paths" height="240"></canvas>
+    <p class="muted" id="paths-note"></p>
+    <div class="split">
+      <div>
+        <h3>总损失</h3>
+        <canvas id="canvas-total" height="160"></canvas>
+      </div>
+      <div>
+        <h3>稀疏项</h3>
+        <canvas id="canvas-sparse" height="160"></canvas>
+        <p class="legend"><i class="sw sw-i"></i>2·L_sparse_I<i class="sw sw-t"></i>0.2·L_sparse_T</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-masks" class="card">
+    <h2>C · mask 面板</h2>
+    <div id="mask-scalars" class="grid"></div>
+    <p class="note" id="mask-source-note"></p>
+    <div class="grid-2">
+      <div>
+        <h3>文本硬门 mT（当前 batch 逐坐标均值）</h3>
+        <canvas id="canvas-mt" class="maskgrid" width="512" height="256"></canvas>
+      </div>
+      <div>
+        <h3>视觉 mask mI（当前 batch 逐坐标均值）</h3>
+        <canvas id="canvas-mi" class="maskgrid" width="512" height="256"></canvas>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h3>交集 mI·mT（逐坐标均值）</h3>
+        <canvas id="canvas-inter" class="maskgrid" width="512" height="256"></canvas>
+      </div>
+      <div>
+        <h3>文本门 pT（当前 batch 首个样本，灰度）</h3>
+        <canvas id="canvas-pt" class="maskgrid" width="512" height="256"></canvas>
+      </div>
+    </div>
+    <p class="muted">横轴/纵轴均为维度索引（32×16 网格）；不标注意义未经验证的概念名。</p>
+    <div id="mask-caption" class="note"></div>
+    <div id="mask-extra" class="grid"></div>
+  </section>
+
+  <section id="panel-eval" class="card">
+    <h2>D · 评估</h2>
+    <div id="eval-note" class="note"></div>
+    <div id="eval-tables"></div>
+    <div id="gate-box" class="note"></div>
+  </section>
+
+  <section id="panel-logs" class="card">
+    <h2>E · 日志</h2>
+    <div class="controls">
+      <button id="btn-json">下载当前指标 JSON</button>
+      <button id="btn-csv">下载指标 CSV</button>
+      <label>条数 <input id="log-limit" type="number" min="10" max="1000" value="200"></label>
+    </div>
+    <div id="issues"></div>
+    <pre id="log-lines" class="logs"></pre>
+  </section>
+</main>
+
+<footer class="muted">
+  页面每 2.5 秒轮询 <code>/api/run/&lt;id&gt;/…</code>。刷新、关闭或断网都不会影响训练；
+  服务只读取已登记 run 目录内的小型文件。
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,12 +1,16 @@
-"""Real-model acceptance for S0-TriMask v0.1 -- run BEFORE the formal 500-step run.
+"""Real-model acceptance for S0-TriMask / S0-TriMask-HS -- run BEFORE the formal 500-step run.
 
 Checks the things the CPU stub tests cannot: the real ViT-B/16 + the frozen shared init load
 strictly, the tokenizer context really is 248, the native CLS/EOS interface is unchanged, and one
-real training step on real ShareGPT4V data runs, produces a finite loss, sends gradient to exactly
-the branches the task requires, saves a checkpoint and exports a bare student that reloads
-strictly with bit-identical native outputs.
+real training step on real ShareGPT4V data runs, produces a finite loss, sends gradient to exactly the
+branches the task requires, saves a checkpoint and exports a bare student that reloads strictly with
+bit-identical native outputs.
 
-    python tools/diag/trimask_acceptance.py --init_state <shared init> --out <report.json>
+Both text-gate modes are supported; in hard mode the acceptance additionally asserts that the forward
+mask is exactly 0/1 and that the text sparsity term is active.
+
+    python tools/diag/trimask_acceptance.py --init_state <shared init> --out <report.json> \
+        --text-gate-mode hard_st --lambda-sparse-t 0.2
 """
 import argparse
 import json
@@ -21,12 +25,12 @@ sys.path.insert(0, REPO)
 sys.path.insert(0, os.path.join(REPO, 'train'))
 
 from model import longclip  # noqa: E402
-from model.said_trimask import ARM, OBJECTIVE, PHASE, TriMaskTrainModule  # noqa: E402
+from model.said_trimask import (GATE_MODE_TO_ARM, GATE_MODE_TO_OBJECTIVE,  # noqa: E402
+                                GATE_MODE_TO_PHASE, HARD_GATE, LAMBDA_SPARSE_T_HS, SOFT_GATE,
+                                TEXT_GATE_MODES, TriMaskTrainModule)
 from said_cvssl_data import Share4VCvsslDataset, cvssl_collate  # noqa: E402
 from train_said_trimask import build_trimask_optimizers, grad_health  # noqa: E402
 from train_said_cls_cvssl import load_init_state  # noqa: E402
-
-import torch.distributed as dist  # noqa: E402
 
 TOKENIZER_CONTEXT = 248
 
@@ -40,17 +44,29 @@ def main():
     parser.add_argument('--device', default='cuda')
     parser.add_argument('--amp_dtype', default='bf16', choices=['bf16', 'fp32'])
     parser.add_argument('--checkpoint_dir', default=None)
+    parser.add_argument('--text-gate-mode', dest='text_gate_mode', default=SOFT_GATE,
+                        choices=list(TEXT_GATE_MODES))
+    parser.add_argument('--lambda-sparse-t', dest='lambda_sparse_t', type=float, default=None)
     parsed = parser.parse_args()
+    if parsed.lambda_sparse_t is None:
+        parsed.lambda_sparse_t = (LAMBDA_SPARSE_T_HS if parsed.text_gate_mode == HARD_GATE else 0.0)
+    if parsed.text_gate_mode == SOFT_GATE and parsed.lambda_sparse_t != 0.0:
+        raise SystemExit('the soft mode must keep lambda_sparse_t = 0')
 
     device = torch.device(parsed.device if torch.cuda.is_available() else 'cpu')
     amp_enabled = parsed.amp_dtype == 'bf16' and device.type == 'cuda'
     amp_dtype = torch.bfloat16 if amp_enabled else torch.float32
-    report = {'objective': OBJECTIVE, 'arm': ARM, 'phase': PHASE,
+    report = {'objective': GATE_MODE_TO_OBJECTIVE[parsed.text_gate_mode],
+              'arm': GATE_MODE_TO_ARM[parsed.text_gate_mode],
+              'phase': GATE_MODE_TO_PHASE[parsed.text_gate_mode],
+              'text_gate_mode': parsed.text_gate_mode,
+              'lambda_sparse_t': parsed.lambda_sparse_t,
               'device': str(device), 'amp': parsed.amp_dtype if amp_enabled else 'fp32'}
 
     # the reference objective gathers every cross-rank tensor with the autograd-aware
     # torch.distributed.nn.all_gather, so a process group must exist even for this single-process
     # pre-flight (the formal run gets one from torchrun)
+    import torch.distributed as dist
     if not dist.is_initialized():
         os.environ.setdefault('MASTER_ADDR', '127.0.0.1')
         os.environ.setdefault('MASTER_PORT', '29721')
@@ -72,7 +88,9 @@ def main():
     report['tokenizer_context'] = int(tokens.shape[1])
     assert int(tokens.shape[1]) == TOKENIZER_CONTEXT, report['tokenizer_context']
 
-    module = TriMaskTrainModule(model, rank=0, grad_checkpoint_views=False).to(device)
+    module = TriMaskTrainModule(model, rank=0, grad_checkpoint_views=False,
+                                text_gate_mode=parsed.text_gate_mode,
+                                lambda_sparse_t=parsed.lambda_sparse_t).to(device)
     clip = module.clip
     optimizer, mask_optimizer, n_backbone, n_mask = build_trimask_optimizers(
         clip, module.text_mask_net, argparse.Namespace(lr=1e-6, mask_lr=1e-3,
@@ -105,12 +123,17 @@ def main():
     report['losses'] = {key: float(out[key]) for key in
                         ('loss_total', 'loss_1', 'loss_1_i2t', 'loss_1_t2i', 'loss_2',
                          'loss_2_i2t', 'loss_2_t2i', 'loss_3', 'loss_3_i2t', 'loss_3_t2i',
-                         'loss_sparse_i')}
+                         'loss_sparse_i', 'loss_sparse_t', 'weighted_loss_sparse_t')}
     report['mask_stats'] = {key: float(out[key]) for key in
                             ('mask_i_keep_ratio', 'mask_i_empty_fraction',
                              'mask_t_mean', 'mask_t_std', 'mask_t_within_sample_std',
                              'mask_t_cosine_with_unmasked', 'mask_t_retained_energy_fraction',
-                             'mask_i_retained_energy_fraction')}
+                             'mask_i_retained_energy_fraction', 'mask_t_empty_fraction',
+                             'mask_t_full_fraction')}
+    report['text_gate'] = {key: float(out[key]) for key in
+                           ('text_gate_pT_mean', 'text_gate_pT_min', 'text_gate_pT_max',
+                            'text_gate_hT_zero_fraction', 'text_gate_hT_one_fraction',
+                            'text_gate_hT_is_binary', 'text_gate_produces_zeros')}
     report['grad_health'] = {key: float(value) for key, value in health.items()}
     report['shapes'] = {'v_a': list(out['v_a'].shape), 't_raw': list(out['t_raw'].shape),
                         'hidden': list(module.clip.encode_text(text, return_full=True)[1].shape),
@@ -138,16 +161,27 @@ def main():
         'text_context_248': report['shapes']['hidden'][1] == TOKENIZER_CONTEXT,
         'mask_from_text_only': True,   # asserted structurally in the CPU tests
     }
+    if parsed.text_gate_mode == HARD_GATE:
+        mask_t = out['m_t'].detach()
+        checks['hard_gate_binary_forward'] = bool(((mask_t <= 0) | (mask_t >= 1)).all())
+        checks['text_sparsity_active'] = report['losses']['weighted_loss_sparse_t'] > 0.0
+        checks['gate_initially_open_at_step0'] = float(mask_t.min()) == 1.0
     report['checks'] = checks
     report['wall_seconds'] = time.time() - started
 
     if parsed.checkpoint_dir:
         os.makedirs(parsed.checkpoint_dir, exist_ok=True)
-        path = os.path.join(parsed.checkpoint_dir, 'acceptance_%s_step%06d.pt' % (ARM, 0))
+        path = os.path.join(parsed.checkpoint_dir, 'acceptance_%s_step%06d.pt'
+                            % (report['arm'], 0))
         torch.save({'model': clip.state_dict(),
                     'text_mask_net': module.text_mask_net.state_dict(),
-                    'completed_steps': 0, 'objective': OBJECTIVE, 'arm': ARM,
-                    'config': {'objective': OBJECTIVE, 'arm': ARM, 'acceptance': True},
+                    'completed_steps': 0, 'objective': report['objective'],
+                    'arm': report['arm'], 'text_gate_mode': parsed.text_gate_mode,
+                    'lambda_sparse_t': parsed.lambda_sparse_t,
+                    'config': {'objective': report['objective'], 'arm': report['arm'],
+                               'text_gate_mode': parsed.text_gate_mode,
+                               'lambda_sparse_t': parsed.lambda_sparse_t,
+                               'acceptance': True},
                     'git_head': 'acceptance'}, path)
         report['acceptance_checkpoint'] = path
 
