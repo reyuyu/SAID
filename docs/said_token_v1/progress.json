@@ -5,6 +5,10 @@
   "worktree": "/root/SAID-token-v1",
   "base_commit": "9b47262f270bb099cda45feb63b3fd1a22853259",
   "objective": "L = L_Said + 0.1 * L_rec (native CLS/EOS inside the one fine-grained objective; no separate global loss, no warm-up stage)",
+  "commits": {
+    "ff893a9": "implementation + tests + specification (model/, train/, tests/, tools/, docs/said_token_v1/{spec.md,progress.json})",
+    "8bdb632": "evaluation tooling (tools/diag/t1_summary.py), launcher fix + smoke/post cases, stage ledger"
+  },
   "stages": [
     {
       "stage": "implementation",
@@ -60,34 +64,83 @@
       "not_a_result": true
     },
     {
-      "stage": "t1_500step_run",
-      "status": "IN_FLIGHT",
-      "plan": "4 x A800 (verified idle), torchrun 4 ranks, batch 256/rank (1024 global pairs), max_steps 500, save_completed_steps 0,20,100,500, first 20 steps logged online as the same run's own check",
-      "launched": "2026-09-12T15:54:32+08:00",
-      "observed_rate": "~21 s/step with no contention, ~26 s/step while the step-0 evaluation shared the GPUs",
-      "ddp_self_checks_all_steps": "said_scaling_abs_diff=0, rec_scaling_abs_diff=0, said_rank_spread=0, said_token_count=16, unsaid_token_count=16",
-      "preliminary_observations_steps_20_100": {
-        "fine_grained": "loss_said 0.0848 (step 1) -> 0.0558 (step 100); margin_active_fraction 0.877 -> 0.600; positive-minus-negative score gap 0.120 -> 0.168; absolute score level drifts down (0.72/0.60 -> 0.52/0.35)",
-        "reconstruction": "cos error 1.0351 -> 0.4682 (training batches), fixed-cohort 1.0499 -> 0.4153, but prediction variance stays ~1e-4, R@1 against the frozen teacher bank stays at chance (1/64), content interventions move the error by <=0.008 while a constant prediction equal to the teacher mean scores 0.2923 -- so the trained decoder is still worse than a constant and content-dependence is NOT ESTABLISHED",
-        "router": "soft_gate_mean on positive pairs reaches 1.000 and the within-pair selected-minus-excluded logit gap stays ~0.03 while the per-pair level grows: sigmoid(a) is flat, so the straight-through proxy's mask-learning term has almost no gradient. Consequence of the frozen parameterisation (tau_r=0.07, no bound on a), NOT changed this round"
-      }
-    },
-    {
       "stage": "eval_pipeline_verified_on_step_0",
       "status": "DONE",
-      "result": "the step-0 checkpoint of this very run reproduces the published Initial arm exactly through the T1 export path: COCO 0.517000/0.766200/0.842800 I2T and 0.326920/0.577600/0.682320 T2I, ShareGPT4V-1K first_sentence 0.544/0.514, Urban-1k 0.6820/0.5280",
+      "result": "the step-0 checkpoint of this run reproduces the published Initial arm exactly through the T1 export path: COCO I2T 0.517000/0.766200/0.842800 and T2I 0.326920/0.577600/0.682320, ShareGPT4V-1K first_sentence 0.544/0.514, Urban-1k 0.6820/0.5280",
       "meaning": "plumbing and initialisation consistency check, not a result of the new architecture"
     },
     {
+      "stage": "t1_500step_run",
+      "status": "STOPPED_BY_USER at step 350",
+      "launched": "2026-09-12T15:54:32+08:00",
+      "stopped": "2026-09-12T18:05:18+08:00 (SIGTERM then SIGKILL at the user's request)",
+      "steps_reached": 350,
+      "last_checkpoint": "step 100 (save points were 0/20/100/500; run_summary.json does NOT exist because the run did not finish)",
+      "logged_steps": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350],
+      "log_integrity": "35 LOG lines, all parseable, 0 broken",
+      "ddp_self_checks_all_steps": "said_scaling_abs_diff=0, rec_scaling_abs_diff=0, said_rank_spread=0, said_token_count=16, unsaid_token_count=16",
+      "rate": "~21.7 s/step at batch 256/rank (1024 global pairs), 4 x A800, 55.6 GB peak per GPU, GPU utilisation 36-38%",
+      "consequence": "the 500-step result, the T1@500 canonical retrieval and the frozen 500-step gate are NOT RUN. The step-0/20/100 checkpoints plus the full step log are preserved for review."
+    },
+    {
+      "stage": "measured_collapse_of_the_t1_objective",
+      "status": "MEASURED (this is the reason the run is not being carried to 500 steps)",
+      "timeline": {
+        "step_1": "loss_said 0.0848, positive 0.7211, negative 0.6008, gap 0.120, margin_active 0.877, native CLS pairwise cos 0.430, aggregated slot pairwise cos 0.809, router logit std 1.102, soft_gate 0.621, selected-excluded 0.035, loss_rec 1.0351",
+        "step_100": "loss_said 0.0558, positive 0.5206, negative 0.3533, gap 0.167, margin_active 0.600, native CLS pairwise cos 0.422, aggregated slot pairwise cos 0.813, router logit std 1.023, soft_gate 1.000, selected-excluded 0.031, loss_rec 0.4682",
+        "step_225": "loss_said 0.1999, positive -1.9259, negative -1.9249, margin_active 0.992",
+        "step_350": "loss_said 0.200027, positive -1.98149, negative -1.98064, gap 0.00085, margin_active 1.000, native CLS pairwise cos 0.9961, aggregated slot pairwise cos 1.0000, router logit std 0.1074, soft_gate 1.000, selected 7.90625 == excluded 7.90625, loss_rec 0.3125, cos_prediction_reference 0.6848"
+      },
+      "interpretation": [
+        "the representation collapsed: by step 350 the mean pairwise cosine between the native student CLS features of different images is 0.996 and between the 32 aggregated visual slots it is 1.0000",
+        "the Said ranking lost all discrimination: the positive and negative scores differ by 0.00085 and both sit at about -1.98, so every hinge saturates and loss_said is pinned at exactly the margin 0.2000",
+        "the router is dead: the selected and the excluded slots score identically (7.90625), the logit standard deviation inside a pair fell to 0.107 and sigmoid(a) is saturated at 1.000, so the straight-through proxy receives almost no mask-learning gradient",
+        "the aggregation stayed flat from the start (slot pairwise cosine 0.81 at step 1, i.e. the 32 slots were already nearly collinear before training), so the gate had little to separate",
+        "the reconstruction term is the only one still improving (cos error 1.0351 -> 0.3125) and it can minimise its loss with a nearly input-independent prediction: on the fixed 64-image cohort the prediction variance stays ~1e-4, R@1 against the frozen teacher bank stays at chance (1/64) and a constant prediction equal to the teacher mean scores 0.2923, i.e. the decoder is not better than a constant"
+      ],
+      "no_change_made": "no objective term, weight, chunk size, learning rate or augmentation was changed in response to these numbers; the frozen specification forbids that, and re-training is out of scope for this round"
+    },
+    {
       "stage": "native_cls_retrieval",
-      "status": "PENDING",
-      "plan": "export the bare student, then canonical COCO (tools/phase30a_fixed_cohort_eval.py --canonical --canonical_only --coco) and Urban-1k (C0 worktree tools/eval_urban1k_cls.py), reusing the existing S0/C0/C1 numbers"
+      "status": "NOT RUN",
+      "detail": "only the step-0 pipeline check exists (T1_step0_canonical.json, T1_step0_urban1k.json). T1@100 / T1@500 retrieval and the frozen gate verdict were not produced."
     },
     {
       "stage": "gate",
-      "status": "PENDING",
-      "rule": "COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236 with at least one strict improvement at step 500, judged at full precision from the raw JSON"
+      "status": "NOT RUN",
+      "rule": "COCO I2T R@1 >= 0.6058000000 and T2I R@1 >= 0.4123600000 with at least one strict improvement, judged at full precision from the raw JSON",
+      "reason": "the run stopped at step 350 with its last checkpoint at step 100"
     }
+  ],
+  "artifacts_on_disk": {
+    "checkpoints": [
+      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000000.pt",
+      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000020.pt",
+      "runs_salu/said_token_v1/t1_500step/t1_T1_said_token_reconstruction_step000100.pt"
+    ],
+    "reference": "runs_salu/said_token_v1/t1_500step/reference_visual_state.pt (sha256 1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d)",
+    "log": "runs_salu/said_token_v1/t1_500step/salu_log.jsonl (35 lines), train.log, config.json",
+    "exports": [
+      "runs_salu/said_token_v1/t1_500step/export/t1_student_step000000.pt"
+    ],
+    "retrieval": [
+      "outputs/said_token_v1/T1_step0_canonical.json",
+      "/root/SAID-gap-completion/outputs/cvssl_screening/baseline_urban1k/T1_step0_urban1k.json"
+    ]
+  },
+  "existing_baselines_for_comparison": {
+    "protocol_note": "native student CLS, R@1; COCO and Urban-1k numbers are not comparable to each other",
+    "Initial": {"coco_i2t_r1": 0.517, "coco_t2i_r1": 0.32692, "urban_i2t_r1": 0.682, "urban_t2i_r1": 0.528},
+    "S0_step500": {"coco_i2t_r1": 0.6058, "coco_t2i_r1": 0.41236, "urban_i2t_r1": 0.87, "urban_t2i_r1": 0.842},
+    "C0_step500": {"coco_i2t_r1": 0.6042, "coco_t2i_r1": 0.40724, "urban_i2t_r1": 0.873, "urban_t2i_r1": 0.834},
+    "C1_step500": {"coco_i2t_r1": 0.6038, "coco_t2i_r1": 0.41216, "urban_i2t_r1": 0.87, "urban_t2i_r1": 0.837}
+  },
+  "open_items_for_review": [
+    "cost: every candidate pair re-evaluates the router and rebuilds its own similarity grid (128 x 32 = 4096 blocks per step per rank at chunk 8/32); every rank walks the whole 1024-candidate global grid (4x redundancy, required by the differentiable-gather DDP scheme); _similarity_grid is built twice per block (hard_said_score and surrogate_said_score) and the transposed grid gets its own bmm. Measured 21.7 s/step with GPUs at 36-38% utilisation, i.e. memory/kernel-launch bound",
+    "router saturation: soft_gate_mean reaches 1.000 while the within-pair selected-minus-excluded logit gap stays ~0.03 as the per-pair level grows; tau_r = 0.07 with no bound or normalisation on a",
+    "slot collapse: the 32 aggregated visual slots are already ~0.81 collinear at step 1 and reach 1.0000 collinear by step 350; no term discourages it (orthogonality / energy terms are forbidden by the specification)",
+    "representation collapse: native CLS pairwise cosine rises 0.43 -> 0.9961, which is what kills the Said ranking and would also wreck the native-CLS retrieval this architecture is judged on",
+    "the hard gate tie-break is by ascending slot index, so once the slots collapse the mask becomes 'the first 16 slots' and the U branch becomes content-independent"
   ],
   "not_run_this_round": [
     "T0_said_token_only training",
@@ -99,6 +152,7 @@
   ],
   "semantic_claims": {
     "unsaid_semantics": "NOT ESTABLISHED",
-    "u_reconstruction_incremental_contribution": "NOT ESTABLISHED (no T0 run)"
+    "u_reconstruction_incremental_contribution": "NOT ESTABLISHED (no T0 run)",
+    "u_reconstruction_content_dependence": "NOT ESTABLISHED (measured: prediction variance ~1e-4, R@1 against the teacher bank at chance, worse than a constant predictor)"
   }
 }
