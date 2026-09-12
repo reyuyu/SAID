@@ -1,0 +1,62 @@
+{
+  "round": "SAID-C1-TCR v0.1",
+  "status": "EXPERIMENT_COMPLETE",
+  "worktree": "/root/SAID-c1-tcr",
+  "branch": "codex/said-c1-tcr-v01",
+  "base_sha": "32925bc62e9cfd8dba571022c9e4cb3d5dcc7d70",
+  "implementation_sha": "PENDING_COMMIT",
+  "started": "2026-09-12T12:00:00+08:00",
+  "completed": "2026-09-12T13:05:37+08:00",
+  "done": [
+    "recon: HEAD 32925bc, clean tree, GPUs idle, C0 worktree untouched",
+    "worktree /root/SAID-c1-tcr on branch codex/said-c1-tcr-v01 from 32925bc",
+    "model/said_cls_reconstruction.py (C1TrainModule, frozen reference, decoder, rec loss)",
+    "train/train_said_cls_c1.py (said_cls_tcr step, 3 optimizers, DDP rec scaling, diagnostics)",
+    "tests/test_said_cls_c1.py 13/13 passed + tests/_c1_ddp_worker.py 2-rank equivalence",
+    "fixed 4 real defects found during bring-up (see report section 3)",
+    "C1 500-step training: completed_steps=500, wall 708.7 s, 1.341 s/step, peak 28.36 GB",
+    "reference_unchanged=True (sha 1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d)",
+    "checkpoints step0/20/100/500 + reference_visual_state.pt",
+    "bare student exported and strict-loaded (317 tensors, missing=[] unexpected=[])",
+    "canonical retrieval C1@500 (loaded 317 tensors, skipped 0)",
+    "table built against Initial / S0@500 / C0-L10@500 / C_L03@500"
+  ],
+  "result": {
+    "verdict": "AUXILIARY_TASK_IMPROVED_ONLY",
+    "gate": "NOT_PROMISING",
+    "coco_i2t_r1": 0.6038,
+    "coco_t2i_r1": 0.41216,
+    "J_C1": 0.50798,
+    "J_S0": 0.50908,
+    "delta_J": -0.0011,
+    "reconstruction": {
+      "loss_rec_step1": 1.3493,
+      "loss_rec_step500": 0.4,
+      "feature_r2_step1": -1.379,
+      "feature_r2_step500": 0.296,
+      "constant_baseline_error": 0.5683,
+      "delta_zero_text": 0.3853,
+      "delta_permuted_text": 0.1988,
+      "delta_zero_u": 0.0403,
+      "delta_permuted_u": 0.0473
+    }
+  },
+  "artifacts": {
+    "run_dir": "/root/SAID-c1-tcr/runs_salu/said_cls_c1",
+    "checkpoint_step500": "/root/SAID-c1-tcr/runs_salu/said_cls_c1/c1_C1_text_conditional_reconstruction_step000500.pt",
+    "bare_student": "/root/SAID-c1-tcr/runs_salu/said_cls_c1/c1_student_step000500.pt",
+    "bare_student_sha256": "d31e702bbe73046e76ca67e1223236ba9c8a36eb77f05753359eadf824d58022",
+    "reference_state": "/root/SAID-c1-tcr/runs_salu/said_cls_c1/reference_visual_state.pt",
+    "canonical_json": "/root/SAID-c1-tcr/outputs/cvssl_screening/c1_tcr/C1_step500_canonical.json",
+    "report": "docs/said_cls_c1/c1_v01_report.md"
+  },
+  "not_run": [
+    "C1 3-epoch",
+    "G0 / R0",
+    "new C0 experiments and hyper-parameter search",
+    "gradient-angle probe",
+    "independent withheld/concept benchmark for Unsaid semantics",
+    "full historical pytest suite (only the 13 new C1 tests were run; no old file changed)"
+  ],
+  "next_command": "STOP per the round's instructions: no 3-epoch run, no hyper-parameter change. If a follow-up is authorised, the natural next step would be a diagnostic on why r_U contributes weakly (U-input sensitivity +0.04 vs text +0.39) rather than a new loss term."
+}
