@@ -53,7 +53,10 @@ case "${1:-status}" in
     echo "=== TRAIN $ARM objective=$OBJECTIVE steps=$STEP dir=$OUT port=$port ==="
     echo "    init=$INIT"
     date -Is
-    nohup $CONDA run --no-capture-output -n said-smartclip \
+    # setsid + stdin/stdout/stderr all detached from the caller: the launch returns immediately and
+    # the run survives the ssh channel closing (the bridge that drives this worktree is not an
+    # interactive login shell)
+    setsid nohup $CONDA run --no-capture-output -n said-smartclip \
       torchrun --nproc_per_node=4 --master_port="$port" "$REPO/train/train_said_trimask.py" \
       --arm "$ARM" --objective "$OBJECTIVE" \
       --lambda_1 10 --lambda_2 1 --lambda_3 1 --lambda_sparse_i 2 \
@@ -64,7 +67,7 @@ case "${1:-status}" in
       --max_steps "$STEP" --save_completed_steps "0,20,100,250,$STEP" \
       --log_every 25 --grad_health_steps "1,20,100,250,$STEP" \
       --grad_checkpoint_views 1 --num_workers 8 --amp_dtype bf16 \
-      > "$OUT/train.log" 2>&1 &
+      > "$OUT/train.log" 2>&1 < /dev/null &
     echo "PID $! log=$OUT/train.log"
     ;;
 
