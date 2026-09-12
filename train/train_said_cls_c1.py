@@ -301,7 +301,15 @@ def main():
         decoder_optimizer.load_state_dict(payload['decoder_optimizer'])
         start_step = int(payload['completed_steps'])
         start_epoch = int(payload.get('epoch', 0))
-        start_batch = int(payload.get('next_batch_index', start_step))
+        start_batch = int(payload.get('next_batch_index', int(payload['step_in_epoch']) + 1))
+        if start_step != start_epoch * steps_per_epoch + start_batch:
+            raise ValueError('resume cursor disagrees with completed steps')
+        if payload['lr_horizon_steps'] != total_steps:
+            raise ValueError('resume must preserve LR horizon')
+        reference_saved = torch.load(payload['reference_state_path'], map_location='cpu', weights_only=False)
+        train_module.reference_visual.load_state_dict(reference_saved['reference_visual'], strict=True)
+        if reference_fingerprint(train_module.reference_visual) != reference_digest or reference_digest != payload['reference_visual_state_sha256']:
+            raise ValueError('resume frozen reference fingerprint mismatch')
         if payload.get('config', {}).get('variant', args.variant) != args.variant:
             raise ValueError('resume variant mismatch')
         if rank == 0:
@@ -319,6 +327,9 @@ def main():
     t_start = time.time()
     compute_times = []
     stopped = False
+    replay_caption = hashlib.sha256()
+    replay_sample = hashlib.sha256()
+    replay_verified = False
 
     for epoch in range(args.epochs):
         if epoch < start_epoch:
@@ -327,7 +338,18 @@ def main():
         sampler.set_epoch(epoch)
         for i, batch in enumerate(loader):
             if epoch == start_epoch and i < start_batch:
+                replay_caption.update(('\n'.join(batch['caption_said'])).encode('utf-8'))
+                replay_sample.update(batch['sample_id'].numpy().tobytes())
                 continue
+            if args.resume and not replay_verified:
+                if rank == 0:
+                    expected = payload['digests']
+                    if replay_sample.hexdigest() != expected['sample_stream_sha256']:
+                        raise RuntimeError('resume sample replay mismatch')
+                    if replay_caption.hexdigest() != expected['caption_stream_sha256']:
+                        raise RuntimeError('resume caption replay mismatch')
+                    print('REPLAY_VERIFIED epoch=%d next_batch=%d next_update=%d caption_sha=%s sample_sha=%s; model RNG at checkpoint not saved, bitwise full resume NOT CLAIMED' % (epoch, i, completed + 1, replay_caption.hexdigest(), replay_sample.hexdigest()), flush=True)
+                replay_verified = True
             if args.max_steps is not None and completed >= args.max_steps:
                 stopped = True
                 break
@@ -396,6 +418,8 @@ def main():
                     'completed_steps': completed,
                     'epoch': epoch,
                     'step_in_epoch': i,
+                    'next_batch_index': i + 1,
+                    'resume_parent': args.resume,
                     'phase': 'said-c1-tcr-v0.1',
                     'objective': 'said_cls_tcr',
                     'config': config,
