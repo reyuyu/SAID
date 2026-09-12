@@ -1,0 +1,90 @@
+{
+  "phase": "said_token_v1",
+  "experiment": "T1_said_token_reconstruction",
+  "branch": "codex/said-token-v1",
+  "worktree": "/root/SAID-token-v1",
+  "base_commit": "9b47262f270bb099cda45feb63b3fd1a22853259",
+  "objective": "L = L_Said + 0.1 * L_rec (native CLS/EOS inside the one fine-grained objective; no separate global loss, no warm-up stage)",
+  "stages": [
+    {
+      "stage": "implementation",
+      "status": "DONE",
+      "artifacts": [
+        "model/said_token_v1.py",
+        "train/train_said_token_v1.py",
+        "tools/exp_said_token_v1.sh",
+        "tools/diag/export_t1_student.py"
+      ],
+      "notes": "router query is the candidate text's native global EOS feature, no reduction over text slots; hard gate tie-breaks by ascending slot index; differentiable all_gather for the Said term, explicit world_size factor for the per-sample rec term"
+    },
+    {
+      "stage": "unit_and_ddp_tests",
+      "status": "DONE",
+      "command": "python -m pytest tests/test_said_token_v1.py -q",
+      "result": "27 passed",
+      "covers": [
+        "last-layer interface (patch tokens, CLS identity, single text projection)",
+        "text validity (padding/SOT/EOT excluded, empty caption reported and finite)",
+        "aggregation weights over legal tokens only, separate aggregator parameters",
+        "gate: exactly 16 of the 32 visual slots, native CLS excluded, deterministic ties",
+        "router query is the native global text feature; text slots do not move the gate",
+        "hard score equals the manual definition; masked slots removed before the max",
+        "proxy forward equals the hard value; proxy carries no gradient to the features",
+        "gradient boundary: L_rec touches only image side + decoder, L_Said never the decoder",
+        "u mask is the detached complement; reference untouched by an optimizer step",
+        "chunking invariance of the objective and the gradients",
+        "T0 (lambda_rec = 0) drops the reconstruction term, no SmartCLIP fallback",
+        "bare student state loads strictly; module construction does not disturb the global RNG",
+        "CLI help/flags and the T0-with-a-weight refusal",
+        "2-rank DDP step equals the single-process reference (gradients rtol 1e-5, bit-identical ranks, equal global means)",
+        "ragged per-rank batch sizes are refused before any large gather"
+      ]
+    },
+    {
+      "stage": "real_cli_short_run",
+      "status": "DONE",
+      "command": "bash tools/exp_said_token_v1.sh smoke",
+      "result": "2 steps on one GPU with real ShareGPT4V data: config printed, step-0 checkpoint + fixed-cohort diagnostics, per-step logs, step 1/2 checkpoints, RUN_SUMMARY with reference_unchanged=true",
+      "observed": {
+        "sec_per_step_step1": 0.99,
+        "sec_per_step_step2": 0.11,
+        "peak_memory_gb": 4.07,
+        "loss_said_global_mean_step1": 0.0611,
+        "loss_said_global_mean_step2": 0.1047,
+        "loss_rec_global_mean_step2": 1.0580,
+        "said_scaling_abs_diff": 0.0,
+        "rec_scaling_abs_diff": 0.0,
+        "said_token_count": 16.0,
+        "unsaid_token_count": 16.0
+      },
+      "not_a_result": true
+    },
+    {
+      "stage": "t1_500step_run",
+      "status": "PENDING",
+      "plan": "4 x A800 (verified idle), torchrun 4 ranks, batch 256/rank (1024 global pairs), max_steps 500, save_completed_steps 0,20,100,500, first 20 steps logged online as the same run's own check"
+    },
+    {
+      "stage": "native_cls_retrieval",
+      "status": "PENDING",
+      "plan": "export the bare student, then canonical COCO (tools/phase30a_fixed_cohort_eval.py --canonical --canonical_only --coco) and Urban-1k (C0 worktree tools/eval_urban1k_cls.py), reusing the existing S0/C0/C1 numbers"
+    },
+    {
+      "stage": "gate",
+      "status": "PENDING",
+      "rule": "COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236 with at least one strict improvement at step 500, judged at full precision from the raw JSON"
+    }
+  ],
+  "not_run_this_round": [
+    "T0_said_token_only training",
+    "3-epoch runs",
+    "hyper-parameter search",
+    "NCE / Bi variants",
+    "gradient-angle probe",
+    "comparison against ShareGPT4V results (user instruction)"
+  ],
+  "semantic_claims": {
+    "unsaid_semantics": "NOT ESTABLISHED",
+    "u_reconstruction_incremental_contribution": "NOT ESTABLISHED (no T0 run)"
+  }
+}
