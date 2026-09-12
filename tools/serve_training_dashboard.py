@@ -160,7 +160,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 
 def build_registry(entries, config_path=None):
-    """``--run id=dir`` entries plus an optional JSON config file."""
+    """``--run id=dir`` entries plus an optional JSON config file.
+
+    A ``--run`` value may carry extra ``|key=value`` fields, e.g.
+    ``--run "hs=dir|prefix=S0_TriMask_HS_step000500|label=HS v0.2"``; the prefix only overrides which
+    evaluation file is preferred, and every path still has to live inside the registered directory.
+    """
     registry = RunRegistry()
     if config_path:
         with open(config_path, 'r', encoding='utf-8') as handle:
@@ -172,8 +177,27 @@ def build_registry(entries, config_path=None):
     for entry in entries or []:
         if '=' not in entry:
             raise SystemExit('--run expects run_id=directory, got %r' % entry)
-        run_id, directory = entry.split('=', 1)
-        registry.register(run_id, directory)
+        run_id, rest = entry.split('=', 1)
+        fields = rest.split('|')
+        directory = fields[0]
+        options = {}
+        for field in fields[1:]:
+            if '=' not in field:
+                raise SystemExit('--run option %r must be key=value' % field)
+            key, value = field.split('=', 1)
+            if key in ('prefix', 'evaluation_prefix'):
+                options['evaluation_prefix'] = value
+            elif key == 'label':
+                options['label'] = value
+            elif key == 'objective':
+                options['objective'] = value
+            elif key == 'arm':
+                options['arm'] = value
+            elif key == 'demo':
+                options['demo'] = value.lower() in ('1', 'true', 'yes')
+            else:
+                raise SystemExit('unknown --run option %r' % key)
+        registry.register(run_id, directory, **options)
     return registry
 
 

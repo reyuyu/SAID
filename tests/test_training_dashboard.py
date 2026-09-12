@@ -446,6 +446,48 @@ def test_only_whitelisted_files_inside_the_run_directory_are_opened(tmp_path, mo
         registry.path('hs_test', '../../etc/passwd')
 
 
+def test_evaluation_is_found_by_its_fixed_suffix_without_an_explicit_prefix(tmp_path):
+    """The runner names files '<arm>_step500_canonical.json'; the panel must still find them."""
+    run_dir = build_run(tmp_path, run_id='hs_dirname', records=2)
+    evaluation_dir = run_dir / 'evaluation'
+    evaluation_dir.mkdir(exist_ok=True)
+    (evaluation_dir / 'S0_TriMask_HS_step000500_canonical.json').write_text(json.dumps({
+        'canonical': {'S0_TriMask_HS@500': {
+            'coco_val2017': {'image2text_R1': 0.6006, 'image2text_R5': 0.824,
+                             'image2text_R10': 0.887, 'text2image_R1': 0.41208,
+                             'text2image_R5': 0.671, 'text2image_R10': 0.76604},
+            'checkpoint_sha256': 'abc'}}}), encoding='utf-8')
+    (evaluation_dir / 'S0_TriMask_HS_step000500_urban1k.json').write_text(json.dumps({
+        'urban1k': {'image2text': {'R1': 0.874, 'R5': 0.975, 'R10': 0.989},
+                    'text2image': {'R1': 0.837, 'R5': 0.963, 'R10': 0.982}},
+        'checkpoint_sha256': 'abc'}), encoding='utf-8')
+    registry = RunRegistry()
+    registry.register('hs_dirname', str(run_dir), evaluation_prefix='unrelated_name')
+    with Server(registry, free_port()) as server:
+        status, payload = server.get('/api/run/hs_dirname/evaluation')
+        assert payload['datasets']['coco']['available'] is True
+        assert payload['datasets']['coco']['file'] == 'S0_TriMask_HS_step000500_canonical.json'
+        assert payload['datasets']['coco']['metrics']['i2t_r1'] == 0.6006
+        assert payload['datasets']['urban1k']['available'] is True
+        # both COCO directions are below the frozen gate, so the verdict is FAIL on raw precision
+        assert payload['verdict']['i2t_pass'] is False
+        assert payload['verdict']['t2i_pass'] is False
+        assert payload['verdict']['verdict'] == 'FAIL'
+
+
+def test_run_option_strings_are_parsed(tmp_path):
+    from serve_training_dashboard import build_registry
+    run_dir = build_run(tmp_path, run_id='opt')
+    registry = build_registry(['opt=%s|prefix=FOO_step000500|label=%s' % (run_dir, 'HS 演示'),
+                               'opt2=%s|demo=true' % run_dir])
+    record = registry.resolve('opt')
+    assert record['evaluation_prefix'] == 'FOO_step000500'
+    assert record['label'] == 'HS 演示'
+    assert registry.resolve('opt2')['demo'] is True
+    with pytest.raises(SystemExit):
+        build_registry(['opt=%s|bogus=1' % run_dir])
+
+
 def test_metrics_csv_and_active_run_agreement(tmp_path):
     run_dir = build_run(tmp_path, records=4)
     with Server(registry_for(run_dir), free_port()) as server:

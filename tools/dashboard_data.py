@@ -34,6 +34,10 @@ EVALUATION_FILES = {
     'coco': 'evaluation/{name}_canonical.json',
     'urban1k': 'evaluation/{name}_urban1k.json',
 }
+# the runner names its evaluation files "<arm>_step<NNNNNN>_<suffix>"; if the registered prefix does
+# not match, the fixed suffix inside the fixed evaluation/ directory is used instead, so a run whose
+# files were named by the trainer is still found without any client-supplied path
+EVALUATION_SUFFIX = {'coco': '_canonical.json', 'urban1k': '_urban1k.json'}
 MAX_RECORDS_PER_READ = 20000
 MAX_LINES_PER_POLL = 4000
 MAX_LINE_BYTES = 1 << 20
@@ -117,11 +121,36 @@ class RunRegistry:
         return os.path.join(self.resolve(run_id)['directory'], RUN_FILES[key])
 
     def evaluation_path(self, run_id, dataset):
+        """Resolve an evaluation file inside the registered run directory (never a client path).
+
+        The registered prefix wins; if it does not exist, the most recently modified file with the
+        fixed dataset suffix inside the fixed ``evaluation/`` subdirectory is used, and the caller
+        reports which file it read.
+        """
         if dataset not in EVALUATION_FILES:
             raise RunNotFound(dataset)
         record = self.resolve(run_id)
-        name = EVALUATION_FILES[dataset].format(name=record['evaluation_prefix'])
-        return os.path.join(record['directory'], name)
+        explicit = os.path.join(record['directory'],
+                                EVALUATION_FILES[dataset].format(name=record['evaluation_prefix']))
+        if os.path.exists(explicit):
+            return explicit
+        directory = os.path.join(record['directory'], 'evaluation')
+        suffix = EVALUATION_SUFFIX[dataset]
+        try:
+            candidates = [name for name in os.listdir(directory) if name.endswith(suffix)]
+        except OSError:
+            return explicit
+
+        def sort_key(name):
+            try:
+                modified = os.path.getmtime(os.path.join(directory, name))
+            except OSError:
+                modified = 0.0
+            return (modified, name)
+
+        if not candidates:
+            return explicit
+        return os.path.join(directory, sorted(candidates, key=sort_key)[-1])
 
 
 def read_json(path):
@@ -366,10 +395,12 @@ class DashboardData:
         self.registry.resolve(run_id)
         result = {'run_id': run_id, 'datasets': {}, 'baselines': BASELINES, 'gate': GATE}
         for dataset in EVALUATION_FILES:
-            payload, error = read_json(self.registry.evaluation_path(run_id, dataset))
+            path = self.registry.evaluation_path(run_id, dataset)
+            payload, error = read_json(path)
             result['datasets'][dataset] = {
                 'available': payload is not None,
                 'error': error,
+                'file': os.path.basename(path),
                 'metrics': self._evaluation_metrics(dataset, payload),
                 'raw': payload if payload is not None else None,
             }
