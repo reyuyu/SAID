@@ -1,0 +1,364 @@
+{
+  "experiment": "C1-VWarm continued from 250 to 500",
+  "final_datasets": [
+    "COCO val2017",
+    "Urban-1k"
+  ],
+  "models": {
+    "S0@500": {
+      "coco": {
+        "image2text_R1": 0.6058,
+        "image2text_R10": 0.8906,
+        "image2text_R5": 0.822,
+        "text2image_R1": 0.41236,
+        "text2image_R10": 0.7662,
+        "text2image_R5": 0.67092
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8700000643730164,
+          "R10": 0.9880000352859497,
+          "R5": 0.971000075340271
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8420000672340393,
+          "R10": 0.9810000658035278,
+          "R5": 0.9670000672340393
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      }
+    },
+    "C1@500": {
+      "coco": {
+        "image2text_R1": 0.6038,
+        "image2text_R10": 0.888,
+        "image2text_R5": 0.8248,
+        "text2image_R1": 0.41216,
+        "text2image_R10": 0.76644,
+        "text2image_R5": 0.67188
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8700000643730164,
+          "R10": 0.9910000562667847,
+          "R5": 0.9730000495910645
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8370000123977661,
+          "R10": 0.9810000658035278,
+          "R5": 0.9630000591278076
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      }
+    },
+    "C1-UN@500": {
+      "coco": {
+        "image2text_R1": 0.605,
+        "image2text_R10": 0.8892,
+        "image2text_R5": 0.8236,
+        "text2image_R1": 0.41356,
+        "text2image_R10": 0.7666,
+        "text2image_R5": 0.6718
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8680000305175781,
+          "R10": 0.9880000352859497,
+          "R5": 0.9720000624656677
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8420000672340393,
+          "R10": 0.9830000400543213,
+          "R5": 0.9630000591278076
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      }
+    },
+    "C1-VWarm@500": {
+      "coco": {
+        "image2text_R1": 0.6032,
+        "image2text_R10": 0.887,
+        "image2text_R5": 0.8242,
+        "text2image_R1": 0.41288,
+        "text2image_R10": 0.76576,
+        "text2image_R5": 0.67092
+      },
+      "urban1k": {
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "checkpoint_sha256": null,
+        "global_pool": "n/a",
+        "image2text": {
+          "R1": 0.8710000514984131,
+          "R10": 0.9900000691413879,
+          "R5": 0.9730000495910645
+        },
+        "image_representation": "legacy_cls",
+        "n_captions": 1000,
+        "n_images": 1000,
+        "positive": "diagonal",
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/datasets/Urban1k/Urban1k",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "text2image": {
+          "R1": 0.8390000462532043,
+          "R10": 0.9820000529289246,
+          "R5": 0.9630000591278076
+        },
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+      }
+    }
+  },
+  "deltas_coco_B_minus": {
+    "S0@500": {
+      "image2text_R1": -0.0026000000000000467,
+      "image2text_R10": -0.0035999999999999366,
+      "image2text_R5": 0.0022000000000000908,
+      "text2image_R1": 0.0005200000000000204,
+      "text2image_R10": -0.00043999999999999595,
+      "text2image_R5": 0.0
+    },
+    "C1@500": {
+      "image2text_R1": -0.0006000000000000449,
+      "image2text_R10": -0.0010000000000000009,
+      "image2text_R5": -0.0005999999999999339,
+      "text2image_R1": 0.0007199999999999984,
+      "text2image_R10": -0.0006800000000000139,
+      "text2image_R5": -0.0009600000000000719
+    },
+    "C1-UN@500": {
+      "image2text_R1": -0.0018000000000000238,
+      "image2text_R10": -0.0021999999999999797,
+      "image2text_R5": 0.0006000000000000449,
+      "text2image_R1": -0.0006799999999999584,
+      "text2image_R10": -0.0008399999999999519,
+      "text2image_R5": -0.0008799999999999919
+    }
+  },
+  "gate": {
+    "status": "FAIL",
+    "pass": false,
+    "rule": "I2T_R1>=.6058 and T2I_R1>=.41236, at least one strictly greater"
+  },
+  "parent_checkpoint_sha256": "1fe7b8907a1b974f5c7b2904a87b7ed0ee35568848eb29d60f969e5b8e92a736",
+  "checkpoint_sha256": "1913e61ee24a9bd559bbb40b59c2ed21eb3d79988852ff10e945effd85646b31",
+  "implementation_sha": "5e39032689a7ebd12cfc03a50b46269f03c0f425",
+  "resume_evidence": "REPLAY_VERIFIED epoch=0 next_batch=250 next_update=251 caption_sha=420add1807c4b5648160a6a981f767cb603fba01c071f1382565af2e382ea9ed sample_sha=b922b75a370f50ee315d5e60b0417cdb5140b623142c47b97fe6745d25ab9e1e; model RNG at checkpoint not saved, bitwise full resume NOT CLAIMED",
+  "new_optimizer_updates": 250,
+  "candidate_total_optimizer_updates": 500,
+  "candidate_sample_presentations": 512000,
+  "matching_candidates": 1024,
+  "lr_horizon": 3651,
+  "continuation_summary": {
+    "arm": "C1_text_conditional_reconstruction",
+    "caption_stream_sha256": "23f1faf62ba9d6cff7988bb7c4fa3d67676414f97916a7341c59754534a5fd4e",
+    "completed_steps": 500,
+    "epochs": 3,
+    "initial_state_sha256": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "lr_horizon_steps": 3651,
+    "mean_sec_per_step": 1.3541512184143067,
+    "objective": "said_cls_tcr",
+    "peak_memory_gb": 28.393980503082275,
+    "reference_unchanged": true,
+    "reference_visual_state_sha256": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+    "reference_visual_state_sha256_final": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+    "sample_stream_sha256": "b0733148ea096678c6dc064857d99608e82cfdfe86c1c2a94c4415a92b357b5c",
+    "steps_per_epoch": 1217,
+    "view_a_pixels_sha256_step0": "0143bfce7caa600c",
+    "wall_sec": 539.5875446796417
+  },
+  "parent_250_summary": {
+    "arm": "C1_text_conditional_reconstruction",
+    "caption_stream_sha256": "420add1807c4b5648160a6a981f767cb603fba01c071f1382565af2e382ea9ed",
+    "completed_steps": 250,
+    "epochs": 3,
+    "initial_state_sha256": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "lr_horizon_steps": 3651,
+    "mean_sec_per_step": 1.3405886373519897,
+    "objective": "said_cls_tcr",
+    "peak_memory_gb": 28.40282917022705,
+    "reference_unchanged": true,
+    "reference_visual_state_sha256": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+    "reference_visual_state_sha256_final": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+    "sample_stream_sha256": "b922b75a370f50ee315d5e60b0417cdb5140b623142c47b97fe6745d25ab9e1e",
+    "steps_per_epoch": 1217,
+    "view_a_pixels_sha256_step0": "da65b218915e42c2",
+    "wall_sec": 363.75526762008667
+  },
+  "logged_first_update": {
+    "arm": "C1_text_conditional_reconstruction",
+    "batch_caption_sha256": "e0d2a37027c663c0",
+    "batch_size_local": 256,
+    "completed_steps": 275,
+    "coordinate_fraction_said": 0.8214035034179688,
+    "coordinate_fraction_unsaid": 0.17859649658203125,
+    "cos_pred_reference": 0.7440884709358215,
+    "decoder_lr": 9.861673782293095e-05,
+    "dism_top1": 0.9375,
+    "epoch": 0,
+    "g_norm": 1.0,
+    "global_pairs": 1024,
+    "lambda_rec": 1.0,
+    "loss_dism": 0.31507444381713867,
+    "loss_rec": 0.44624200463294983,
+    "loss_rec_backward_local": 0.44624200463294983,
+    "loss_rec_global_mean": 0.44749295711517334,
+    "loss_rec_sum": 114.23795318603516,
+    "loss_sidm": 0.29278460144996643,
+    "loss_smart": 7.721397399902344,
+    "loss_smart_unweighted": 0.6078590154647827,
+    "loss_sparsity": 0.8214035034179688,
+    "loss_total": 8.16763973236084,
+    "loss_total_for_backward": 8.16763973236084,
+    "loss_total_for_backward_local": 8.16763973236084,
+    "lr": 9.988659060602464e-07,
+    "mask_logits_mean": 0.78483647108078,
+    "mask_lr": 0.0009861673782293095,
+    "mask_s_keep_ratio": 0.8214035034179688,
+    "mask_u_keep_ratio": 0.17859649658203125,
+    "masked_v_norm": 3.8707990646362305,
+    "native_global_to_reference_cos": 0.9570367932319641,
+    "next_batch_index": 275,
+    "objective": "said_cls_tcr",
+    "peak_memory_gb": 28.393980026245117,
+    "prediction_norm": 0.7005290389060974,
+    "r0_norm": 0.3837984800338745,
+    "r_u_norm": 0.3837984800338745,
+    "rank_decoder_digest": "d316599b5f52b6f2",
+    "rank_param_digest": "27a753a59f7a2dd9",
+    "rec_backward_scale": 1.0,
+    "rec_valid_count_tensor": 256.0,
+    "rec_visual_alpha": 1.0,
+    "reference_norm": 1.0,
+    "reference_visual_state_sha256": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+    "retained_energy_said": 0.8497193455696106,
+    "retained_energy_unsaid": 0.1502806544303894,
+    "samples_per_sec": 782.4362930782736,
+    "sec_per_step": 1.3087327480316162,
+    "sidm_top1": 0.94140625,
+    "soft_mask_mean": 0.6574780344963074,
+    "step_in_epoch": 274,
+    "weighted_rec": 0.44624200463294983,
+    "world_size": 4
+  },
+  "logged_last_update": {
+    "arm": "C1_text_conditional_reconstruction",
+    "batch_caption_sha256": "a1060303559a3483",
+    "batch_size_local": 256,
+    "completed_steps": 500,
+    "coordinate_fraction_said": 0.786712646484375,
+    "coordinate_fraction_unsaid": 0.213287353515625,
+    "cos_pred_reference": 0.7782573699951172,
+    "decoder_lr": 9.546126813865286e-05,
+    "dism_top1": 0.9375,
+    "epoch": 0,
+    "g_norm": 1.0,
+    "global_pairs": 1024,
+    "lambda_rec": 1.0,
+    "loss_dism": 0.20472192764282227,
+    "loss_rec": 0.3921118974685669,
+    "loss_rec_backward_local": 0.3921118974685669,
+    "loss_rec_global_mean": 0.3912575840950012,
+    "loss_rec_sum": 100.38064575195312,
+    "loss_sidm": 0.1914123147726059,
+    "loss_smart": 5.534768104553223,
+    "loss_smart_unweighted": 0.39613425731658936,
+    "loss_sparsity": 0.786712646484375,
+    "loss_total": 5.9268798828125,
+    "loss_total_for_backward": 5.9268798828125,
+    "loss_total_for_backward_local": 5.9268798828125,
+    "lr": 9.815918902984451e-07,
+    "mask_logits_mean": 0.6772356033325195,
+    "mask_lr": 0.0009546126813865286,
+    "mask_s_keep_ratio": 0.786712646484375,
+    "mask_u_keep_ratio": 0.213287353515625,
+    "masked_v_norm": 5.0458478927612305,
+    "native_global_to_reference_cos": 0.9134993553161621,
+    "next_batch_index": 500,
+    "objective": "said_cls_tcr",
+    "peak_memory_gb": 28.393980503082275,
+    "prediction_norm": 0.7401198744773865,
+    "r0_norm": 0.5270954370498657,
+    "r_u_norm": 0.5270954370498657,
+    "rank_decoder_digest": "f615470b0423f4e2",
+    "rank_param_digest": "71d52d394b7d04ba",
+    "rec_backward_scale": 1.0,
+    "rec_valid_count_tensor": 256.0,
+    "rec_visual_alpha": 1.0,
+    "reference_norm": 1.0,
+    "reference_visual_state_sha256": "1428ea22801976c3358cf10905a64ba00bab7cadacda80e352016b3f8a2e1e9d",
+    "retained_energy_said": 0.7079113721847534,
+    "retained_energy_unsaid": 0.2920886278152466,
+    "samples_per_sec": 781.5361890403955,
+    "sec_per_step": 1.3102400302886963,
+    "sidm_top1": 0.94140625,
+    "soft_mask_mean": 0.6363006234169006,
+    "step_in_epoch": 499,
+    "weighted_rec": 0.3921118974685669,
+    "world_size": 4
+  },
+  "tests": "3 existing micro-ablation tests PASS; CLI syntax PASS; actual sample/caption replay and reference fingerprint PASS",
+  "limitations": [
+    "checkpoint did not save full model RNG; bitwise full training equivalence not claimed",
+    "single seed; point metrics do not establish statistical superiority",
+    "prior A/B selection used ShareGPT4V fixed1K, not the requested COCO 1K with five captions; B500 is separately user-authorized and does not rely on that selection"
+  ],
+  "STOP": true
+}
