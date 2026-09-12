@@ -244,8 +244,9 @@ class C1TrainModule(nn.Module):
 
             finite = torch.isfinite(v32).all(dim=-1) & torch.isfinite(t_cond).all(dim=-1)
             nonempty = m_u.sum(dim=-1) > 0
+            masked_norm = masked_v.norm(dim=-1)
             norm_r = r_u.norm(dim=-1)
-            valid = finite & nonempty & (norm_r > self.eps)
+            valid = finite & nonempty & (masked_norm > self.eps)
 
             pred = self.decoder(r_input, t_cond)
             rec, info = reconstruction_loss(pred, target, valid)
