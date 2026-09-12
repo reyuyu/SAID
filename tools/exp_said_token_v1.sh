@@ -103,15 +103,17 @@ case "${1:-check}" in
     EOUT=$REPO/outputs/said_token_v1
     mkdir -p "$EOUT"
     export CUDA_VISIBLE_DEVICES=0
-    cd "$MAIN" || exit 1
+    # the canonical protocol tool travels with this lineage: use this worktree's copy and pass the
+    # frozen manifests by ABSOLUTE path (outputs/ is untracked, so they only exist in /root/SAID)
+    cd "$REPO" || exit 1
     echo "=== EVAL canonical COCO T1@$STEPS ckpt=$CKPT ==="
     date -Is
     /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
-      python "$MAIN/tools/phase30a_fixed_cohort_eval.py" \
+      python "$REPO/tools/phase30a_fixed_cohort_eval.py" \
       --label said_token_v1 --gap_anti_temperature 1.0 \
-      --usr_manifest outputs/validation/sharegpt4v1k_usr_manifest.json \
-      --source_manifest outputs/validation/sharegpt4v1k_manifest.json \
-      --sharegpt4v_manifest outputs/validation/sharegpt4v1k_manifest.json \
+      --usr_manifest "$MAIN/outputs/validation/sharegpt4v1k_usr_manifest.json" \
+      --source_manifest "$MAIN/outputs/validation/sharegpt4v1k_manifest.json" \
+      --sharegpt4v_manifest "$MAIN/outputs/validation/sharegpt4v1k_manifest.json" \
       --data_root "$SHARE4V_DATA_ROOT" --image_root "$SHARE4V_DATA_ROOT" \
       --image_batch_size 64 --canonical --canonical_only --coco \
       --canonical_tags "step$STEPS" --canonical_names "T1_step$STEPS" \
@@ -133,14 +135,32 @@ case "${1:-check}" in
     date -Is
     /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
       python "$C0/tools/eval_urban1k_cls.py" \
-      --ckpt "$CKPT" --expect-steps "$STEPS" \
-      --root /root/datasets/Urban1k/Urban1k \
-      --out "$EOUT/T1_step${STEPS}_urban1k.json" \
-      --batch_size 64 --image_batch_size 64 --similarity_chunk 512
+      --checkpoint "$CKPT" --label "T1_step$STEPS" --expect-steps "$STEPS" \
+      --base_model 'ViT-B/16' --device cuda --batch_size 64 \
+      --urban_root /root/datasets/Urban1k/Urban1k \
+      --out "$EOUT/T1_step${STEPS}_urban1k.json"
     status=$?
     echo "URBAN_EXIT exit=$status"
     date -Is
     exit $status
+    ;;
+  post)
+    # wait for the in-flight run, then do the whole post-processing chain in one background session:
+    # export -> canonical COCO -> Urban-1k -> summary table. Each step is skipped loudly on failure.
+    echo "=== waiting for the training process to exit ==="
+    date -Is
+    while pgrep -f train_said_token_v1.py > /dev/null; do sleep 60; done
+    date -Is
+    echo "log lines: $(wc -l < "$OUT/salu_log.jsonl")"
+    tail -1 "$OUT/run_summary.json"
+    STEPS=$STEPS bash "$REPO/tools/exp_said_token_v1.sh" export || { echo POST_FAILED_EXPORT; exit 1; }
+    STEPS=$STEPS bash "$REPO/tools/exp_said_token_v1.sh" eval || { echo POST_FAILED_EVAL; exit 1; }
+    STEPS=$STEPS bash "$REPO/tools/exp_said_token_v1.sh" urban || { echo POST_FAILED_URBAN; exit 1; }
+    /root/miniconda3/bin/conda run --no-capture-output -n said-smartclip \
+      python "$REPO/tools/diag/t1_summary.py" --retrieval \
+      > "$REPO/outputs/said_token_v1/t1_summary_table.txt" 2>&1
+    tail -22 "$REPO/outputs/said_token_v1/t1_summary_table.txt"
+    echo POST_DONE
     ;;
   diag)
     echo "fixed-cohort diagnostics: keys diag_* at every saved step (0, 20, 100, $STEPS)"

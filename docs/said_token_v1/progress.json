@@ -61,8 +61,22 @@
     },
     {
       "stage": "t1_500step_run",
-      "status": "PENDING",
-      "plan": "4 x A800 (verified idle), torchrun 4 ranks, batch 256/rank (1024 global pairs), max_steps 500, save_completed_steps 0,20,100,500, first 20 steps logged online as the same run's own check"
+      "status": "IN_FLIGHT",
+      "plan": "4 x A800 (verified idle), torchrun 4 ranks, batch 256/rank (1024 global pairs), max_steps 500, save_completed_steps 0,20,100,500, first 20 steps logged online as the same run's own check",
+      "launched": "2026-09-12T15:54:32+08:00",
+      "observed_rate": "~21 s/step with no contention, ~26 s/step while the step-0 evaluation shared the GPUs",
+      "ddp_self_checks_all_steps": "said_scaling_abs_diff=0, rec_scaling_abs_diff=0, said_rank_spread=0, said_token_count=16, unsaid_token_count=16",
+      "preliminary_observations_steps_20_100": {
+        "fine_grained": "loss_said 0.0848 (step 1) -> 0.0558 (step 100); margin_active_fraction 0.877 -> 0.600; positive-minus-negative score gap 0.120 -> 0.168; absolute score level drifts down (0.72/0.60 -> 0.52/0.35)",
+        "reconstruction": "cos error 1.0351 -> 0.4682 (training batches), fixed-cohort 1.0499 -> 0.4153, but prediction variance stays ~1e-4, R@1 against the frozen teacher bank stays at chance (1/64), content interventions move the error by <=0.008 while a constant prediction equal to the teacher mean scores 0.2923 -- so the trained decoder is still worse than a constant and content-dependence is NOT ESTABLISHED",
+        "router": "soft_gate_mean on positive pairs reaches 1.000 and the within-pair selected-minus-excluded logit gap stays ~0.03 while the per-pair level grows: sigmoid(a) is flat, so the straight-through proxy's mask-learning term has almost no gradient. Consequence of the frozen parameterisation (tau_r=0.07, no bound on a), NOT changed this round"
+      }
+    },
+    {
+      "stage": "eval_pipeline_verified_on_step_0",
+      "status": "DONE",
+      "result": "the step-0 checkpoint of this very run reproduces the published Initial arm exactly through the T1 export path: COCO 0.517000/0.766200/0.842800 I2T and 0.326920/0.577600/0.682320 T2I, ShareGPT4V-1K first_sentence 0.544/0.514, Urban-1k 0.6820/0.5280",
+      "meaning": "plumbing and initialisation consistency check, not a result of the new architecture"
     },
     {
       "stage": "native_cls_retrieval",
