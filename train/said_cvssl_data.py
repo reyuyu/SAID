@@ -148,6 +148,11 @@ class Share4VCvsslDataset(data.Dataset):
             'image_a': image_a,
             'image_b': image_b,
             'caption_said': caption_said,
+            # ADDITIVE (S0-Suffix v0.1): the FULL caption, so a new branch can derive a suffix. The
+            # caption draw above is untouched -- same call, same order, same RNG stream -- and this
+            # field changes no existing key, no sample order and no digest. `caption_said` is exactly
+            # `'. '.join(caption_full.split('. ')[:prefix_k])`, which the trainer asserts at runtime.
+            'caption_full': caption,
             'image_id': image_id_from_path(record['image']),
             'sample_id': int(index) + self.total_len,
             'prefix_k': int(prefix_k),
@@ -163,6 +168,7 @@ def cvssl_collate(samples) -> Dict[str, torch.Tensor]:
         'image_a': torch.stack([sample['image_a'] for sample in samples], dim=0),
         'image_b': torch.stack([sample['image_b'] for sample in samples], dim=0),
         'caption_said': [sample['caption_said'] for sample in samples],
+        'caption_full': [sample['caption_full'] for sample in samples],
         'image_id': torch.tensor([sample['image_id'] for sample in samples], dtype=torch.long),
         'sample_id': torch.tensor([sample['sample_id'] for sample in samples], dtype=torch.long),
         'prefix_k': torch.tensor([sample['prefix_k'] for sample in samples], dtype=torch.long),
