@@ -129,6 +129,89 @@ def registry_for(run_dir, run_id='hs_test', **kwargs):
     return registry
 
 
+def _probe_payload():
+    """A small stand-in for the geometry probe output, with the fields the page displays."""
+    return {
+        'probe': 'trimask_hs_geometry_probe', 'read_only': True, 'new_optimizer_updates': 0,
+        'not_a_canonical_evaluation': True, 'scope': 'S0-TriMask-HS @500, 256 x 256 forward-only',
+        'checkpoint': {'path': '/tmp/ckpt.pt', 'sha256_before': 'a' * 64, 'sha256_after': 'a' * 64,
+                       'sha256_unchanged': True,
+                       'identity': {'objective': 'smartclip_trimask_hs', 'arm': 'S0_TriMask_HS',
+                                    'completed_steps': 500, 'text_gate_mode': 'hard_st',
+                                    'lambda_sparse_t': 0.2},
+                       'clip_tensors': 317, 'text_mask_net_tensors': 16},
+        'parameter_state': {'before': {'clip': 'x'}, 'after': {'clip': 'x'}, 'unchanged': True},
+        'run_status': {'unchanged': True, 'sha256_before': 'b' * 64, 'sha256_after': 'b' * 64},
+        'manifest': {'count': 256, 'sha256': 'c' * 64,
+                     'selection': {'seed': 0, 'n_images': 256},
+                     'source': {'annotations_sha256': 'd' * 64},
+                     'image_ids': [1, 2], 'annotation_ids': [10, 11], 'skipped_captions': []},
+        'timing': {'wall_seconds': 12.5},
+        'dtypes_and_precision': {'image_features': 'torch.float32'},
+        'mask_statistics': {'mT_keep_ratio_mean': 0.95},
+        'reconciliation_with_trained_scoring_form': {'matmul_vs_broadcast_cosine_q1_max_abs_diff': 1e-5},
+        'diagnostic_A_variance': {
+            'v_total': 0.05, 'v_level': 0.001, 'v_profile': 0.013, 'v_interaction': 0.036,
+            'v_caption_dependent': 0.037,
+            'share_of_total': {'level': 0.02, 'profile': 0.26, 'interaction': 0.72},
+            'share_of_caption_dependent': {'level': 0.027, 'interaction': 0.973},
+            'identity_v_total_minus_parts': 0.0,
+            'identity_v_caption_dependent_minus_parts': 0.0,
+            'historical_field_check': {'value': 0.001, 'equals_v_level': True}},
+        'diagnostic_B_replacements': {
+            'variants': {
+                'NORMAL': {'q1_equals_normal_max_abs_diff': 0.0,
+                           'L3_I2T': {'ce': 1.1, 'R@1': 0.7, 'mrr': 0.8, 'per_query_rank': [1, 2]},
+                           'L2_I2T': {'ce': 0.77, 'R@1': 0.79, 'mrr': 0.86, 'per_query_rank': [1, 1]},
+                           'L3_T2I': {'ce': 1.02, 'R@1': 0.75, 'mrr': 0.83}},
+                'SHUFFLED_seed0': {'q1_equals_normal_max_abs_diff': 0.0,
+                                   'L3_I2T': {'ce': 1.22, 'R@1': 0.7, 'mrr': 0.79},
+                                   'paired_vs_normal': {'L3_I2T': {'delta_ce_mean': 0.11,
+                                                                  'changed_rank_queries': 47}}}},
+            'identity_checks': {'ones_q3_equals_normal_q1_max_abs_diff': 0.0,
+                                'ones_q2_equals_raw_global_cosine_max_abs_diff': 0.0},
+            'shuffled_aggregate': {'L3_I2T': {'ce_mean': 1.2, 'ce_min': 1.18, 'ce_max': 1.23,
+                                              'R@1_mean': 0.705}},
+            'shuffle_permutations': {'seeds': [0], 'report': [{'seed': 0}]},
+            'not_used': 'L1 and loss_total'},
+        'diagnostic_C_geometry': {
+            'stats': {'valid_pairs': 65536, 'total_pairs': 65536, 'valid_fraction': 1.0,
+                      'max_abs_error_on_valid_pairs': 2e-5,
+                      'factor_positive_mean': 0.9166, 'factor_negative_mean': 0.9165},
+            'q3_metrics': {'I2T': {'ce': 1.12, 'R@1': 0.707, 'mrr': 0.805, 'per_query_rank': [1]},
+                           'T2I': {'ce': 1.02, 'R@1': 0.746, 'mrr': 0.834}},
+            'qcap_metrics': {'I2T': {'ce': 1.16, 'R@1': 0.703, 'mrr': 0.807, 'per_query_rank': [2]},
+                             'T2I': {'ce': 1.06, 'R@1': 0.746, 'mrr': 0.833}},
+            'qcap_vs_q3_paired': {'I2T': {'delta_ce_mean': 0.043, 'delta_R@1': -0.004,
+                                          'changed_rank_queries': 38, 'rank_worsened': 19,
+                                          'rank_improved': 19, 'delta_s_pos_mean': 2.67,
+                                          'delta_s_max_negative_mean': 2.30},
+                                  'T2I': {'delta_ce_mean': 0.046, 'delta_R@1': 0.0,
+                                          'changed_rank_queries': 6, 'rank_worsened': 3,
+                                          'rank_improved': 3, 'delta_s_pos_mean': 2.67,
+                                          'delta_s_max_negative_mean': 2.32}}},
+        'hard_queries': [{'path': 'L3', 'direction': 'I2T', 'query_index': 5,
+                          'query_label': '100/200', 'rank': 14, 'ce': 13.4, 'm_max': -13.2,
+                          'm_lse': -13.4, 'strongest_negative_index': 9,
+                          'strongest_negative_label': '300/400', 'score_of_worst_negative': 29.8,
+                          'qcap_rank': 6, 'qcap_score_of_worst_negative': 33.4,
+                          'factor_of_positive': 0.75, 'factor_of_worst_negative': 0.89,
+                          'query_caption': 'a cat', 'strongest_negative_caption': 'a dog',
+                          'visual_verification': 'NOT RUN'}],
+        'tie_rule': 'rank = 1 + #{j != pos : score[j] > score[pos]}',
+        'not_run': ['image-level verification of the hard-query negatives'],
+    }
+
+
+def write_probe(run_dir, payload=None):
+    directory = run_dir / 'diagnostics'
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / 'hs_mask_geometry_probe.json').write_text(
+        json.dumps(payload if payload is not None else _probe_payload()), encoding='utf-8')
+    (directory / 'manifest.json').write_text(json.dumps({'count': 256}), encoding='utf-8')
+    return directory
+
+
 # ---------------------------------------------------------------- health / runs
 def test_health_and_run_listing(tmp_path):
     run_dir = build_run(tmp_path)
@@ -497,3 +580,133 @@ def test_metrics_csv_and_active_run_agreement(tmp_path):
         assert 'completed_steps' in header and 'loss_total' in header
         assert len(csv_text.splitlines()) == 5          # header + 4 records
         assert 'caption' not in header
+
+
+# ---------------------------------------------------------------- F: offline diagnostics
+def test_diagnostics_endpoint_reports_未诊断_without_fabricating_zeros(tmp_path):
+    run_dir = build_run(tmp_path)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/diagnostics')
+    assert status == 200
+    assert payload['available'] is False
+    assert payload['status'] == '未诊断'
+    assert payload['file'] == 'hs_mask_geometry_probe.json'
+    assert payload['error'] is None                     # a missing file is not an error
+    # every numeric block is explicitly absent rather than 0
+    for key in ('variance', 'geometry', 'replacements', 'hard_queries', 'checkpoint',
+                'new_optimizer_updates', 'scope'):
+        assert payload[key] is None, key
+    assert payload['files']['probe']['available'] is False
+    assert payload['reminders']                        # the fixed reminders travel with the payload
+
+
+def test_diagnostics_endpoint_serves_the_probe_and_prunes_query_ranks(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_probe(run_dir)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/diagnostics')
+    assert status == 200
+    assert payload['available'] is True and payload['status'] == '已诊断'
+    assert payload['new_optimizer_updates'] == 0       # the probe must not have trained anything
+    assert payload['not_a_canonical_evaluation'] is True
+    checkpoint = payload['checkpoint']
+    assert checkpoint['identity']['arm'] == 'S0_TriMask_HS'
+    assert checkpoint['sha256_unchanged'] is True
+    assert checkpoint['parameter_state_unchanged'] is True
+    assert checkpoint['run_status_unchanged'] is True
+    shares = payload['variance']['share_of_total']
+    assert shares['level'] + shares['profile'] + shares['interaction'] == pytest.approx(1.0)
+    # the per-query rank arrays of the variants are pruned from the response, the summary numbers stay
+    normal = payload['replacements']['variants']['NORMAL']
+    assert normal['L3_I2T']['ce'] == pytest.approx(1.1)
+    assert 'per_query_rank' not in normal['L3_I2T']
+    assert 'per_query_rank' not in normal['L2_I2T']
+    assert payload['geometry']['stats']['valid_fraction'] == pytest.approx(1.0)
+    assert payload['hard_queries'][0]['strongest_negative_label'] == '300/400'
+    assert payload['tie_rule'].startswith('rank = 1 +')
+    assert payload['not_run']
+
+
+def test_diagnostics_never_reads_a_client_supplied_path(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_probe(run_dir)
+    with Server(registry_for(run_dir), free_port()) as server:
+        for path in ('/api/run/../diagnostics', '/api/run/%2e%2e%2fdiagnostics',
+                     '/api/run/unknown_run/diagnostics', '/api/run/hs_test/diagnostics/extra'):
+            status, payload = server.get(path)
+            assert status == 404, path
+            assert 'error' in payload
+
+
+def test_diagnostics_only_opens_whitelisted_files_and_writes_nothing(tmp_path, monkeypatch):
+    run_dir = build_run(tmp_path)
+    write_probe(run_dir)
+    # a stray file inside diagnostics/ must never be served
+    (run_dir / 'diagnostics' / 'anything_else.json').write_text('{"secret": 1}', encoding='utf-8')
+    opened = []
+    real_open = open
+
+    def tracking_open(path, *args, **kwargs):
+        opened.append(str(path))
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr('builtins.open', tracking_open)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, _ = server.get('/api/run/hs_test/diagnostics')
+    assert status == 200
+    assert not any('anything_else' in path for path in opened)
+    # the service is read-only: nothing was created or modified inside the run directory
+    before = sorted(os.listdir(str(run_dir)))
+    with Server(registry_for(run_dir), free_port()) as server:
+        server.get('/api/run/hs_test/diagnostics')
+    assert sorted(os.listdir(str(run_dir))) == before
+
+
+def test_diagnostics_does_not_change_run_status_or_the_verdict(tmp_path):
+    status_payload = {'phase': 'complete', 'completed_steps': 500, 'arm': 'S0_TriMask_HS'}
+    run_dir = build_run(tmp_path, status=status_payload, evaluation=True)
+    write_probe(run_dir)
+    # the real @500 evaluation (0.6006 / 0.41208) FAILS the frozen gate; the new endpoint must not
+    # be able to change that verdict, neither by writing anything nor by miscounting the file
+    canonical = run_dir / 'evaluation' / 'hs_test_canonical.json'
+    canonical.write_text(json.dumps({'canonical': {'S0_TriMask_HS@500': {
+        'coco_val2017': {'image2text_R1': 0.6006, 'image2text_R5': 0.824, 'image2text_R10': 0.887,
+                         'text2image_R1': 0.41208, 'text2image_R5': 0.671,
+                         'text2image_R10': 0.766},
+        'checkpoint_sha256': 'cafe'}}}), encoding='utf-8')
+    status_file = run_dir / 'run_status.json'
+    before = status_file.read_text(encoding='utf-8')
+    canonical_before = canonical.read_text(encoding='utf-8')
+    with Server(registry_for(run_dir), free_port()) as server:
+        _, evaluation_before = server.get('/api/run/hs_test/evaluation')
+        status, _ = server.get('/api/run/hs_test/diagnostics')
+        _, evaluation_after = server.get('/api/run/hs_test/evaluation')
+    assert status == 200
+    assert status_file.read_text(encoding='utf-8') == before
+    assert canonical.read_text(encoding='utf-8') == canonical_before
+    assert evaluation_before['verdict']['verdict'] == 'FAIL'
+    assert evaluation_after == evaluation_before
+
+
+def test_service_still_never_imports_torch_with_the_diagnostics_endpoint(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_probe(run_dir)
+    script = (
+        'import json, sys, urllib.request\n'
+        'sys.path.insert(0, %r)\n'
+        'from dashboard_data import RunRegistry\n'
+        'from serve_training_dashboard import build_server\n'
+        'registry = RunRegistry()\n'
+        'registry.register("hs_test", %r)\n'
+        'server, data, port = build_server(registry, "127.0.0.1", 0, %r)\n'
+        'import threading\n'
+        'threading.Thread(target=server.serve_forever, daemon=True).start()\n'
+        'with urllib.request.urlopen("http://127.0.0.1:%%d/api/run/hs_test/diagnostics" %% port) as r:\n'
+        '    payload = json.loads(r.read())\n'
+        'assert payload["available"] is True\n'
+        'assert "torch" not in sys.modules, sorted(m for m in sys.modules if "torch" in m)\n'
+        'print("NO_TORCH_OK")\n'
+    ) % (TOOLS_DIR, str(run_dir), WEB_DIR)
+    result = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, result.stderr
+    assert 'NO_TORCH_OK' in result.stdout

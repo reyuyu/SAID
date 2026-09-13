@@ -113,6 +113,34 @@
     <div id="issues"></div>
     <pre id="log-lines" class="logs"></pre>
   </section>
+  <section id="panel-diagnostics" class="card">
+    <h2>F · 离线诊断（只读前向 · 非正式评估）</h2>
+    <div id="diag-banner" class="note"></div>
+    <div id="diag-scope" class="grid"></div>
+    <p class="muted" id="diag-reminders"></p>
+
+    <h3>1 · 文本门 mT 的方差分解（256 caption × 512 坐标，FP64，population）</h3>
+    <div id="diag-variance"></div>
+    <canvas id="canvas-variance" height="150"></canvas>
+    <p class="muted" id="diag-variance-note"></p>
+
+    <h3>2 · 文本门替换对照（NORMAL / SHUFFLED×4 / MEAN_PROFILE / ONES）</h3>
+    <div id="diag-variants"></div>
+    <canvas id="canvas-variants" height="180"></canvas>
+    <p class="muted" id="diag-variants-note"></p>
+
+    <h3>3 · Q3 与 Qcap 的交集几何</h3>
+    <div id="diag-geometry"></div>
+    <p class="muted" id="diag-geometry-note"></p>
+
+    <h3>4 · 困难查询（按 CE 排序，最多 20 条）</h3>
+    <details id="diag-hard">
+      <summary>展开 / 折叠（含负候选 ID，视觉核查未运行）</summary>
+      <div id="diag-hard-body"></div>
+    </details>
+
+    <p class="note" id="diag-not-run"></p>
+  </section>
 </main>
 
 <footer class="muted">

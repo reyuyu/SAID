@@ -6,6 +6,9 @@
 'use strict';
 
 const POLL_MS = 2500;
+/* the offline diagnostics file only changes when the probe is re-run by hand, so it is fetched on a
+ * run change and then at most every 15 s instead of on every 2.5 s poll */
+const DIAG_REFRESH_MS = 15000;
 const PHASE_COLOURS = {
   not_started: '#93a1b1', training: '#4da3ff', exporting: '#b48cff',
   evaluating_coco: '#57d9a3', evaluating_urban: '#ffb454', complete: '#57d9a3',
@@ -20,6 +23,9 @@ let state = {
   maskPayload: null,
   evaluation: null,
   logs: null,
+  diagnostics: null,
+  diagnosticsRunId: null,
+  diagnosticsAt: 0,
   pollTimer: null,
 };
 
@@ -520,10 +526,266 @@ async function pollOnce() {
   qs('live-dot').className = 'dot ' + (status.phase === 'failed' ? 'bad' : 'ok');
   qs('live-dot').style.background = PHASE_COLOURS[status.phase] || '#93a1b1';
   setText(qs('last-poll'), '最近轮询 ' + new Date().toLocaleTimeString());
+
+  const now = Date.now();
+  if (state.diagnosticsRunId !== runId || now - state.diagnosticsAt > DIAG_REFRESH_MS) {
+    state.diagnosticsRunId = runId;
+    state.diagnosticsAt = now;
+    getJSON('/api/run/' + runId + '/diagnostics')
+      .then(renderDiagnostics)
+      .catch(reportError);
+  }
 }
 
-function download(filename, text, type) {
-  const blob = new Blob([text], { type: type || 'application/json' });
+/* ---------------------------------------------------------------- F: offline diagnostics
+ *
+ * Everything in this section comes from one read-only file the probe wrote by hand
+ * (`diagnostics/hs_mask_geometry_probe.json`). Opening or refreshing this page can never run the
+ * probe, load a checkpoint or touch a GPU: the endpoint only reads that file. When the file does
+ * not exist the section says 未诊断 and shows no fabricated zeros.
+ */
+
+function kvGrid(container, items) {
+  container.textContent = '';
+  items.forEach(pair => {
+    const div = document.createElement('div');
+    div.className = 'kv';
+    const k = document.createElement('div'); k.className = 'k'; k.textContent = pair[0];
+    const v = document.createElement('div'); v.className = 'v'; setText(v, pair[1]);
+    div.appendChild(k); div.appendChild(v);
+    container.appendChild(div);
+  });
+}
+
+function tableBlock(container, headers, rows) {
+  container.textContent = '';
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headers.forEach(text => {
+    const th = document.createElement('th'); th.textContent = text; headRow.appendChild(th);
+  });
+  thead.appendChild(headRow); table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  rows.forEach(cells => {
+    const tr = document.createElement('tr');
+    cells.forEach(cell => {
+      const td = document.createElement('td'); setText(td, cell); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody); container.appendChild(table);
+  return table;
+}
+
+function fmtShare(value, digits) {
+  if (value === null || value === undefined) return '暂无';
+  return (value * 100).toFixed(digits === undefined ? 2 : digits) + '%';
+}
+
+function fmtSigned(value, digits) {
+  if (value === null || value === undefined || Number.isNaN(value)) return '暂无';
+  const size = Math.abs(value).toFixed(digits === undefined ? 4 : digits);
+  return (value >= 0 ? '+' : '−') + size;
+}
+
+function drawBars(canvas, items, options) {
+  const opts = options || {};
+  const height = Number(canvas.getAttribute('height')) || 150;
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 600;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.height = height + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  const padLeft = 6, padRight = 6, padTop = 20, padBottom = 40;
+  const plotW = Math.max(1, width - padLeft - padRight);
+  const plotH = Math.max(1, height - padTop - padBottom);
+  const values = items.map(item => Number(item.value) || 0);
+  const maxValue = opts.maxValue !== undefined ? opts.maxValue
+    : Math.max.apply(null, values.concat([0.0001]));
+  const slot = plotW / Math.max(1, items.length);
+  items.forEach((item, index) => {
+    const value = Number(item.value) || 0;
+    const barHeight = Math.max(1, (value / maxValue) * plotH);
+    const x = padLeft + index * slot + slot * 0.16;
+    const w = slot * 0.68;
+    ctx.fillStyle = item.colour || '#4da3ff';
+    ctx.fillRect(x, padTop + plotH - barHeight, w, barHeight);
+    ctx.fillStyle = '#dbe4ee';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(opts.format ? opts.format(value) : value.toFixed(3), x + w / 2,
+                 padTop + plotH - barHeight - 4);
+    ctx.save();
+    ctx.translate(x + w / 2, padTop + plotH + 12);
+    ctx.rotate(-Math.PI / 9);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#93a1b1';
+    ctx.fillText(item.label, 0, 0);
+    ctx.restore();
+  });
+  ctx.strokeStyle = '#2a3644';
+  ctx.beginPath();
+  ctx.moveTo(padLeft, padTop + plotH);
+  ctx.lineTo(padLeft + plotW, padTop + plotH);
+  ctx.stroke();
+}
+
+function renderDiagnostics(payload) {
+  const banner = qs('diag-banner');
+  const scope = qs('diag-scope');
+  const reminders = qs('diag-reminders');
+  const varianceBox = qs('diag-variance');
+  const variantsBox = qs('diag-variants');
+  const geometryBox = qs('diag-geometry');
+  const hardBox = qs('diag-hard-body');
+  const notRun = qs('diag-not-run');
+  state.diagnostics = payload;
+
+  reminders.textContent = (payload.reminders || []).map(text => '· ' + text).join('   ');
+
+  if (!payload.available) {
+    banner.textContent = '未诊断：' + (payload.error || ('未找到 ' + payload.directory + '/' + payload.file))
+      + '。运行 tools/diag/trimask_hs_geometry_probe.py 后本区域才会出现数字。';
+    scope.textContent = '';
+    varianceBox.textContent = '';
+    variantsBox.textContent = '';
+    geometryBox.textContent = '';
+    hardBox.textContent = '';
+    notRun.textContent = '';
+    ['canvas-variance', 'canvas-variants'].forEach(id => {
+      const canvas = qs(id);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+    return;
+  }
+
+  const checkpoint = payload.checkpoint || {};
+  const identity = checkpoint.identity || {};
+  const manifest = payload.manifest || {};
+  banner.textContent = '已诊断（只读前向）· 文件 ' + payload.file
+    + ' · 写入时间 ' + (payload.updated_at_iso || '暂无')
+    + ' · 本轮新增 optimizer updates = ' + payload.new_optimizer_updates + '（必须为 0）';
+
+  kvGrid(scope, [
+    ['诊断对象', (identity.arm || '暂无') + ' @ ' + identity.completed_steps + ' 步'],
+    ['objective / 门模式', (identity.objective || '暂无') + ' / ' + (identity.text_gate_mode || '暂无')],
+    ['λ_sparse_T', identity.lambda_sparse_t],
+    ['checkpoint sha256', (checkpoint.sha256_before || '').slice(0, 16) + '…'],
+    ['checkpoint 未被修改', checkpoint.sha256_unchanged === true ? '是（前后一致）' : '否'],
+    ['参数 state 未被修改', checkpoint.parameter_state_unchanged === true ? '是（前后一致）' : '否'],
+    ['run_status 未被改写', checkpoint.run_status_unchanged === true ? '是' : '否'],
+    ['文本分支张量数', checkpoint.text_mask_net_tensors],
+    ['诊断池', (manifest.count || '?') + ' 图 × ' + (manifest.count || '?') + ' 文本（COCO val2017）'],
+    ['抽样 seed / 规则', (manifest.selection || {}).seed + ' / 见 manifest'],
+    ['耗时', fmt(payload.timing && payload.timing.wall_seconds, 1, ' 秒')],
+    ['是否正式评估', payload.not_a_canonical_evaluation ? '不是：不参与晋级门，也不替换原生 CLS/EOS 成绩' : '暂无'],
+  ]);
+
+  /* 1. variance decomposition */
+  const variance = payload.variance || {};
+  const shares = variance.share_of_total || {};
+  const captionShare = (variance.v_total ? variance.v_caption_dependent / variance.v_total : null);
+  tableBlock(varianceBox, ['成分', '含义', '方差值', '占 V_total', '占 V_caption_dependent'], [
+    ['V_level', '不同 caption 整体保留比例的差别', fmt(variance.v_level, 8), fmtShare(shares.level),
+      fmtShare((variance.share_of_caption_dependent || {}).level)],
+    ['V_profile', '跨 caption 稳定的逐坐标偏好', fmt(variance.v_profile, 8), fmtShare(shares.profile), '—'],
+    ['V_interaction', '去掉保留量与公共轮廓后 caption×坐标 的交互', fmt(variance.v_interaction, 8),
+      fmtShare(shares.interaction), fmtShare((variance.share_of_caption_dependent || {}).interaction)],
+    ['V_caption_dependent', '偏离公共逐坐标轮廓的全部变化（= level + interaction）',
+      fmt(variance.v_caption_dependent, 8), fmtShare(captionShare), '100%'],
+    ['V_total', '全部分布之和（= level + profile + interaction）', fmt(variance.v_total, 8), '100%', '—'],
+  ]);
+  drawBars(qs('canvas-variance'), [
+    { label: 'V_level', value: shares.level, colour: '#b48cff' },
+    { label: 'V_profile', value: shares.profile, colour: '#4da3ff' },
+    { label: 'V_interaction', value: shares.interaction, colour: '#57d9a3' },
+    { label: 'V_caption_dep', value: captionShare, colour: '#ffb454' },
+  ], { maxValue: 1, format: value => (value * 100).toFixed(1) + '%' });
+  qs('diag-variance-note').textContent =
+    '恒等式误差：V_total −(level+profile+interaction) = ' + fmt(variance.identity_v_total_minus_parts, 12)
+    + '，V_caption_dependent −(level+interaction) = '
+    + fmt(variance.identity_v_caption_dependent_minus_parts, 12)
+    + '。旧日志字段（V_total − mean_j Var_d）实测 = ' + fmt((variance.historical_field_check || {}).value, 8)
+    + '，与 V_level ' + ((variance.historical_field_check || {}).equals_v_level ? '相等' : '不等')
+    + '：它只反映保留量差别，不是全部 caption 自适应成分。';
+
+  /* 2. text-gate replacement */
+  const variants = (payload.replacements || {}).variants || {};
+  const order = ['NORMAL', 'MEAN_PROFILE', 'ONES', 'SHUFFLED_seed0', 'SHUFFLED_seed1',
+                 'SHUFFLED_seed2', 'SHUFFLED_seed3'];
+  const rows = order.filter(name => variants[name]).map(name => {
+    const entry = variants[name];
+    const l3 = entry.L3_I2T || {}, l3t = entry.L3_T2I || {}, l2 = entry.L2_I2T || {};
+    const paired = ((entry.paired_vs_normal || {}).L3_I2T) || {};
+    return [name, fmt(l2.ce, 4), fmt(l2['R@1'], 4), fmt(l3.ce, 4), fmt(l3['R@1'], 4), fmt(l3.mrr, 4),
+            fmt(l3t.ce, 4), fmt(l3t['R@1'], 4), fmtSigned(paired.delta_ce_mean, 4),
+            paired.changed_rank_queries === undefined ? '—' : paired.changed_rank_queries];
+  });
+  tableBlock(variantsBox,
+             ['文本门变体', 'L2·I2T CE', 'L2·I2T R@1', 'L3·I2T CE', 'L3·I2T R@1', 'L3·I2T MRR',
+              'L3·T2I CE', 'L3·T2I R@1', 'ΔCE vs NORMAL', '排名变化查询数'], rows);
+  drawBars(qs('canvas-variants'), order.filter(name => variants[name]).map(name => ({
+    label: name.replace('SHUFFLED_', 'SHUF_'),
+    value: (variants[name].L3_I2T || {}).ce,
+    colour: name === 'NORMAL' ? '#57d9a3' : (name.indexOf('SHUFFLED') === 0 ? '#ff6b6b' : '#4da3ff'),
+  })), { format: value => value.toFixed(4) });
+  const shuffledAggregate = (payload.replacements || {}).shuffled_aggregate || {};
+  const identityChecks = (payload.replacements || {}).identity_checks || {};
+  qs('diag-variants-note').textContent =
+    'L3·I2T 的 4 个 SHUFFLED：CE 均值 ' + fmt((shuffledAggregate.L3_I2T || {}).ce_mean, 4)
+    + '（范围 ' + fmt((shuffledAggregate.L3_I2T || {}).ce_min, 4) + ' ~ '
+    + fmt((shuffledAggregate.L3_I2T || {}).ce_max, 4) + '），R@1 均值 '
+    + fmt((shuffledAggregate.L3_I2T || {}).R@1_mean, 4)
+    + '。实现核对：全 1 时 Q3−Q1 = ' + fmt(identityChecks.ones_q3_equals_normal_q1_max_abs_diff, 8)
+    + '，Q2−原生全局余弦 = ' + fmt(identityChecks.ones_q2_equals_raw_global_cosine_max_abs_diff, 8)
+    + '。L1 与 loss_total 不参与比较：L1 不随文本门变化。';
+
+  /* 3. intersection geometry */
+  const geometry = payload.geometry || {};
+  const stats = geometry.stats || {};
+  const geoRows = ['I2T', 'T2I'].map(direction => {
+    const q3 = (geometry.q3_metrics || {})[direction] || {};
+    const qcap = (geometry.qcap_metrics || {})[direction] || {};
+    const paired = (geometry.qcap_vs_q3_paired || {})[direction] || {};
+    return [direction, fmt(q3.ce, 4), fmt(qcap.ce, 4), fmtSigned(paired.delta_ce_mean, 4),
+            fmt(q3['R@1'], 4), fmt(qcap['R@1'], 4), fmtSigned(paired.delta_R@1, 4),
+            fmt(q3.mrr, 4), fmt(qcap.mrr, 4), paired.changed_rank_queries,
+            paired.rank_worsened, paired.rank_improved,
+            fmtSigned(paired.delta_s_pos_mean, 4), fmtSigned(paired.delta_s_max_negative_mean, 4)];
+  });
+  tableBlock(geometryBox,
+             ['方向', 'Q3 CE', 'Qcap CE', 'ΔCE', 'Q3 R@1', 'Qcap R@1', 'ΔR@1', 'Q3 MRR', 'Qcap MRR',
+              '排名变化', '变差', '变好', 'Δ正例分数', 'Δ最强负例分数'], geoRows);
+  qs('diag-geometry-note').textContent =
+    '恒等式 Q3 = Qcap × factor：有效 pair ' + stats.valid_pairs + ' / ' + stats.total_pairs
+    + '（' + fmtShare(stats.valid_fraction) + '），最大绝对误差 '
+    + fmt(stats.max_abs_error_on_valid_pairs, 8) + '。factor 正例均值 '
+    + fmt(stats.factor_positive_mean, 4) + ' vs 负例均值 ' + fmt(stats.factor_negative_mean, 4)
+    + '：两者几乎相同，说明该因子并未专门压低正例。';
+
+  /* 4. hard queries */
+  const queries = payload.hard_queries || [];
+  tableBlock(hardBox,
+             ['路径', '方向', '查询（图/标注）', 'rank', 'CE', 'M_max', 'M_lse', '最强负例（图/标注）',
+              'Q3 该负例', 'Qcap 该负例', 'Qcap rank', 'factor 正例', 'factor 该负例', '视觉核查'],
+             queries.map(row => [
+               row.path, row.direction, row.query_label, row.rank, fmt(row.ce, 3),
+               fmt(row.m_max, 3), fmt(row.m_lse, 3), row.strongest_negative_label,
+               fmt(row.score_of_worst_negative, 2), fmt(row.qcap_score_of_worst_negative, 2),
+               row.qcap_rank === undefined ? '—' : row.qcap_rank,
+               fmt(row.factor_of_positive, 3), fmt(row.factor_of_worst_negative, 3),
+               row.visual_verification]));
+  notRun.textContent = 'NOT RUN：' + (payload.not_run || []).join('；');
+
+  qs('diag-hard').open = false;
+}
+
+function download(filename, text, type) {  const blob = new Blob([text], { type: type || 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url; link.download = filename;

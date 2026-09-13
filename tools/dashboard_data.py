@@ -34,6 +34,22 @@ EVALUATION_FILES = {
     'coco': 'evaluation/{name}_canonical.json',
     'urban1k': 'evaluation/{name}_urban1k.json',
 }
+# read-only offline diagnostics (the geometry probe): fixed directory, fixed file names, written by
+# `tools/diag/trimask_hs_geometry_probe.py` and never by this service
+DIAGNOSTICS_DIR = 'diagnostics'
+DIAGNOSTICS_FILES = {
+    'probe': 'hs_mask_geometry_probe.json',
+    'manifest': 'manifest.json',
+    'queries_csv': 'hs_mask_geometry_probe_queries.csv',
+}
+DIAGNOSTIC_LABELS = {'available': '已诊断', 'missing': '未诊断'}
+# fixed reminders attached to every diagnostics response, so the page cannot present the numbers
+# without them
+DIAGNOSTIC_REMINDERS = [
+    '坐标方差不是语义信息比例：它只描述 mask 取值在 caption 与坐标两个方向上的分布。',
+    '余弦更高不等于排名更好：读出分数上升可能同时抬高正例与难负例。',
+    '只读前向干预不等于重新训练后的因果结论：本轮没有产生任何新的 optimizer update。',
+]
 # the runner names its evaluation files "<arm>_step<NNNNNN>_<suffix>"; if the registered prefix does
 # not match, the fixed suffix inside the fixed evaluation/ directory is used instead, so a run whose
 # files were named by the trainer is still found without any client-supplied path
@@ -108,7 +124,6 @@ class RunRegistry:
         if not RUN_ID_PATTERN.match(run_id or '') or run_id not in self._runs:
             raise RunNotFound(run_id)
         return self._runs[run_id]
-
     def ids(self):
         return sorted(self._runs)
 
@@ -151,6 +166,13 @@ class RunRegistry:
         if not candidates:
             return explicit
         return os.path.join(directory, sorted(candidates, key=sort_key)[-1])
+
+    def diagnostics_path(self, run_id, key='probe'):
+        """Resolve one whitelisted diagnostics file inside the registered run directory."""
+        if key not in DIAGNOSTICS_FILES:
+            raise RunNotFound(key)
+        return os.path.join(self.resolve(run_id)['directory'], DIAGNOSTICS_DIR,
+                            DIAGNOSTICS_FILES[key])
 
 
 def read_json(path):
@@ -389,6 +411,96 @@ class DashboardData:
                     break
         return {'run_id': run_id, 'snapshot': snapshot, 'snapshot_error': error,
                 'latest_heavy_scalars': latest_heavy}
+
+    # ---------------------------------------------------------------- diagnostics
+    def diagnostics(self, run_id):
+        """The read-only offline geometry probe, or an explicit 未诊断 when it has not been run.
+
+        Only the three whitelisted files inside ``diagnostics/`` are ever opened, the response is
+        built from the file's own content plus its mtime, and nothing here can start a forward pass:
+        a page refresh cannot re-run the probe or touch the GPU.
+        """
+        self.registry.resolve(run_id)
+        probe_path = self.registry.diagnostics_path(run_id, 'probe')
+        payload, error = read_json(probe_path)
+        try:
+            updated_at = os.path.getmtime(probe_path)
+        except OSError:
+            updated_at = None
+        files = {}
+        for key in DIAGNOSTICS_FILES:
+            path = self.registry.diagnostics_path(run_id, key)
+            files[key] = {'file': os.path.basename(path), 'available': os.path.isfile(path)}
+        result = {
+            'run_id': run_id,
+            'available': payload is not None,
+            'status': DIAGNOSTIC_LABELS['available'] if payload is not None
+                      else DIAGNOSTIC_LABELS['missing'],
+            'file': os.path.basename(probe_path),
+            'directory': DIAGNOSTICS_DIR,
+            'files': files,
+            'error': error,
+            'updated_at': updated_at,
+            'updated_at_iso': (time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(updated_at))
+                               if updated_at else None),
+            'reminders': DIAGNOSTIC_REMINDERS,
+        }
+        if payload is None:
+            # no fabricated zeros: every field the page would show is explicitly absent
+            for key in ('scope', 'read_only', 'new_optimizer_updates', 'not_a_canonical_evaluation',
+                        'checkpoint', 'manifest', 'variance', 'replacements', 'geometry',
+                        'hard_queries', 'not_run', 'tie_rule', 'dtypes_and_precision',
+                        'mask_statistics', 'reconciliation_with_trained_scoring_form', 'timing'):
+                result[key] = None
+            result['new_optimizer_updates'] = None
+            return result
+
+        replacements = payload.get('diagnostic_B_replacements') or {}
+        variants = {}
+        for name, entry in (replacements.get('variants') or {}).items():
+            variants[name] = {key: ({k: v for k, v in value.items() if k != 'per_query_rank'}
+                                    if isinstance(value, dict) else value)
+                              for key, value in entry.items()}
+        checkpoint = payload.get('checkpoint') or {}
+        manifest = payload.get('manifest') or {}
+        result.update({
+            'scope': payload.get('scope'),
+            'read_only': payload.get('read_only'),
+            'new_optimizer_updates': payload.get('new_optimizer_updates'),
+            'not_a_canonical_evaluation': payload.get('not_a_canonical_evaluation'),
+            'tie_rule': payload.get('tie_rule'),
+            'not_run': payload.get('not_run'),
+            'timing': payload.get('timing'),
+            'dtypes_and_precision': payload.get('dtypes_and_precision'),
+            'mask_statistics': payload.get('mask_statistics'),
+            'reconciliation_with_trained_scoring_form':
+                payload.get('reconciliation_with_trained_scoring_form'),
+            'checkpoint': {
+                'sha256_before': checkpoint.get('sha256_before'),
+                'sha256_after': checkpoint.get('sha256_after'),
+                'sha256_unchanged': checkpoint.get('sha256_unchanged'),
+                'identity': checkpoint.get('identity'),
+                'meta': checkpoint.get('meta'),
+                'clip_tensors': checkpoint.get('clip_tensors'),
+                'text_mask_net_tensors': checkpoint.get('text_mask_net_tensors'),
+                'parameter_state_unchanged': (payload.get('parameter_state') or {}).get('unchanged'),
+                'run_status_unchanged': (payload.get('run_status') or {}).get('unchanged'),
+            },
+            'manifest': {'count': manifest.get('count'), 'sha256': manifest.get('sha256'),
+                         'selection': manifest.get('selection'), 'source': manifest.get('source'),
+                         'image_ids': manifest.get('image_ids'),
+                         'annotation_ids': manifest.get('annotation_ids'),
+                         'skipped_captions': manifest.get('skipped_captions')},
+            'variance': payload.get('diagnostic_A_variance'),
+            'replacements': {'variants': variants,
+                             'identity_checks': replacements.get('identity_checks'),
+                             'shuffled_aggregate': replacements.get('shuffled_aggregate'),
+                             'shuffle_permutations': replacements.get('shuffle_permutations'),
+                             'not_used': replacements.get('not_used')},
+            'geometry': payload.get('diagnostic_C_geometry'),
+            'hard_queries': payload.get('hard_queries'),
+        })
+        return result
 
     # ---------------------------------------------------------------- evaluation
     def evaluation(self, run_id):

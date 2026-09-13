@@ -121,6 +121,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     return self._json(200, self.data.masks(run_id))
                 if leaf == 'evaluation':
                     return self._json(200, self.data.evaluation(run_id))
+                if leaf == 'diagnostics':
+                    # read-only offline probe results; when the probe has not been run this returns
+                    # an explicit 未诊断 payload and never a fabricated zero
+                    return self._json(200, self.data.diagnostics(run_id))
                 if leaf == 'logs':
                     limit = int(query.get('limit', ['200'])[0])
                     return self._json(200, self.data.logs(run_id, limit=max(1, min(limit, 1000))))

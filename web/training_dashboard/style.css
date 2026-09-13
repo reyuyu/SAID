@@ -123,6 +123,13 @@ td.fail { color: var(--danger); }
 .badge.gate-pass { color: var(--ok); border-color: var(--ok); }
 .badge.gate-fail { color: var(--danger); border-color: var(--danger); }
 
+/* F · offline diagnostics: no new visual language, only what the tables need */
+#panel-diagnostics h3 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+#panel-diagnostics table th { text-align: left; white-space: nowrap; }
+#panel-diagnostics table td { font-variant-numeric: tabular-nums; }
+#panel-diagnostics details { margin-top: 8px; }
+#panel-diagnostics summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+
 footer { padding: 12px 20px 30px; text-align: center; }
 
 @media (max-width: 620px) {
