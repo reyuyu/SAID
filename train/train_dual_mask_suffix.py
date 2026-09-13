@@ -33,6 +33,7 @@ from model import longclip  # noqa: E402
 from model.dual_mask_suffix import (  # noqa: E402
     DualMaskSuffixTrainModule,
     SUFFIX_LAMBDA,
+    U_SPARSE_LAMBDA,
     split_caption_suffix,
 )
 from model.said_cls_cvssl import (  # noqa: E402
@@ -249,6 +250,13 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--init-state", default=FORMAL_INIT)
     parser.add_argument("--image-chunk", type=int, default=16)
     parser.add_argument("--text-chunk", type=int, default=32)
+    parser.add_argument("--lambda-suffix", type=float, default=SUFFIX_LAMBDA,
+                        help="weight of the suffix alignment term in "
+                             "10L_S + 2S_S + lambda_suffix*L_U (+ lambda_u_sparse*S_U); "
+                             "the 1.0 default reproduces the accepted Clean v0.1 objective")
+    parser.add_argument("--lambda-u-sparse", type=float, default=U_SPARSE_LAMBDA,
+                        help="weight of the valid-positive U-gate sparsity term; the 0.0 default "
+                             "reproduces the accepted Clean v0.1 objective")
     parser.add_argument("--num-workers", type=int, default=8)
     parser.add_argument("--total-len", type=int, default=1000)
     parser.add_argument("--amp-dtype", choices=("bf16", "fp32"), default="bf16")
@@ -272,7 +280,9 @@ def main() -> int:
     model.train()
     load_init_state(model, args.init_state, rank)
     module = DualMaskSuffixTrainModule(model, suffix_mode=args.suffix_mode, rank=rank,
-                                       image_chunk=args.image_chunk, text_chunk=args.text_chunk).to(device)
+                                       image_chunk=args.image_chunk, text_chunk=args.text_chunk,
+                                       lambda_suffix=args.lambda_suffix,
+                                       lambda_u_sparse=args.lambda_u_sparse).to(device)
     if world > 1:
         module = torch.nn.parallel.DistributedDataParallel(
             module, device_ids=[local_rank] if device.type == "cuda" else None,
@@ -292,7 +302,11 @@ def main() -> int:
     os.makedirs(args.output_dir, exist_ok=True)
     config = {
         "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
-        "suffix_lambda": SUFFIX_LAMBDA, "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+        "suffix_lambda": args.lambda_suffix,
+        "u_sparsity_lambda": args.lambda_u_sparse,
+        "total_objective": "10*L_S + 2*S_S + %g*L_U + %g*S_U"
+                           % (args.lambda_suffix, args.lambda_u_sparse),
+        "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
         "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
         "batch_size_per_gpu": args.batch_size, "world_size": world, "epochs": args.epochs,
         "loader_batches": len(loader), "lr_horizon_steps": horizon, "max_steps": args.max_steps,
@@ -303,7 +317,7 @@ def main() -> int:
         "debug_optimizer_updates": 0,
         "init_state": args.init_state,
         "training_sha": _git_head(), "arguments": vars(args),
-        "accumulation": 1, "u_sparsity": 0.0,
+        "accumulation": 1, "u_sparsity": args.lambda_u_sparse,
         "communication_env": {k: os.environ.get(k) for k in
             ('NCCL_SOCKET_IFNAME', 'NCCL_IB_DISABLE', 'NCCL_P2P_DISABLE', 'GLOO_SOCKET_IFNAME', 'CUDA_VISIBLE_DEVICES')},
     }
@@ -388,8 +402,10 @@ def main() -> int:
                 for key, value in out.items():
                     if torch.is_tensor(value) and value.numel() == 1:
                         record[key] = float(value.detach().cpu())
-                    elif value is None and key in ("m_u_keep_ratio", "m_u_probability_mean"):
+                    elif value is None:
                         record[key] = None
+                    elif isinstance(value, (int, float, bool)):
+                        record[key] = value
                 with open(log_path, "a", encoding="utf-8") as h:
                     h.write(json.dumps(record, sort_keys=True) + "\n")
                 if args.save_every and completed % args.save_every == 0:

@@ -1,4 +1,12 @@
-"""Production DDP total objective versus an independent full-batch reference."""
+"""Production DDP total objective versus an independent full-batch reference.
+
+The independent reference builds the complete global batch in one graph and never calls a collective,
+so it is an outside check of both the S0 term, the suffix alignment term, the valid-positive U-gate
+sparsity term and the DDP reduction that combines them.
+
+Run with ``--lambda-suffix 10 --lambda-u-sparse 2`` to check the Dual-Mask-Full v0.1 objective; the
+defaults (1.0 / 0.0) reproduce the accepted Clean v0.1 objective.
+"""
 import argparse
 import copy
 import json
@@ -54,8 +62,14 @@ class ToyMaskNet(nn.Module):
         return self.linear(hidden.mean(dim=1))
 
 
-def independent_global_objective(module, images, prefix, suffix, valid):
-    """No collectives: the complete global batch already lives in this graph."""
+def independent_global_objective(module, images, prefix, suffix, valid,
+                                 lambda_suffix=1.0, lambda_u_sparse=0.0):
+    """No collectives: the complete global batch already lives in this graph.
+
+    The U-gate sparsity of the reference is built from the same diagonal positive pairs the
+    production tile loop extracts -- row ``i`` against candidate column ``i`` -- averaged over the
+    feature dimension once and then over the global valid count ``V``.
+    """
     g = module.clip.encode_image(images)
     p, hidden = module.clip.encode_text(prefix, return_full=True)
     m_s, _, _ = said_mask_from_hidden(module.clip.mask_net, hidden)
@@ -67,16 +81,19 @@ def independent_global_objective(module, images, prefix, suffix, valid):
     s0 = 10 * (F.cross_entropy(s0_scores, labels) + F.cross_entropy(s0_scores.T, labels)) + 2 * m_s.abs().mean()
     if int(valid.sum()) < 2:
         zero = g.sum() * 0.0
-        return s0 + zero, zero, zero, zero
+        return s0 + zero, zero, zero, zero, zero
     t = F.normalize(module.clip.encode_text(suffix).float(), dim=-1, eps=1e-6)
     g_norm = F.normalize(g.float(), dim=-1, eps=1e-6)
     rows = []
+    diagonal = []
     for i in range(len(g)):
         cells = []
         for j in range(len(t)):
             x = torch.cat((g_norm[i].detach(), g_norm[i].detach() * m_s[j].detach()))
             probability = torch.sigmoid(module.suffix_gate(x))
             mask = (probability >= .5).to(probability.dtype) + (probability - probability.detach())
+            if i == j:
+                diagonal.append(mask)
             u = F.normalize(g_norm[i] * mask, dim=-1, eps=1e-6)
             cells.append(100 * (u * t[j]).sum())
         rows.append(torch.stack(cells))
@@ -84,7 +101,10 @@ def independent_global_objective(module, images, prefix, suffix, valid):
     selected = q[valid][:, valid]
     valid_labels = torch.arange(int(valid.sum()), device=g.device)
     i2t, t2i = F.cross_entropy(selected, valid_labels), F.cross_entropy(selected.T, valid_labels)
-    return s0 + i2t + t2i, i2t + t2i, i2t, t2i
+    diagonal = torch.stack(diagonal)
+    s_u = (diagonal.abs().mean(dim=-1) * valid.float()).sum() / int(valid.sum())
+    align = lambda_suffix * (i2t + t2i)
+    return s0 + align + lambda_u_sparse * s_u, i2t + t2i, i2t, t2i, s_u
 
 
 def error_metrics(actual, reference):
@@ -106,6 +126,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', required=True)
     parser.add_argument('--backend', choices=('gloo', 'nccl'), default='gloo')
+    parser.add_argument('--lambda-suffix', type=float, default=1.0)
+    parser.add_argument('--lambda-u-sparse', type=float, default=0.0)
     args = parser.parse_args()
     rank, world = int(os.environ['RANK']), int(os.environ['WORLD_SIZE'])
     device = torch.device('cuda', int(os.environ['LOCAL_RANK'])) if args.backend == 'nccl' else torch.device('cpu')
@@ -115,7 +137,9 @@ def main():
     dist.init_process_group(args.backend)
     torch.manual_seed(123)
     model = DualMaskSuffixTrainModule(ToyClip(), 'masked', rank=rank, feature_dim=4,
-                                      image_chunk=2, text_chunk=3).to(device)
+                                      image_chunk=2, text_chunk=3,
+                                      lambda_suffix=args.lambda_suffix,
+                                      lambda_u_sparse=args.lambda_u_sparse).to(device)
     # Test-only non-open gate. Production initialization is not changed.
     with torch.no_grad():
         model.suffix_gate[2].weight.normal_(0, .12)
@@ -139,7 +163,9 @@ def main():
         for optimizer in (*optimizers, *ref_optimizers):
             optimizer.zero_grad(set_to_none=True)
         out = ddp(images[sl], prefix[sl], suffix[sl], valid[sl], torch.arange(4, device=device) + rank * 4)
-        ref_total, ref_suffix, ref_i2t, ref_t2i = independent_global_objective(reference, images, prefix, suffix, valid)
+        ref_total, ref_suffix, ref_i2t, ref_t2i, ref_s_u = independent_global_objective(
+            reference, images, prefix, suffix, valid,
+            lambda_suffix=args.lambda_suffix, lambda_u_sparse=args.lambda_u_sparse)
         total = out['loss_total'].detach().clone()
         dist.all_reduce(total); total /= world
         torch.testing.assert_close(total, ref_total.detach(), atol=VALUE_ATOL, rtol=VALUE_RTOL)
@@ -147,6 +173,18 @@ def main():
         directions = torch.stack((out['loss_suffix_i2t_sum'], out['loss_suffix_t2i_sum']))
         dist.all_reduce(directions); directions /= max(int(valid.sum()), 1)
         torch.testing.assert_close(directions, torch.stack((ref_i2t, ref_t2i)).detach(), atol=VALUE_ATOL, rtol=VALUE_RTOL)
+        # The locally backpropagated sparsity must be (W / V) * local_sum, so that DDP averaging
+        # reproduces (1 / V) * global_sum exactly.
+        if int(valid.sum()) >= 2 and args.lambda_u_sparse != 0.0:
+            sparse_backward = out['loss_u_sparse_backward'].detach().clone()
+            dist.all_reduce(sparse_backward); sparse_backward /= world
+            torch.testing.assert_close(args.lambda_u_sparse * sparse_backward, 
+                                       (args.lambda_u_sparse * ref_s_u).detach(),
+                                       atol=VALUE_ATOL, rtol=VALUE_RTOL)
+            torch.testing.assert_close(float(out['m_u_positive_count_local']),
+                                       float(valid[sl].sum()), atol=0.0, rtol=0.0)
+        sparse_error = error_metrics(args.lambda_u_sparse * out['loss_u_sparse_global'],
+                                     (args.lambda_u_sparse * ref_s_u))
         out['loss_total'].backward()
         ref_total.backward()
         gradients, updates, groups = {}, {}, {}
@@ -179,12 +217,20 @@ def main():
         results.append({'case': index, 'global_valid': int(valid.sum()),
             'valid_per_rank': [sum(valid_values[:4]), sum(valid_values[4:])],
             'loss_total_global': float(total), 'loss_suffix_global': float(out['loss_suffix_global']),
+            'u_sparse_global': float(out['loss_u_sparse_global']),
+            'u_sparse_locally_backpropagated': float(out['loss_u_sparse_backward']),
+            'u_sparse_reference': float(ref_s_u),
+            'u_sparse_weighted_error': sparse_error,
+            'u_sparse_positive_count_local': (None if out['m_u_positive_count_local'] is None
+                                              else float(out['m_u_positive_count_local'])),
             'loss_total_error': error_metrics(total, ref_total),
             'suffix_direction_errors': error_metrics(directions, torch.stack((ref_i2t, ref_t2i))),
             'gradients': gradients, 'parameter_groups': groups, 'updates': updates,
             'rank_parameter_error': error_metrics(vector, root_vector), 'status': 'within_fixed_tolerance'})
     if rank == 0:
         report = {'torch_version': torch.__version__, 'backend': args.backend, 'world_size': world,
+            'lambda_suffix': args.lambda_suffix, 'lambda_u_sparse': args.lambda_u_sparse,
+            'objective': '10*L_S + 2*S_S + %g*L_U + %g*S_U' % (args.lambda_suffix, args.lambda_u_sparse),
             'communication': 'suffix_flat_contiguous_all_gather',
             'relative_definition': 'max_abs(actual-reference) / max(max_abs(reference), 1e-12)',
             'tolerances': {'gradient_atol': GRAD_ATOL, 'gradient_rtol': GRAD_RTOL,

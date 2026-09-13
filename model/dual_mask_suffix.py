@@ -24,12 +24,16 @@ import torch.distributed.nn as dist_nn
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .said_cls_cvssl import compute_smartclip_terms, said_mask_from_hidden
+from .said_cls_cvssl import (LAMBDA_ALIGN, LAMBDA_SPARSE, compute_smartclip_terms,
+                             said_mask_from_hidden)
 
 
 SUFFIX_DIM = 512
 SUFFIX_HIDDEN = 512
 SUFFIX_LAMBDA = 1.0
+# Weight of the valid-positive U-gate sparsity term. 0.0 reproduces the accepted Clean v0.1
+# objective bit for bit (the term is then never even accumulated into the total loss).
+U_SPARSE_LAMBDA = 0.0
 SUFFIX_MODES = ("native", "masked")
 
 
@@ -110,13 +114,39 @@ def global_targets(batch_size: int, rank: int, device: torch.device) -> torch.Te
 
 def pairwise_masked_scores(g: torch.Tensor, m_s: torch.Tensor, t_r: torch.Tensor,
                            suffix_gate: nn.Module, image_chunk: int = 16,
-                           text_chunk: int = 32) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-    """Compute ``Q_local[B,G]`` in pair blocks using the prescribed detached gate inputs."""
+                           text_chunk: int = 32, rank: Optional[int] = None,
+                           valid_local: Optional[torch.Tensor] = None
+                           ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    """Compute ``Q_local[B,G]`` in pair blocks using the prescribed detached gate inputs.
+
+    When ``rank`` and ``valid_local`` are given, the tile loop also extracts the gate of the
+    *valid positive pair* of this rank.  Local row ``a`` has global candidate column
+    ``rank * B + a``, so each valid positive is taken exactly once from the one tile that contains
+    that column, and never from the tile diagonal of a foreign rank.  Only the needed
+    ``[n, D]`` slices are kept: no ``[B, G, D]`` gate tensor is ever materialised.
+    """
     if g.ndim != 2 or m_s.ndim != 2 or t_r.ndim != 2:
         raise ValueError("g, m_s and t_r must be rank-2 tensors")
     if m_s.ndim != 2 or m_s.shape[0] != t_r.shape[0] or m_s.shape[1] != g.shape[1] or g.shape[1] != t_r.shape[1]:
         raise ValueError("feature and mask dimensions do not match")
     rows, candidates, dim = g.shape[0], t_r.shape[0], g.shape[1]
+    positive_enabled = rank is not None and valid_local is not None
+    if positive_enabled:
+        valid_local = valid_local.to(device=g.device, dtype=torch.bool).reshape(-1)
+        if valid_local.numel() != rows:
+            raise ValueError("valid_local has %d entries, expected %d" % (valid_local.numel(), rows))
+        positive_rank = int(rank)
+        sparse_positive_sum = g.new_zeros((), dtype=torch.float32)
+    else:
+        valid_local = None
+        positive_rank = 0
+        sparse_positive_sum = None
+    positive_count_t = g.new_zeros((), dtype=torch.float32)
+    positive_keep_sum = g.new_zeros((), dtype=torch.float32)
+    positive_probability_sum = g.new_zeros((), dtype=torch.float32)
+    positive_cos_sum = g.new_zeros((), dtype=torch.float32)
+    positive_all_open_t = g.new_zeros((), dtype=torch.float32)
+    positive_all_closed_t = g.new_zeros((), dtype=torch.float32)
     chunks = []
     keep_sum = g.new_zeros((), dtype=torch.float32)
     prob_sum = g.new_zeros((), dtype=torch.float32)
@@ -145,13 +175,68 @@ def pairwise_masked_scores(g: torch.Tensor, m_s: torch.Tensor, t_r: torch.Tensor
                 keep_sum = keep_sum + (m_u.detach() >= 0.5).float().sum()
                 prob_sum = prob_sum + probability.detach().float().sum()
                 element_count += int(m_u.numel())
+                if positive_enabled:
+                    # Integer tile algebra: local row a's positive column is rank*rows + a, which
+                    # lies in exactly one text tile. No GPU synchronisation and no [B, G, D] tensor.
+                    block_start = positive_rank * rows + i
+                    block_stop = block_start + g_block.shape[0]
+                    low = max(block_start, j)
+                    high = min(block_stop, j + m_block.shape[0])
+                    if high > low:
+                        ladder = torch.arange(low, high, device=g.device)
+                        row_index = ladder - block_start
+                        column_index = ladder - j
+                        pair_mask = m_u[row_index, column_index, :]
+                        selected = valid_local[i + row_index].float()
+                        # live straight-through gate of the positive pair, averaged over D once
+                        sparse_positive_sum = sparse_positive_sum + (
+                            pair_mask.abs().mean(dim=-1) * selected).sum()
+                        positive_count_t = positive_count_t + selected.sum()
+                        keep_ratio = (pair_mask.detach() >= 0.5).float().mean(dim=-1)
+                        pair_probability = probability[row_index, column_index, :]
+                        positive_keep_sum = positive_keep_sum + (keep_ratio * selected).sum()
+                        positive_probability_sum = positive_probability_sum + (
+                            pair_probability.detach().float().mean(dim=-1) * selected).sum()
+                        positive_all_open_t = positive_all_open_t + (
+                            (keep_ratio >= 1.0).float() * selected).sum()
+                        positive_all_closed_t = positive_all_closed_t + (
+                            (keep_ratio <= 0.0).float() * selected).sum()
+                        g_rows = g_block[row_index].detach().float()
+                        masked_rows = g_rows * pair_mask.detach().float()
+                        g_unit = g_rows / g_rows.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+                        masked_unit = masked_rows / masked_rows.norm(
+                            dim=-1, keepdim=True).clamp_min(1e-6)
+                        positive_cos_sum = positive_cos_sum + (
+                            (g_unit * masked_unit).sum(dim=-1) * selected).sum()
             chunks.append(torch.cat(row_chunks, dim=1))
     count = g.new_tensor(float(element_count), dtype=torch.float32)
-    return torch.cat(chunks, dim=0), {
+    logs = {
         "m_u_keep_ratio": keep_sum / count.clamp_min(1.0),
         "m_u_probability_mean": prob_sum / count.clamp_min(1.0),
         "m_u_element_count": count.detach(),
+        "m_u_keep_ratio_scope": "all B x G x D gate elements of this rank",
     }
+    if positive_enabled:
+        positive_count = float(positive_count_t.item())
+        denominator = max(1.0, positive_count)
+        logs.update({
+            "u_sparse_positive_sum": sparse_positive_sum,
+            "u_sparse_positive_count": positive_count_t.detach(),
+            "m_u_positive_keep_ratio": positive_keep_sum / denominator,
+            "m_u_positive_probability_mean": positive_probability_sum / denominator,
+            "m_u_positive_all_open_fraction": positive_all_open_t / denominator,
+            "m_u_positive_all_closed_fraction": positive_all_closed_t / denominator,
+            "m_u_positive_cos_to_g": positive_cos_sum / denominator,
+        })
+    else:
+        logs.update({"u_sparse_positive_sum": None,
+                     "u_sparse_positive_count": g.new_tensor(0.0),
+                     "m_u_positive_keep_ratio": None,
+                     "m_u_positive_probability_mean": None,
+                     "m_u_positive_all_open_fraction": None,
+                     "m_u_positive_all_closed_fraction": None,
+                     "m_u_positive_cos_to_g": None})
+    return torch.cat(chunks, dim=0), logs
 
 
 def native_scores(g: torch.Tensor, t_r_global: torch.Tensor) -> torch.Tensor:
@@ -219,7 +304,8 @@ class DualMaskSuffixTrainModule(nn.Module):
 
     def __init__(self, clip_model: nn.Module, suffix_mode: str = "masked", rank: int = 0,
                  image_chunk: int = 16, text_chunk: int = 32,
-                 lambda_suffix: float = SUFFIX_LAMBDA, feature_dim: Optional[int] = None):
+                 lambda_suffix: float = SUFFIX_LAMBDA, feature_dim: Optional[int] = None,
+                 lambda_u_sparse: float = U_SPARSE_LAMBDA):
         super().__init__()
         if suffix_mode not in SUFFIX_MODES:
             raise ValueError("suffix_mode must be native or masked")
@@ -229,6 +315,9 @@ class DualMaskSuffixTrainModule(nn.Module):
         self.image_chunk = int(image_chunk)
         self.text_chunk = int(text_chunk)
         self.lambda_suffix = float(lambda_suffix)
+        self.lambda_u_sparse = float(lambda_u_sparse)
+        if self.lambda_u_sparse != 0.0 and suffix_mode != "masked":
+            raise ValueError("the U-gate sparsity term only exists in masked mode")
         feature_dim = int(feature_dim or getattr(clip_model, "embed_dim", SUFFIX_DIM))
         self.feature_dim = feature_dim
         self.suffix_gate = (build_suffix_gate(input_dim=2 * feature_dim, hidden_dim=SUFFIX_HIDDEN,
@@ -249,43 +338,71 @@ class DualMaskSuffixTrainModule(nn.Module):
         world = dist.get_world_size() if dist.is_available() and dist.is_initialized() else 1
         if int(valid_global.sum().item()) < 2:
             zero = g_raw.sum() * 0.0
-            return self._pack(s0, zero, zero.detach(), valid_global, valid_local,
+            return self._pack(s0, zero, zero, zero, zero.detach(), valid_global, valid_local,
                               m_u_keep_ratio=None, m_u_probability_mean=None)
 
         # Suffix is separately encoded and is never passed to suffix_gate.
         t_r_raw = self.clip.encode_text(suffix_tokens)
         t_r_global = differentiable_gather(t_r_raw)
+        u_sparse_fields = {}
         with fp32_core(g_raw.device):
             if self.suffix_mode == "native":
                 q_local = native_scores(g_raw, t_r_global)
-                gate_logs = {"m_u_keep_ratio": None, "m_u_probability_mean": None}
+                gate_logs = {"m_u_keep_ratio": None, "m_u_probability_mean": None,
+                             "u_sparse_positive_sum": None}
             else:
                 m_s_global = detached_gather(m_s)
                 q_local, gate_logs = pairwise_masked_scores(
                     g_raw, m_s_global, t_r_global, self.suffix_gate,
-                    image_chunk=self.image_chunk, text_chunk=self.text_chunk)
+                    image_chunk=self.image_chunk, text_chunk=self.text_chunk,
+                    rank=self.rank, valid_local=valid_local)
             q_global = differentiable_gather(q_local)
             suffix = suffix_loss_from_scores(q_local, valid_local, self.rank, world,
                                               valid_global, q_global=q_global)
-        return self._pack(s0, self.lambda_suffix * suffix["loss"], suffix["global_mean"],
-                          valid_global, valid_local, gate_logs["m_u_keep_ratio"],
-                          gate_logs["m_u_probability_mean"], suffix)
+            sparse_backward, sparse_global, u_sparse_fields = u_sparse_terms(
+                gate_logs, suffix["valid_count"], world, g_raw, self.suffix_mode)
+        return self._pack(s0, self.lambda_suffix * suffix["loss"], sparse_backward,
+                          suffix["global_mean"], sparse_global, valid_global, valid_local,
+                          gate_logs["m_u_keep_ratio"], gate_logs["m_u_probability_mean"], suffix,
+                          gate_logs, u_sparse_fields)
 
     def _pack(self, s0: Dict[str, torch.Tensor], suffix_loss: torch.Tensor,
-              suffix_global: torch.Tensor, valid_global: torch.Tensor,
+              sparse_backward: torch.Tensor, suffix_global: torch.Tensor,
+              sparse_global: torch.Tensor, valid_global: torch.Tensor,
               valid_local: torch.Tensor, m_u_keep_ratio: torch.Tensor,
-              m_u_probability_mean: torch.Tensor, suffix: Optional[Dict[str, torch.Tensor]] = None
+              m_u_probability_mean: torch.Tensor, suffix: Optional[Dict[str, torch.Tensor]] = None,
+              gate_logs: Optional[Dict[str, torch.Tensor]] = None,
+              u_sparse_fields: Optional[Dict[str, torch.Tensor]] = None
               ) -> Dict[str, torch.Tensor]:
+        # ``sparse_backward`` arrives unweighted: it is (W / V) * local sum, and the coefficient is
+        # applied exactly once, here.
+        sparse_loss = self.lambda_u_sparse * sparse_backward
         zero = suffix_loss.detach() * 0.0
-        total = s0["loss_smart"] + suffix_loss
+        total = s0["loss_smart"] + suffix_loss + sparse_loss
         suffix = suffix or {"valid_count": valid_global.sum().detach(),
                             "i2t_sum": zero, "t2i_sum": zero}
-        # Only total/S0/suffix loss remain live; all diagnostics are detached.
-        return {
+        gate_logs = gate_logs or {}
+        u_sparse_fields = u_sparse_fields or {}
+        unweighted_s0 = s0["loss_sidm"] + s0["loss_dism"]
+        # Only total/S0/suffix/sparse losses remain live; every diagnostic is detached.
+        packed = {
             "loss_total": total,
+            "loss_total_local_backward": total.detach(),
             "loss_s0": s0["loss_smart"],
             "loss_suffix": suffix_loss,
+            "loss_u_sparse_backward": sparse_backward.detach(),
+            "weighted_u_sparse_backward": sparse_loss.detach(),
             "loss_suffix_global": suffix_global.detach(),
+            "loss_u_align_global": suffix_global.detach(),
+            "loss_u_sparse_global": sparse_global.detach(),
+            "L_S": unweighted_s0.detach(),
+            "S_S": s0["loss_sparsity"].detach(),
+            "weighted_s0_align": (LAMBDA_ALIGN * unweighted_s0).detach(),
+            "weighted_s0_sparse": (LAMBDA_SPARSE * s0["loss_sparsity"]).detach(),
+            "weighted_u_align": (self.lambda_suffix * suffix_global).detach(),
+            "weighted_u_sparse": (self.lambda_u_sparse * sparse_global).detach(),
+            "lambda_suffix": float(self.lambda_suffix),
+            "lambda_u_sparse": float(self.lambda_u_sparse),
             "loss_suffix_i2t_sum": suffix["i2t_sum"].detach(),
             "loss_suffix_t2i_sum": suffix["t2i_sum"].detach(),
             "valid_global": valid_global.sum().detach(),
@@ -293,11 +410,56 @@ class DualMaskSuffixTrainModule(nn.Module):
             "valid_local_fraction": valid_local.float().mean().detach(),
             "m_u_keep_ratio": None if m_u_keep_ratio is None else m_u_keep_ratio.detach(),
             "m_u_probability_mean": None if m_u_probability_mean is None else m_u_probability_mean.detach(),
+            "m_u_positive_keep_ratio": gate_logs.get("m_u_positive_keep_ratio"),
+            "m_u_positive_probability_mean": gate_logs.get("m_u_positive_probability_mean"),
+            "m_u_positive_all_open_fraction": gate_logs.get("m_u_positive_all_open_fraction"),
+            "m_u_positive_all_closed_fraction": gate_logs.get("m_u_positive_all_closed_fraction"),
+            "m_u_positive_cos_to_g": gate_logs.get("m_u_positive_cos_to_g"),
+            "m_u_positive_count_local": gate_logs.get("u_sparse_positive_count"),
+            "u_sparse_local_sum": u_sparse_fields.get("local_sum"),
+            "u_sparse_w_over_v": u_sparse_fields.get("weight_over_valid"),
             "suffix_mode": self.suffix_mode,
             "s0_sidm": s0["loss_sidm"].detach(),
             "s0_dism": s0["loss_dism"].detach(),
             "s0_sparsity": s0["loss_sparsity"].detach(),
         }
+        result: Dict[str, torch.Tensor] = {}
+        for key, value in packed.items():
+            if value is None or not torch.is_tensor(value):
+                result[key] = value
+            elif key == "loss_total":
+                result[key] = value
+            else:
+                result[key] = value.detach()
+        return result
+
+
+def u_sparse_terms(gate_logs: Dict[str, torch.Tensor], valid_count: torch.Tensor, world_size: int,
+                   reference: torch.Tensor, suffix_mode: str
+                   ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+    """Reduce the valid-positive gate sparsity to one backward scalar and one logged scalar.
+
+    ``valid_count`` is the detached global ``V``.  The locally backpropagated value is
+    ``(W / V) * sum_local`` so that DDP's gradient averaging over W ranks reproduces exactly
+    ``(1 / V) * sum_global``; the logged value is the correctly reduced global mean.  The log
+    reduction never participates in training, and every rank takes part in it.
+    """
+    local_sum = gate_logs.get("u_sparse_positive_sum")
+    if suffix_mode != "masked" or local_sum is None:
+        zero = reference.sum() * 0.0
+        return zero, zero.detach(), {"local_sum": None, "weight_over_valid": None}
+    count = valid_count.detach().to(device=local_sum.device, dtype=torch.float32).reshape(())
+    if float(count) < 2.0:
+        zero = local_sum * 0.0
+        return zero, zero.detach(), {"local_sum": local_sum.detach() * 0.0,
+                                     "weight_over_valid": count * 0.0}
+    weight = float(max(1, int(world_size))) / count.clamp_min(1.0)
+    global_sum = local_sum.detach().clone().to(torch.float32)
+    if dist.is_available() and dist.is_initialized() and int(world_size) > 1:
+        dist.all_reduce(global_sum, op=dist.ReduceOp.SUM)
+    global_mean = global_sum / count.clamp_min(1.0)
+    return weight * local_sum, global_mean, {"local_sum": local_sum.detach(),
+                                             "weight_over_valid": weight.detach()}
 
 
 def split_suffix_valid(text: str, tokenize_fn, eot_token: Optional[int] = None) -> bool:
@@ -314,8 +476,9 @@ def split_suffix_valid(text: str, tokenize_fn, eot_token: Optional[int] = None) 
 
 
 __all__ = [
-    "SUFFIX_DIM", "SUFFIX_HIDDEN", "SUFFIX_LAMBDA", "SUFFIX_MODES", "DualMaskSuffixTrainModule",
+    "SUFFIX_DIM", "SUFFIX_HIDDEN", "SUFFIX_LAMBDA", "SUFFIX_MODES", "U_SPARSE_LAMBDA",
+    "DualMaskSuffixTrainModule",
     "build_suffix_gate", "detached_gather", "differentiable_gather", "global_targets", "hard_st",
     "native_scores", "pairwise_masked_scores", "split_caption_suffix", "split_suffix_valid",
-    "suffix_loss_from_scores",
+    "suffix_loss_from_scores", "u_sparse_terms",
 ]
