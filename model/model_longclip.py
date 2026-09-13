@@ -269,6 +269,26 @@ class VisionTransformer(nn.Module):
 			'x11_raw': tokens,
 		}
 
+	def forward_with_preprojection(self, x: torch.Tensor, use_checkpoint=False):
+		"""PG-CLIP: one visual pass exposing the ``ln_post`` output *before* ``proj``.
+
+		Returns ``(h_preproj, v_raw)`` with ``h_preproj = ln_post(CLS of the last block)`` [B, width]
+		and ``v_raw = h_preproj @ self.proj`` [B, output_dim]. The CLS token of the 12th block,
+		``ln_post`` and the native projection each run exactly once: this is neither a pre-final
+		(11th block) hidden state, nor a patch token, nor an up-projected 512-d feature, and it never
+		runs the trunk a second time.
+		"""
+		x = self._token_sequence(x)
+		x = x.permute(1, 0, 2)  # NLD -> LND
+		if use_checkpoint:
+			x = checkpoint.checkpoint(self.transformer, x)
+		else:
+			x = self.transformer(x)
+		x = x.permute(1, 0, 2)  # LND -> NLD
+		hidden = self.ln_post(x[:, 0, :])
+		projected = hidden @ self.proj if self.proj is not None else hidden
+		return hidden, projected
+
 	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False, return_local_evidence=False):
 		if return_local_evidence and (use_checkpoint or return_patches):
 			raise ValueError('local evidence requires its separate non-checkpoint interface')
@@ -459,6 +479,44 @@ class CLIP(nn.Module):
 
 	def encode_image(self, image):
 		return self.visual(image.type(self.dtype))
+
+	def encode_image_with_preprojection(self, image, use_checkpoint=False):
+		"""PG-CLIP: ``(h_preproj [B, 768], v_raw [B, 512])`` from ONE visual forward.
+
+		``h_preproj`` is the CLS token after the 12th block and after the native ``ln_post``, before
+		``visual.proj``; ``v_raw`` is the same hidden state projected by the same
+		``visual.proj`` Parameter that the native path uses.
+		"""
+		if not isinstance(self.visual, VisionTransformer):
+			raise NotImplementedError('pre-projection hidden states support VisionTransformer only')
+		return self.visual.forward_with_preprojection(image.type(self.dtype),
+		                                              use_checkpoint=use_checkpoint)
+
+	def encode_text_final_hidden(self, text):
+		"""PG-CLIP: the full ``ln_final`` text hidden state [B, 248, width] from ONE text forward.
+
+		EOT pooling and the native ``text_projection`` are applied by the caller in fp32, so no text
+		projection is computed twice and no second text forward exists. ``encode_text`` and
+		``encode_text_full`` keep their historical behaviour and return values.
+		"""
+		x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
+
+		x = x + (self.positional_embedding.to(x.device) * self.mask1.to(x.device)).type(self.dtype).to(x.device) + (
+				self.positional_embedding_res.to(x.device) * self.mask2.to(x.device)).type(self.dtype).to(x.device)
+
+		x = x.permute(1, 0, 2)  # NLD -> LND
+		x = self.transformer(x)
+		x = x.permute(1, 0, 2)  # LND -> NLD
+		return self.ln_final(x).type(self.dtype)
+
+	def eot_indices(self, text):
+		"""The repository EOT convention: the highest token id per sequence.
+
+		Returns ``(eot_index, effective_length)``. The effective length is ``eot_index + 1`` (the
+		reference rule); it is never a count of non-zero tokens.
+		"""
+		indices = text.argmax(dim=-1)
+		return indices, indices + 1
 
 	def encode_image_with_checkpoint(self, image):
 		return self.visual(image.type(self.dtype), use_checkpoint=True)
