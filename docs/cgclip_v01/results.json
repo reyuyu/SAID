@@ -492,6 +492,35 @@
     "peak_memory_note": "GiB (1024^3 bytes)",
     "run_summary_wall_seconds": 1126.195012807846,
     "single_rank_pair_presentations": 128000,
+    "step_time_comparison": {
+      "cgclip_v01": {
+        "chunking": "image_chunk 32 x text_chunk 64",
+        "last40_sec": 2.04,
+        "max_sec": 12.03,
+        "mean_sec": 2.21
+      },
+      "chunking_sensitivity": "the same code measured 6.3 s/step at 8x32 and 2.0 s/step at 32x64 with the same 40.7 GiB peak, so the tiling was chosen from a measurement before the run",
+      "pgclip_v01_rep500": {
+        "chunking": "image_chunk 8 x text_chunk 32",
+        "last40_sec": 1.05,
+        "max_sec": 13.01,
+        "mean_sec": 1.27
+      },
+      "ratio_vs_pgclip": 1.74,
+      "ratio_vs_s0_baseline": 2.21,
+      "s0_baseline_500": {
+        "last40_sec": 0.9,
+        "max_sec": 10.21,
+        "mean_sec": 1.0
+      },
+      "s0_continue_1000": {
+        "last40_sec": 0.92,
+        "max_sec": 1.18,
+        "mean_sec": 0.93
+      },
+      "same_machine": "4 x A800-80GB, 4-way DDP; every arm measured by its own salu_log.jsonl",
+      "why": "the conditional path re-runs the last-block CLS core (out_proj, both MLPs, ln_post and the projection) for EVERY (text, image) pair, in explicit fp32 with TF32 disabled and with non-reentrant activation checkpointing; the PG arm only multiplies a 768-d mask once before the projection"
+    },
     "train_stage_seconds": 1164.7
   },
   "created_at": 1789301013.9658625,
@@ -903,8 +932,7 @@
     "two-path fusion or reranking, and any evaluation of the conditional path as a retrieval readout",
     "hyper-parameter search, extra seeds, longer training, or completing the 3-epoch cosine schedule",
     "text masks, U/teacher/decoder/reconstruction objectives, cross-attention, soft gates, or any third path",
-    "browser-level visual acceptance of the dashboard section and human inspection of which patches are gated off",
-    "an exact step-time comparison against the PG-CLIP arms"
+    "browser-level visual acceptance of the dashboard section and human inspection of which patches are gated off"
   ],
   "phase": "cgclip-v0.1",
   "problems": [],
@@ -915,6 +943,12 @@
     "reason": "the first student file carried only {\"model\": ...} without completed_steps, which the Urban-1k evaluator refuses to accept; the export tool was fixed to record the step count, the student was re-exported with identical weights, and BOTH evaluations were re-run so that every reported number refers to the final file",
     "run_status_note": "run_status.json still holds the stale student_sha256 written during the first attempt; results.json and both evaluation JSONs carry the sha256 recorded by the evaluators themselves, which is the authoritative value",
     "run_status_stale_student_sha256": "0e970862ce8e5b04f74a9cc4146b5cd60ee1359cd2c0153570c349402c49c385",
+    "run_status_student_sha256_corrected": {
+      "evidence": "the value recorded by both frozen evaluators and by the export metadata; the uncorrected status file is kept as run_status.json.before_student_sha_correction.bak and the change is listed in student_sha256_history",
+      "field": "student_sha256",
+      "now": "9e30f5829fc4e4239113b75cf72daf15d7a46119c372f1e2448743310fbd6274",
+      "was": "0e970862ce8e5b04f74a9cc4146b5cd60ee1359cd2c0153570c349402c49c385"
+    },
     "source_checkpoint_sha256": "014e462cdb202e33d2a87cab809764b72f8b05b079504fe3424df7b50cee96e7",
     "student_reexported": true
   },
