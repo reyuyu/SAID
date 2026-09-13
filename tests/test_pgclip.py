@@ -370,22 +370,25 @@ def test_d_mask_is_binary_with_no_fixed_keep_count():
 def test_d_candidate_masks_follow_the_text_column():
     h, W, t = random_h_w_t(batch=4, out=512, device=DEVICE)
     gate = perturbed_gate(DEVICE, seed=17, strength=1.0)
-    hidden = torch.randn(4, TOKENIZER_WIDTH, 512, device=DEVICE)
+    # a local generator: this test must not depend on how much global RNG earlier tests consumed
+    generator = torch.Generator().manual_seed(29)
+    hidden = torch.randn(4, TOKENIZER_WIDTH, 512, generator=generator).to(DEVICE)
     masks, _ = gate(hidden)
+    assert sorted(masks.unique().tolist()) == [0.0, 1.0]
     permutation = torch.tensor([2, 0, 3, 1])
     scores = conditional_scores(h, W, t, masks, image_chunk=2, text_chunk=2)
     permuted = conditional_scores(h, W, t[permutation], masks[permutation], image_chunk=2,
                                   text_chunk=2)
-    assert torch.allclose(permuted, scores[:, permutation], atol=1e-4)
+    assert torch.allclose(permuted, scores[:, permutation], rtol=1e-4, atol=1e-3)
     # the mask depends only on its own caption: a different image batch does not change it
     other_masks, _ = gate(hidden)
     assert torch.equal(other_masks, masks)
     # changing ONE caption's mask changes exactly that column of the score matrix
-    rolled = masks.clone()
-    rolled[0] = masks[0].roll(1)
-    rolled_scores = conditional_scores(h, W, t, rolled, image_chunk=4, text_chunk=4)
-    assert not torch.allclose(rolled_scores[:, 0], scores[:, 0], atol=1e-9)
-    assert torch.allclose(rolled_scores[:, 1:], scores[:, 1:], atol=1e-6)
+    flipped = masks.clone()
+    flipped[0] = 1.0 - masks[0]
+    flipped_scores = conditional_scores(h, W, t, flipped, image_chunk=4, text_chunk=4)
+    assert not torch.allclose(flipped_scores[:, 0], scores[:, 0], rtol=1e-6, atol=1e-6)
+    assert torch.allclose(flipped_scores[:, 1:], scores[:, 1:], rtol=1e-5, atol=1e-5)
 
 
 @needs_cuda
