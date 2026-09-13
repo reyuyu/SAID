@@ -125,6 +125,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     # read-only offline probe results; when the probe has not been run this returns
                     # an explicit 未诊断 payload and never a fabricated zero
                     return self._json(200, self.data.diagnostics(run_id))
+                if leaf == 'text-nuisance':
+                    # read-only text-nuisance probe results, from its own diagnostics subdirectory;
+                    # a run without the probe reports 未运行 with null fields
+                    return self._json(200, self.data.text_nuisance(run_id))
                 if leaf == 'logs':
                     limit = int(query.get('limit', ['200'])[0])
                     return self._json(200, self.data.logs(run_id, limit=max(1, min(limit, 1000))))

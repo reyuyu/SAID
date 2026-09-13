@@ -141,6 +141,37 @@
 
     <p class="note" id="diag-not-run"></p>
   </section>
+  <section id="panel-nuisance" class="card">
+    <h2>G · 文本附加句敏感性（只读离线）</h2>
+    <div id="nuisance-banner" class="note"></div>
+    <p class="muted" id="nuisance-reminders"></p>
+    <div class="controls">
+      <label>模型 <select id="nuisance-model"></select></label>
+      <label>读出 <select id="nuisance-readout"></select></label>
+      <label>基础句 <select id="nuisance-base"></select></label>
+      <label>对照 <select id="nuisance-variant"></select></label>
+    </div>
+    <div id="nuisance-scope" class="grid"></div>
+
+    <h3>1 · 手写对照的距离与余弦（12 对）</h3>
+    <div id="nuisance-hand"></div>
+
+    <h3>2 · 512 维表示与 delta（按维度索引；悬停查看单坐标）</h3>
+    <canvas id="canvas-nuisance-vector" height="120"></canvas>
+    <canvas id="canvas-nuisance-delta" height="120"></canvas>
+    <p class="muted" id="nuisance-hover">把鼠标移到图上可读出该维度的数值。</p>
+    <h3>3 · 变化最大的 32 维放大</h3>
+    <canvas id="canvas-nuisance-zoom" height="150"></canvas>
+    <p class="muted" id="nuisance-zoom-label"></p>
+
+    <h3>4 · 坐标集中度、折半稳定性与未中心化 SVD</h3>
+    <div id="nuisance-coordinates"></div>
+
+    <h3>5 · 检索扰动（128×128 候选池，原生与文本 masked 读出）</h3>
+    <div id="nuisance-retrieval"></div>
+
+    <p class="note" id="nuisance-not-run"></p>
+  </section>
 </main>
 
 <footer class="muted">

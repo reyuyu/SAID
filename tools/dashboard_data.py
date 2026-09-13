@@ -42,6 +42,13 @@ DIAGNOSTICS_FILES = {
     'manifest': 'manifest.json',
     'queries_csv': 'hs_mask_geometry_probe_queries.csv',
 }
+# the text-nuisance probe keeps its own subdirectory so it never overwrites the geometry diagnostics
+TEXT_NUISANCE_DIR = os.path.join('diagnostics', 'text_nuisance')
+TEXT_NUISANCE_FILES = {
+    'ui': 'clip_text_nuisance_ui.json',
+    'probe': 'clip_text_nuisance_probe.json',
+    'hand_pairs_csv': 'clip_text_nuisance_hand_pairs.csv',
+}
 DIAGNOSTIC_LABELS = {'available': '已诊断', 'missing': '未诊断'}
 # fixed reminders attached to every diagnostics response, so the page cannot present the numbers
 # without them
@@ -173,6 +180,13 @@ class RunRegistry:
             raise RunNotFound(key)
         return os.path.join(self.resolve(run_id)['directory'], DIAGNOSTICS_DIR,
                             DIAGNOSTICS_FILES[key])
+
+    def text_nuisance_path(self, run_id, key='ui'):
+        """Resolve one whitelisted text-nuisance file (its own subdirectory)."""
+        if key not in TEXT_NUISANCE_FILES:
+            raise RunNotFound(key)
+        return os.path.join(self.resolve(run_id)['directory'], TEXT_NUISANCE_DIR,
+                            TEXT_NUISANCE_FILES[key])
 
 
 def read_json(path):
@@ -508,6 +522,65 @@ class DashboardData:
                              'not_used': replacements.get('not_used')},
             'geometry': payload.get('diagnostic_C_geometry'),
             'hard_queries': payload.get('hard_queries'),
+        })
+        return result
+
+    # ---------------------------------------------------------------- text nuisance
+    def text_nuisance(self, run_id):
+        """The read-only text-nuisance probe: does a non-visual appended sentence move the text
+        representation, and does the HS text gate reduce that?
+
+        Only the three whitelisted files under ``diagnostics/text_nuisance/`` are opened, the page
+        never triggers a forward pass (the numbers were computed by the offline script), and a run
+        without the probe reports 未运行 with null fields instead of zeros.
+        """
+        self.registry.resolve(run_id)
+        ui_path = self.registry.text_nuisance_path(run_id, 'ui')
+        payload, error = read_json(ui_path)
+        try:
+            updated_at = os.path.getmtime(ui_path)
+        except OSError:
+            updated_at = None
+        files = {}
+        for key in TEXT_NUISANCE_FILES:
+            path = self.registry.text_nuisance_path(run_id, key)
+            files[key] = {'file': os.path.basename(path), 'available': os.path.isfile(path)}
+        result = {
+            'run_id': run_id,
+            'available': payload is not None,
+            'status': '已运行' if payload is not None else '未运行',
+            'file': os.path.basename(ui_path),
+            'directory': TEXT_NUISANCE_DIR,
+            'files': files,
+            'error': error,
+            'updated_at': updated_at,
+            'updated_at_iso': (time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(updated_at))
+                               if updated_at else None),
+            'reminders': [
+                '坐标方差/位移不是语义信息量，也不能命名为情感维度或无用维度。',
+                '向量变了但排名不变时只能说编码受影响，不能称为有害干扰。',
+                '本区域是 128×128 只读诊断，不是正式 COCO canonical，不参与晋级门。',
+                '负例按 annotation 索引定义，未做图像级核查。',
+            ],
+        }
+        if payload is None:
+            for key in ('model_labels', 'coordinates', 'hand_groups', 'pool_metrics',
+                        'pool_vs_base', 'coordinate_summary', 'headline', 'pool', 'not_run'):
+                result[key] = None
+            result['new_optimizer_updates'] = None
+            return result
+        result.update({
+            'new_optimizer_updates': payload.get('new_optimizer_updates'),
+            'model_labels': payload.get('model_labels'),
+            'coordinates': payload.get('coordinates'),
+            'hand_groups': payload.get('hand_groups'),
+            'pool_metrics': payload.get('pool_metrics'),
+            'pool_vs_base': payload.get('pool_vs_base'),
+            'coordinate_summary': payload.get('coordinate_summary'),
+            'headline': payload.get('headline'),
+            'pool': payload.get('pool'),
+            'not_run': payload.get('not_run'),
+            'note': payload.get('note'),
         })
         return result
 

@@ -619,6 +619,53 @@ def test_frontend_assets_parse_and_are_served(tmp_path):
         assert status == 200 and '离线诊断' in index
 
 
+def test_text_nuisance_endpoint_reports_未运行_and_serves_the_ui_file(tmp_path):
+    run_dir = build_run(tmp_path)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/text-nuisance')
+    assert status == 200
+    assert payload['available'] is False and payload['status'] == '未运行'
+    assert payload['file'] == 'clip_text_nuisance_ui.json'
+    assert payload['directory'] == os.path.join('diagnostics', 'text_nuisance')
+    for key in ('coordinates', 'pool_metrics', 'pool_vs_base', 'coordinate_summary', 'headline',
+                'new_optimizer_updates', 'hand_groups', 'not_run'):
+        assert payload[key] is None, key
+    assert payload['reminders']
+
+    directory = run_dir / 'diagnostics' / 'text_nuisance'
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / 'clip_text_nuisance_ui.json').write_text(json.dumps({
+        'probe': 'clip_text_nuisance_probe', 'read_only': True, 'new_optimizer_updates': 0,
+        'model_labels': {'hs_500': 'HS'},
+        'coordinates': {'hs_500': {'NATIVE': {'hand_vectors': {'0': {'base': [0.1, 0.2]}},
+                                              'pool_delta_energy': [0.5, 0.25]}}},
+        'hand_groups': {'hs_500': {'NATIVE': {'appended_suffix': {'l2': {'q0.5': 0.29}}}}},
+        'pool_metrics': {'hs_500': {'NATIVE': {'BASE': {'R@1': 0.8672, 'ce': 0.48, 'mrr': 0.92,
+                                                        'per_query_rank': [1]}}}},
+        'pool_vs_base': {'hs_500': {'NATIVE': {'R1': {'delta_R@1': -0.05, 'delta_ce': 0.19,
+                                                      'paired_sign_test': {'worse': 13, 'better': 4,
+                                                                           'p_value_two_sided': 0.049,
+                                                                           'discordant': 17},
+                                                      'per_query_rank': [2]}}}},
+        'coordinate_summary': {'hs_500': {'NATIVE': {'topk_share': {'top1_share': 0.04},
+                                                     'split_half': {}, 'svd': {},
+                                                     'hand_visual_change': {}}}},
+        'headline': {'hs_500': {'native_base_R@1': 0.8672}},
+        'not_run': ['no image-level verification'],
+    }), encoding='utf-8')
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/text-nuisance')
+    assert status == 200
+    assert payload['available'] is True and payload['status'] == '已运行'
+    assert payload['new_optimizer_updates'] == 0
+    assert payload['model_labels']['hs_500'] == 'HS'
+    assert payload['coordinates']['hs_500']['NATIVE']['pool_delta_energy'] == [0.5, 0.25]
+    assert payload['pool_vs_base']['hs_500']['NATIVE']['R1']['paired_sign_test']['worse'] == 13
+    assert payload['files']['ui']['available'] is True
+    # the text-nuisance files live in their own subdirectory and never shadow the geometry probe
+    assert payload['file'] != 'hs_mask_geometry_probe.json'
+
+
 def test_diagnostics_endpoint_reports_未诊断_without_fabricating_zeros(tmp_path):
     run_dir = build_run(tmp_path)
     with Server(registry_for(run_dir), free_port()) as server:

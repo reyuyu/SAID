@@ -26,6 +26,7 @@ let state = {
   diagnostics: null,
   diagnosticsRunId: null,
   diagnosticsAt: 0,
+  nuisance: null,
   pollTimer: null,
 };
 
@@ -539,6 +540,9 @@ async function pollOnce() {
     getJSON('/api/run/' + runId + '/diagnostics')
       .then(renderDiagnostics)
       .catch(reportError);
+    getJSON('/api/run/' + runId + '/text-nuisance')
+      .then(renderTextNuisance)
+      .catch(reportError);
   }
 }
 
@@ -790,6 +794,272 @@ function renderDiagnostics(payload) {
   qs('diag-hard').open = false;
 }
 
+/* ---------------------------------------------------------------- G: text nuisance
+ *
+ * Reads one offline file (diagnostics/text_nuisance/clip_text_nuisance_ui.json). The page never
+ * runs a forward pass: the numbers were produced by tools/diag/clip_text_nuisance_probe.py and the
+ * endpoint only serves that file. Everything is labelled by dimension index -- no coordinate is
+ * ever given a semantic name.
+ */
+
+const NUISANCE_VARIANTS = [
+  ['base', '原句 C'], ['R1', 'C + R1'], ['R2', 'C + R2'], ['R3', 'C + R3'], ['R4', 'C + R4'],
+  ['paraphrase', '改述'], ['visual_change', '视觉要素改变'],
+];
+
+function drawDimensionStrip(canvas, values, options) {
+  const opts = options || {};
+  const height = Number(canvas.getAttribute('height')) || 120;
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 600;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.height = height + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  if (!values || !values.length) {
+    return;
+  }
+  const peak = opts.maxAbs || Math.max.apply(null, values.map(v => Math.abs(v)).concat([1e-6]));
+  const slot = width / values.length;
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    const ratio = peak ? Math.abs(value) / peak : 0;
+    if (opts.diverging) {
+      const shade = value >= 0 ? '87,217,163' : '255,107,107';
+      ctx.fillStyle = 'rgba(' + shade + ',' + (0.12 + 0.88 * ratio).toFixed(3) + ')';
+    } else {
+      ctx.fillStyle = 'rgba(77,163,255,' + (0.12 + 0.88 * ratio).toFixed(3) + ')';
+    }
+    ctx.fillRect(index * slot, 0, Math.max(1, slot - 0.4), height);
+  }
+  canvas.dataset.values = JSON.stringify(values);
+  canvas.dataset.peak = String(peak);
+}
+
+function wireDimensionHover(canvas, label) {
+  if (canvas.dataset.hoverWired === '1') {
+    return;
+  }
+  canvas.dataset.hoverWired = '1';
+  canvas.addEventListener('mousemove', event => {
+    const values = JSON.parse(canvas.dataset.values || '[]');
+    if (!values.length) {
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const index = Math.max(0, Math.min(values.length - 1,
+      Math.floor((event.clientX - rect.left) / (rect.width / values.length))));
+    setText(qs('nuisance-hover'), label + ' · 维度 ' + index + ' = ' + Number(values[index]).toFixed(5)
+      + '（共 ' + values.length + ' 维，峰值 ' + Number(canvas.dataset.peak).toFixed(5) + '）');
+  });
+}
+
+function renderTextNuisance(payload) {
+  const banner = qs('nuisance-banner');
+  setText(qs('nuisance-reminders'), (payload.reminders || []).join('   '));
+  state.nuisance = payload;
+  const modelSelect = qs('nuisance-model');
+  const readoutSelect = qs('nuisance-readout');
+  const baseSelect = qs('nuisance-base');
+  const variantSelect = qs('nuisance-variant');
+
+  if (!payload.available) {
+    banner.textContent = '未运行：' + (payload.error || ('未找到 ' + payload.directory + '/' + payload.file))
+      + '。运行 tools/diag/clip_text_nuisance_probe.py 后本区域才会出现数字。';
+    ['nuisance-scope', 'nuisance-hand', 'nuisance-coordinates', 'nuisance-retrieval',
+     'nuisance-not-run'].forEach(id => { qs(id).textContent = ''; });
+    ['canvas-nuisance-vector', 'canvas-nuisance-delta', 'canvas-nuisance-zoom'].forEach(id => {
+      const canvas = qs(id);
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      canvas.dataset.values = '[]';
+    });
+    modelSelect.textContent = ''; readoutSelect.textContent = ''; baseSelect.textContent = '';
+    variantSelect.textContent = '';
+    return;
+  }
+
+  banner.textContent = '已运行（只读离线）· 文件 ' + payload.file + ' · 写入时间 '
+    + (payload.updated_at_iso || '暂无') + ' · 新增 optimizer updates = '
+    + payload.new_optimizer_updates + '（必须为 0）· 128×128 只读诊断，不参与晋级门';
+
+  const coordinates = payload.coordinates || {};
+  const labels = payload.model_labels || {};
+  const modelKeys = Object.keys(coordinates);
+  if (modelSelect.dataset.filled !== modelKeys.join(',')) {
+    modelSelect.textContent = '';
+    modelKeys.forEach(key => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = labels[key] || key;
+      modelSelect.appendChild(option);
+    });
+    if (modelSelect.dataset.lastRun !== payload.run_id) {
+      modelSelect.dataset.lastRun = payload.run_id;
+      const preferred = modelKeys.indexOf('hs_500');
+      modelSelect.selectedIndex = preferred >= 0 ? preferred : 0;
+    }
+    modelSelect.dataset.filled = modelKeys.join(',');
+  }
+  const model = modelSelect.value || modelKeys[0];
+  const readouts = Object.keys(coordinates[model] || {});
+  if (readoutSelect.dataset.filled !== readouts.join(',')) {
+    readoutSelect.textContent = '';
+    readouts.forEach(key => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = key === 'NATIVE' ? '原生文本读出' : '文本 masked 读出（z = normalize(t_raw · mT)）';
+      readoutSelect.appendChild(option);
+    });
+    readoutSelect.dataset.filled = readouts.join(',');
+  }
+  const readout = readoutSelect.value || readouts[0] || 'NATIVE';
+  const handLabels = (coordinates[model] || {})[readout] ?
+    ((coordinates[model][readout] || {}).hand_labels || {}) : {};
+
+  const variantEntry = NUISANCE_VARIANTS.filter(item => item[0] !== 'base');
+  if (variantSelect.dataset.filled !== '1') {
+    variantSelect.textContent = '';
+    variantEntry.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item[0];
+      option.textContent = item[1];
+      variantSelect.appendChild(option);
+    });
+    variantSelect.dataset.filled = '1';
+  }
+  const variant = variantSelect.value || 'R1';
+
+  const vectors = (coordinates[model] && coordinates[model][readout] &&
+    coordinates[model][readout].hand_vectors) || {};
+  const handGroups = (payload.hand_groups || {})[model] || {};
+  const group = handGroups[readout] || {};
+  const groupRows = [['附加句（4 条）', group.appended_suffix], ['改述', group.paraphrase],
+                     ['视觉要素改变', group.visual_change]];
+  tableBlock(qs('nuisance-hand'),
+             ['对照', 'L2 中位', 'L2 中位以外的分位', 'cos 中位', 'cos 范围'],
+             groupRows.map(row => {
+               const body = row[1] || {};
+               const l2 = body.l2 || {};
+               const cos = body.cos || {};
+               return [row[0],
+                       l2['q0.5'] === undefined ? '暂无' : Number(l2['q0.5']).toFixed(4),
+                       l2['q0.05'] === undefined ? '暂无'
+                         : Number(l2['q0.05']).toFixed(3) + ' ~ ' + Number(l2['q0.95']).toFixed(3),
+                       cos['q0.5'] === undefined ? '暂无' : Number(cos['q0.5']).toFixed(4),
+                       cos['q0'] === undefined ? '暂无'
+                         : Number(cos['q0']).toFixed(3) + ' ~ ' + Number(cos['q1']).toFixed(3)];
+             }));
+  const likeVsDislike = (group.length_matched_pairs || {})['R1_vs_R2'];
+  if (likeVsDislike) {
+    const footnote = document.createElement('p');
+    footnote.className = 'muted';
+    footnote.textContent = '等长对照 R1（like）vs R2（dislike）：长度差 '
+      + likeVsDislike.length_delta + '，cos 中位 '
+      + Number((likeVsDislike.cos || {})['q0.5']).toFixed(4)
+      + '。长度近似只排除长度因素，不排除位置/上下文因素。';
+    qs('nuisance-hand').appendChild(footnote);
+  }
+
+  // 512-d heatmaps for the selected base caption
+  const baseKeys = Object.keys(vectors).sort((a, b) => Number(a) - Number(b));
+  if (baseSelect.dataset.filled !== baseKeys.join(',')) {
+    baseSelect.textContent = '';
+    baseKeys.forEach(key => {
+      const option = document.createElement('option');
+      option.value = key;
+      const text = (handLabels.base || [])[Number(key)] || '';
+      option.textContent = Number(key) + ' · ' + (text.length > 42 ? text.slice(0, 42) + '…' : text);
+      baseSelect.appendChild(option);
+    });
+    baseSelect.dataset.filled = baseKeys.join(',');
+    baseSelect.selectedIndex = 0;
+  }
+  const baseKey = baseSelect.value || baseKeys[0];
+  const baseValues = baseKey ? (vectors[baseKey] || {}).base : null;
+  const variantValues = baseKey ? (vectors[baseKey] || {})[variant] : null;
+  const peak = baseValues ? Math.max.apply(null, baseValues.map(v => Math.abs(v))) : 1;
+  drawDimensionStrip(qs('canvas-nuisance-vector'), baseValues, { maxAbs: peak });
+  wireDimensionHover(qs('canvas-nuisance-vector'), '原句 C 的 512 维');
+  const delta = (baseValues && variantValues)
+    ? variantValues.map((value, index) => value - baseValues[index]) : null;
+  drawDimensionStrip(qs('canvas-nuisance-delta'), delta, { diverging: true });
+  wireDimensionHover(qs('canvas-nuisance-delta'),
+                     'delta（' + variant + ' − base）的 512 维');
+
+  // top-32 zoom: coordinates with the largest delta energy over the whole real pool
+  const energy = ((coordinates[model] || {})[readout] || {}).pool_delta_energy || [];
+  const order = energy.map((value, index) => [index, value])
+    .sort((a, b) => b[1] - a[1]).slice(0, 32).map(item => item[0]);
+  if (delta && order.length) {
+    drawDimensionStrip(qs('canvas-nuisance-zoom'), order.map(index => delta[index]),
+                       { diverging: true });
+    setText(qs('nuisance-zoom-label'),
+            '放大维度（按真实池 delta 能量排序的前 32 个索引）：' + order.join(', '));
+  }
+
+  const summary = ((payload.coordinate_summary || {})[model] || {})[readout] || {};
+  const topk = summary.topk_share || {};
+  const split = summary.split_half || {};
+  const svd = summary.svd || {};
+  const visual = summary.hand_visual_change || {};
+  tableBlock(qs('nuisance-coordinates'), ['量', '数值'], [
+    ['top1 / top4 / top8 能量占比',
+      ['top1_share', 'top4_share', 'top8_share']
+        .map(key => topk[key] === undefined ? '暂无'
+          : (100 * topk[key]).toFixed(2) + '%').join(' / ')],
+    ['top16 / top32 / top64 能量占比',
+      ['top16_share', 'top32_share', 'top64_share']
+        .map(key => topk[key] === undefined ? '暂无'
+          : (100 * topk[key]).toFixed(2) + '%').join(' / ')],
+    ['折半（前半定序 → 后半计算）top1 / top32',
+      [(split.second_half_topk_share_using_first_half_order || {}).top1_share,
+       (split.second_half_topk_share_using_first_half_order || {}).top32_share]
+        .map(value => value === undefined ? '暂无' : (100 * value).toFixed(2) + '%').join(' / ')],
+    ['两半 top1 / top32 / top64 Jaccard',
+      ['top1_jaccard', 'top32_jaccard', 'top64_jaccard']
+        .map(key => (split.topk_jaccard_between_halves || {})[key] === undefined ? '暂无'
+          : Number(split.topk_jaccard_between_halves[key]).toFixed(3)).join(' / ')],
+    ['两半能量轮廓相关', split.energy_profile_correlation === undefined ? '暂无'
+      : Number(split.energy_profile_correlation).toFixed(4)],
+    ['未中心化 SVD：pc1 / pc4 / pc8 / pc16',
+      ['pc1', 'pc4', 'pc8', 'pc16'].map(key => (svd.component_share || {})[key] === undefined
+        ? '暂无' : (100 * svd.component_share[key]).toFixed(1) + '%').join(' / ')],
+    ['平均 delta 能量占比（共同偏移）', svd.mean_delta_energy_share === undefined ? '暂无'
+      : (100 * svd.mean_delta_energy_share).toFixed(1) + '%'],
+    ['手写视觉改变 top32 与 R 敏感 top32 的重合',
+      (visual.overlap_with_R_sensitive_top32 || {}).jaccard === undefined ? '暂无'
+        : 'Jaccard ' + Number(visual.overlap_with_R_sensitive_top32.jaccard).toFixed(3)],
+  ]);
+
+  const poolMetrics = ((payload.pool_metrics || {})[model]) || {};
+  const vsBase = ((payload.pool_vs_base || {})[model]) || {};
+  const retrievalRows = [];
+  Object.keys(poolMetrics).forEach(readoutKey => {
+    const conditions = poolMetrics[readoutKey] || {};
+    const base = conditions.BASE || {};
+    const baseVs = (vsBase[readoutKey] || {}) || {};
+    retrievalRows.push([readoutKey, 'BASE（干净）', fmt(base['R@1'], 4), fmt(base.ce, 4),
+                        fmt(base.mrr, 4), '—', '—', '—', '—']);
+    ['R1', 'R2', 'R3', 'R4', 'REPEAT'].forEach(condition => {
+      const metrics = conditions[condition] || {};
+      const delta = baseVs[condition] || {};
+      const sign = delta.paired_sign_test || {};
+      retrievalRows.push([
+        readoutKey, condition === 'REPEAT' ? '重复一次（对照）' : condition,
+        fmt(metrics['R@1'], 4), fmt(metrics.ce, 4), fmt(metrics.mrr, 4),
+        fmtPoints(delta['delta_R@1']), fmtSigned(delta.delta_ce, 4),
+        (sign.worse === undefined ? '—' : sign.worse + ' / ' + sign.better),
+        (sign.p_value_two_sided === undefined ? '—' : Number(sign.p_value_two_sided).toFixed(3))]);
+    });
+  });
+  tableBlock(qs('nuisance-retrieval'),
+             ['读出', '条件', 'R@1', 'CE', 'MRR', 'ΔR@1(pp)', 'ΔCE', '变差/变好查询数', '符号检验 p'],
+             retrievalRows);
+  setText(qs('nuisance-not-run'), 'NOT RUN：' + (payload.not_run || []).join('；'));
+}
+
 function download(filename, text, type) {  const blob = new Blob([text], { type: type || 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -807,6 +1077,11 @@ function wire() {
   });
   ['direction-select', 'smooth-select', 'window-input'].forEach(id => {
     qs(id).addEventListener('change', () => renderCurves(state.records));
+  });
+  ['nuisance-model', 'nuisance-readout', 'nuisance-base', 'nuisance-variant'].forEach(id => {
+    qs(id).addEventListener('change', () => {
+      if (state.nuisance) renderTextNuisance(state.nuisance);
+    });
   });
   qs('log-limit').addEventListener('change', () => {
     if (state.logs) renderLogs(state.logs);
