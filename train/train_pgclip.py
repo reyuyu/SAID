@@ -456,12 +456,32 @@ def main():
         payload = torch.load(args.resume, map_location='cpu', weights_only=False)
         check_resume_compatible(payload, identity)
         clip_handle.load_state_dict(payload['clip'])
-        train_module.gate.load_state_dict(payload['gate'])
+        # the gate TENSORS live under ``gate_state``; ``gate`` is the descriptive record and loading it
+        # as a state dict fails with "missing keys / unexpected keys". Both spellings are read (the
+        # earliest checkpoints predate the split) but only a dict of tensors is accepted.
+        gate_state = payload.get('gate_state')
+        if not isinstance(gate_state, dict) or not gate_state:
+            legacy = payload.get('gate')
+            if not isinstance(legacy, dict) or not any(torch.is_tensor(v) for v in legacy.values()):
+                raise SystemExit('refusing to resume: %s carries neither gate_state nor gate tensors '
+                                 '(keys: %r)' % (args.resume, sorted(payload)))
+            gate_state = legacy
+            source_key = 'gate (legacy layout)'
+        else:
+            source_key = 'gate_state'
+        if any(not torch.is_tensor(value) for value in gate_state.values()):
+            raise SystemExit('refusing to resume: %s gate tensors are not all tensors' % args.resume)
+        expected = set(train_module.gate.state_dict())
+        if set(gate_state) != expected:
+            raise SystemExit('refusing to resume: %s gate_state keys %r do not match the gate module '
+                             '%r' % (args.resume, sorted(gate_state), sorted(expected)))
+        train_module.gate.load_state_dict(gate_state)
         optimizers['clip'].load_state_dict(payload['optimizer_clip'])
         optimizers['gate'].load_state_dict(payload['optimizer_gate'])
         start_step = int(payload['completed_steps'])
         if rank == 0:
-            print('RESUMED from %s at completed step %d' % (args.resume, start_step), flush=True)
+            print('RESUMED from %s at completed step %d (gate tensors read from %s, %d entries)'
+                  % (args.resume, start_step, source_key, len(gate_state)), flush=True)
     else:
         start_step = 0
 

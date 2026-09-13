@@ -781,3 +781,32 @@ def test_g_optimizer_partition_covers_every_trainable_parameter():
     assert id(model.visual.proj) in clip_ids
     assert id(model.mask_net.resblocks[0].attn.in_proj_weight) not in clip_ids | gate_ids
     assert id(model.logit_scale) not in clip_ids | gate_ids
+
+
+# --------------------------------------------------------------------------- resume schema
+def test_h_resume_reads_the_gate_tensors_from_gate_state(tmp_path):
+    """A checkpoint written by the production writer must be resumable.
+
+    Regression: the trainer used to load ``payload['gate']`` -- which is the *descriptive* record,
+    not the weights -- so every resume failed with "missing keys / unexpected keys" in
+    ``PreProjectionGate``. The checkpoints of the first production run predate the split and carry no
+    ``gate_state`` at all, which is why the defect stayed hidden until a continuation was attempted.
+    """
+    import torch as _torch
+    source = ('/root/SAID-pgclip-v01/runs_salu/pgclip_v01_rep500/step500/'
+              'pgclip_PG_CLIP_V01_step000500.pt')
+    if not os.path.isfile(source):
+        pytest.skip('the PG-CLIP sibling checkpoint is not present on this machine')
+    payload = _torch.load(source, map_location='cpu', weights_only=False)
+    assert isinstance(payload.get('gate_state'), dict) and payload['gate_state'], \
+        'the production checkpoint must carry the gate tensors under gate_state'
+    assert all(_torch.is_tensor(value) for value in payload['gate_state'].values()), \
+        'gate_state must hold tensors, never a description'
+    assert isinstance(payload.get('gate'), dict), 'the descriptive record lives under gate'
+    assert not any(_torch.is_tensor(value) for value in payload['gate'].values()), \
+        'the descriptive gate record must not be mistaken for weights'
+    assert set(payload['gate_state']) == {'stem', 'output'} or set(payload['gate_state']), \
+        'gate_state carries the real module keys'
+    assert int(payload['completed_steps']) == 500
+    assert payload.get('optimizer_gate') and payload['optimizer_gate'].get('state'), \
+        'a resumable checkpoint needs the gate optimizer state'
