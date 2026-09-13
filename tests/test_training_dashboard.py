@@ -1551,7 +1551,9 @@ def write_cgclip(run_dir, records=2, status=None, evaluation=True, heavy=True, s
         (directory / 'cgclip_v01_student_metadata.json').write_text(json.dumps({
             'student': 'cgclip_v01', 'completed_steps': 500}), encoding='utf-8')
     if attention_snapshot:
-        directory = run_dir / 'cgclip_v01_diag'
+        # the snapshot tool refuses to write inside the run directory, so the diagnostic lives
+        # NEXT TO it and the dashboard resolves that sibling path
+        directory = run_dir.parent / 'cgclip_v01_diag'
         directory.mkdir(exist_ok=True)
         (directory / 'cgclip_attention_snapshot.json').write_text(json.dumps({
             'probe': 'cgclip_attention_snapshot', 'read_only': True}), encoding='utf-8')
@@ -1765,7 +1767,11 @@ def test_cgclip_reads_only_whitelisted_files_and_writes_nothing(tmp_path, monkey
     served = set(CGCLIP_FILES.values())
     for path in opened:
         real = os.path.realpath(path)
-        assert real.startswith(os.path.realpath(str(run_dir))), path
+        # every read must stay inside the run directory, except the ONE sibling diagnostic
+        # directory that the read-only snapshot tool owns by design (it refuses to write inside
+        # the run directory); nothing else outside the run directory is allowed
+        assert (real.startswith(os.path.realpath(str(run_dir)))
+                or real.startswith(os.path.realpath(str(run_dir.parent / 'cgclip_v01_diag')))), path
         if os.path.basename(real) in [os.path.basename(name) for name in served]:
             continue
         assert os.path.basename(os.path.dirname(real)) == 'evaluation', path

@@ -118,7 +118,10 @@ CGCLIP_FILES = {
     'student_metadata': 'student_export/cgclip_v01_student_metadata.json',
     'checkpoint': 'CG_CLIP_V01_step000500.pt',
     # the optional later diagnostic; never created by this service, only read when it already exists
-    'attention_snapshot': 'cgclip_v01_diag/cgclip_attention_snapshot.json',
+    # the read-only attention snapshot is written NEXT TO the run directory (the snapshot tool
+    # refuses to write inside it), so this path is resolved against the run directory's parent
+    'attention_snapshot': os.path.join('..', 'cgclip_v01_diag',
+                                       'cgclip_attention_snapshot.json'),
 }
 CGCLIP_OBJECTIVE = 'clip_native_caption_gated_cls'
 CGCLIP_ARM = 'CG_CLIP_V01'
@@ -1332,7 +1335,7 @@ class DashboardData:
                                    if snapshot else
                                    {'available': False, 'error': snapshot_error,
                                     'not_run': '可选的注意力快照诊断未运行：本服务不创建 '
-                                               'cgclip_v01_diag/cgclip_attention_snapshot.json，'
+                                               '../cgclip_v01_diag/cgclip_attention_snapshot.json，'
                                                '只在它已经存在时读取。'}),
         })
         return result
