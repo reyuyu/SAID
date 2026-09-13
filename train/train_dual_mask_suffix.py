@@ -1,9 +1,14 @@
 """Minimal training entry for S0 Dual-Mask Suffix Clean v0.1.
 
-This is a thin production path, not a compatibility runner.  It accepts the formal 500-step
-configuration but does not start it by itself.  ``--resume`` is intentionally rejected in this
-round: loading a complete checkpoint for evaluation is supported by ``load_checkpoint`` below,
-while silently restarting a data stream from step zero would be unsafe.
+This is a thin production path, not a compatibility runner.  It accepts the formal configuration and
+supports **strict continuation** from a complete checkpoint: the clip state, the suffix gate and all
+three optimizer states are loaded strictly, the objective code hash and every objective
+hyper-parameter are checked against the checkpoint, the cosine horizon is unchanged, and the
+distributed stream position is resumed by skipping exactly the batches the original run consumed.
+
+A continuation always writes to its own output directory so the original run's log, config and
+checkpoint stay untouched, and it records both the current code SHA and the SHA the checkpoint was
+trained with.
 """
 
 from __future__ import annotations
@@ -261,17 +266,22 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--total-len", type=int, default=1000)
     parser.add_argument("--amp-dtype", choices=("bf16", "fp32"), default="bf16")
     parser.add_argument("--save-every", type=int, default=0)
-    parser.add_argument("--resume", default=None)
+    parser.add_argument("--resume", default=None,
+                        help="continue strictly from a complete checkpoint: model, gate, all three "
+                             "optimizers, the scheduler position and the distributed stream position")
+    parser.add_argument("--expect-model-sha", default=None,
+                        help="optional sha256 of model/dual_mask_suffix.py; when given, the "
+                             "continuation refuses to run if the objective code changed")
     parser.add_argument("--run-type", choices=("debug", "formal"), default="debug")
     return parser.parse_args()
 
 
 def main() -> int:
     args = _args()
-    if args.resume:
-        raise SystemExit("--resume is intentionally unsupported in Clean v0.1")
-    if os.path.exists(os.path.join(args.output_dir, 'salu_log.jsonl')):
+    if not args.resume and os.path.exists(os.path.join(args.output_dir, 'salu_log.jsonl')):
         raise SystemExit('output directory already contains a run; refusing to mix update counts')
+    if args.resume and not os.path.isfile(args.resume):
+        raise SystemExit('resume checkpoint does not exist: %s' % args.resume)
     _seed_everything(args.seed)
     rank, local_rank, world = _setup_ddp()
     device = torch.device("cuda", local_rank) if torch.cuda.is_available() else torch.device("cpu")
@@ -300,12 +310,16 @@ def main() -> int:
     mask_schedule = cosine_lr(mask_opt, args.mask_lr, 0, horizon)
     suffix_schedule = cosine_lr(suffix_opt, args.suffix_lr, 0, horizon) if suffix_opt is not None else None
     os.makedirs(args.output_dir, exist_ok=True)
+    model_file = os.path.join(REPO, 'model', 'dual_mask_suffix.py')
+    model_file_sha256 = file_sha256(model_file)
     config = {
         "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
         "suffix_lambda": args.lambda_suffix,
         "u_sparsity_lambda": args.lambda_u_sparse,
         "total_objective": "10*L_S + 2*S_S + %g*L_U + %g*S_U"
                            % (args.lambda_suffix, args.lambda_u_sparse),
+        "objective_code_sha256": model_file_sha256,
+        "objective_code_file": "model/dual_mask_suffix.py",
         "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
         "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
         "batch_size_per_gpu": args.batch_size, "world_size": world, "epochs": args.epochs,
@@ -321,30 +335,92 @@ def main() -> int:
         "communication_env": {k: os.environ.get(k) for k in
             ('NCCL_SOCKET_IFNAME', 'NCCL_IB_DISABLE', 'NCCL_P2P_DISABLE', 'GLOO_SOCKET_IFNAME', 'CUDA_VISIBLE_DEVICES')},
     }
+    resume_payload = None
+    resume_epoch = 0
+    resume_step_in_epoch = -1
+    resume_checks = None
+    if args.resume:
+        resume_payload = load_checkpoint(args.resume, inner, (clip_opt, mask_opt, suffix_opt))
+        previous = resume_payload.get('config') or {}
+        problems = validate_resume(
+            previous, previous.get('arguments') or {},
+            {'suffix_mode': args.suffix_mode, 'suffix_lambda': args.lambda_suffix,
+             'u_sparsity_lambda': args.lambda_u_sparse, 'batch_size_per_gpu': args.batch_size,
+             'seed': args.seed, 'epochs': args.epochs, 'total_len': args.total_len,
+             'lr': args.lr, 'mask_lr': args.mask_lr, 'suffix_lr': args.suffix_lr,
+             'weight_decay': args.weight_decay, 'warmup': args.warmup,
+             'image_chunk': args.image_chunk, 'text_chunk': args.text_chunk,
+             'amp_dtype': args.amp_dtype},
+            model_file_sha256, args.expect_model_sha)
+        provenance_digest = (resume_payload.get('provenance') or {}).get('state_digest')
+        loaded_digest = state_digest(inner.clip.state_dict())
+        if provenance_digest and provenance_digest != loaded_digest:
+            problems.append('loaded clip state digest does not match the checkpoint provenance')
+        if problems:
+            raise SystemExit('resume checks failed: ' + '; '.join(problems))
+        completed = int(resume_payload.get('completed_steps', 0))
+        resume_epoch = int(resume_payload.get('epoch', 0))
+        resume_step_in_epoch = int(resume_payload.get('step_in_epoch', -1))
+        config['resumed_from'] = os.path.abspath(args.resume)
+        config['resume_completed_steps'] = completed
+        config['resume_epoch'] = resume_epoch
+        config['resume_step_in_epoch'] = resume_step_in_epoch
+        config['resumed_from_training_sha'] = previous.get('training_sha')
+        config['resumed_from_objective'] = previous.get('total_objective')
+        config['formal_optimizer_updates'] = completed if args.run_type == 'formal' else 0
+        config['debug_optimizer_updates'] = completed if args.run_type == 'debug' else 0
+        resume_checks = {
+            'loaded_clip_state_digest': loaded_digest,
+            'checkpoint_provenance_state_digest': provenance_digest,
+            'clip_state_digest_matches': (provenance_digest is None
+                                          or provenance_digest == loaded_digest),
+            'objective_code_sha256': model_file_sha256,
+            'objective_code_source': ('checkpoint' if previous.get('objective_code_sha256')
+                                      else 'expect-model-sha'),
+            'resumed_from_training_sha': previous.get('training_sha'),
+            'resumed_from_objective': previous.get('total_objective'),
+            'resume_completed_steps': completed,
+            'resume_epoch': resume_epoch,
+            'resume_step_in_epoch': resume_step_in_epoch,
+            'optimizer_steps_restored': {
+                name: sorted({int(entry.get('step', -1))
+                              for entry in (optimizer.state_dict()['state'] or {}).values()})
+                for name, optimizer in (('clip', clip_opt), ('mask', mask_opt), ('suffix', suffix_opt))
+                if optimizer is not None},
+        }
+        config['resume_checks'] = resume_checks
     log_path = os.path.join(args.output_dir, "salu_log.jsonl")
     if rank == 0:
         with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as h:
             json.dump(config, h, indent=2, sort_keys=True)
-        _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir, 0, 0, -1)
+        if resume_payload is None:
+            _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir, 0, 0, -1)
     if world > 1:
         dist.barrier()
-    completed = 0
+    if resume_payload is None:
+        completed = 0
     stream_digest = hashlib.sha256()
     consumed_samples = 0
     training_started = time.perf_counter()
+    skipped_batches = 0
     for epoch in range(args.epochs):
+        if resume_payload is not None and epoch < resume_epoch:
+            continue
         if sampler is not None:
             sampler.set_epoch(epoch)
         for step_in_epoch, batch in enumerate(loader):
             if completed >= args.max_steps:
                 break
+            if resume_skip(epoch, step_in_epoch, resume_epoch if resume_payload is not None else None,
+                           resume_step_in_epoch if resume_payload is not None else None):
+                skipped_batches += 1
+                continue
             step_started = time.perf_counter()
             if device.type == "cuda":
                 torch.cuda.reset_peak_memory_stats(device)
-            stream_record = {'sample_id': batch['sample_id'].tolist(),
-                'image_id': batch['image_id'].tolist(), 'prefix_k': batch['prefix_k'].tolist(),
-                'prefix': batch['caption_said'], 'suffix': batch['suffix_text']}
-            stream_digest.update(json.dumps(stream_record, ensure_ascii=False, separators=(',', ':')).encode('utf-8'))
+            step_payload = batch_stream_payload(batch)
+            stream_digest.update(step_payload)
+            batch_stream_sha256 = hashlib.sha256(step_payload).hexdigest()
             consumed_samples += len(batch['sample_id'])
             clip_schedule(completed); mask_schedule(completed)
             if suffix_schedule is not None:
@@ -390,6 +466,14 @@ def main() -> int:
                           "mask_lr": mask_opt.param_groups[0]["lr"],
                           "suffix_lr": suffix_opt.param_groups[0]["lr"] if suffix_opt else None,
                           "run_type": args.run_type,
+                          "batch_stream_sha256": batch_stream_sha256,
+                          "batch_stream_definition": ("sha256 of the compact UTF-8 JSON of "
+                                                      "sample_id, image_id, prefix_k, prefix, suffix "
+                                                      "of this rank's batch, for this step only"),
+                          "stream_digest_scope": ("continuation only" if resume_payload is not None
+                                                  else "from the start of this run"),
+                          "resumed": resume_payload is not None,
+                          "skipped_batches": skipped_batches,
                           "formal_optimizer_updates": completed if args.run_type == "formal" else 0,
                           "debug_optimizer_updates": completed if args.run_type == "debug" else 0}
                 record["per_rank_valid"] = [h['valid'] for h in rank_health]
@@ -447,6 +531,67 @@ def _git_head() -> str:
                               capture_output=True, text=True).stdout.strip()
     except Exception:
         return "unknown"
+
+
+def file_sha256(path: str) -> str:
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def batch_stream_payload(batch: Dict) -> bytes:
+    """The exact bytes a step contributes to the stream digest (this rank's batch only)."""
+    record = {'sample_id': batch['sample_id'].tolist(), 'image_id': batch['image_id'].tolist(),
+              'prefix_k': batch['prefix_k'].tolist(), 'prefix': batch['caption_said'],
+              'suffix': batch['suffix_text']}
+    return json.dumps(record, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+
+
+def resume_skip(epoch: int, step_in_epoch: int, resume_epoch, resume_step_in_epoch) -> bool:
+    """Whether ``(epoch, step_in_epoch)`` was already consumed before the continuation started.
+
+    The original run consumed exactly the first ``resume_step_in_epoch + 1`` batches of
+    ``resume_epoch`` (and every batch of the earlier epochs), so skipping exactly that prefix
+    continues the stream without a gap and without repeating a batch.
+    """
+    if resume_epoch is None or resume_step_in_epoch is None:
+        return False
+    if epoch < int(resume_epoch):
+        return True
+    return epoch == int(resume_epoch) and step_in_epoch <= int(resume_step_in_epoch)
+
+
+def validate_resume(previous_config: Dict, previous_arguments: Dict, expected: Dict,
+                    model_file_sha256: str, expect_model_sha: str) -> list:
+    """Return the list of reasons a continuation must be refused (empty list means it may run).
+
+    The recorded ``training_sha`` can never match when the trainer itself gains the resume path, so
+    the objective is pinned by the hash of ``model/dual_mask_suffix.py`` (recorded in the checkpoint,
+    or supplied as ``--expect-model-sha`` for older checkpoints) plus every objective
+    hyper-parameter, rather than by the repository commit.
+    """
+    problems = []
+    if previous_config.get('suffix_mode') != expected['suffix_mode']:
+        problems.append('suffix_mode %r != %r'
+                        % (previous_config.get('suffix_mode'), expected['suffix_mode']))
+    for key in ('suffix_lambda', 'u_sparsity_lambda', 'batch_size_per_gpu', 'seed', 'epochs',
+                'total_len'):
+        recorded = previous_config.get(key)
+        if recorded is not None and float(recorded) != float(expected[key]):
+            problems.append('%s %r != %r' % (key, recorded, expected[key]))
+    for key in ('lr', 'mask_lr', 'suffix_lr', 'weight_decay', 'warmup', 'image_chunk',
+                'text_chunk', 'amp_dtype'):
+        recorded = (previous_arguments or {}).get(key)
+        if recorded is not None and recorded != expected[key]:
+            problems.append('argument %s %r != %r' % (key, recorded, expected[key]))
+    pinned = previous_config.get('objective_code_sha256') or expect_model_sha
+    if not pinned:
+        problems.append('neither the checkpoint nor --expect-model-sha pins the objective code')
+    elif pinned != model_file_sha256:
+        problems.append('objective code sha256 %s != %s' % (model_file_sha256, pinned))
+    return problems
 
 
 if __name__ == "__main__":
