@@ -170,16 +170,27 @@ def training_environment():
 
 
 def verify_coco_environment():
+    """The COCO and Urban-1k absolute paths must exist before any evaluation is attempted.
+
+    Urban-1k uses the upstream layout ``<root>/image`` + ``<root>/caption`` (paired by stem); a
+    missing directory is an error and no other 1k set is substituted for it.
+    """
     annotations = os.path.join(COCO_ROOT, 'annotations', 'captions_val2017.json')
     images = os.path.join(COCO_ROOT, 'val2017')
     if not os.path.isfile(annotations):
         raise SystemExit('COCO annotations missing at the absolute path %s' % annotations)
     if not os.path.isdir(images):
         raise SystemExit('COCO val2017 images missing at %s' % images)
-    urban_images = os.path.join(URBAN_ROOT, 'images')
-    if not os.path.isdir(urban_images):
-        raise SystemExit('Urban-1k images missing at %s (no substitute 1k set is used)'
-                         % urban_images)
+    urban_images = os.path.join(URBAN_ROOT, 'image')
+    urban_captions = os.path.join(URBAN_ROOT, 'caption')
+    if not os.path.isdir(urban_images) or not os.path.isdir(urban_captions):
+        raise SystemExit('Urban-1k layout not found under %s (expected image/ and caption/; no '
+                         'substitute 1k set is used)' % URBAN_ROOT)
+    image_stems = {os.path.splitext(name)[0] for name in os.listdir(urban_images)}
+    caption_stems = {os.path.splitext(name)[0] for name in os.listdir(urban_captions)}
+    if image_stems != caption_stems or not image_stems:
+        raise SystemExit('Urban-1k image/caption stems do not match under %s (%d/%d)'
+                         % (URBAN_ROOT, len(image_stems), len(caption_stems)))
     return annotations, images
 
 
@@ -227,6 +238,10 @@ def main():
     parser.add_argument('--clear-stale-lock', action='store_true')
     parser.add_argument('--skip-gpu-check', action='store_true',
                         help='only for a re-run of the evaluation phases; never for training')
+    parser.add_argument('--allow-missing-gate-state', action='store_true',
+                        help='continue with the student-only export/evaluation when a checkpoint '
+                             'predates schema v1.1 and does not carry the gate tensors; the loss is '
+                             'recorded in the status file and the report, never hidden')
     parser.add_argument('--phases', default='train,export,coco,urban')
     args = parser.parse_args()
 
@@ -282,10 +297,14 @@ def main():
                 raise SystemExit('shared init missing: %s' % args.init_state)
             write_status(status_path, init_state=args.init_state,
                          init_file_sha256=file_sha256(args.init_state))
-        annotations, images = verify_coco_environment()
+        try:
+            annotations, images = verify_coco_environment()
+        except SystemExit as error:
+            write_status(status_path, phase='failed',
+                         failure_reason='data pre-check refused to start: %s' % error)
+            raise
         write_status(status_path, coco_annotations=annotations, coco_images=images,
                      urban_root=URBAN_ROOT)
-
         env = training_environment()
         exit_codes = {}
 
@@ -358,20 +377,82 @@ def main():
         if int(payload.get('world_size', -1)) != args.nproc:
             problems.append('world_size=%r' % payload.get('world_size'))
         gate = payload.get('gate') or {}
+        # the gate identity lives in the config block of every checkpoint (and, from schema v1.1 on,
+        # flat at the top level too); the first production run predates the flat keys, so both shapes
+        # are accepted here and the *tensors* are checked as well
+        gate_config = config.get('gate') or {}
+        identity_gate = {'gate_mode': config.get('gate_mode', payload.get('gate_mode')),
+                         'gate_width': config.get('gate_width', payload.get('gate_width')),
+                         'gate_out': config.get('gate_out', payload.get('gate_out')),
+                         'gate_layers': config.get('gate_layers', payload.get('gate_layers')),
+                         'gate_heads': config.get('gate_heads', payload.get('gate_heads')),
+                         'gate_seed': config.get('gate_seed', payload.get('gate_seed'))}
         for name, want in (('gate_mode', GATE_MODE), ('gate_width', GATE_WIDTH),
                            ('gate_out', GATE_OUT), ('gate_layers', GATE_LAYERS),
                            ('gate_heads', GATE_HEADS), ('gate_seed', GATE_SEED)):
-            if gate.get(name) != want:
-                problems.append('gate[%s]=%r' % (name, gate.get(name)))
+            if identity_gate.get(name) != want:
+                problems.append('gate[%s]=%r' % (name, identity_gate.get(name)))
+        if gate_config.get('mode') and 'straight-through' not in gate_config['mode']:
+            problems.append('gate mode is not the hard straight-through gate: %r'
+                            % gate_config.get('mode'))
+        import torch as _torch
+        gate_tensors = payload.get('gate_state')
+        if not isinstance(gate_tensors, dict) or not gate_tensors:
+            # schema v1.0 of the first production run wrote the gate TENSORS to the same key that
+            # carries the gate description, so the trained weights were not persisted. The primary
+            # evaluation uses the bare CLIP student only, so the run can continue with an explicit
+            # flag; the loss is recorded in the status and in the report instead of being hidden.
+            legacy = payload.get('gate')
+            if isinstance(legacy, dict) and legacy and all(
+                    hasattr(value, 'shape') for value in legacy.values()):
+                gate_tensors = legacy
+            else:
+                gate_tensors = None
+        gate_state_missing = gate_tensors is None
+        missing_note = None
+        if gate_state_missing:
+            if not args.allow_missing_gate_state:
+                problems.append('the checkpoint carries no gate tensors; re-run with '
+                                '--allow-missing-gate-state to continue with the student-only '
+                                'export and evaluation')
+            else:
+                missing_note = ('the trained gate weights are absent from this checkpoint '
+                                '(schema v1.0 key collision); the student export and both '
+                                'evaluations do not use the gate')
+        else:
+            shapes = {name: tuple(value.shape) for name, value in gate_tensors.items()}
+            if shapes.get('projection.weight') != (GATE_OUT, GATE_WIDTH):
+                problems.append('gate projection.weight shape %r' % (shapes.get('projection.weight'),))
+            if shapes.get('projection.bias') != (GATE_OUT,):
+                problems.append('gate projection.bias shape %r' % (shapes.get('projection.bias'),))
+            if not any(name.startswith('stem.') for name in shapes):
+                problems.append('the gate stem tensors are missing')
+            clip_tensors = payload.get('clip') or {}
+            if tuple(clip_tensors.get('visual.proj', _torch.empty(0)).shape) != (GATE_OUT, GATE_WIDTH):
+                problems.append('clip.visual.proj shape is not %r'
+                                % ((GATE_OUT, GATE_WIDTH),))
+            shared = [name for name in gate_tensors if name in clip_tensors]
+            if shared:
+                problems.append('the gate duplicates clip parameters: %r' % shared[:3])
         if config.get('lr') != args.clip_lr or config.get('gate_lr') != args.gate_lr:
             problems.append('lr=%r gate_lr=%r' % (config.get('lr'), config.get('gate_lr')))
-        if int(payload.get('lr_horizon_steps', -1)) != int(config.get('lr_horizon_steps', -2)):
-            problems.append('lr_horizon_steps mismatch')
+        horizon = payload.get('lr_horizon_steps')
+        if horizon is None:
+            horizon = config.get('lr_horizon_steps')
+        if horizon is None or int(horizon) <= 0 or int(horizon) != int(
+                config.get('lr_horizon_steps', -2)):
+            problems.append('lr_horizon_steps mismatch (%r vs %r)'
+                            % (payload.get('lr_horizon_steps'), config.get('lr_horizon_steps')))
         write_status(status_path, checkpoint=checkpoint, checkpoint_verified=not problems,
                      checkpoint_problems=problems,
                      completed_steps=int(payload.get('completed_steps', -1)),
-                     lr_horizon_steps=payload.get('lr_horizon_steps'),
-                     gate_config=payload.get('gate'), loss_weights=weights)
+                     lr_horizon_steps=horizon,
+                     gate_state_missing=gate_state_missing,
+                     gate_state_note=(missing_note if gate_state_missing
+                                      and args.allow_missing_gate_state else None),
+                     checkpoint_gate_tensors=(sorted(gate_tensors)[:6]
+                                              if isinstance(gate_tensors, dict) else None),
+                     gate_config=gate_config or gate, loss_weights=weights)
         if problems:
             write_status(status_path, phase='failed',
                          failure_reason='checkpoint verification failed: %s' % problems)

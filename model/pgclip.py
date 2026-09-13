@@ -484,12 +484,23 @@ def check_resume_compatible(payload: dict, expected: dict) -> None:
 
 
 def checkpoint_metadata(steps: int, rank: int, world: int, config: dict, digests: dict,
-                        batch_size: int, chunking: dict, precision: str) -> dict:
-    """Self-describing checkpoint header (identity, init file, shapes, weights, cursor)."""
+                        batch_size: int, chunking: dict, precision: str,
+                        lr_horizon_steps: int = None) -> dict:
+    """Self-describing checkpoint header (identity, init file, shapes, weights, cursor).
+
+    Schema v1.1 adds the flat gate identity keys and the LR horizon at the top level so a verifier
+    does not have to reach into ``config``; a checkpoint written by the first production run carries
+    the same information inside ``config`` and is still accepted by the runner.
+    """
+    horizon = int(lr_horizon_steps if lr_horizon_steps is not None
+                  else (config.get('lr_horizon_steps') or 0))
     return {
         'objective': OBJECTIVE, 'arm': ARM, 'phase': PHASE, 'gate_mode': GATE_MODE,
+        'gate_width': GATE_WIDTH, 'gate_out': GATE_OUT, 'gate_layers': GATE_LAYERS,
+        'gate_heads': GATE_HEADS, 'gate_seed': GATE_SEED,
         'completed_steps': int(steps), 'rank': int(rank), 'world_size': int(world),
         'batch_size_per_gpu': int(batch_size), 'global_batch': int(batch_size) * int(world),
+        'lr_horizon_steps': horizon,
         'loss_weights': dict(LOSS_WEIGHTS), 'fixed_scale': FIXED_SCALE, 'norm_eps': NORM_EPS,
         'gate': {'stem': 'MaskNetwork(width=512, layers=1, heads=8)',
                  'output': 'Linear(512, 768, bias=True)', 'bias_init': GATE_BIAS_INIT,

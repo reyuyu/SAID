@@ -1,0 +1,172 @@
+{
+  "experiment": {
+    "name": "PG-CLIP v0.1",
+    "chinese": "原生对齐＋投影前 768 维文本条件视觉选择",
+    "objective": "clip_native_preproj_mask",
+    "arm": "PG_CLIP_V01",
+    "phase": "pgclip-v0.1",
+    "branch": "codex/pgclip-v01",
+    "worktree": "/root/SAID-pgclip-v01",
+    "worktree_base_commit": "894599d",
+    "implementation_sha_at_training": "7bafe2f3ecc3bd46d1bc9a1a7c3a61071eabac5c",
+    "single_configuration": true,
+    "parameter_search": false,
+    "optimizer_updates": 500,
+    "loss_weights": {"global": 5.0, "preproj": 5.0, "sparse": 1.0},
+    "loss_combination": "5*(LG_i2t+LG_t2i) + 5*(LP_i2t+LP_t2i) + mean(|mask|)",
+    "fixed_score_scale": 100.0,
+    "normalise_eps": 1e-06
+  },
+  "checkpoints": {
+    "shared_init_file": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+    "shared_init_sha256": "c1a4a2be1b212f38677f729a4f03160d788a6d6db79ca5021a43022af0f5cba8",
+    "initial_state_digest": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "final_clip_state_digest": "b532599dc33f19492ce12a5dde5554318e7979458289d7e2867a6c5ff5351e6e",
+    "final_gate_state_digest": "5b8c73836aa26b144869fbe729d06e47c03a6c304863ef20a57786b8604c5651",
+    "step500_checkpoint": "runs_salu/pgclip_v01/step500/pgclip_PG_CLIP_V01_step000500.pt",
+    "bare_student": "runs_salu/pgclip_v01/step500/student_000500.pt",
+    "bare_student_sha256": "ffaaf79f217e536da2b2cba3e197fa6f6128c1299ed2d3c29d073e18b17ca804",
+    "saved_steps": [0, 20, 100, 250, 500]
+  },
+  "training": {
+    "world_size": 4,
+    "batch_size_per_gpu": 256,
+    "global_batch": 1024,
+    "gradient_accumulation": 1,
+    "completed_steps": 500,
+    "wall_sec": 632.550900220871,
+    "mean_sec_per_step": 1.1304811339378358,
+    "samples_per_sec": 995.7,
+    "peak_memory_gb": 42.52395534515381,
+    "captions_seen": 128000,
+    "over_capacity_captions": 1022,
+    "over_capacity_fraction": 0.007984375,
+    "max_effective_length": 248,
+    "steps_per_epoch": 1217,
+    "lr_horizon_steps": 3651,
+    "lr": 1e-06,
+    "gate_lr": 0.001,
+    "warmup_length": 200,
+    "weight_decay": 0.01,
+    "precision": "fp32 master weights; bf16 autocast for the visual/text transformers; the pre-projection core (native projection, conditional projection, final text projection, gate, normalise, scores, losses) is explicitly fp32",
+    "chunking": {"image_chunk": 32, "text_chunk": 64, "qp_checkpoint": true},
+    "ddp_route": "per-rank anchor means + autograd-aware gather + standard DDP parameter averaging; no world-size factor",
+    "stream_provenance": {
+      "caption_stream_sha256": "799f8efae42541759ac92239643d2150dc8aa23d1da984676f029063c21c0fd4",
+      "sample_stream_sha256": "39c9885c41aaf11cd79a05b7828cf07b1cfa6af2d4ad507c978e870f3a422856",
+      "image_id_stream_sha256": "7aede2958e8200529a8404e37af7222f8d999ef9705a54c12119ff39336f8429",
+      "prefix_k_stream_sha256": "9b0fdaf2ec4435d33e5b41b18ea929f9ae6843ae8de2408bf47187d862d1aa46",
+      "identical_to_s0_500_caption_stream": true,
+      "identical_to_s0_500_sample_stream": true,
+      "note": "checked against /root/SAID-gap-completion/runs_salu/said_cls_cvssl/ddpfix_step500_S0_smartclip/run_summary.json; the data and caption streams are bit-identical, not merely seeded identically"
+    }
+  },
+  "curve": {
+    "steps": [1, 10, 30, 75, 160, 410, 500],
+    "loss_global": [1.304433, 0.974741, 0.792138, 0.630216, 0.531781, 0.375781, 0.293677],
+    "loss_preproj": [1.304433, 0.951819, 0.749815, 0.565881, 0.496678, 0.401061, 0.310515],
+    "loss_sparse": [1.0, 0.898966, 0.89211, 0.876673, 0.820892, 0.747645, 0.795822],
+    "loss_total": [14.044331, 10.531767, 8.601873, 6.857159, 5.96319, 4.631858, 3.816782],
+    "path_global_i2t_top1": [0.84375, 0.855469, 0.902344, 0.929688, 0.9375, 0.949219, 0.953125],
+    "path_preproj_i2t_top1": [0.84375, 0.875, 0.886719, 0.921875, 0.933594, 0.953125, 0.949219],
+    "path_global_i2t_max_margin_mean": [4.96957, 5.711356, 6.427268, 6.523126, 7.190947, 8.577847, 8.476852],
+    "path_preproj_i2t_max_margin_mean": [4.96957, 5.563854, 6.331592, 6.452589, 6.804985, 7.89801, 7.873191],
+    "path_global_i2t_lse_margin_mean": [0.610434, 0.489641, 0.378112, 0.267049, 0.216585, 0.17596, 0.12217],
+    "path_preproj_i2t_lse_margin_mean": [0.610434, 0.485441, 0.360442, 0.255268, 0.202506, 0.198774, 0.145973],
+    "mask_kept_mean": {"75": 673.285156, "500": 611.191406, "coordinates": 768},
+    "mask_all_on_fraction": {"75": 0.0, "500": 0.0},
+    "mask_all_off_fraction": {"75": 0.0, "500": 0.0},
+    "gate_probability_mean": {"75": 0.745367, "500": 0.598733},
+    "gate_probability_min": {"75": 0.005509, "500": 0.004608},
+    "gate_probability_std": {"75": 0.195938, "500": 0.126293},
+    "gate_probability_quantiles_500": [0.4053228199481964, 0.5164564847946167, 0.5896312594413757, 0.6738659143447876, 0.827139675617218],
+    "mask_kept_range_500": [487.0, 699.0],
+    "gate_coordinate_variation_across_captions_500": 0.091091,
+    "preproj_retained_energy_mean_500": 0.820306,
+    "projected_output_energy_ratio_mean_500": 0.728504,
+    "projected_output_energy_ratio_max_500": 0.942534,
+    "projected_output_energy_ratio_above_one_fraction_500": 0.0,
+    "native_vs_conditioned_cosine_mean_500": 0.941371,
+    "grad_norms_step1": {"clip": 663.506104, "gate": 0.973805, "gate_output": 0.972981, "gate_stem": 0.0},
+    "grad_norms_step500": {"clip": 135.287888, "gate": 0.823517, "gate_output": 0.730058, "gate_stem": 0.379819}
+  },
+  "evaluation": {
+    "protocol": "native CLS/EOS only: Normalize(encode_image(I)) and Normalize(encode_text(C)); the gate, any two-path fusion, any reranking and any auxiliary representation are unused",
+    "coco_canonical": {
+      "pgclip_v01_at_500": {"i2t_r1": 0.6048, "i2t_r5": 0.821, "i2t_r10": 0.8908,
+                            "t2i_r1": 0.41256, "t2i_r5": 0.6694, "t2i_r10": 0.76544},
+      "s0_at_500": {"i2t_r1": 0.6058, "i2t_r5": 0.822, "i2t_r10": 0.8906,
+                    "t2i_r1": 0.41236, "t2i_r5": 0.67092, "t2i_r10": 0.7662},
+      "delta_points": {"i2t_r1": -0.1, "i2t_r5": -0.1, "i2t_r10": 0.02,
+                       "t2i_r1": 0.02, "t2i_r5": -0.152, "t2i_r10": -0.076},
+      "protocol": "5000 images x 25000 captions, frozen canonical evaluator"
+    },
+    "urban1k": {
+      "pgclip_v01_at_500": {"i2t_r1": 0.8700000643730164, "i2t_r5": 0.9700000286102295,
+                            "i2t_r10": 0.9900000691413879, "t2i_r1": 0.8330000638961792,
+                            "t2i_r5": 0.9620000720024109, "t2i_r10": 0.9820000529289246},
+      "s0_at_500": {"i2t_r1": 0.87, "i2t_r5": 0.971, "i2t_r10": 0.988,
+                    "t2i_r1": 0.842, "t2i_r5": 0.967, "t2i_r10": 0.981},
+      "delta_points": {"i2t_r1": 0.0, "i2t_r5": -0.1, "i2t_r10": 0.2,
+                       "t2i_r1": -0.9, "t2i_r5": -0.5, "t2i_r10": 0.1},
+      "protocol": "1000 images x 1000 captions, upstream Urban-1k layout (image/ + caption/)"
+    },
+    "gate": "COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher",
+    "verdict": "FAIL",
+    "verdict_reason": "COCO I2T R@1 = 0.6048 is 0.10 pp below the 0.6058 floor (one query of 5000); T2I R@1 = 0.41256 clears its floor by 0.02 pp, which is one query of 25000",
+    "urban_is_separate": true
+  },
+  "stage_exit_codes": {"train": 0, "export": 0, "coco": 0, "urban": 0},
+  "runner": {
+    "attempts": 4,
+    "attempt_history": [
+      {"phase": "failed", "exit_codes": {"train": 0},
+       "failure_reason": "checkpoint verification read the gate identity from the wrong key and compared a missing top-level lr_horizon_steps"},
+      {"phase": "failed", "exit_codes": {},
+       "failure_reason": "the checkpoint carries no gate tensors (schema v1.0 key collision, see post_run_fixes)"}
+    ],
+    "post_run_fixes": [
+      "the trainer wrote the gate TENSORS and the gate DESCRIPTION to the same checkpoint key, so the trained gate weights of the first production run were not persisted (fixed: gate tensors now live under gate_state; a regression test asserts both survive)",
+      "checkpoint schema v1.1 adds the flat gate identity keys and lr_horizon_steps so a verifier does not have to read them out of the config block",
+      "the runner now verifies the gate/clip tensor shapes and refuses to continue without --allow-missing-gate-state when a v1.0 checkpoint has no gate tensors; the primary evaluation never uses the gate, and the loss is recorded in run_status.json (gate_state_missing, gate_state_note)",
+      "no retraining was performed: the export and both evaluations were re-run on the existing step-500 checkpoint with --phases export,coco,urban"
+    ]
+  },
+  "acceptance_tests": {
+    "tests/test_pgclip.py": "16 passed (A extraction point and native-interface identity, B fully-open initialisation and the 10*LG gradient identity, C chunked scores vs a pair loop with the non-diagonal W@W.T counterexample, D mask semantics and gradient responsibility, E boundaries incl. an energy ratio above 1, F a real two-rank DDP step vs a single-process reference, G the real CLI, checkpoint round-trip and lossless bare-student export)",
+    "ddp_evidence": {
+      "gradient_ratios": {"norm": "1.0000007 - 1.0000045", "max_abs": "0.99999 - 1.00002", "cosine": "1.00002 - 1.00022"},
+      "element_buckets_of_post_step_difference": {
+        "abs_grad_below_1e-6": {"elements": 25730056, "differing": 15343},
+        "1e-6_to_1e-4": {"elements": 493857, "differing": 333},
+        "1e-4_to_1e-3": {"elements": 2075762, "differing": 3},
+        "1e-3_to_1e-2": {"elements": 14232617, "differing": 0},
+        "above_1e-2": {"elements": 110722877, "differing": 0}
+      },
+      "reading": "the two routes are mathematically identical; the residual parameter difference is confined to gradient elements below ~1e-3, where AdamW's normalised first step turns a sign flip at the fp32 accumulation noise floor into a full +-lr move. No world-size factor is used anywhere."
+    },
+    "dashboard": "tests/test_training_dashboard.py 43 passed (incl. four PG-CLIP endpoint tests and the node render harness)"
+  },
+  "dashboard": {
+    "endpoint": "/api/run/pgclip_v01/pgclip (new: /api/run/<id>/pgclip, whitelisted files only, no torch import, nothing written)",
+    "run_registered": "pgclip_v01 = /root/SAID-pgclip-v01/runs_salu/pgclip_v01/step500",
+    "section": "I · PG-CLIP v0.1（原生对齐 + 投影前 768 维文本条件选择）",
+    "shows": ["two paths (LG/LP/LS/L_total and both directions)", "the fixed 5/5/1 weights",
+              "the 768-d gate statistics and the coordinate-index grid", "the two energy metrics, with the projected ratio explicitly allowed to exceed 1",
+              "the training progress and the frozen gate verdict with COCO/Urban rows against S0@500"],
+    "http_verified": true,
+    "browser_visual_acceptance": "NOT RUN (no browser tool in this session)",
+    "mask_grid_status": "未运行 for this run: the checkpoint of the first production run predates the key fix and carries no gate tensors, so the post-hoc snapshot cannot be produced from it; tools/diag/pgclip_mask_snapshot.py implements it for future runs and the page shows the reason instead of a fabricated grid"
+  },
+  "not_run": [
+    "browser visual acceptance of the dashboard section (no browser tool)",
+    "the per-coordinate 768-d mask snapshot for THIS run (its checkpoint lost the gate tensors; see post_run_fixes)",
+    "native-only and native+post-projection control arms, so no attribution to the pre-projection position specifically",
+    "hyper-parameter search, extra seeds, longer training, 3-epoch completion, text masks, U/teacher/decoder/reconstruction, cross-attention, soft gates, dynamic mappings",
+    "any causal claim from a single 500-update run"
+  ],
+  "frozen_references_untouched": {
+    "s0_at_500": {"coco_i2t_r1": 0.6058, "coco_t2i_r1": 0.41236, "urban_i2t_r1": 0.87, "urban_t2i_r1": 0.842},
+    "note": "no other worktree, checkpoint or evaluation file was modified; the dashboard change is additive and read-only"
+  }
+}

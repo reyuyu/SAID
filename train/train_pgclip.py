@@ -480,7 +480,9 @@ def main():
                    'prefix_k_stream_sha256': prefix_digest.hexdigest()}
         payload = {
             'clip': clip_handle.state_dict(),
-            'gate': train_module.gate.state_dict(),
+            # the gate TENSORS live under their own key: ``checkpoint_metadata`` owns ``gate`` (the
+            # descriptive record), and writing both to the same key would silently drop the weights
+            'gate_state': train_module.gate.state_dict(),
             'optimizer_clip': optimizers['clip'].state_dict(),
             'optimizer_gate': optimizers['gate'].state_dict(),
             'epoch': epoch, 'step_in_epoch': step_in_epoch,
@@ -492,7 +494,10 @@ def main():
             batch_size=args.batch_size,
             chunking={'image_chunk': args.image_chunk, 'text_chunk': args.text_chunk,
                       'qp_checkpoint': bool(args.qp_checkpoint)},
-            precision=PRECISION_NOTE))
+            precision=PRECISION_NOTE, lr_horizon_steps=total_steps))
+        if not isinstance(payload.get('gate_state'), dict) or 'gate' not in payload:
+            raise RuntimeError('checkpoint payload is missing either the gate tensors (gate_state) '
+                               'or the gate description (gate)')
         payload['grad_health'] = health
         path = os.path.join(args.output_dir, 'pgclip_%s_step%06d.pt' % (ARM, steps))
         torch.save(payload, path)

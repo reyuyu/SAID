@@ -724,7 +724,7 @@ def test_g_checkpoint_roundtrip_and_strict_bare_student_export(tmp_path):
                                     amp_enabled=False, completed_steps=0)
     assert torch.isfinite(out['loss_total'])
 
-    payload = {'clip': module.clip.state_dict(), 'gate': module.gate.state_dict(),
+    payload = {'clip': module.clip.state_dict(), 'gate_state': module.gate.state_dict(),
                'optimizer_clip': optimizers['clip'].state_dict(),
                'optimizer_gate': optimizers['gate'].state_dict(),
                'epoch': 0, 'step_in_epoch': 0}
@@ -732,9 +732,16 @@ def test_g_checkpoint_roundtrip_and_strict_bare_student_export(tmp_path):
                                        digests={'init_file_sha256': 'x'}, batch_size=4,
                                        chunking={'image_chunk': 4, 'text_chunk': 4,
                                                  'qp_checkpoint': True},
-                                       precision='test'))
+                                       precision='test', lr_horizon_steps=3651))
     checkpoint = tmp_path / ('pgclip_%s_step000001.pt' % ARM)
     torch.save(payload, checkpoint)
+    # the gate TENSORS and the gate DESCRIPTION must live under different keys: the first production
+    # run wrote both to ``gate`` and silently lost the trained weights (regression guard)
+    saved = torch.load(str(checkpoint), map_location='cpu', weights_only=False)
+    assert isinstance(saved['gate_state'], dict) and 'projection.weight' in saved['gate_state']
+    assert isinstance(saved['gate'], dict) and 'projection.weight' not in saved['gate']
+    assert saved['gate'].get('stem') and saved['gate'].get('mode')
+    assert int(saved['lr_horizon_steps']) > 0
     student = tmp_path / 'student_000001.pt'
     result = subprocess.run([sys.executable,
                              os.path.join(REPO, 'tools', 'diag', 'export_pgclip_student.py'),
