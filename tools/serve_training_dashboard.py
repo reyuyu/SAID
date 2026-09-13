@@ -132,6 +132,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 if leaf == 'clip512':
                     # read-only 512-d functional probe (text functionality + controlled crops)
                     return self._json(200, self.data.clip512(run_id))
+                if leaf == 'pgclip':
+                    # read-only PG-CLIP v0.1 view: two paths, 5/5/1 weights, 768-d gate statistics
+                    return self._json(200, self.data.pgclip(run_id))
                 if leaf == 'clip512-sheet':
                     # a contact sheet, addressed only by an integer scene index resolved inside the
                     # registered run directory; malformed values become the usual 404

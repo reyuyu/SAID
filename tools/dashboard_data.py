@@ -68,6 +68,41 @@ DIMENSION_COLUMNS = (
     'margin_contribution_signed_mean', 'mask_keep_frequency', 'crop_object_delta_energy',
     'crop_control_delta_energy', 'object_pair_K',
 )
+# PG-CLIP v0.1 keeps the ordinary trainer files; the page reads only these and never a checkpoint
+PGCLIP_FILES = {
+    'config': 'config.json',
+    'log': 'salu_log.jsonl',
+    'summary': 'run_summary.json',
+    'status': 'run_status.json',
+    # deliberately NOT "mask_snapshot.json": that name belongs to the older S0/TriMask runs, and a
+    # PG-CLIP page must never render another experiment's mask snapshot as its own 768-d grid
+    'mask_snapshot': 'pgclip_mask_snapshot.json',
+}
+PGCLIP_OBJECTIVE = 'clip_native_preproj_mask'
+# the scalar fields the two-path page plots; a missing field is reported as 暂无, never as 0
+PGCLIP_SERIES = (
+    'loss_global', 'loss_preproj', 'loss_sparse', 'loss_total', 'weighted_loss_global',
+    'weighted_loss_preproj', 'weighted_loss_sparse', 'loss_global_i2t', 'loss_global_t2i',
+    'loss_preproj_i2t', 'loss_preproj_t2i', 'lr', 'gate_lr', 'sec_per_step', 'samples_per_sec',
+    'peak_memory_gb', 'path_global_i2t_top1', 'path_preproj_i2t_top1', 'path_global_t2i_top1',
+    'path_preproj_t2i_top1', 'path_global_i2t_max_margin_mean',
+    'path_preproj_i2t_max_margin_mean', 'path_global_i2t_lse_margin_mean',
+    'path_preproj_i2t_lse_margin_mean', 'mask_kept_mean', 'mask_keep_fraction_mean',
+    'mask_all_on_fraction', 'mask_all_off_fraction', 'gate_probability_mean',
+    'gate_probability_min', 'gate_probability_std', 'preproj_retained_energy_mean',
+    'projected_output_energy_ratio_mean', 'projected_output_energy_ratio_max',
+    'projected_output_energy_ratio_above_one_fraction', 'native_output_norm_mean',
+    'conditioned_output_norm_mean', 'native_vs_conditioned_cosine_mean',
+    'gate_output_grad_norm', 'gate_stem_grad_norm', 'clip_grad_norm', 'gate_grad_norm',
+    'mask_coordinate_mean', 'gate_coordinate_variation_across_captions',
+)
+PGCLIP_REMINDERS = [
+    '投影前条件路径只在训练时使用：主评估只用原生 encode_image/encode_text 的 CLS/EOS 表示。',
+    'projected_output_energy_ratio 可以大于 1（删掉坐标可能减少投影内的相互抵消），它不是语义保留率，也从不被截断。',
+    '768 维网格只代表维度索引，不代表图像空间位置。',
+    '本轮没有运行 native-only 或 native+post-projection 控制臂，因此提升（若有）只能归因于 PG-CLIP 这一整套组合。',
+    '页面只读取 run 目录里的小型日志与结果文件：不 import torch、不加载 checkpoint、不触发 GPU 前向。',
+]
 DIAGNOSTIC_LABELS = {'available': '已诊断', 'missing': '未诊断'}
 # fixed reminders attached to every diagnostics response, so the page cannot present the numbers
 # without them
@@ -223,6 +258,12 @@ class RunRegistry:
             raise RunNotFound('scene')
         return os.path.join(self.resolve(run_id)['directory'], CLIP512_DIR,
                             CLIP512_SHEET % index)
+
+    def pgclip_path(self, run_id, key):
+        """Resolve one whitelisted PG-CLIP file inside the registered run directory."""
+        if key not in PGCLIP_FILES:
+            raise RunNotFound(key)
+        return os.path.join(self.resolve(run_id)['directory'], PGCLIP_FILES[key])
 
 
 def read_json(path):
@@ -699,6 +740,172 @@ class DashboardData:
             'phase_b_status': (status_payload or {}).get('phase_b'),
         })
         return result
+
+    # ---------------------------------------------------------------- PG-CLIP v0.1
+    def pgclip(self, run_id):
+        """The read-only PG-CLIP v0.1 view: two paths, the fixed 5/5/1 weights, the 768-d gate.
+
+        Reads only the small files the trainer already wrote inside the registered run directory
+        (config, scalar log, summary, status, optional post-hoc mask snapshot) plus the frozen
+        evaluation rows. No torch import, no checkpoint, no GPU, nothing is written.
+        """
+        self.registry.resolve(run_id)
+        config, config_error = read_json(self.registry.pgclip_path(run_id, 'config'))
+        status_payload, _ = read_json(self.registry.pgclip_path(run_id, 'status'))
+        status_payload = status_payload or {}
+        is_pgclip = bool(config) and config.get('objective') == PGCLIP_OBJECTIVE
+        files = {key: {'file': name, 'available': os.path.isfile(self.registry.pgclip_path(run_id, key))}
+                 for key, name in PGCLIP_FILES.items()}
+        records, log_error = self._pgclip_records(run_id)
+        snapshot, snapshot_error = read_json(self.registry.pgclip_path(run_id, 'mask_snapshot'))
+        result = {
+            'run_id': run_id, 'available': is_pgclip,
+            'status': '已运行' if is_pgclip else '未运行',
+            'objective': (config or {}).get('objective'), 'arm': (config or {}).get('arm'),
+            'phase_name': (config or {}).get('phase'),
+            'error': config_error if config is None else (None if is_pgclip else
+                                                          'objective=%r' % (config or {}).get('objective')),
+            'files': files, 'reminders': PGCLIP_REMINDERS,
+            'series_fields': list(PGCLIP_SERIES),
+        }
+        if not is_pgclip:
+            for key in ('config', 'series', 'latest', 'mask', 'evaluation', 'summary', 'progress'):
+                result[key] = None
+            result['log_error'] = log_error
+            return result
+
+        weights = config.get('loss_weights') or {}
+        series = {field: [] for field in PGCLIP_SERIES}
+        steps = []
+        for record in records:
+            steps.append(record.get('completed_steps'))
+            for field in PGCLIP_SERIES:
+                value = record.get(field)
+                series[field].append(value if isinstance(value, (int, float)) else None)
+        coco, urban = self._pgclip_evaluation(run_id)
+        baseline = BASELINES.get('S0@500') or {}
+        verdict = status_payload.get('conclusion')
+        progress = {'completed_steps': status_payload.get('completed_steps'),
+                    'max_steps': config.get('max_steps') or status_payload.get('max_steps'),
+                    'world_size': config.get('world_size'),
+                    'batch_size_per_gpu': config.get('batch_size_per_gpu'),
+                    'global_batch': config.get('global_batch'),
+                    'loader_batches': config.get('loader_batches'),
+                    'lr_horizon_steps': config.get('lr_horizon_steps'),
+                    'lr': config.get('lr'), 'gate_lr': config.get('gate_lr'),
+                    'warmup_length': config.get('warmup_length'),
+                    'weight_decay': config.get('weight_decay'), 'epochs': config.get('epochs'),
+                    'chunking': config.get('chunking'), 'precision': config.get('precision'),
+                    'ddp_route': config.get('ddp_route'),
+                    'implementation_sha': status_payload.get('implementation_sha')
+                    or config.get('git_head'),
+                    'init_file_sha256': config.get('init_file_sha256'),
+                    'initial_state_digest': config.get('initial_state_digest'),
+                    'path': status_payload.get('phase')}
+        mask_view = None
+        if snapshot:
+            mask_view = {
+                'available': True,
+                'source': snapshot.get('source'),
+                'captions': snapshot.get('captions'),
+                'coordinates': snapshot.get('coordinates', 768),
+                'mask_groups': snapshot.get('mask_groups'),
+                'probability_groups': snapshot.get('probability_groups'),
+                'per_caption_keep': snapshot.get('per_caption_keep'),
+                'statistics': snapshot.get('statistics'),
+                'energy': snapshot.get('energy'),
+                'checkpoint_sha256': snapshot.get('checkpoint_sha256'),
+                'completed_steps': snapshot.get('completed_steps'),
+                'new_optimizer_updates': snapshot.get('new_optimizer_updates'),
+                'error': snapshot_error,
+            }
+        else:
+            mask_view = {'available': False, 'error': snapshot_error,
+                         'not_run': '逐坐标 mask 快照未运行：本 run 的日志只记录聚合统计，'
+                                    '页面不会把聚合值伪装成 768 维网格。'}
+        result.update({
+            'config': {key: config.get(key) for key in (
+                'objective', 'arm', 'phase', 'gate_mode', 'gate_width', 'gate_out', 'gate_heads',
+                'gate_layers', 'gate_seed', 'fixed_scale', 'norm_eps', 'lambda_global',
+                'lambda_preproj', 'lambda_sparse', 'loss_combination', 'two_paths', 'h_source',
+                'text_source', 'gate', 'candidate_rule', 'grader', 'precision', 'chunking',
+                'ddp_route', 'no_world_size_factor', 'view', 'caption_stream', 'statistics_scope',
+                'model_shapes', 'seed', 'init_state', 'tokenizer_context', 'loader_batches',
+                'lr_horizon_steps', 'max_steps', 'world_size', 'batch_size_per_gpu',
+                'global_batch', 'loss_weights', 'git_head')},
+            'loss_weights': {'global': weights.get('global', 5.0),
+                             'preproj': weights.get('preproj', 5.0),
+                             'sparse': weights.get('sparse', 1.0)},
+            'steps': steps, 'series': series, 'latest': records[-1] if records else None,
+            'log_error': log_error, 'record_count': len(records),
+            'mask': mask_view, 'progress': progress,
+            'evaluation': {
+                'coco': coco, 'urban1k': urban,
+                'baseline_s0_500': {'coco': baseline.get('coco'), 'urban1k': baseline.get('urban1k'),
+                                    'source': baseline.get('source')},
+                'gate': GATE,
+                'verdict': (verdict or {}).get('verdict') if isinstance(verdict, dict) else None,
+                'verdict_detail': verdict,
+            },
+        })
+        return result
+
+    def _pgclip_records(self, run_id):
+        """The scalar log records (bounded): every record is small and the file is plain JSONL."""
+        path = self.registry.pgclip_path(run_id, 'log')
+        records, error = [], None
+        try:
+            with open(path, 'r', encoding='utf-8') as handle:
+                for line in handle:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        records.append(json.loads(line))
+                    except ValueError:
+                        continue
+        except FileNotFoundError:
+            pass
+        except OSError as problem:
+            error = str(problem)
+        return records[-MAX_RECORDS_PER_READ:], error
+
+    def _pgclip_evaluation(self, run_id):
+        """The two frozen-protocol rows of this run, read from its own evaluation/ directory."""
+        directory = os.path.join(self.registry.resolve(run_id)['directory'], 'evaluation')
+        rows = {'coco': None, 'urban1k': None}
+        if not os.path.isdir(directory):
+            return rows['coco'], rows['urban1k']
+        for name in sorted(os.listdir(directory)):
+            payload, _ = read_json(os.path.join(directory, name))
+            if payload is None:
+                continue
+            if name.endswith('_canonical.json'):
+                canonical = payload.get('canonical') or {}
+                for key, entry in canonical.items():
+                    coco = entry.get('coco_val2017')
+                    if coco:
+                        rows['coco'] = {'name': key, 'file': name,
+                                        'i2t_r1': coco.get('image2text_R1'),
+                                        'i2t_r5': coco.get('image2text_R5'),
+                                        'i2t_r10': coco.get('image2text_R10'),
+                                        't2i_r1': coco.get('text2image_R1'),
+                                        't2i_r5': coco.get('text2image_R5'),
+                                        't2i_r10': coco.get('text2image_R10'),
+                                        'checkpoint_sha256': entry.get('checkpoint_sha256')}
+            elif name.endswith('_urban1k.json'):
+                urban = payload.get('urban1k') or {}
+                if urban:
+                    rows['urban1k'] = {
+                        'name': payload.get('label'), 'file': name,
+                        'i2t_r1': (urban.get('image2text') or {}).get('R1'),
+                        'i2t_r5': (urban.get('image2text') or {}).get('R5'),
+                        'i2t_r10': (urban.get('image2text') or {}).get('R10'),
+                        't2i_r1': (urban.get('text2image') or {}).get('R1'),
+                        't2i_r5': (urban.get('text2image') or {}).get('R5'),
+                        't2i_r10': (urban.get('text2image') or {}).get('R10'),
+                        'checkpoint_sha256': payload.get('checkpoint_sha256')}
+        return rows['coco'], rows['urban1k']
 
     # ---------------------------------------------------------------- evaluation
     def evaluation(self, run_id):

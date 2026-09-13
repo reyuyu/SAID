@@ -1139,3 +1139,201 @@ def test_clip512_frontend_renders_the_payload_without_a_browser(tmp_path):
                              str(payload_file)], capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stderr
     assert 'HARNESS_OK' in result.stdout
+
+
+# ---------------------------------------------------------------- PG-CLIP v0.1 (section I)
+
+def _pgclip_config():
+    return {
+        'objective': 'clip_native_preproj_mask', 'arm': 'PG_CLIP_V01', 'phase': 'pgclip-v0.1',
+        'gate_mode': 'preproj_hard_st_768', 'gate_width': 512, 'gate_out': 768, 'gate_heads': 8,
+        'gate_layers': 1, 'gate_seed': 0, 'fixed_scale': 100.0, 'norm_eps': 1e-6,
+        'lambda_global': 5.0, 'lambda_preproj': 5.0, 'lambda_sparse': 1.0,
+        'loss_weights': {'global': 5.0, 'preproj': 5.0, 'sparse': 1.0},
+        'loss_combination': '5*(LG_i2t+LG_t2i) + 5*(LP_i2t+LP_t2i) + mean(|mask|)',
+        'two_paths': {'native': 'Norm(h @ clip.visual.proj)',
+                      'preproj': 'Norm((h * mask_j) @ clip.visual.proj)'},
+        'h_source': 'ln_post(CLS of visual block 12) before visual.proj, one visual forward',
+        'text_source': 'ln_final sequence, EOT = argmax(token ids), native text_projection in fp32',
+        'gate': {'stem': 'MaskNetwork(width=512, layers=1, heads=8)',
+                 'output': 'Linear(512, 768, bias=True)', 'mode': 'hard straight-through',
+                 'bias_init': 2.0794415416798357, 'out_weight_init': 0.0, 'gate_seed': 0},
+        'candidate_rule': 'fixed image: each candidate text uses its own mask',
+        'grader': 'LG never touches the gate; LP touches all; LS only the gate',
+        'precision': 'fp32 master; bf16 autocast; fp32 pre-projection core',
+        'chunking': {'image_chunk': 32, 'text_chunk': 64, 'qp_checkpoint': True},
+        'ddp_route': 'per-rank anchor means + autograd-aware gather + standard DDP averaging',
+        'no_world_size_factor': True, 'view': 'image_a only', 'caption_stream': 'reference draw',
+        'statistics_scope': 'rank0 local batch',
+        'model_shapes': {'visual_hidden': 768, 'output_dim': 512, 'text_width': 512},
+        'seed': 0, 'init_state': '/tmp/cvssl_initial.pt', 'tokenizer_context': 248,
+        'loader_batches': 1217, 'lr_horizon_steps': 3651, 'max_steps': 500, 'world_size': 4,
+        'batch_size_per_gpu': 256, 'global_batch': 1024, 'lr': 1e-6, 'gate_lr': 1e-3,
+        'warmup_length': 200, 'weight_decay': 1e-2, 'epochs': 3, 'git_head': 'deadbeef',
+        'init_file_sha256': 'a' * 64, 'initial_state_digest': 'b' * 64,
+    }
+
+
+def _pgclip_record(step, **extra):
+    record = {'completed_steps': step, 'loss_global': 0.6, 'loss_preproj': 0.58,
+              'loss_sparse': 0.79, 'loss_total': 6.3, 'weighted_loss_global': 3.0,
+              'weighted_loss_preproj': 2.9, 'weighted_loss_sparse': 0.79,
+              'loss_global_i2t': 0.3, 'loss_global_t2i': 0.3, 'lr': 1e-6, 'gate_lr': 9.9e-4,
+              'sec_per_step': 1.03, 'samples_per_sec': 990.0, 'peak_memory_gb': 42.5,
+              'path_global_i2t_top1': 0.9375, 'path_preproj_i2t_top1': 0.9375,
+              'path_global_i2t_max_margin_mean': 7.14, 'path_preproj_i2t_max_margin_mean': 6.78,
+              'path_global_i2t_lse_margin_mean': 1.2, 'path_preproj_i2t_lse_margin_mean': 1.1,
+              'mask_kept_mean': 605.0, 'mask_keep_fraction_mean': 0.788,
+              'mask_all_on_fraction': 0.0, 'mask_all_off_fraction': 0.0,
+              'gate_probability_mean': 0.71, 'gate_probability_min': 0.42,
+              'gate_probability_std': 0.12, 'preproj_retained_energy_mean': 0.79,
+              'projected_output_energy_ratio_mean': 1.04, 'projected_output_energy_ratio_max': 1.6,
+              'projected_output_energy_ratio_above_one_fraction': 0.55,
+              'native_output_norm_mean': 10.2, 'conditioned_output_norm_mean': 9.1,
+              'native_vs_conditioned_cosine_mean': 0.71, 'gate_output_grad_norm': 1.03,
+              'gate_stem_grad_norm': 0.45, 'clip_grad_norm': 162.0, 'gate_grad_norm': 2.5,
+              'h_norm_mean': 26.2, 'statistics_scope': 'rank0_local_batch'}
+    record.update(extra)
+    return record
+
+
+def write_pgclip(run_dir, records=2, mask_snapshot=True):
+    """A PG-CLIP run directory: config, scalar log, status, evaluation rows, mask snapshot."""
+    import hashlib
+    (run_dir / 'config.json').write_text(json.dumps(_pgclip_config()), encoding='utf-8')
+    with open(run_dir / 'salu_log.jsonl', 'w', encoding='utf-8') as handle:
+        for index in range(records):
+            handle.write(json.dumps(_pgclip_record((index + 1) * 10)) + '\n')
+    (run_dir / 'run_status.json').write_text(json.dumps({
+        'run_id': 'pg_test', 'phase': 'complete', 'completed_steps': 500,
+        'implementation_sha': 'c' * 40, 'exit_codes': {'train': 0, 'export': 0, 'coco': 0,
+                                                       'urban': 0},
+        'conclusion': {'verdict': 'FAIL', 'coco_i2t_r1': 0.601, 'coco_t2i_r1': 0.409,
+                       'i2t_delta_points': -0.48, 't2i_delta_points': -0.34}}),
+        encoding='utf-8')
+    evaluation = run_dir / 'evaluation'
+    evaluation.mkdir(exist_ok=True)
+    (evaluation / 'PG_CLIP_V01_step000500_canonical.json').write_text(json.dumps({
+        'canonical': {'PG_CLIP_V01@500': {
+            'coco_val2017': {'image2text_R1': 0.601, 'image2text_R5': 0.821,
+                             'image2text_R10': 0.888, 'text2image_R1': 0.409,
+                             'text2image_R5': 0.668, 'text2image_R10': 0.764},
+            'checkpoint_sha256': 'd' * 64}}}), encoding='utf-8')
+    (evaluation / 'PG_CLIP_V01_step000500_urban1k.json').write_text(json.dumps({
+        'label': 'PG_CLIP_V01@500',
+        'urban1k': {'image2text': {'R1': 0.871, 'R5': 0.972, 'R10': 0.988},
+                    'text2image': {'R1': 0.840, 'R5': 0.966, 'R10': 0.980}},
+        'checkpoint_sha256': 'd' * 64}), encoding='utf-8')
+    if mask_snapshot:
+        groups = [{'index': 0, 'label': 'caption 0', 'kept': 2, 'mask': [1, 1] + [0] * 766,
+                   'probability_quantiles': [0.4, 0.7, 0.9]}]
+        # a PG-CLIP-specific file name: "mask_snapshot.json" belongs to the older S0/TriMask runs
+        (run_dir / 'pgclip_mask_snapshot.json').write_text(json.dumps({
+            'probe': 'pgclip_mask_snapshot', 'read_only': True, 'new_optimizer_updates': 0,
+            'completed_steps': 500, 'source': 'first 1 samples of the reference stream',
+            'captions': ['a cat'], 'caption_sha256': hashlib.sha256(b'a cat').hexdigest(),
+            'coordinates': 768, 'mask_groups': groups, 'per_caption_keep': [2],
+            'statistics': {'mask_kept_mean': 605.0, 'mask_kept_min': 512.0, 'mask_kept_max': 700.0,
+                           'mask_keep_fraction_mean': 0.788, 'mask_coordinate_mean': 0.788,
+                           'mask_all_on_fraction': 0.0, 'mask_all_off_fraction': 0.0,
+                           'gate_probability_mean': 0.71, 'gate_probability_std': 0.12,
+                           'gate_probability_min': 0.42, 'gate_probability_max': 0.93,
+                           'gate_probability_near_threshold_fraction': 0.01,
+                           'gate_coordinate_variation_across_captions': 0.05,
+                           'gate_probability_quantiles': [0.5, 0.6, 0.71, 0.8, 0.9]},
+            'energy': {'preproj_retained_energy_mean': 0.79, 'preproj_retained_energy_min': 0.6,
+                       'preproj_retained_energy_max': 0.95,
+                       'projected_output_energy_ratio_mean': 1.04,
+                       'projected_output_energy_ratio_max': 1.6,
+                       'projected_output_energy_ratio_above_one_fraction': 0.55,
+                       'native_vs_conditioned_cosine_mean': 0.71},
+            'checkpoint_sha256': 'd' * 64}), encoding='utf-8')
+    return run_dir
+
+
+def test_pgclip_endpoint_未运行_for_a_run_that_is_not_pgclip(tmp_path):
+    run_dir = build_run(tmp_path)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/pgclip')
+    assert status == 200
+    assert payload['available'] is False and payload['status'] == '未运行'
+    for key in ('config', 'series', 'latest', 'mask', 'evaluation', 'summary', 'progress'):
+        assert payload[key] is None, key
+    assert payload['reminders']
+
+
+def test_pgclip_endpoint_serves_two_paths_weights_mask_and_evaluation(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_pgclip(run_dir, records=3)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/pgclip')
+    assert status == 200
+    assert payload['available'] is True and payload['status'] == '已运行'
+    assert payload['config']['objective'] == 'clip_native_preproj_mask'
+    assert payload['loss_weights'] == {'global': 5.0, 'preproj': 5.0, 'sparse': 1.0}
+    assert payload['record_count'] == 3
+    # the two paths are served separately, and the retired L1/L2/L3 names are absent
+    assert payload['series']['loss_global'] == [0.6, 0.6, 0.6]
+    assert payload['series']['loss_preproj'] == [0.58, 0.58, 0.58]
+    assert payload['series']['path_preproj_i2t_top1'][-1] == 0.9375
+    assert 'loss_1' not in payload['series'] and 'loss_2' not in payload['series']
+    assert payload['latest']['loss_total'] == 6.3
+    # the projected energy ratio above 1 must survive the endpoint unchanged
+    assert payload['mask']['energy']['projected_output_energy_ratio_max'] == 1.6
+    assert payload['mask']['mask_groups'][0]['mask'][:2] == [1, 1]
+    assert payload['mask']['coordinates'] == 768
+    assert payload['mask']['new_optimizer_updates'] == 0
+    assert payload['evaluation']['coco']['i2t_r1'] == 0.601
+    assert payload['evaluation']['urban1k']['t2i_r1'] == 0.840
+    assert payload['evaluation']['verdict'] == 'FAIL'
+    assert payload['evaluation']['verdict_detail']['i2t_delta_points'] == pytest.approx(-0.48)
+    assert payload['progress']['completed_steps'] == 500
+    assert payload['progress']['implementation_sha'] == 'c' * 40
+
+
+def test_pgclip_endpoint_reports_the_grid_not_run_without_a_snapshot(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_pgclip(run_dir, mask_snapshot=False)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/pgclip')
+    assert status == 200 and payload['available'] is True
+    assert payload['mask']['available'] is False
+    assert payload['mask']['not_run']                      # an explicit reason, never a fake grid
+    assert payload['mask'].get('mask_groups') is None
+
+
+def test_pgclip_reads_only_whitelisted_files_and_writes_nothing(tmp_path, monkeypatch):
+    run_dir = build_run(tmp_path)
+    write_pgclip(run_dir)
+    (run_dir / 'anything_else.json').write_text('{"secret": 1}', encoding='utf-8')
+    opened = []
+    real_open = open
+
+    def tracking_open(path, *args, **kwargs):
+        opened.append(str(path))
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr('builtins.open', tracking_open)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/pgclip')
+    assert status == 200 and payload['available'] is True
+    assert not any('anything_else' in path for path in opened)
+    before = sorted(os.listdir(str(run_dir)))
+    with Server(registry_for(run_dir), free_port()) as server:
+        server.get('/api/run/hs_test/pgclip')
+    assert sorted(os.listdir(str(run_dir))) == before
+    # every file the endpoint opened lives inside this run directory and (outside evaluation/) is one
+    # of the whitelisted names -- a client can never steer it anywhere else
+    served = set(pgclip_served_names())
+    for path in opened:
+        real = os.path.realpath(path)
+        assert real.startswith(os.path.realpath(str(run_dir))), path
+        name = os.path.basename(real)
+        if name in served:
+            continue
+        assert os.path.basename(os.path.dirname(real)) == 'evaluation', path
+
+
+def pgclip_served_names():
+    from dashboard_data import PGCLIP_FILES
+    return list(PGCLIP_FILES.values())

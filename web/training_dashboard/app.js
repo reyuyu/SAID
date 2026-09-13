@@ -28,6 +28,7 @@ let state = {
   diagnosticsAt: 0,
   nuisance: null,
   clip512: null,
+  pgclip: null,
   pollTimer: null,
 };
 
@@ -546,6 +547,9 @@ async function pollOnce() {
       .catch(reportError);
     getJSON('/api/run/' + runId + '/clip512')
       .then(renderClip512)
+      .catch(reportError);
+    getJSON('/api/run/' + runId + '/pgclip')
+      .then(renderPgClip)
       .catch(reportError);
   }
 }
@@ -1505,6 +1509,278 @@ function renderClip512(payload) {
     + ' 集合指标（uniformity、gap、alignment）是样本集合统计量，不是任何单一坐标的语义标签。'
     + ' ' + ((payload.sources || {}).note || '')
     + ' NOT RUN：' + (payload.not_run || []).join('；'));
+}
+
+/* ---------------------------------------------------------------- I: PG-CLIP v0.1
+ *
+ * Reads one read-only JSON (`/api/run/<id>/pgclip`) built from the run's own small files: the
+ * trainer configuration, the scalar log, the status file, the frozen evaluation rows and -- when the
+ * post-hoc snapshot exists -- per-coordinate mask values. The page runs no forward pass, imports no
+ * model and reads no checkpoint, and it never plots a field the log does not contain.
+ */
+
+const PG_SERIES_LABELS = {
+  loss_global: 'LG = 原生对齐（I2T + T2I）',
+  loss_preproj: 'LP = 投影前条件对齐（I2T + T2I）',
+  loss_sparse: 'LS = mean|mask|',
+  loss_total: 'L_total = 5·LG + 5·LP + LS',
+  weighted_loss_global: '5·LG',
+  weighted_loss_preproj: '5·LP',
+  path_global_i2t_top1: '原生 I2T top1',
+  path_preproj_i2t_top1: '投影前条件 I2T top1',
+  path_global_t2i_top1: '原生 T2I top1',
+  path_preproj_t2i_top1: '投影前条件 T2I top1',
+  path_global_i2t_max_margin_mean: '原生 I2T max margin 均值',
+  path_preproj_i2t_max_margin_mean: '条件 I2T max margin 均值',
+  mask_kept_mean: 'mask 平均保留坐标数（/768）',
+  mask_all_on_fraction: '全开 caption 比例',
+  gate_probability_mean: 'gate 概率均值',
+  gate_probability_min: 'gate 概率最小值',
+  preproj_retained_energy_mean: 'preproj_retained_energy（投影前能量保留）',
+  projected_output_energy_ratio_mean: 'projected_output_energy_ratio（可 > 1）',
+  projected_output_energy_ratio_max: 'projected ratio 最大值',
+  sec_per_step: '每步秒数',
+  lr: 'CLIP 学习率',
+  gate_lr: 'gate 学习率',
+};
+
+function pgValue(value) {
+  return (value === null || value === undefined || value === '') ? '暂无' : String(value);
+}
+
+function pgTable(container, headers, rows) {
+  return tableBlock(container, headers, rows.length ? rows : [['暂无']]);
+}
+
+/* a 768-cell grid whose layout encodes nothing but the coordinate index */
+function renderPgMaskGrid(container, payload) {
+  container.textContent = '';
+  const mask = payload.mask || {};
+  if (!mask.available || !mask.mask_groups) {
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = mask.not_run || ('未运行：' + (mask.error || '没有逐坐标 mask 快照文件'));
+    container.appendChild(note);
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'mask-groups';
+  (mask.mask_groups || []).forEach(group => {
+    const caption = document.createElement('div');
+    caption.className = 'mask-caption';
+    const label = document.createElement('div');
+    label.className = 'k';
+    label.textContent = (group.label || ('caption ' + group.index)) + '（保留 '
+      + (group.kept === undefined ? '?' : group.kept) + '/768）';
+    caption.appendChild(label);
+    const row = document.createElement('div');
+    row.className = 'cells';
+    (group.mask || []).forEach((value, coordinate) => {
+      const cell = document.createElement('span');
+      cell.className = 'cell ' + (value >= 0.5 ? 'on' : 'off');
+      cell.title = '#' + coordinate + ' = ' + value;
+      row.appendChild(cell);
+    });
+    caption.appendChild(row);
+    grid.appendChild(caption);
+  });
+  container.appendChild(grid);
+}
+
+function renderPgClip(payload) {
+  state.pgclip = payload;
+  const ids = ['pg-scope', 'pg-paths', 'pg-curves', 'pg-curve-note', 'pg-mask-stats',
+    'pg-mask-grid', 'pg-mask-note', 'pg-energy', 'pg-progress', 'pg-eval'];
+  if (!payload.available) {
+    setText(qs('pg-banner'), '未运行：这个 run 不是 PG-CLIP（objective=' + pgValue(payload.objective)
+      + '）。只有 objective = clip_native_preproj_mask 的 run 才会在这里显示两路损失。');
+    setText(qs('pg-reminders'), '本区域不显示推测值：objective 不匹配时只显示"未运行"。');
+    ids.forEach(id => { qs(id).textContent = ''; });
+    setText(qs('pg-conclusion'), '');
+    return;
+  }
+  setText(qs('pg-reminders'), (payload.reminders || []).join('   '));
+  const config = payload.config || {};
+  const progress = payload.progress || {};
+  const weights = payload.loss_weights || {};
+  setText(qs('pg-banner'),
+    '已运行（只读）· objective ' + config.objective + ' · arm ' + config.arm
+    + ' · ' + pgValue(config.gate_mode) + ' · 当前阶段 ' + pgValue(progress.path)
+    + ' · 实现 SHA ' + String(progress.implementation_sha || '').slice(0, 12)
+    + ' · 本页不加载 checkpoint、不触发 GPU 前向');
+
+  kvGrid(qs('pg-scope'), [
+    ['两路定义', 'native: Norm(h @ W)；preproj: Norm((h * mask_j) @ W)，W = clip.visual.proj 共享'],
+    ['h 取点', config.h_source],
+    ['文本侧', config.text_source],
+    ['gate', ((config.gate || {}).stem || '?') + ' → ' + ((config.gate || {}).output || '?')
+      + '（bias = log 8，输出 weight = 0；' + pgValue((config.gate || {}).mode) + '）'],
+    ['损失组合', config.loss_combination],
+    ['梯度职责', config.grader],
+    ['候选规则', config.candidate_rule],
+    ['精度', config.precision],
+    ['分块', 'image_chunk=' + pgValue((config.chunking || {}).image_chunk)
+      + '，text_chunk=' + pgValue((config.chunking || {}).text_chunk)
+      + '，qp_checkpoint=' + pgValue((config.chunking || {}).qp_checkpoint)],
+    ['DDP 路线', pgValue(config.ddp_route) + '（world_size 倍率：'
+      + (config.no_world_size_factor ? '无' : '有') + '）'],
+    ['数据', pgValue(config.view) + '；' + pgValue(config.caption_stream)],
+    ['初始化文件 SHA256', String(config.init_file_sha256 || '').slice(0, 32) + '…'],
+    ['初始化 state 摘要', String(config.initial_state_digest || '').slice(0, 32) + '…'],
+    ['模型形状', JSON.stringify(config.model_shapes || {})],
+  ]);
+
+  const latest = payload.latest || {};
+  const weightedSum = (typeof latest.weighted_loss_global === 'number'
+    && typeof latest.weighted_loss_preproj === 'number')
+    ? latest.weighted_loss_global + latest.weighted_loss_preproj : null;
+  pgTable(qs('pg-paths'), ['量', '最新一步的值', '说明'], [
+    ['LG（原生）', fmt(latest.loss_global, 4), 'LG = CE(QG, y) + CE(QGᵀ, y)，双向相加不取平均'],
+    ['LP（投影前条件）', fmt(latest.loss_preproj, 4), 'LP = CE(QP, y) + CE(QPᵀ, y)，双向相加不取平均'],
+    ['LS（稀疏）', fmt(latest.loss_sparse, 4), 'mean(|mask|)，本地 caption × 768，每步只算一次'],
+    ['L_total', fmt(latest.loss_total, 4), '权重 ' + weights.global + ' / ' + weights.preproj
+      + ' / ' + weights.sparse],
+    ['5·LG + 5·LP', fmt(weightedSum, 4), '两项对齐的加权和（另加 1·LS）'],
+    ['原生 I2T / T2I top1', fmt(latest.path_global_i2t_top1, 4) + ' / '
+      + fmt(latest.path_global_t2i_top1, 4), '本地 batch × 全局候选'],
+    ['条件 I2T / T2I top1', fmt(latest.path_preproj_i2t_top1, 4) + ' / '
+      + fmt(latest.path_preproj_t2i_top1, 4), '同一候选池，换成投影前条件分数'],
+    ['原生 / 条件 I2T max margin 均值',
+      fmt(latest.path_global_i2t_max_margin_mean, 3) + ' / '
+      + fmt(latest.path_preproj_i2t_max_margin_mean, 3), '正配分数 − 最强负配分数'],
+    ['原生 / 条件 I2T LSE margin 均值',
+      fmt(latest.path_global_i2t_lse_margin_mean, 3) + ' / '
+      + fmt(latest.path_preproj_i2t_lse_margin_mean, 3), 'logsumexp 口径的难负例余量'],
+    ['h 范数 / 条件输出范数 / 原生输出范数',
+      fmt(latest.h_norm_mean, 3) + ' / ' + fmt(latest.conditioned_output_norm_mean, 3) + ' / '
+      + fmt(latest.native_output_norm_mean, 3), '同一隐藏状态，条件路径按 mask 选坐标后过同一个 W'],
+    ['原生与条件输出余弦（均值）', fmt(latest.native_vs_conditioned_cosine_mean, 6),
+      '全开 mask 时定义上应为 1'],
+    ['梯度范数：clip / gate / gate 输出层 / gate stem',
+      fmt(latest.clip_grad_norm, 2) + ' / ' + fmt(latest.gate_grad_norm, 3) + ' / '
+      + fmt(latest.gate_output_grad_norm, 3) + ' / ' + fmt(latest.gate_stem_grad_norm, 4),
+      '初始时输出层权重为 0，stem 梯度为 0 属预期'],
+  ]);
+
+  const series = payload.series || {};
+  const steps = payload.steps || [];
+  const curveFields = Object.keys(PG_SERIES_LABELS).filter(field => (series[field] || [])
+    .some(value => typeof value === 'number'));
+  const curveTable = curveFields.map(field => {
+    const values = (series[field] || []).filter(value => typeof value === 'number');
+    const first = values.length ? values[0] : null;
+    const last = values.length ? values[values.length - 1] : null;
+    const min = values.length ? Math.min.apply(null, values) : null;
+    const max = values.length ? Math.max.apply(null, values) : null;
+    return [PG_SERIES_LABELS[field], fmt(first, 5), fmt(last, 5), fmt(min, 5), fmt(max, 5)];
+  });
+  pgTable(qs('pg-curves'), ['曲线（' + steps.length + ' 个记录点）', '首', '末', '最小', '最大'],
+          curveTable);
+  setText(qs('pg-curve-note'),
+    '曲线点来自 run 自己的 salu_log.jsonl（每 10 步一条标量记录、每 25 步一条较重统计）。'
+    + ' 只列出日志里真实存在的字段，缺失字段不会以 0 出现；记录条数 ' + pgValue(payload.record_count)
+    + (payload.log_error ? '（读取告警：' + payload.log_error + '）' : ''));
+
+  const mask = payload.mask || {};
+  const stats = mask.statistics || {};
+  pgTable(qs('pg-mask-stats'),
+    ['mask / gate 统计（快照于 ' + pgValue(mask.completed_steps) + ' 步）', '数值'], [
+      ['保留坐标数：均值 / 最小 / 最大',
+        fmt(stats.mask_kept_mean, 1) + ' / ' + fmt(stats.mask_kept_min, 0) + ' / '
+        + fmt(stats.mask_kept_max, 0)],
+      ['保留比例均值 / 坐标级平均', fmt(stats.mask_keep_fraction_mean, 4) + ' / '
+        + fmt(stats.mask_coordinate_mean, 4)],
+      ['全开 / 全关 caption 比例', fmt(stats.mask_all_on_fraction, 4) + ' / '
+        + fmt(stats.mask_all_off_fraction, 4)],
+      ['gate 概率：均值 / 标准差 / 最小 / 最大',
+        fmt(stats.gate_probability_mean, 4) + ' / ' + fmt(stats.gate_probability_std, 4) + ' / '
+        + fmt(stats.gate_probability_min, 4) + ' / ' + fmt(stats.gate_probability_max, 4)],
+      ['阈值附近（|p−0.5| < 0.05）比例', fmt(stats.gate_probability_near_threshold_fraction, 6)],
+      ['跨 caption 的逐坐标概率变化（均值）',
+        fmt(stats.gate_coordinate_variation_across_captions, 5)],
+      ['gate 概率分位数 p5/p25/p50/p75/p95',
+        (stats.gate_probability_quantiles || []).map(value => Number(value).toFixed(3)).join(' / ')],
+    ]);
+  renderPgMaskGrid(qs('pg-mask-grid'), payload);
+  setText(qs('pg-mask-note'),
+    '网格每一格是一个维度下标（0…767），换行只为了排版，不代表图像空间位置：'
+    + ' 绿色 = 保留（mask = 1），灰色 = 关闭（mask = 0）。'
+    + ' 快照来源：' + pgValue(mask.source || (mask.available
+      ? 'run 目录内的 pgclip_mask_snapshot.json' : '未运行'))
+    + (mask.available ? '；新增 optimizer update = ' + pgValue(mask.new_optimizer_updates)
+      + '；checkpoint SHA ' + String(mask.checkpoint_sha256 || '').slice(0, 12) : ''));
+
+  const energy = mask.energy || {};
+  pgTable(qs('pg-energy'), ['两个能量指标（不要混为一谈）', '数值'], [
+    ['preproj_retained_energy = ||h·m||² / ||h||²',
+      '均值 ' + fmt(energy.preproj_retained_energy_mean, 4) + '（范围 '
+      + fmt(energy.preproj_retained_energy_min, 4) + ' ~ '
+      + fmt(energy.preproj_retained_energy_max, 4) + '）；硬 0/1 mask 下应在 [0, 1]'],
+    ['projected_output_energy_ratio = ||(h·m)@W||² / ||h@W||²',
+      '均值 ' + fmt(energy.projected_output_energy_ratio_mean, 4) + '，最大 '
+      + fmt(energy.projected_output_energy_ratio_max, 4) + '，> 1 的比例 '
+      + fmt(energy.projected_output_energy_ratio_above_one_fraction, 4)
+      + '（可能 > 1，从不被截断）'],
+    ['条件 / 原生输出余弦（快照均值）', fmt(energy.native_vs_conditioned_cosine_mean, 5)],
+  ]);
+
+  pgTable(qs('pg-progress'), ['训练进度', '数值'], [
+    ['completed_steps / max_steps', pgValue(progress.completed_steps) + ' / '
+      + pgValue(progress.max_steps)],
+    ['世界大小 × 每卡 batch = 全局 batch', pgValue(progress.world_size) + ' × '
+      + pgValue(progress.batch_size_per_gpu) + ' = ' + pgValue(progress.global_batch)],
+    ['每 epoch 步数 / LR horizon', pgValue(progress.loader_batches) + ' / '
+      + pgValue(progress.lr_horizon_steps)],
+    ['CLIP lr / gate lr / warmup / weight decay', pgValue(progress.lr) + ' / '
+      + pgValue(progress.gate_lr) + ' / ' + pgValue(progress.warmup_length) + ' / '
+      + pgValue(progress.weight_decay)],
+    ['每步秒数 / 吞吐 / 峰值显存（最新记录）',
+      fmt(latest.sec_per_step, 2) + ' s / ' + fmt(latest.samples_per_sec, 1)
+      + ' 样本每秒 / ' + fmt(latest.peak_memory_gb, 1) + ' GB'],
+    ['日志统计口径', pgValue(config.statistics_scope)],
+  ]);
+
+  const evaluation = payload.evaluation || {};
+  const coco = evaluation.coco || {};
+  const urban = evaluation.urban1k || {};
+  const base = evaluation.baseline_s0_500 || {};
+  const baseCoco = base.coco || {};
+  const baseUrban = base.urban1k || {};
+  const delta = (value, reference) => (typeof value === 'number' && typeof reference === 'number')
+    ? ((value - reference) * 100).toFixed(2) + ' pp' : '暂无';
+  pgTable(qs('pg-eval'),
+    ['数据集（原生 CLS/EOS；不用 gate、不做两路融合、不做 reranking）', 'I2T R@1 / R@5 / R@10',
+     'T2I R@1 / R@5 / R@10', '与 S0@500 的 R@1 差（I2T / T2I）'],
+    [
+      ['COCO canonical ' + pgValue(coco.name || '（未产出）'),
+        fmt(coco.i2t_r1, 4) + ' / ' + fmt(coco.i2t_r5, 4) + ' / ' + fmt(coco.i2t_r10, 4),
+        fmt(coco.t2i_r1, 4) + ' / ' + fmt(coco.t2i_r5, 4) + ' / ' + fmt(coco.t2i_r10, 4),
+        delta(coco.i2t_r1, baseCoco.i2t_r1) + ' / ' + delta(coco.t2i_r1, baseCoco.t2i_r1)],
+      ['S0@500（冻结参照）',
+        fmt(baseCoco.i2t_r1, 4) + ' / ' + fmt(baseCoco.i2t_r5, 4) + ' / '
+        + fmt(baseCoco.i2t_r10, 4),
+        fmt(baseCoco.t2i_r1, 4) + ' / ' + fmt(baseCoco.t2i_r5, 4) + ' / '
+        + fmt(baseCoco.t2i_r10, 4), '—'],
+      ['Urban-1k ' + pgValue(urban.name || '（未产出）'),
+        fmt(urban.i2t_r1, 4) + ' / ' + fmt(urban.i2t_r5, 4) + ' / ' + fmt(urban.i2t_r10, 4),
+        fmt(urban.t2i_r1, 4) + ' / ' + fmt(urban.t2i_r5, 4) + ' / ' + fmt(urban.t2i_r10, 4),
+        delta(urban.i2t_r1, baseUrban.i2t_r1) + ' / ' + delta(urban.t2i_r1, baseUrban.t2i_r1)],
+      ['S0@500（冻结参照）',
+        fmt(baseUrban.i2t_r1, 4) + ' / ' + fmt(baseUrban.i2t_r5, 4) + ' / '
+        + fmt(baseUrban.i2t_r10, 4),
+        fmt(baseUrban.t2i_r1, 4) + ' / ' + fmt(baseUrban.t2i_r5, 4) + ' / '
+        + fmt(baseUrban.t2i_r10, 4), '—'],
+    ]);
+  const detail = evaluation.verdict_detail || {};
+  setText(qs('pg-conclusion'),
+    '冻结晋级门（只在 500 步、只看 COCO 原始精度）：I2T R@1 ≥ 0.6058 且 T2I R@1 ≥ 0.41236，'
+    + '且至少一项严格更高 → PROMISING_AT_500，否则 FAIL。本 run 判定：'
+    + pgValue(evaluation.verdict || '未产出')
+    + (typeof detail.i2t_delta_points === 'number'
+      ? '（I2T ' + detail.i2t_delta_points.toFixed(2) + ' pp，T2I '
+        + detail.t2i_delta_points.toFixed(2) + ' pp）' : '')
+    + '。Urban-1k 单列，不参与判定。'
+    + ' 本轮没有 native-only / native+post-projection 控制臂，因此即使提升也只能归因于 PG-CLIP 这一整套组合。');
 }
 
 function download(filename, text, type) {
