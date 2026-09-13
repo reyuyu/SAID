@@ -712,13 +712,23 @@ def verify_checkpoint(path, expected_steps, salu_log):
     report['world_size'] = world
     if not isinstance(world, (int, float)) or int(world) != LOCKED['nproc']:
         problems.append('world_size=%r expected %d' % (world, LOCKED['nproc']))
+    # ``precision`` is a descriptive record: the trainer writes a human-readable string and a
+    # structured dict is equally acceptable, so both are read and both must name the bf16 autocast
+    # region and the explicit fp32 core
     precision = payload.get('precision')
     report['precision'] = precision
-    if not isinstance(precision, dict) or not precision:
-        problems.append('precision is missing, empty or not a dict (%s)'
-                        % type(precision).__name__)
-    elif 'bf16' not in json.dumps(precision).lower():
+    if isinstance(precision, dict):
+        precision_text = json.dumps(precision, sort_keys=True).lower()
+    elif isinstance(precision, str):
+        precision_text = precision.lower()
+    else:
+        precision_text = ''
+    if not precision_text.strip():
+        problems.append('precision is missing or empty (%s)' % type(precision).__name__)
+    elif 'bf16' not in precision_text:
         problems.append('precision does not record the bf16 autocast dtype: %r' % (precision,))
+    elif 'fp32' not in precision_text:
+        problems.append('precision does not record the explicit fp32 core: %r' % (precision,))
     chunking = payload.get('chunking')
     if isinstance(chunking, dict) and chunking:
         report['chunking'] = chunking
@@ -863,17 +873,51 @@ def read_coco_result(path):
 
 
 def read_urban_result(path):
+    """Read the Urban-1k R@1 pair from whichever layout the frozen evaluator produced.
+
+    The evaluator nests its metrics as ``urban1k.image2text.R1`` / ``urban1k.text2image.R1``; older
+    or alternative layouts put flat ``image2text_R1`` / ``text2image_R1`` keys at the top level, so
+    both are read and neither is assumed. Nothing is computed here: the numbers are taken verbatim
+    from the file and the file path is recorded beside them.
+    """
     payload, error = read_json(path)
     if error:
         return None, error
     if not isinstance(payload, dict):
         return None, 'the Urban-1k result is not a dict'
     result = {'source': path, 'raw_keys': sorted(str(key) for key in payload)}
-    for name in ('image2text_R1', 'text2image_R1', 'i2t_r1', 't2i_r1', 'i2t', 't2i'):
-        if name in payload:
-            result[name] = payload[name]
-    if 'image2text_R1' not in result and 'i2t_r1' not in result and 'i2t' not in result:
-        return None, 'no image-to-text R@1 has been found in %s' % path
+
+    def first_number(*candidates):
+        for candidate in candidates:
+            if isinstance(candidate, (int, float)) and not isinstance(candidate, bool):
+                return float(candidate)
+        return None
+
+    nested = payload.get('urban1k') if isinstance(payload.get('urban1k'), dict) else {}
+    image2text = nested.get('image2text') if isinstance(nested.get('image2text'), dict) else {}
+    text2image = nested.get('text2image') if isinstance(nested.get('text2image'), dict) else {}
+    i2t = first_number(image2text.get('R1'), payload.get('image2text_R1'), payload.get('i2t_r1'),
+                       payload.get('i2t'), payload.get('i2t_R1'), payload.get('image_to_text_R1'))
+    t2i = first_number(text2image.get('R1'), payload.get('text2image_R1'), payload.get('t2i_r1'),
+                       payload.get('t2i'), payload.get('t2i_R1'), payload.get('text_to_image_R1'))
+    if i2t is None or t2i is None:
+        return None, ('no image-to-text / text-to-image R@1 pair has been found in %s (top-level '
+                      'keys: %s)' % (path, result['raw_keys']))
+    result['image2text_R1'] = i2t
+    result['text2image_R1'] = t2i
+    for label, source in (('n_images', nested.get('n_images')), ('n_captions', nested.get('n_captions')),
+                          ('protocol', nested.get('protocol')),
+                          ('image_representation', nested.get('image_representation')),
+                          ('checkpoint_sha256', payload.get('checkpoint_sha256')),
+                          ('completed_steps', payload.get('completed_steps'))):
+        if source is not None:
+            result[label] = source
+    result['image2text_R5'] = first_number(image2text.get('R5'), payload.get('image2text_R5'))
+    result['image2text_R10'] = first_number(image2text.get('R10'), payload.get('image2text_R10'))
+    result['text2image_R5'] = first_number(text2image.get('R5'), payload.get('text2image_R5'))
+    result['text2image_R10'] = first_number(text2image.get('R10'), payload.get('text2image_R10'))
+    result['reading'] = ('Urban-1k is reported separately from the COCO gate and never combined '
+                         'with it into one verdict')
     return result, None
 
 
@@ -1235,8 +1279,12 @@ def main():
                              failure_reason='no exported student to evaluate under %s' % student_dir)
                 note('PREFLIGHT_REFUSAL no exported student under %s' % student_dir)
                 raise SystemExit(PREFLIGHT_EXIT_CODE)
-            coco_argv = [student if token == '<STUDENT_EXPORT>' else token
+            # the placeholder can be EMBEDDED in a larger token (``500:<STUDENT_EXPORT>``), so it is
+            # substituted inside each token instead of only matching a whole token
+            coco_argv = [token.replace('<STUDENT_EXPORT>', student)
                          for token in commands['coco']]
+            if any('<STUDENT_EXPORT>' in token for token in coco_argv):
+                raise SystemExit('the COCO command still holds an unresolved student placeholder')
             write_status(status_path, phase='evaluating_coco', stage='coco', student=student,
                          commands=dict(read_status(status_path).get('commands') or {},
                                        coco=sanitise_argv(coco_argv)))
@@ -1262,8 +1310,10 @@ def main():
                              failure_reason='no exported student to evaluate under %s' % student_dir)
                 note('PREFLIGHT_REFUSAL no exported student under %s' % student_dir)
                 raise SystemExit(PREFLIGHT_EXIT_CODE)
-            urban_argv = [student if token == '<STUDENT_EXPORT>' else token
+            urban_argv = [token.replace('<STUDENT_EXPORT>', student)
                           for token in commands['urban']]
+            if any('<STUDENT_EXPORT>' in token for token in urban_argv):
+                raise SystemExit('the Urban-1k command still holds an unresolved placeholder')
             write_status(status_path, phase='evaluating_urban', stage='urban',
                          commands=dict(read_status(status_path).get('commands') or {},
                                        urban=sanitise_argv(urban_argv)))

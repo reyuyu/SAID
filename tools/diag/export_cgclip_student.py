@@ -15,7 +15,7 @@ exported file, and the two outputs are compared exactly (no tolerance).
 
 Two files are produced inside ``--output_dir``:
 
-* ``cgclip_v01_student.pt`` -- ``{'model': clip_state_dict}`` only;
+* ``cgclip_v01_student.pt`` -- ``{'model': clip_state_dict, 'completed_steps': 500}``;
 * ``cgclip_v01_student_metadata.json`` -- the provenance record of that student.
 
 The export is deterministic and idempotent: an existing student file is never overwritten silently.
@@ -209,7 +209,10 @@ def main():
 
     os.makedirs(output_dir, exist_ok=True)
     with open(output_path + '.tmp', 'wb') as handle:
-        torch.save({'model': state}, handle)
+        # ``model`` is the bare native student. ``completed_steps`` travels with it because the
+        # frozen evaluators assert the step count of the checkpoint they are handed; the training-only
+        # gate and the conditional path are deliberately absent.
+        torch.save({'model': state, 'completed_steps': int(payload['completed_steps'])}, handle)
     new_bytes = read_bytes(output_path + '.tmp')
     if os.path.exists(output_path):
         old_bytes = read_bytes(output_path)

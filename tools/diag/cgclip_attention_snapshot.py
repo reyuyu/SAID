@@ -309,7 +309,7 @@ def main():
             pair_mask = (pair_probability >= 0.5).to(pair_probability.dtype) \
                 + (pair_probability - pair_probability.detach())
             pair_mask_full = mask_full_from_gate(pair_mask)
-            pair_weighted = native_row.unsqueeze(0) * pair_mask_full.unsqueeze(1)
+            pair_weighted = native_row * pair_mask_full.unsqueeze(0)
             pair_attention = pair_weighted / pair_weighted.sum(dim=-1, keepdim=True)
             gates_match = bool((pair_mask >= 0.5).equal(patch_gate.detach() >= 0.5))
             probability_max_abs_diff = float((pair_probability - patch_probability).abs().max())
