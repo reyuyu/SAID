@@ -49,6 +49,25 @@ TEXT_NUISANCE_FILES = {
     'probe': 'clip_text_nuisance_probe.json',
     'hand_pairs_csv': 'clip_text_nuisance_hand_pairs.csv',
 }
+# the 512-d functional probe keeps its own directory; only the summary file is served, plus the
+# contact-sheet PNGs addressed by an integer scene index (never a client path)
+CLIP512_DIR = os.path.join('diagnostics', 'clip512_functional_probe')
+CLIP512_FILES = {
+    'summary': 'clip512_functional_probe.json',
+    'status': 'status.json',
+    'dimension_csv': 'clip512_dimension_table.csv',
+}
+CLIP512_SHEET = 'contact_sheets/scene_%02d.png'
+CLIP512_MAX_SCENES = 64
+# the columns the page reads out of the probe's 512-row functional table; the full 16-column table
+# stays in the probe artifact and its CSV, so the response cannot grow with the file
+DIMENSION_COLUMNS = (
+    'dimension', 'mean_image', 'mean_text', 'var_image', 'var_text', 'mean_gap_squared',
+    'nonvisual_text_delta_energy_pool', 'nonvisual_text_delta_energy_handwritten',
+    'handwritten_visual_text_delta_energy', 'margin_contribution_abs_mean',
+    'margin_contribution_signed_mean', 'mask_keep_frequency', 'crop_object_delta_energy',
+    'crop_control_delta_energy', 'object_pair_K',
+)
 DIAGNOSTIC_LABELS = {'available': '已诊断', 'missing': '未诊断'}
 # fixed reminders attached to every diagnostics response, so the page cannot present the numbers
 # without them
@@ -187,6 +206,23 @@ class RunRegistry:
             raise RunNotFound(key)
         return os.path.join(self.resolve(run_id)['directory'], TEXT_NUISANCE_DIR,
                             TEXT_NUISANCE_FILES[key])
+
+    def clip512_path(self, run_id, key='summary'):
+        """Resolve one whitelisted 512-d functional file (its own subdirectory)."""
+        if key not in CLIP512_FILES:
+            raise RunNotFound(key)
+        return os.path.join(self.resolve(run_id)['directory'], CLIP512_DIR, CLIP512_FILES[key])
+
+    def clip512_sheet_path(self, run_id, scene):
+        """Resolve a contact-sheet PNG by integer scene index, never by a client path."""
+        try:
+            index = int(scene)
+        except (TypeError, ValueError):
+            raise RunNotFound('scene')
+        if index < 0 or index >= CLIP512_MAX_SCENES:
+            raise RunNotFound('scene')
+        return os.path.join(self.resolve(run_id)['directory'], CLIP512_DIR,
+                            CLIP512_SHEET % index)
 
 
 def read_json(path):
@@ -581,6 +617,86 @@ class DashboardData:
             'pool': payload.get('pool'),
             'not_run': payload.get('not_run'),
             'note': payload.get('note'),
+        })
+        return result
+
+    # ---------------------------------------------------------------- clip512 functional
+    def clip512(self, run_id):
+        """The read-only 512-d functional probe (phase A text analysis + phase B crops).
+
+        Serves the probe's own summary file; a run without the probe reports 未运行 with null fields.
+        Nothing here imports torch or opens a checkpoint, and the contact sheets are addressed only by
+        an integer scene index resolved inside the registered run directory.
+        """
+        self.registry.resolve(run_id)
+        summary_path = self.registry.clip512_path(run_id, 'summary')
+        payload, error = read_json(summary_path)
+        status_payload = read_json(self.registry.clip512_path(run_id, 'status'))[0]
+        try:
+            updated_at = os.path.getmtime(summary_path)
+        except OSError:
+            updated_at = None
+        sheets = []
+        for index in range(CLIP512_MAX_SCENES):
+            path = self.registry.clip512_sheet_path(run_id, index)
+            if os.path.isfile(path):
+                sheets.append(index)
+        files = {}
+        for key in CLIP512_FILES:
+            path = self.registry.clip512_path(run_id, key)
+            files[key] = {'file': os.path.basename(path), 'available': os.path.isfile(path)}
+        result = {
+            'run_id': run_id,
+            'available': payload is not None,
+            'status': '已运行' if payload is not None else '未运行',
+            'file': os.path.basename(summary_path),
+            'directory': CLIP512_DIR,
+            'files': files,
+            'error': error,
+            'updated_at': updated_at,
+            'updated_at_iso': (time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(updated_at))
+                               if updated_at else None),
+            'scene_sheets': sheets,
+            'reminders': [
+                '能量变化量不是判别作用：本轮实测两者前 32 名只重合 5–8 个坐标。',
+                'margin 贡献是当前候选池上的代数归因，不等于单维纯语义，也不等于删维因果。',
+                '裁剪只保证框级隔离（分割点保留率 0.00–0.86），不是像素级纯净隔离；人工视觉核查 NOT RUN。',
+                '128 池与 5 个场景都只是只读诊断，不参与晋级门；本区域不训练任何投影。',
+            ],
+        }
+        if payload is None:
+            for key in ('models_used', 'models', 'phase_b', 'headline', 'sources', 'not_run',
+                        'template_audit', 'truncation', 'pool', 'phase_a_status', 'phase_b_status'):
+                result[key] = None
+            result['new_optimizer_updates'] = None
+            return result
+        result.update({
+            'new_optimizer_updates': payload.get('new_optimizer_updates'),
+            'models_used': payload.get('models_used'),
+            'models': payload.get('models'),
+            'phase_b': payload.get('phase_b'),
+            'headline': payload.get('headline'),
+            'sources': payload.get('sources'),
+            'not_run': payload.get('not_run'),
+            'template_audit': payload.get('template_audit'),
+            'truncation': payload.get('truncation'),
+            'lengths': payload.get('lengths'),
+            'timing': payload.get('timing'),
+            'run_status': payload.get('run_status'),
+            'read_only': payload.get('read_only'),
+            'scope': payload.get('scope'),
+            'paraphrase_audit_ok': payload.get('paraphrase_audit_ok'),
+            'dimension_columns': DIMENSION_COLUMNS,
+            'unified_dimension_table': {
+                name: [{key: row.get(key) for key in DIMENSION_COLUMNS}
+                       for row in (rows or [])]
+                for name, rows in (payload.get('unified_dimension_table') or {}).items()
+            },
+            'pool': {k: v for k, v in (payload.get('pool') or {}).items()
+                     if k in ('manifest_sha256', 'images', 'description', 'image_ids',
+                              'annotation_ids', 'conditions')},
+            'phase_a_status': (status_payload or {}).get('phase_a'),
+            'phase_b_status': (status_payload or {}).get('phase_b'),
         })
         return result
 

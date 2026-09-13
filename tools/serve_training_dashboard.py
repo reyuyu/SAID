@@ -129,6 +129,18 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     # read-only text-nuisance probe results, from its own diagnostics subdirectory;
                     # a run without the probe reports 未运行 with null fields
                     return self._json(200, self.data.text_nuisance(run_id))
+                if leaf == 'clip512':
+                    # read-only 512-d functional probe (text functionality + controlled crops)
+                    return self._json(200, self.data.clip512(run_id))
+                if leaf == 'clip512-sheet':
+                    # a contact sheet, addressed only by an integer scene index resolved inside the
+                    # registered run directory; malformed values become the usual 404
+                    scene = query.get('scene', [''])[0]
+                    path = self.data.registry.clip512_sheet_path(run_id, scene)
+                    if not os.path.isfile(path):
+                        return self._error(404, 'no such contact sheet')
+                    with open(path, 'rb') as handle:
+                        return self._send(200, handle.read(), 'image/png')
                 if leaf == 'logs':
                     limit = int(query.get('limit', ['200'])[0])
                     return self._json(200, self.data.logs(run_id, limit=max(1, min(limit, 1000))))

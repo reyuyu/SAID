@@ -27,6 +27,7 @@ let state = {
   diagnosticsRunId: null,
   diagnosticsAt: 0,
   nuisance: null,
+  clip512: null,
   pollTimer: null,
 };
 
@@ -542,6 +543,9 @@ async function pollOnce() {
       .catch(reportError);
     getJSON('/api/run/' + runId + '/text-nuisance')
       .then(renderTextNuisance)
+      .catch(reportError);
+    getJSON('/api/run/' + runId + '/clip512')
+      .then(renderClip512)
       .catch(reportError);
   }
 }
@@ -1060,7 +1064,451 @@ function renderTextNuisance(payload) {
   setText(qs('nuisance-not-run'), 'NOT RUN：' + (payload.not_run || []).join('；'));
 }
 
-function download(filename, text, type) {  const blob = new Blob([text], { type: type || 'application/json' });
+/* ---------------------------------------------------------------- H: 512-d functional analysis
+ *
+ * Reads one offline JSON (diagnostics/clip512_functional_probe/clip512_functional_probe.json) and,
+ * for phase B, the contact-sheet PNG of the selected scene through its own endpoint. The page runs
+ * no forward pass, imports no model and reads no checkpoint. Every coordinate is named by index
+ * only, and a number is shown only when the probe measured it.
+ */
+
+const C512_VIEWS = ['I_AB', 'I_A', 'I_B', 'I_control'];
+const C512_VIEW_LABELS = {
+  I_AB: 'I_AB · 完整图',
+  I_A: 'I_A · 只留 A（删未述 B）',
+  I_B: 'I_B · 只留 B（删已述 A）',
+  I_control: 'I_control · 同尺寸控制裁剪',
+};
+const C512_RETENTION_KEY = {
+  I_AB: 'retained_in_AB',
+  I_A: 'retained_in_A_crop',
+  I_B: 'retained_in_B_crop',
+  I_control: 'retained_in_control',
+};
+/* the four noisy-suffix conditions and the repeatability condition, as the probe names them */
+const C512_CONDITION_NOTE = 'BASE 为原始 caption；R1–R4 为在 caption 后追加一句与图像内容无关的'
+  + '非视觉句子；REPEAT 为同一输入的重复前向（用于报重复误差，不是第五种条件）。';
+
+function c512Mean(values) {
+  const clean = (values || []).filter(value => typeof value === 'number' && Number.isFinite(value));
+  if (!clean.length) return null;
+  return clean.reduce((total, value) => total + value, 0) / clean.length;
+}
+
+function c512AbsMean(values) {
+  return c512Mean((values || []).map(value => Math.abs(value)));
+}
+
+function c512Range(values) {
+  const clean = (values || []).filter(value => typeof value === 'number' && Number.isFinite(value));
+  if (!clean.length) return null;
+  return [Math.min.apply(null, clean), Math.max.apply(null, clean)];
+}
+
+function c512Count(flags) {
+  return (flags || []).filter(Boolean).length;
+}
+
+function c512Num(value, digits) {
+  return typeof value === 'number' && Number.isFinite(value) ? fmt(value, digits) : '暂无';
+}
+
+/* Pearson correlation over two per-coordinate columns; null when either side is constant */
+function c512Pearson(left, right) {
+  const pairs = [];
+  for (let index = 0; index < Math.min(left.length, right.length); index += 1) {
+    const a = left[index], b = right[index];
+    if (typeof a === 'number' && Number.isFinite(a) && typeof b === 'number' && Number.isFinite(b)) {
+      pairs.push([a, b]);
+    }
+  }
+  if (pairs.length < 3) return null;
+  const meanA = c512Mean(pairs.map(pair => pair[0]));
+  const meanB = c512Mean(pairs.map(pair => pair[1]));
+  let cov = 0, varA = 0, varB = 0;
+  pairs.forEach(pair => {
+    cov += (pair[0] - meanA) * (pair[1] - meanB);
+    varA += (pair[0] - meanA) ** 2;
+    varB += (pair[1] - meanB) ** 2;
+  });
+  if (varA <= 0 || varB <= 0) return null;
+  return cov / Math.sqrt(varA * varB);
+}
+
+/* the per-scene masked-selection statistics, recomputed from the exported per-scene records; every
+ * definition is named next to its number, and the two magnitude conventions are never merged */
+function c512SelectionAggregate(records) {
+  const rows = records || [];
+  const said = rows.map(row => ((row.smartclip_selection || {}).T_A_delete_said_A_distance));
+  const unsaid = rows.map(row => ((row.smartclip_selection || {}).T_A_delete_unsaid_B_distance));
+  const nativeSaid = rows.map(row => ((row.smartclip_selection || {}).native_T_A_delete_said_A));
+  const nativeUnsaid = rows.map(row => ((row.smartclip_selection || {}).native_T_A_delete_unsaid_B));
+  const kept = [];
+  rows.forEach(row => {
+    Object.keys(row.smartclip_masked || {}).forEach(name => {
+      kept.push(row.smartclip_masked[name].mask_kept);
+    });
+  });
+  return {
+    said: said,
+    unsaid: unsaid,
+    saidSignedMean: c512Mean(said),
+    unsaidSignedMean: c512Mean(unsaid),
+    saidAbsMean: c512AbsMean(said),
+    unsaidAbsMean: c512AbsMean(unsaid),
+    signedOrderCount: c512Count(rows.map((row, index) => unsaid[index] > said[index])),
+    absOrderCount: c512Count(rows.map((row, index) => Math.abs(unsaid[index]) < Math.abs(said[index]))),
+    nativeSignedOrderCount: c512Count(rows.map((row, index) => nativeUnsaid[index] > nativeSaid[index])),
+    nativeAbsOrderCount:
+      c512Count(rows.map((row, index) => Math.abs(nativeUnsaid[index]) < Math.abs(nativeSaid[index]))),
+    nativePreferredCount: c512Count(rows.map(row => row.A_preferred_on_A_view)),
+    maskedPreferredCount:
+      c512Count(rows.map(row => (row.smartclip_selection || {}).masked_prefers_A_view_for_T_A)),
+    nativeBPreferredCount: c512Count(rows.map(row => row.B_preferred_on_B_view)),
+    bothMarginsPositive: c512Count(rows.map(row => row.A_margin > 0 && row.B_margin > 0)),
+    positiveKCount: c512Count(rows.map(row => row.four_score_identity.K > 0)),
+    cosValues: rows.map(row => row.cos_dv_dt),
+    identityMax: Math.max.apply(null, rows.map(row => row.four_score_identity.max_abs_diff)
+      .concat([0])),
+    maskKeptRange: c512Range(kept),
+    sceneCount: rows.length,
+  };
+}
+
+function renderClip512(payload) {
+  state.clip512 = payload;
+  const modelSelect = qs('c512-model');
+  const sceneSelect = qs('c512-scene');
+  const containers = ['c512-scope', 'c512-dimensions', 'c512-dimension-note', 'c512-capture',
+    'c512-capture-note', 'c512-queries', 'c512-scene', 'c512-scores', 'c512-masked',
+    'c512-scene-detail', 'c512-dataset', 'c512-per-condition', 'c512-paired', 'c512-summary'];
+  if (!payload.available) {
+    setText(qs('c512-banner'), '未运行：' + (payload.error || ('未找到 ' + payload.directory))
+      + '（' + payload.directory + '）。运行 tools/diag/clip512_functional_probe.py 后本区域才会出现数字。');
+    setText(qs('c512-reminders'), '本区域不显示任何推测值：文件不存在时只显示"未运行"。');
+    containers.forEach(id => { qs(id).textContent = ''; });
+    qs('c512-sheet').style.display = 'none';
+    modelSelect.textContent = '';
+    sceneSelect.textContent = '';
+    setText(qs('c512-not-run'), '');
+    return;
+  }
+  setText(qs('c512-reminders'), (payload.reminders || []).join('   '));
+
+  const models = payload.models || {};
+  const keys = Object.keys(models);
+  if (modelSelect.dataset.filled !== keys.join(',') || modelSelect.dataset.run !== payload.run_id) {
+    modelSelect.textContent = '';
+    keys.forEach(key => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = key + ' · ' + (models[key].label || '');
+      modelSelect.appendChild(option);
+    });
+    modelSelect.dataset.filled = keys.join(',');
+    modelSelect.dataset.run = payload.run_id;
+    const preferred = keys.indexOf('s0_500');
+    modelSelect.selectedIndex = preferred >= 0 ? preferred : 0;
+  }
+  const model = modelSelect.value || keys[0];
+  const body = models[model] || {};
+  const phaseB = payload.phase_b || {};
+  const scenes = phaseB.scenes || [];
+  const perScene = ((phaseB.models || {})[model] || {}).per_scene || [];
+
+  setText(qs('c512-banner'),
+    '已运行（只读离线）· ' + payload.file + ' · ' + (payload.updated_at_iso || '暂无')
+    + ' · 新增 optimizer updates = ' + payload.new_optimizer_updates
+    + ' · phase A ' + (payload.phase_a_status || '?') + ' / phase B ' + (payload.phase_b_status || '?')
+    + ' · 128 图文池 + ' + scenes.length + ' 个裁剪场景，都不参与晋级门');
+
+  const pool = payload.pool || {};
+  const truncation = payload.truncation || {};
+  const templateAudit = payload.template_audit || [];
+  kvGrid(qs('c512-scope'), [
+    ['模型标签', (payload.models_used || []).map(key => key + '=' + ((models[key] || {}).label || '?')).join('  |  ')],
+    ['选中模型的编码量', c512Num(body.texts_encoded, 0) + ' 条文本 / ' + c512Num(body.views_encoded, 0) + ' 个视图'],
+    ['dtype / autocast', (body.dtype || '?') + ' / ' + (body.autocast || '?')],
+    ['参数摘要前后一致', body.parameter_state_unchanged === true ? '是' : '否'],
+    ['重复前向最大绝对误差', c512Num((body.repeat_check || {}).forward_error_max_abs, 8)],
+    ['run_status.json 未被改动', (payload.run_status || {}).unchanged === true ? '是（前后 SHA 相同）' : '否'],
+    ['pool manifest SHA256', String(pool.manifest_sha256 || '').slice(0, 16) + '…（' + c512Num(pool.images, 0) + ' 图）'],
+    ['改述审计', payload.paraphrase_audit_ok === true
+      ? '通过（' + templateAudit.length + ' 组，颜色/数量/对象/关系不变）' : '未通过'],
+    ['截断检查', '最大有效长度 ' + c512Num(truncation.max_effective_length, 0) + '（EOT 规则）；'
+      + '未进入编码器的后缀 ' + ((truncation.suffix_not_entered || []).length) + ' 个'],
+    ['探针耗时', c512Num((payload.timing || {}).wall_seconds, 1) + ' s（0 次 optimizer update）'],
+  ]);
+
+  /* ---------------------------------------------------------------- A */
+  const chart = body.chart || {};
+  const unified = (payload.unified_dimension_table || {})[model] || [];
+  const byDimension = {};
+  unified.forEach(row => { byDimension[row.dimension] = row; });
+  const topMargin = chart.top32_abs_margin || [];
+  const topEnergy = chart.top32_raw_energy || [];
+  const absSum = (chart.abs_margin_contribution || []).reduce((total, value) => total + value, 0);
+  const rows = topMargin.slice(0, 16).map((dimension, rank) => {
+    const row = byDimension[dimension] || {};
+    return [
+      rank + 1, '#' + dimension,
+      c512Num((chart.raw_delta_energy || [])[dimension], 6),
+      c512Num((chart.abs_margin_contribution || [])[dimension], 4),
+      c512Num((chart.signed_margin_contribution || [])[dimension], 4),
+      c512Num(row.mask_keep_frequency, 3),
+      c512Num(row.mean_gap_squared, 6),
+      topEnergy.indexOf(dimension) >= 0 ? '是（第 ' + (topEnergy.indexOf(dimension) + 1) + ' 名）' : '否',
+    ];
+  });
+  tableBlock(qs('c512-dimensions'),
+    ['按 |margin| 排名', '坐标', '平均 ΔT²（后缀造成的文本变化量）', '平均 |margin 贡献|',
+     '平均有符号 margin 贡献', 'mask 保留频率', 'mean_gap²', '是否也在变化量前 32'],
+    rows.length ? rows : [['暂无']]);
+  const topShare = absSum > 0 ? (chart.abs_margin_contribution || [])[topMargin[0]] / absSum : null;
+  const keepColumn = unified.map(row => row.mask_keep_frequency);
+  const marginColumn = unified.map(row => row.margin_contribution_abs_mean);
+  const gapColumn = unified.map(row => row.mean_gap_squared);
+  const maskMarginR = c512Pearson(keepColumn, marginColumn);
+  const maskGapR = c512Pearson(keepColumn, gapColumn);
+  setText(qs('c512-dimension-note'),
+    '变化量前 32 与 |margin| 前 32 重合 ' + c512Num(chart.top32_overlap_at_32, 0)
+    + '/32（Jaccard ' + c512Num(chart.top32_jaccard, 3) + '）—— 变化大不等于影响判别。'
+    + ' 第 1 名 #' + topMargin[0] + ' 占全部 |margin| 贡献的 '
+    + (topShare === null ? '暂无' : (topShare * 100).toFixed(1) + '%')
+    + '（单点驱动，须与"典型坐标关系很弱"一起读）。'
+    + ' mask 保留频率与 |margin| 的 Pearson 相关为 ' + c512Num(maskMarginR, 3)
+    + '、与 gap² 为 ' + c512Num(maskGapR, 3)
+    + '（本页按当前 512 行表就地计算）——mask 保留率高的坐标并不因此更影响判别。');
+
+  const cvs = (body.coordinate_vs_subspace || {}).uncentered || {};
+  const cvsCentered = (body.coordinate_vs_subspace || {}).centered || {};
+  const captureRow = (label, block) => [
+    label,
+    c512Num((block.coordinate_topk_capture || {}).k4, 4),
+    c512Num((block.coordinate_topk_capture || {}).k8, 4),
+    c512Num((block.coordinate_topk_capture || {}).k16, 4),
+    c512Num((block.subspace_topk_capture || {}).k4, 4),
+    c512Num((block.subspace_topk_capture || {}).k8, 4),
+    c512Num((block.subspace_topk_capture || {}).k16, 4),
+  ];
+  tableBlock(qs('c512-capture'),
+    ['能量捕获（后半样本，同等秩预算）', '坐标 k=4', '坐标 k=8', '坐标 k=16',
+     '方向 k=4', '方向 k=8', '方向 k=16'],
+    [captureRow('未中心化', cvs), captureRow('中心化后', cvsCentered)]);
+  setText(qs('c512-capture-note'),
+    '同等秩预算下，k 个原始坐标捕获的能量远少于 k 个方向：'
+    + '这只说明"变化不是沿少数原始坐标分布"，**不能**推出"换成子空间投影就会涨分"（本轮未训练投影、未做删方向后的检索对照）。'
+    + ' 前半/后半样本量 ' + c512Num(cvs.n_pairs_first, 0) + ' / ' + c512Num(cvs.n_pairs_second, 0)
+    + '，同秩预算 = ' + (cvs.same_rank_budget === true ? '是' : '否')
+    + '；未中心化方向含共同偏移，中心化行给出对照。');
+
+  const queryRow = (kind, item) => [
+    kind, '#' + item.query_index, item.image_id, item.annotation_id, item.base_rank, item.r1_rank,
+    (item.base_caption || item.suffixed_caption || '').slice(0, 40) || '—（探针只导出排名）',
+    typeof item.base_m_lse === 'number'
+      ? c512Num(item.base_m_lse, 3) + ' / ' + c512Num(item.r1_m_lse, 3) : '—',
+  ];
+  tableBlock(qs('c512-queries'),
+    ['I2T 排名变化（R1 相对 BASE）', '查询下标', '图像 ID', '标注 ID', 'BASE 排名', 'R1 排名',
+     'caption（截断）', 'BASE/R1 m_lse'],
+    (chart.best_queries || []).map(item => queryRow('改善', item))
+      .concat((chart.worst_queries || []).map(item => queryRow('变差', item))));
+  setText(qs('c512-queries-note'),
+    '只列改善/变差最大的各 5 个查询（128 池中）。它们是"非视觉后缀改变了排序"的具体样本，'
+    + '不构成对后缀类型的普遍结论；完整逐查询数组在探针 JSON 的 per_condition 里。');
+
+  /* ---------------------------------------------------------------- B */
+  if (!scenes.length) {
+    setText(qs('c512-scene'), '阶段B 未产出场景：' + (phaseB.reason || '未运行'));
+    ['c512-scores', 'c512-masked', 'c512-scene-detail', 'c512-dataset'].forEach(id => {
+      qs(id).textContent = '';
+    });
+    qs('c512-sheet').style.display = 'none';
+  } else {
+    if (sceneSelect.dataset.filled !== String(scenes.length) || sceneSelect.dataset.run !== payload.run_id) {
+      sceneSelect.textContent = '';
+      scenes.forEach((scene, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = index + ' · ' + scene.category_pair + '（图 ' + scene.image_id + '）';
+        sceneSelect.appendChild(option);
+      });
+      sceneSelect.dataset.filled = String(scenes.length);
+      sceneSelect.dataset.run = payload.run_id;
+      sceneSelect.selectedIndex = 0;
+    }
+    const index = Number(sceneSelect.value || 0);
+    const scene = scenes[index] || {};
+    const record = perScene[index] || {};
+    const scores = record.scores || {};
+    const masked = record.smartclip_masked || {};
+    const selection = record.smartclip_selection || {};
+
+    tableBlock(qs('c512-scene'),
+      ['视图', 'A（' + (record.A || '?') + '）框内占比', 'B（' + (record.B || '?') + '）框内占比'],
+      C512_VIEWS.map(view => [
+        C512_VIEW_LABELS[view],
+        c512Num((scene.A || {})[C512_RETENTION_KEY[view]], 4),
+        c512Num((scene.B || {})[C512_RETENTION_KEY[view]], 4),
+      ]).concat([['A 分割点多边形保留（只留 A 的裁剪内）',
+        c512Num((scene.A || {}).segmentation_point_retention_in_A_crop, 4), '—'],
+      ['B 分割点多边形保留（只留 B 的裁剪内）', '—',
+        c512Num((scene.B || {}).segmentation_point_retention_in_B_crop, 4)]]));
+
+    tableBlock(qs('c512-scores'),
+      ['原生读出（未加 mask）', 'T_A', 'T_AB', 'T_B'],
+      C512_VIEWS.map(view => [
+        C512_VIEW_LABELS[view], c512Num((scores[view] || {}).T_A, 3),
+        c512Num((scores[view] || {}).T_AB, 3), c512Num((scores[view] || {}).T_B, 3),
+      ]));
+
+    const maskLabel = name => name + '（mask 保留 '
+      + c512Num((masked[name] || {}).mask_kept, 0) + '/512，范数 '
+      + c512Num((masked[name] || {}).mask_norm, 1) + '）';
+    tableBlock(qs('c512-masked'),
+      ['SmartCLIP masked 读出（同一文本的同一个 mask 用于四个视图）',
+       maskLabel('T_A'), maskLabel('T_AB'), maskLabel('T_B')],
+      C512_VIEWS.map(view => [
+        C512_VIEW_LABELS[view],
+        c512Num((((masked.T_A || {}).views || {})[view] || {}).score, 3),
+        c512Num((((masked.T_AB || {}).views || {})[view] || {}).score, 3),
+        c512Num((((masked.T_B || {}).views || {})[view] || {}).score, 3),
+      ]));
+
+    const kIdentity = record.four_score_identity || {};
+    kvGrid(qs('c512-scene-detail'), [
+      ['K = 100·dv·dt（四分数恒等式）', c512Num(kIdentity.K, 4)
+        + ' vs ' + c512Num(kIdentity.K_from_four_scores, 4)
+        + '（差 ' + c512Num(kIdentity.max_abs_diff, 8) + '）'],
+      ['cos(dv, dt)', c512Num(record.cos_dv_dt, 3)],
+      ['A / B 视图上的 margin', c512Num(record.A_margin, 3) + ' / ' + c512Num(record.B_margin, 3)],
+      ['A 视图偏好 A / B 视图偏好 B', String(record.A_preferred_on_A_view) + ' / '
+        + String(record.B_preferred_on_B_view)],
+      ['K 的逐维正/负能量', c512Num(record.K_dim_positive_energy, 2) + ' / '
+        + c512Num(record.K_dim_negative_energy, 2)],
+      ['|K_d| 最大的 8 个坐标', (record.K_top_coordinates || []).map(dim => '#' + dim).join(' ')],
+      ['masked 偏好 A 视图（T_A）/ 原生', String(selection.masked_prefers_A_view_for_T_A) + ' / '
+        + String(selection.native_prefers_A_view_for_T_A)],
+      ['Δscore：删未述 B / 删已述 A（masked）', fmtSigned(selection.T_A_delete_unsaid_B_distance, 3)
+        + ' / ' + fmtSigned(selection.T_A_delete_said_A_distance, 3)],
+      ['Δscore：删未述 B / 删已述 A（原生）', fmtSigned(selection.native_T_A_delete_unsaid_B, 3)
+        + ' / ' + fmtSigned(selection.native_T_A_delete_said_A, 3)],
+      ['Δscore：同尺寸控制裁剪（masked）', fmtSigned(selection.T_A_control_distance, 3)],
+      ['四视图裁剪框（x0, y0, x1, y1）', JSON.stringify(scene.crops || {})],
+      ['官方视图映射核对', (scene.official_view || {}).analytic_mapping_matches_pipeline === true
+        ? '一致（缩放 ' + c512Num((scene.official_view || {}).scale, 4) + '，偏移 '
+          + JSON.stringify((scene.official_view || {}).center_crop_offset) + '）' : '不一致'],
+      ['隔离级别', String(scene.isolation || '?') + '（框级；分割点保留率见上表，非像素级纯净）'],
+    ]);
+
+    const aggregate = c512SelectionAggregate(perScene);
+    tableBlock(qs('c512-dataset'),
+      ['当前模型的 5 场景汇总（每个数字都写明口径）', '结果'],
+      [
+        ['场景数', c512Num(aggregate.sceneCount, 0)],
+        ['K > 0 的场景', aggregate.positiveKCount + ' / ' + aggregate.sceneCount],
+        ['四分数恒等式最大绝对差', c512Num(aggregate.identityMax, 8)],
+        ['cos(dv,dt) 均值（范围）', c512Num(c512Mean(aggregate.cosValues), 3) + '（'
+          + (c512Range(aggregate.cosValues) || []).map(value => value.toFixed(2)).join(' ~ ') + '）'],
+        ['masked / 原生 偏好 A 视图（T_A）', aggregate.maskedPreferredCount + ' / '
+          + aggregate.nativePreferredCount + ' / ' + aggregate.sceneCount],
+        ['B 视图偏好 B', aggregate.nativeBPreferredCount + ' / ' + aggregate.sceneCount],
+        ['A、B 两项 margin 同时为正', aggregate.bothMarginsPositive + ' / ' + aggregate.sceneCount],
+        ['Δscore 有符号均值：删未述 / 删已述', fmtSigned(aggregate.unsaidSignedMean, 2) + ' / '
+          + fmtSigned(aggregate.saidSignedMean, 2)],
+        ['Δscore 绝对均值：删未述 / 删已述', c512Num(aggregate.unsaidAbsMean, 2) + ' / '
+          + c512Num(aggregate.saidAbsMean, 2)],
+        ['"删未述更稳"的场景数：有符号口径 / 绝对口径',
+          aggregate.signedOrderCount + ' / ' + aggregate.absOrderCount + ' / ' + aggregate.sceneCount],
+        ['同上的原生读出：有符号 / 绝对', aggregate.nativeSignedOrderCount + ' / '
+          + aggregate.nativeAbsOrderCount + ' / ' + aggregate.sceneCount],
+        ['mask 保留坐标数（三模板 × 场景，范围）',
+          (aggregate.maskKeptRange || []).map(value => value.toFixed(0)).join(' ~ ') + ' / 512'],
+      ]);
+    const sheet = qs('c512-sheet');
+    sheet.src = '/api/run/' + encodeURIComponent(payload.run_id) + '/clip512-sheet?scene=' + index;
+    sheet.style.display = '';
+  }
+
+  /* ---------------------------------------------------------------- C */
+  const perCondition = body.per_condition || {};
+  const conditions = Object.keys(perCondition);
+  tableBlock(qs('c512-per-condition'),
+    ['条件', 'I2T R@1', 'I2T R@5', 'I2T R@10', 'T2I R@1', 'T2I R@5', 'T2I R@10',
+     'I2T ce', 'I2T entropy', 'I2T mrr'],
+    conditions.map(name => {
+      const i2t = perCondition[name].I2T || {};
+      const t2i = perCondition[name].T2I || {};
+      return [name, c512Num(i2t['R@1'], 4), c512Num(i2t['R@5'], 4), c512Num(i2t['R@10'], 4),
+        c512Num(t2i['R@1'], 4), c512Num(t2i['R@5'], 4), c512Num(t2i['R@10'], 4),
+        c512Num(i2t.ce, 4), c512Num(i2t.entropy, 4), c512Num(i2t.mrr, 4)];
+    }));
+  setText(qs('c512-queries-note'), '只列改善/变差最大的各 5 个查询（128 池中）。它们是"非视觉后缀改变了排序"的具体样本，'
+    + '不构成对后缀类型的普遍结论；完整逐查询数组在探针 JSON 的 per_condition 里。');
+  const paired = body.paired_outcome || {};
+  const pairedConditions = Object.keys(paired);
+  tableBlock(qs('c512-paired'),
+    ['与 BASE 配对的离散结果', '方向', 'R@1 命中变化', '命中增加', '命中丢失',
+     '排名改善', '排名不变', '排名变差', '最大排名恶化'],
+    pairedConditions.reduce((accumulator, name) => {
+      ['I2T', 'T2I'].forEach(direction => {
+        const block = paired[name][direction] || {};
+        accumulator.push([name, direction, c512Num(block['R@1_hit_count_change'], 0),
+          c512Num(block['R@1_hits_gained'], 0), c512Num(block['R@1_hits_lost'], 0),
+          c512Num(block.rank_improved, 0), c512Num(block.rank_unchanged, 0),
+          c512Num(block.rank_worsened, 0), c512Num(block.max_rank_worsening, 0)]);
+      });
+      return accumulator;
+    }, []));
+
+  const distribution = body.distribution || {};
+  const scale = body.scale_control || {};
+  const deltaQ = body.deltaQ_identity || {};
+  const margin = body.margin_contribution || {};
+  const covariance = body.candidate_covariance || {};
+  const offset = body.common_offset || {};
+  const identityConditions = Object.keys(deltaQ);
+  /* every row names its own conditions: the probe exports REPEAT for some identities and not for
+   * others, and a missing condition must not be printed as 暂无 next to a measured one */
+  const conditionRow = (label, block, pick, digits) => [label, Object.keys(block)
+    .map(name => name + ':' + c512Num(pick(block[name] || {}), digits)).join('  ')];
+  tableBlock(qs('c512-summary'),
+    ['恒等式 / 控制量', '数值'],
+    [
+      conditionRow('ΔQ（ΔT 造成的逐查询分差）恒等式最大绝对差', deltaQ,
+        block => block.Q_R_minus_Q_max_abs_diff, 8),
+      conditionRow('固定负例下的 margin 归因恒等式最大绝对差', margin,
+        block => block.identity_error_max_abs, 8),
+      conditionRow('候选池二次型（协方差）恒等式最大绝对差', covariance,
+        block => block.max_abs_diff, 12),
+      conditionRow('最强负例被切换的查询数', margin, block => block.negative_switched_queries, 0),
+      conditionRow('I2T 行共同偏移下逐查询排名不变', offset,
+        block => String(block.per_query_rank_identical)),
+      conditionRow('I2T 行共同偏移的常数均值 / 范数', offset,
+        block => c512Num(block.row_constant_mean, 3) + ' / ' + c512Num(block.mu_norm, 3)),
+      conditionRow('尺度控制：Q×0.5 / ×1 / ×2 排名不变', scale,
+        block => String(block.ranking_identical_to_x1)),
+      conditionRow('尺度控制 I2T ce', scale, block => block.ce, 4),
+      conditionRow('尺度控制 I2T entropy', scale, block => block.entropy, 4),
+      ['mean/centroid gap（简单均值间隙）', c512Num(distribution.centroid_gap, 4)],
+      ['paired alignment', c512Num(distribution.paired_alignment, 4)],
+      ['image / text uniformity',
+        c512Num(distribution.image_uniformity, 4) + ' / ' + c512Num(distribution.text_uniformity, 4)],
+      ['阶段B 场景数 / 拒绝原因',
+        scenes.length + ' / ' + Object.keys(phaseB.rejection_reason_counts || {})
+          .map(reason => reason + '=' + phaseB.rejection_reason_counts[reason]).join('，')],
+    ]);
+  const identityNote = (Object.keys(offset).length
+    ? ((offset[Object.keys(offset)[0]] || {}).note || '') : '');
+  setText(qs('c512-not-run'), '口径说明：' + C512_CONDITION_NOTE
+    + ' 共同偏移不变性只对 I2T 成立（' + identityNote + '）。'
+    + ' 集合指标（uniformity、gap、alignment）是样本集合统计量，不是任何单一坐标的语义标签。'
+    + ' ' + ((payload.sources || {}).note || '')
+    + ' NOT RUN：' + (payload.not_run || []).join('；'));
+}
+
+function download(filename, text, type) {
+  const blob = new Blob([text], { type: type || 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url; link.download = filename;
@@ -1081,6 +1529,11 @@ function wire() {
   ['nuisance-model', 'nuisance-readout', 'nuisance-base', 'nuisance-variant'].forEach(id => {
     qs(id).addEventListener('change', () => {
       if (state.nuisance) renderTextNuisance(state.nuisance);
+    });
+  });
+  ['c512-model', 'c512-scene'].forEach(id => {
+    qs(id).addEventListener('change', () => {
+      if (state.clip512) renderClip512(state.clip512);
     });
   });
   qs('log-limit').addEventListener('change', () => {

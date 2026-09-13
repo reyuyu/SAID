@@ -172,6 +172,38 @@
 
     <p class="note" id="nuisance-not-run"></p>
   </section>
+  <section id="panel-clip512" class="card">
+    <h2>H · 512维功能分析（只读离线）</h2>
+    <div id="c512-banner" class="note"></div>
+    <p class="muted" id="c512-reminders"></p>
+    <div class="controls">
+      <label>模型 <select id="c512-model"></select></label>
+      <label>场景 <select id="c512-scene"></select></label>
+    </div>
+    <div id="c512-scope" class="grid"></div>
+
+    <h3>A · 变化量 vs 检索 margin 作用（128 图文池）</h3>
+    <div id="c512-dimensions"></div>
+    <p class="muted" id="c512-dimension-note"></p>
+    <div id="c512-capture"></div>
+    <p class="muted" id="c512-capture-note"></p>
+    <div id="c512-queries"></div>
+    <p class="muted" id="c512-queries-note"></p>
+
+    <h3>B · 受控裁剪场景（四视图 · 保留率 · 4×3 评分 · native/SmartCLIP 比较）</h3>
+    <div id="c512-scene"></div>
+    <div id="c512-scores"></div>
+    <div id="c512-masked"></div>
+    <div id="c512-scene-detail"></div>
+    <div id="c512-dataset"></div>
+    <img id="c512-sheet" alt="四视图联系图" style="display:none; max-width:100%; border:1px solid var(--line); border-radius:8px;">
+
+    <h3>C · 综合：排名变化、集合指标、尺度控制与恒等式</h3>
+    <div id="c512-per-condition"></div>
+    <div id="c512-paired"></div>
+    <div id="c512-summary"></div>
+    <p class="note" id="c512-not-run"></p>
+  </section>
 </main>
 
 <footer class="muted">

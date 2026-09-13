@@ -793,3 +793,349 @@ def test_service_still_never_imports_torch_with_the_diagnostics_endpoint(tmp_pat
     result = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stderr
     assert 'NO_TORCH_OK' in result.stdout
+
+
+# ---------------------------------------------------------------- clip512 functional probe
+
+def _clip512_payload():
+    """A small stand-in for the 512-d functional probe output, with the fields the page reads."""
+    return {
+        'probe': 'clip512_functional_probe', 'read_only': True, 'new_optimizer_updates': 0,
+        'models_used': ['shared_init', 's0_500'],
+        'paraphrase_audit_ok': True,
+        'scope': 'which 512-d representation changes actually move retrieval',
+        'timing': {'wall_seconds': 95.0},
+        'run_status': {'unchanged': True, 'sha256_before': 'e' * 64, 'sha256_after': 'e' * 64},
+        'lengths': {'pool_max_effective_length': 33},
+        'truncation': {'eot_convention': 'argmax + 1', 'max_effective_length': 33,
+                       'over_capacity': [], 'suffix_not_entered': []},
+        'template_audit': [{'index': 0, 'paraphrase_ok': True}],
+        'sources': {'pool_statistics': '128 COCO val2017 images',
+                    'note': 'columns come from different sample counts'},
+        'not_run': ['human visual verification of the contact sheets'],
+        'pool': {'images': 128, 'manifest_sha256': 'f' * 64, 'description': 'first 128 of 256',
+                 'image_ids': [1, 2], 'annotation_ids': [10, 11],
+                 'conditions': ['BASE', 'R1', 'R2', 'R3', 'R4', 'REPEAT']},
+        'models': {
+            's0_500': {
+                'label': 'B · S0_smartclip @500', 'dtype': 'float32', 'autocast': 'disabled',
+                'texts_encoded': 856, 'views_encoded': 128, 'parameter_state_unchanged': True,
+                'repeat_check': {'forward_error_max_abs': 0.0, 'repeats': 3},
+                'coordinate_vs_subspace': {
+                    'uncentered': {'coordinate_topk_capture': {'k4': 0.1, 'k8': 0.15, 'k16': 0.19},
+                                   'subspace_topk_capture': {'k4': 0.56, 'k8': 0.64, 'k16': 0.68},
+                                   'n_pairs_first': 256, 'n_pairs_second': 256,
+                                   'same_rank_budget': True},
+                    'centered': {'coordinate_topk_capture': {'k4': 0.1, 'k8': 0.15, 'k16': 0.19},
+                                 'subspace_topk_capture': {'k4': 0.5, 'k8': 0.6, 'k16': 0.65},
+                                 'n_pairs_first': 256, 'n_pairs_second': 256,
+                                 'same_rank_budget': True}},
+                'distribution': {'centroid_gap': 0.79, 'paired_alignment': 1.39,
+                                 'image_uniformity': -2.29, 'text_uniformity': -2.41,
+                                 'note': 'set statistic'},
+                'scale_control': {'x0.5': {'ce': 0.47, 'entropy': 0.71, 'ranking_identical_to_x1': True},
+                                  'x1': {'ce': 0.50, 'entropy': 0.23, 'ranking_identical_to_x1': True},
+                                  'x2': {'ce': 0.84, 'entropy': 0.09, 'ranking_identical_to_x1': True}},
+                'deltaQ_identity': {'R1': {'Q_R_minus_Q_max_abs_diff': 1e-5}},
+                'margin_contribution': {'R1': {'identity_error_max_abs': 2e-5,
+                                               'negative_switched_queries': 42}},
+                'candidate_covariance': {'R1': {'max_abs_diff': 6e-11}},
+                'common_offset': {'R1': {'per_query_rank_identical': True, 'mu_norm': 0.22,
+                                         'note': 'this is the I2T statement only'}},
+                'paired_outcome': {'R1': {'I2T': {'R@1_hit_count_change': -8, 'R@1_hits_gained': 0,
+                                                  'R@1_hits_lost': 8, 'rank_improved': 3,
+                                                  'rank_unchanged': 111, 'rank_worsened': 14,
+                                                  'max_rank_worsening': 6},
+                                           'T2I': {'R@1_hit_count_change': 1, 'R@1_hits_gained': 3,
+                                                   'R@1_hits_lost': 2, 'rank_improved': 5,
+                                                   'rank_unchanged': 120, 'rank_worsened': 3,
+                                                   'max_rank_worsening': 1}}},
+                'per_condition': {'BASE': {'I2T': {'R@1': 0.8672, 'R@5': 0.9844, 'R@10': 0.9922,
+                                                   'ce': 0.4985, 'entropy': 0.2330, 'mrr': 0.9195,
+                                                   'per_query_ce': [10.3]},
+                                            'T2I': {'R@1': 0.8750, 'R@5': 0.96, 'R@10': 0.99}},
+                                  'R1': {'I2T': {'R@1': 0.8047, 'R@5': 0.97, 'R@10': 0.99,
+                                                 'ce': 0.68, 'entropy': 0.31, 'mrr': 0.90,
+                                                 'per_query_ce': [11.1]},
+                                         'T2I': {'R@1': 0.8828, 'R@5': 0.97, 'R@10': 0.99}}},
+                'chart': {'top32_abs_margin': [442] + list(range(1, 33)),
+                          'top32_raw_energy': [362] + list(range(40, 72)),
+                          'top32_overlap_at_32': 5, 'top32_jaccard': 0.0847,
+                          'abs_margin_contribution': [0.14] * 512,
+                          'raw_delta_energy': [9.06e-05] * 512,
+                          'signed_margin_contribution': [-0.0129] * 512,
+                          'best_queries': [{'query_index': 45, 'image_id': 411530, 'base_rank': 5,
+                                            'r1_rank': 3, 'base_m_lse': 5.1, 'r1_m_lse': 3.1,
+                                            'base_caption': 'a small pony'}],
+                          'worst_queries': [{'query_index': 24, 'image_id': 546823, 'base_rank': 7,
+                                             'r1_rank': 13, 'base_m_lse': -5.1, 'r1_m_lse': -7.0,
+                                             'base_caption': 'a small pony'}]},
+            },
+        },
+        'unified_dimension_table': {
+            's0_500': [{'dimension': dim, 'margin_contribution_abs_mean': 0.14,
+                        'margin_contribution_signed_mean': -0.0129,
+                        'mask_keep_frequency': 0.75, 'mean_gap_squared': 1e-4,
+                        'mean_image': 0.013, 'mean_text': 0.003, 'var_image': 0.002,
+                        'var_text': 0.0016, 'object_pair_K': 0.09,
+                        'crop_object_delta_energy': 7e-4, 'crop_control_delta_energy': 2e-4,
+                        'nonvisual_text_delta_energy_pool': 9e-5,
+                        'nonvisual_text_delta_energy_handwritten': 6e-5,
+                        'handwritten_visual_text_delta_energy': 3e-4,
+                        'client_supplied_extra_column': 'must not be served'}
+                       for dim in range(512)],
+        },
+        'phase_b': {
+            'status': 'complete', 'n_scenes': 1, 'reason': None,
+            'rejection_reason_counts': {'fewer than two boxes above 2% of the canvas': 4164},
+            'coverage_note': 'annotation-constrained only',
+            'scenes': [{
+                'category_pair': 'chair+refrigerator', 'image_id': 186980,
+                'file_name': '000000186980.jpg', 'isolation': 'bbox_and_segmentation_points',
+                'templates': {'T_A': 'A photo of a refrigerator.', 'T_AB': 'and a chair',
+                              'T_B': 'A photo of a chair.'},
+                'crops': {'I_AB': [0.0, 0.0, 224.0, 224.0], 'I_A': [2.4, 8.5, 74.6, 80.8]},
+                'view_shas': {'I_AB': 'a' * 64},
+                'official_view': {'analytic_mapping_matches_pipeline': True, 'scale': 0.489},
+                'A': {'category': 'refrigerator', 'retained_in_AB': 1.0, 'retained_in_A_crop': 1.0,
+                      'retained_in_B_crop': 0.0, 'retained_in_control': 1.0,
+                      'segmentation_point_retention_in_A_crop': 0.3125},
+                'B': {'category': 'chair', 'retained_in_AB': 1.0, 'retained_in_A_crop': 0.0,
+                      'retained_in_B_crop': 1.0, 'retained_in_control': 1.0,
+                      'segmentation_point_retention_in_B_crop': 0.28},
+            }],
+            'models': {
+                's0_500': {
+                    'parameter_state_unchanged': True, 'texts_encoded': 12, 'views_encoded': 20,
+                    'per_scene': [{
+                        'category_pair': 'chair+refrigerator', 'image_id': 186980,
+                        'isolation': 'bbox_and_segmentation_points', 'A': 'refrigerator',
+                        'B': 'chair', 'A_margin': 9.76, 'B_margin': 5.66,
+                        'A_preferred_on_A_view': True, 'B_preferred_on_B_view': True,
+                        'cos_dv_dt': 0.31,
+                        'four_score_identity': {'K': 15.417, 'K_from_four_scores': 15.417,
+                                                'max_abs_diff': 2.9e-6},
+                        'K_dim_positive_energy': 23.4, 'K_dim_negative_energy': -8.0,
+                        'K_top_coordinates': [387, 249],
+                        'retention': {'A_in_A_crop': 1.0, 'B_in_B_crop': 1.0},
+                        'scores': {'I_AB': {'T_A': 15.8, 'T_AB': 21.6, 'T_B': 19.7},
+                                   'I_A': {'T_A': 28.7, 'T_AB': 29.8, 'T_B': 17.1}},
+                        'smartclip_masked': {
+                            'T_A': {'mask_kept': 394, 'mask_norm': 19.8,
+                                    'views': {'I_AB': {'score': 17.8, 'norm': 1.0},
+                                              'I_A': {'score': 30.2, 'norm': 1.0}}},
+                            'T_B': {'mask_kept': 394, 'mask_norm': 19.8, 'views': {}}},
+                        'smartclip_selection': {
+                            'T_A_delete_unsaid_B_distance': -12.365,
+                            'T_A_delete_said_A_distance': -3.131,
+                            'T_A_control_distance': -0.962,
+                            'native_T_A_delete_unsaid_B': -12.928,
+                            'native_T_A_delete_said_A': -3.166,
+                            'masked_prefers_A_view_for_T_A': True,
+                            'native_prefers_A_view_for_T_A': True,
+                            'same_mask_used_for_all_views': True},
+                    }],
+                },
+            },
+        },
+    }
+
+
+def write_clip512(run_dir, payload=None, sheets=(0,)):
+    directory = run_dir / 'diagnostics' / 'clip512_functional_probe'
+    (directory / 'contact_sheets').mkdir(parents=True, exist_ok=True)
+    (directory / 'clip512_functional_probe.json').write_text(
+        json.dumps(payload if payload is not None else _clip512_payload()), encoding='utf-8')
+    (directory / 'status.json').write_text(
+        json.dumps({'phase_a': 'complete', 'phase_b': 'complete'}), encoding='utf-8')
+    for index in sheets:
+        (directory / 'contact_sheets' / ('scene_%02d.png' % index)).write_bytes(
+            b'\x89PNG\r\n\x1a\n' + b'sheet-%d' % index)
+    return directory
+
+
+def _raw_get(port, path):
+    url = 'http://127.0.0.1:%d%s' % (port, path)
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            return response.status, response.headers.get('Content-Type'), response.read()
+    except urllib.error.HTTPError as error:
+        return error.code, error.headers.get('Content-Type'), error.read()
+
+
+def test_clip512_endpoint_reports_未运行_without_the_probe(tmp_path):
+    run_dir = build_run(tmp_path)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/clip512')
+        sheet_status, _, _ = _raw_get(server.port, '/api/run/hs_test/clip512-sheet?scene=0')
+    assert status == 200
+    assert payload['available'] is False and payload['status'] == '未运行'
+    assert payload['file'] == 'clip512_functional_probe.json'
+    assert payload['directory'] == os.path.join('diagnostics', 'clip512_functional_probe')
+    assert payload['error'] is None                     # a missing probe file is not an error
+    for key in ('models', 'phase_b', 'headline', 'sources', 'not_run', 'truncation', 'pool',
+                'phase_a_status', 'phase_b_status', 'new_optimizer_updates'):
+        assert payload[key] is None, key
+    assert payload['reminders']                         # reminders travel with the payload
+    # the dimensions of the offline probe are never fabricated as zeros
+    assert sheet_status == 404
+
+
+def test_clip512_endpoint_serves_the_probe_the_dimension_columns_and_the_sheet(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_clip512(run_dir)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/clip512')
+        sheet_status, content_type, body = _raw_get(
+            server.port, '/api/run/hs_test/clip512-sheet?scene=0')
+    assert status == 200
+    assert payload['available'] is True and payload['status'] == '已运行'
+    assert payload['new_optimizer_updates'] == 0
+    assert payload['phase_a_status'] == 'complete' and payload['phase_b_status'] == 'complete'
+    assert payload['run_status']['unchanged'] is True
+    assert payload['paraphrase_audit_ok'] is True
+    assert payload['models']['s0_500']['chart']['top32_abs_margin'][0] == 442
+    assert payload['phase_b']['scenes'][0]['category_pair'] == 'chair+refrigerator'
+    assert payload['scene_sheets'] == [0]
+    # only the whitelisted columns survive: a column the probe never promised is not served
+    rows = payload['unified_dimension_table']['s0_500']
+    assert len(rows) == 512
+    assert sorted(rows[0].keys()) == sorted(payload['dimension_columns'])
+    assert 'client_supplied_extra_column' not in rows[0]
+    assert rows[0]['mask_keep_frequency'] == pytest.approx(0.75)
+    assert sheet_status == 200 and content_type == 'image/png'
+    assert body.startswith(b'\x89PNG\r\n\x1a\n')
+
+
+def test_clip512_sheet_is_addressed_only_by_an_integer_scene_index(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_clip512(run_dir, sheets=(0, 3))
+    with Server(registry_for(run_dir), free_port()) as server:
+        _, payload = server.get('/api/run/hs_test/clip512')
+        assert payload['scene_sheets'] == [0, 3]
+        assert _raw_get(server.port, '/api/run/hs_test/clip512-sheet?scene=3')[0] == 200
+        for query in ('scene=1', 'scene=64', 'scene=-1', 'scene=abc', 'scene=0abc', 'scene=',
+                      'scene=../scene_00.png', 'scene=..%2f..%2fconfig.json'):
+            status, _, _ = _raw_get(server.port, '/api/run/hs_test/clip512-sheet?' + query)
+            assert status == 404, query
+        # the sheet endpoint never becomes a way to read another whitelisted file
+        assert _raw_get(server.port, '/api/run/hs_test/clip512-sheet?scene=0')[2] != (
+            run_dir / 'config.json').read_bytes()
+
+
+def test_clip512_reads_only_whitelisted_files_and_writes_nothing(tmp_path, monkeypatch):
+    run_dir = build_run(tmp_path)
+    directory = write_clip512(run_dir)
+    (directory / 'clip512_dimension_table.csv').write_text('dimension,margin\n0,0.1\n',
+                                                           encoding='utf-8')
+    (directory / 'anything_else.json').write_text('{"secret": 1}', encoding='utf-8')
+    (directory / 'contact_sheets' / 'scene_01.png').write_bytes(b'\x89PNG\r\n\x1a\nother')
+    opened = []
+    real_open = open
+
+    def tracking_open(path, *args, **kwargs):
+        opened.append(str(path))
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr('builtins.open', tracking_open)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/clip512')
+        sheet_status, _, _ = _raw_get(server.port, '/api/run/hs_test/clip512-sheet?scene=0')
+    assert status == 200 and sheet_status == 200
+    assert not any('anything_else' in path for path in opened)
+    assert payload['files']['dimension_csv']['available'] is True
+    assert payload['files']['summary']['available'] is True
+    before = sorted(os.listdir(str(run_dir)))
+    with Server(registry_for(run_dir), free_port()) as server:
+        server.get('/api/run/hs_test/clip512')
+        _raw_get(server.port, '/api/run/hs_test/clip512-sheet?scene=0')
+    assert sorted(os.listdir(str(run_dir))) == before
+
+
+CLIP512_HARNESS = r'''
+'use strict';
+/* Runs web/training_dashboard/app.js against a stub DOM and the real payload shape, so a wrong
+ * property path or a stray identifier fails here instead of silently blanking the page. */
+const fs = require('fs');
+const vm = require('vm');
+const appPath = process.argv[2];
+const payload = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
+const elements = new Map();
+function makeElement(id) {
+  const node = {id: id || '', tagName: 'DIV', className: '', textContent: '', src: '', value: '',
+    selectedIndex: 0, dataset: {}, children: [], style: {}, clientWidth: 600,
+    appendChild(child) { this.children.push(child); return child; },
+    removeChild(child) { this.children = this.children.filter(item => item !== child); return child; },
+    remove() {}, setAttribute(name, value) { this[name] = value; },
+    getAttribute(name) { return this[name]; }, addEventListener() {}, getContext() { return null; },
+    click() {}};
+  Object.defineProperty(node, 'textContent', {
+    get() { return this._text || ''; },
+    set(value) { this._text = value; if (value === '') this.children = []; }});
+  return node;
+}
+function getElementById(id) {
+  const key = String(id);
+  if (!elements.has(key)) elements.set(key, makeElement(key));
+  return elements.get(key);
+}
+const sandbox = {console, setTimeout, clearTimeout, setInterval: () => 0, clearInterval() {},
+  URL: {createObjectURL: () => 'blob:', revokeObjectURL() {}}, Blob: function Blob() {},
+  fetch: () => Promise.reject(new Error('no network')),
+  document: {getElementById, body: makeElement('body'), addEventListener() {},
+    createElement: tag => { const node = makeElement(''); node.tagName = String(tag).toUpperCase(); return node; }},
+  window: {addEventListener() {}, devicePixelRatio: 1}};
+sandbox.globalThis = sandbox;
+vm.createContext(sandbox);
+vm.runInContext(fs.readFileSync(appPath, 'utf8'), sandbox, {filename: appPath});
+sandbox.renderClip512(payload);
+function rows(id) {
+  const out = [];
+  getElementById(id).children.forEach(table => {
+    if (table.tagName !== 'TABLE') return;
+    table.children.forEach(section => section.children.forEach(row => out.push(row.children)));
+  });
+  return out;
+}
+['c512-dimensions', 'c512-capture', 'c512-queries', 'c512-scene', 'c512-scores', 'c512-masked',
+ 'c512-dataset', 'c512-per-condition', 'c512-paired', 'c512-summary'].forEach(id => {
+  if (!rows(id).length) throw new Error('no rows rendered into ' + id);
+});
+if (getElementById('c512-scene-detail').children.length < 10) throw new Error('scene detail empty');
+const sheet = getElementById('c512-sheet');
+if (!sheet.src.endsWith('/clip512-sheet?scene=0')) throw new Error('sheet src ' + sheet.src);
+if (getElementById('c512-banner').textContent.indexOf('已运行') < 0) throw new Error('banner');
+/* the 未运行 payload must leave no stale numbers behind */
+sandbox.renderClip512({available: false, status: '未运行', error: null, reminders: [],
+  directory: 'diagnostics/clip512_functional_probe', run_id: 'hs_test', models: null,
+  phase_b: null, not_run: null, pool: null, truncation: null, unified_dimension_table: null});
+if (rows('c512-dimensions').length) throw new Error('stale rows after 未运行');
+if (getElementById('c512-banner').textContent.indexOf('未运行') < 0) throw new Error('banner 未运行');
+console.log('HARNESS_OK');
+'''
+
+
+def test_clip512_frontend_renders_the_payload_without_a_browser(tmp_path):
+    """The page once shipped a script that did not parse, so this runs the real renderer on node.
+
+    The payload comes from the endpoint itself (not from a hand-written dict), so the test exercises
+    exactly the contract the browser sees: a missing ``available`` flag or a renamed key fails here.
+    """
+    import shutil
+
+    node = shutil.which('node')
+    if not node:
+        pytest.skip('node is not available')
+    run_dir = build_run(tmp_path)
+    write_clip512(run_dir)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/clip512')
+    assert status == 200 and payload['available'] is True
+    harness = tmp_path / 'harness.js'
+    harness.write_text(CLIP512_HARNESS, encoding='utf-8')
+    payload_file = tmp_path / 'payload.json'
+    payload_file.write_text(json.dumps(payload), encoding='utf-8')
+    result = subprocess.run([node, str(harness), os.path.join(WEB_DIR, 'app.js'),
+                             str(payload_file)], capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, result.stderr
+    assert 'HARNESS_OK' in result.stdout
