@@ -525,6 +525,152 @@
   },
   "created_at": 1789301013.9658625,
   "created_at_iso": "2026-09-13T20:03:33+0800",
+  "cross_arm_scores": {
+    "arms": [
+      {
+        "coco_i2t_delta_hits_vs_s0_500": 0,
+        "coco_i2t_hits": 3029,
+        "coco_i2t_r1": 0.6058,
+        "coco_t2i_delta_hits_vs_s0_500": 0,
+        "coco_t2i_hits": 10309,
+        "coco_t2i_r1": 0.41236,
+        "label": "S0 baseline（冻结下限）",
+        "note": "定义下限",
+        "steps": 500,
+        "urban_i2t_r1": 0.87,
+        "urban_t2i_r1": 0.842
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -158,
+        "coco_i2t_hits": 2871,
+        "coco_i2t_r1": 0.5742,
+        "coco_t2i_delta_hits_vs_s0_500": -682,
+        "coco_t2i_hits": 9627,
+        "coco_t2i_r1": 0.38508,
+        "label": "S0 XPool v0.1",
+        "note": "另一条支线（非三对齐族）",
+        "steps": 500,
+        "urban_i2t_r1": 0.767,
+        "urban_t2i_r1": 0.709
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -15,
+        "coco_i2t_hits": 3014,
+        "coco_i2t_r1": 0.6028,
+        "coco_t2i_delta_hits_vs_s0_500": 52,
+        "coco_t2i_hits": 10361,
+        "coco_t2i_r1": 0.41444,
+        "label": "S0-TriMask v0.1 (soft)",
+        "note": "三对齐族",
+        "steps": 500,
+        "urban_i2t_r1": 0.871,
+        "urban_t2i_r1": 0.837
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -26,
+        "coco_i2t_hits": 3003,
+        "coco_i2t_r1": 0.6006,
+        "coco_t2i_delta_hits_vs_s0_500": -7,
+        "coco_t2i_hits": 10302,
+        "coco_t2i_r1": 0.41208,
+        "label": "S0-TriMask-HS v0.2",
+        "note": "三对齐族",
+        "steps": 500,
+        "urban_i2t_r1": 0.874,
+        "urban_t2i_r1": 0.837
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -83,
+        "coco_i2t_hits": 2946,
+        "coco_i2t_r1": 0.5892,
+        "coco_t2i_delta_hits_vs_s0_500": -102,
+        "coco_t2i_hits": 10207,
+        "coco_t2i_r1": 0.40828,
+        "label": "S0-TriMask-HS 均衡权重",
+        "note": "三对齐族（均衡权重）",
+        "steps": 500,
+        "urban_i2t_r1": 0.865,
+        "urban_t2i_r1": 0.828
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -5,
+        "coco_i2t_hits": 3024,
+        "coco_i2t_r1": 0.6048,
+        "coco_t2i_delta_hits_vs_s0_500": 5,
+        "coco_t2i_hits": 10314,
+        "coco_t2i_r1": 0.41256,
+        "label": "PG-CLIP v0.1（原 run）",
+        "note": "投影前条件掩码",
+        "steps": 500,
+        "urban_i2t_r1": 0.87,
+        "urban_t2i_r1": 0.833
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -1,
+        "coco_i2t_hits": 3028,
+        "coco_i2t_r1": 0.6056,
+        "coco_t2i_delta_hits_vs_s0_500": 0,
+        "coco_t2i_hits": 10309,
+        "coco_t2i_r1": 0.41236,
+        "label": "PG-CLIP v0.1（同配置复现）",
+        "note": "投影前条件掩码",
+        "steps": 500,
+        "urban_i2t_r1": 0.873,
+        "urban_t2i_r1": 0.83
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": -53,
+        "coco_i2t_hits": 2976,
+        "coco_i2t_r1": 0.5952,
+        "coco_t2i_delta_hits_vs_s0_500": -96,
+        "coco_t2i_hits": 10213,
+        "coco_t2i_r1": 0.40852,
+        "label": "CG-CLIP v0.1（本臂）",
+        "note": "文本门控末块 CLS 注意力",
+        "steps": 500,
+        "urban_i2t_r1": 0.87,
+        "urban_t2i_r1": 0.83
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": 57,
+        "coco_i2t_hits": 3086,
+        "coco_i2t_r1": 0.6172,
+        "coco_t2i_delta_hits_vs_s0_500": 189,
+        "coco_t2i_hits": 10498,
+        "coco_t2i_r1": 0.41992,
+        "label": "S0 baseline 续训",
+        "note": "1000 步，不与 500 步行直接比",
+        "steps": 1000,
+        "urban_i2t_r1": 0.889,
+        "urban_t2i_r1": 0.857
+      },
+      {
+        "coco_i2t_delta_hits_vs_s0_500": 45,
+        "coco_i2t_hits": 3074,
+        "coco_i2t_r1": 0.6148,
+        "coco_t2i_delta_hits_vs_s0_500": 140,
+        "coco_t2i_hits": 10449,
+        "coco_t2i_r1": 0.41796,
+        "label": "S0-TriMask-HS 续训",
+        "note": "1000 步，不与 500 步行直接比",
+        "steps": 1000,
+        "urban_i2t_r1": 0.89,
+        "urban_t2i_r1": 0.855
+      }
+    ],
+    "not_comparable": "the two 1000-step arms must not be compared against the 500-step rows",
+    "protocol": "COCO val2017 5-caption legacy_cls, 5000 image queries / 25000 text queries; Urban-1k 1000/1000",
+    "query_count_equivalences": {
+      "coco_i2t_1_hit_pp": 0.02,
+      "coco_t2i_1_hit_pp": 0.004,
+      "urban_1_hit_pp": 0.1
+    },
+    "reading": "CG-CLIP is the weakest 500-step arm of the family that keeps native alignment and only adds an auxiliary objective: -53 image queries and -96 text queries against the S0 baseline, and 52 image queries below the PG replication run. The 1000-step arms sit 1.1-1.4 pp above the 500-step baseline, so the cosine schedule being far from finished compresses every difference in the 500-step tier",
+    "source_of_each_number": {
+      "pg_and_cg": "the arm own *_canonical.json R@1, converted with the stated denominator",
+      "tri_mask_family_and_s0": "query_hits_*.json (per-query 0/1 records, summed)"
+    }
+  },
   "gate_behaviour": {
     "cls_slot_gate": "fixed 1, never trainable, excluded from the sparse term",
     "final_step_values": {
