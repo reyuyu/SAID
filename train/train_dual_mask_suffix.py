@@ -295,6 +295,9 @@ def main() -> int:
         for step_in_epoch, batch in enumerate(loader):
             if completed >= args.max_steps:
                 break
+            step_started = time.perf_counter()
+            if device.type == "cuda":
+                torch.cuda.reset_peak_memory_stats(device)
             clip_schedule(completed); mask_schedule(completed)
             if suffix_schedule is not None:
                 suffix_schedule(completed)
@@ -317,6 +320,10 @@ def main() -> int:
             if suffix_opt is not None:
                 suffix_opt.step()
             completed += 1
+            per_rank_valid = [int(valid.sum().item())]
+            if world > 1:
+                per_rank_valid = [None for _ in range(world)]
+                dist.all_gather_object(per_rank_valid, int(valid.sum().item()))
             if rank == 0:
                 record = {"completed_steps": completed, "epoch": epoch, "step_in_epoch": step_in_epoch,
                           "suffix_mode": args.suffix_mode, "lr": clip_opt.param_groups[0]["lr"],
@@ -325,6 +332,11 @@ def main() -> int:
                           "run_type": args.run_type,
                           "formal_optimizer_updates": completed if args.run_type == "formal" else 0,
                           "debug_optimizer_updates": completed if args.run_type == "debug" else 0}
+                record["per_rank_valid"] = per_rank_valid
+                record["step_seconds"] = time.perf_counter() - step_started
+                if device.type == "cuda":
+                    record["peak_allocated_mb"] = torch.cuda.max_memory_allocated(device) / (1024 ** 2)
+                    record["peak_reserved_mb"] = torch.cuda.max_memory_reserved(device) / (1024 ** 2)
                 for key, value in out.items():
                     if torch.is_tensor(value) and value.numel() == 1:
                         record[key] = float(value.detach().cpu())

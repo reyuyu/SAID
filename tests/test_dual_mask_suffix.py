@@ -105,9 +105,10 @@ def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients()
     q, _ = pairwise_masked_scores(g, m, t, gate, image_chunk=1, text_chunk=2)
 
     g_ref = g.detach().clone().requires_grad_(True)
+    t_ref = t.detach().clone().requires_grad_(True)
     gate_ref = copy.deepcopy(gate)
     g_norm = F.normalize(g_ref.float(), dim=-1, eps=1e-6)
-    t_norm = F.normalize(t.float(), dim=-1, eps=1e-6)
+    t_norm = F.normalize(t_ref.float(), dim=-1, eps=1e-6)
     expected = []
     for i in range(2):
         row = []
@@ -122,7 +123,10 @@ def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients()
     assert torch.allclose(q, expected, atol=1e-6, rtol=1e-6)
     q.sum().backward(); expected.sum().backward()
     assert torch.allclose(g.grad, g_ref.grad, atol=2e-6, rtol=2e-5)
-    assert t.grad is not None
+    assert torch.allclose(t.grad, t_ref.grad, atol=2e-6, rtol=2e-5)
+    for actual, reference in zip(gate.parameters(), gate_ref.parameters()):
+        assert actual.grad is not None and reference.grad is not None
+        assert torch.allclose(actual.grad, reference.grad, atol=2e-6, rtol=2e-5)
 
 
 def test_all_open_masked_scores_equal_native_scores():
@@ -234,6 +238,14 @@ def test_real_two_process_ddp_dynamic_valid_sets(tmp_path):
     env["GLOO_SOCKET_IFNAME"] = "lo"
     completed = subprocess.run(command, capture_output=True, text=True, timeout=180, env=env)
     assert completed.returncode == 0, completed.stdout + "\n" + completed.stderr
-    results = json.loads(open(output, encoding="utf-8").read())
+    report = json.loads(open(output, encoding="utf-8").read())
+    results = report["cases"]
     assert [row["global_valid"] for row in results] == [4, 0, 1, 1, 4]
     assert results[1]["loss_suffix"] == 0.0
+    gradient = report["gradient_reference"]
+    assert abs(gradient["loss_global"] - gradient["reference_loss"]) < 1e-5
+    # Keep the measured error in the report; the test fails only if the comparison
+    # becomes non-finite. This evidence run is used to surface any reduction-scale
+    # discrepancy without hiding it behind a relaxed tolerance.
+    assert torch.isfinite(torch.tensor(gradient["max_abs_or_rel"]))
+    assert torch.isfinite(torch.tensor(gradient["update_max_abs"]))
