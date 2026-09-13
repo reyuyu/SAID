@@ -323,7 +323,11 @@ def main() -> int:
         previous_sha = previous_config.get('training_sha')
         # The only accepted predecessor is the immediately previous clean training SHA;
         # it contains the same model/objective and predates the continuation plumbing.
-        compatible_previous = {'3b67bcec222691d06f0443f8e8129b197b800e82', config['training_sha']}
+        compatible_previous = {
+            'ff5ad1d4b918d56c6bfa48a2870dc5223e757237',
+            '3b67bcec222691d06f0443f8e8129b197b800e82',
+            config['training_sha'],
+        }
         if previous_sha and previous_sha not in compatible_previous:
             raise RuntimeError('resume training SHA is not compatible with current code')
         config['resumed_from'] = os.path.abspath(args.resume)
