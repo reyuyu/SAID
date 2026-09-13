@@ -135,6 +135,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 if leaf == 'pgclip':
                     # read-only PG-CLIP v0.1 view: two paths, 5/5/1 weights, 768-d gate statistics
                     return self._json(200, self.data.pgclip(run_id))
+                if leaf == 'cgclip':
+                    # read-only CG-CLIP v0.1 view: native alignment plus the text-gated final-block
+                    # CLS path, the 14x14 patch gate and the CLS-read diagnostics. The run may still
+                    # be training, so absent artifacts become explicit 未产出 fields, never an error.
+                    return self._json(200, self.data.cgclip(run_id))
                 if leaf == 'clip512-sheet':
                     # a contact sheet, addressed only by an integer scene index resolved inside the
                     # registered run directory; malformed values become the usual 404

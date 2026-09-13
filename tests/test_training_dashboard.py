@@ -1389,3 +1389,419 @@ def test_pgclip_endpoint_reports_the_auxiliary_retrieval_diagnostic(tmp_path):
 def pgclip_served_names():
     from dashboard_data import PGCLIP_FILES
     return list(PGCLIP_FILES.values())
+
+
+# ---------------------------------------------------------------- CG-CLIP v0.1
+
+def _cgclip_config():
+    return {
+        'arm': 'CG_CLIP_V01', 'objective': 'clip_native_caption_gated_cls', 'phase': 'cgclip-v0.1',
+        'gate_kind': 'caption_gated_final_cls_attention', 'fixed_scale': 100.0, 'norm_eps': 1e-6,
+        'lambda_global': 5.0, 'lambda_attention': 5.0, 'lambda_sparse': 1.0,
+        'loss_weights': {'global': 5.0, 'attention': 5.0, 'sparse': 1.0},
+        'loss_combination': '5*(LG_i2t+LG_t2i) + 5*(LA_i2t+LA_t2i) + LS',
+        'two_paths': {'native': 'Norm(ln_post(CLS after the native last block) @ visual.proj)',
+                      'attention': 'Norm(ln_post(CLS with the gate-renormalised weights) @ visual.proj)'},
+        'attention_route': {'cls_slot': 'fixed gate 1, never trainable, excluded from LS',
+                            'gate_sharing': 'one 196-d patch gate shared by the 12 vision heads',
+                            'conditional_path_use': 'training only; not used at inference'},
+        'gate': {'gate_kind': 'caption_gated_final_cls_attention', 'gate_patches': 196,
+                 'gate_key_dim': 64, 'gate_key_init': 'B.weight = xavier_uniform (no bias)',
+                 'gate_query_init': 'A.weight = 0 (no bias)',
+                 'gate_bias': 'single trainable scalar initialised to log(8)',
+                 'gate_bias_init': 2.0794415416798357,
+                 'gate_forward': 'hard straight-through: hard = (p >= 0.5), m = hard + (p - p.detach())',
+                 'shared_over_heads': True, 'cls_self_gate': 'fixed 1, not trainable',
+                 'gate_query_input': 'Normalize(t_raw) detached',
+                 'gate_key_input': 'U = last.ln_1(X11) patches, detached',
+                 'soft_floor': None, 'top_k': None, 'gate_seed': 0},
+        'gate_key_dim': 64, 'gate_seed': 0, 'gate_lr': 1e-3,
+        'gate_init': {'logits_min': 2.079441547393799, 'logits_max': 2.079441547393799,
+                      'probability_mean': 0.8888888955116272, 'mask_all_one': True},
+        'precision': 'fp32 core; bf16 only for the first 11 visual blocks and the text transformer',
+        'tf32': {'cudnn_allow_tf32': True, 'matmul_allow_tf32': False},
+        'candidate_rule': 'fixed image: every candidate text uses its own patch gate',
+        'grader': 'LG never touches the gate; LA touches CLIP and the gate; LS only the gate',
+        'caption_stream': 'reference prefix draw', 'view': 'image_a only',
+        'ddp_route': 'per-rank anchor means + autograd-aware gather + standard DDP averaging',
+        'no_world_size_factor': True,
+        'chunking': {'image_chunk': 32, 'text_chunk': 64, 'cond_checkpoint': True},
+        'statistics_scope': 'rank0 local batch unless the field name says otherwise',
+        'x11_source': 'tokens entering the last visual block', 'text_source': 'ln_final, EOT',
+        'seed': 0, 'max_steps': 500, 'epochs': 3, 'world_size': 4, 'batch_size_per_gpu': 256,
+        'global_batch': 1024, 'loader_batches': 1217, 'lr_horizon_steps': 3651, 'lr': 1e-6,
+        'warmup_length': 200, 'weight_decay': 1e-2, 'init_state': '/tmp/cvssl_initial.pt',
+        'git_head': 'e' * 40, 'init_file_sha256': 'a' * 64, 'initial_state_digest': 'b' * 64,
+    }
+
+
+def _cg_heavy_fields():
+    """The gate / grid fields that only a heavy log row carries."""
+    return {
+        'positive_pairs_gate_kept_mean': 100.5, 'positive_pairs_gate_kept_min': 23.0,
+        'positive_pairs_gate_kept_max': 195.0, 'positive_pairs_gate_keep_fraction_mean': 0.513,
+        'positive_pairs_gate_all_off_fraction': 0.0, 'positive_pairs_gate_all_on_fraction': 0.0,
+        'positive_pairs_gate_coordinate_mean': 0.513,
+        'positive_pairs_gate_probability_mean': 0.513, 'positive_pairs_gate_probability_std': 0.49,
+        'positive_pairs_gate_probability_min': 0.0, 'positive_pairs_gate_probability_max': 1.0,
+        'positive_pairs_gate_probability_quantiles': [0.0, 0.0, 1.0, 1.0, 1.0],
+        'positive_pairs_gate_probability_near_threshold_fraction': 0.0,
+        'positive_pairs_gate_scope': 'the TRUE positive pairs of rank0 local batch only',
+        'tile_gate_kept_mean': 106.9, 'tile_gate_kept_min': 32.0, 'tile_gate_kept_max': 194.0,
+        'tile_gate_keep_fraction_mean': 0.545, 'tile_gate_all_off_fraction': 0.0,
+        'tile_gate_all_on_fraction': 0.0, 'tile_gate_coordinate_mean': 0.545,
+        'tile_gate_probability_mean': 0.503, 'tile_gate_probability_std': 0.272,
+        'tile_gate_probability_min': 8.68e-05, 'tile_gate_probability_max': 0.989,
+        'tile_gate_probability_quantiles': [0.029, 0.282, 0.540, 0.729, 0.894],
+        'tile_gate_probability_near_threshold_fraction': 0.109,
+        'tile_gate_variation_across_images_same_text': 0.2534,
+        'tile_gate_variation_across_texts_same_image': 0.0607,
+        'tile_gate_pair_sample': 16, 'gate_pair_variation_sample': 16,
+        'tile_scope': 'one (text_chunk x image_chunk) tile of the rank0 local batch',
+        'cls_slot_gate_value': 1.0,
+        'cls_slot_gate_note': 'the CLS slot keeps gate 1 by construction',
+        'gate_head_sharing': 'one 196-d patch gate shared by all 12 vision heads',
+        'native_cls_self_mass_mean': 0.215, 'conditional_cls_self_mass_mean': 0.243,
+        'native_patch_mass_mean': 0.785, 'conditional_patch_mass_mean': 0.757,
+        'native_cls_self_mass_per_head_min': 0.105, 'native_cls_self_mass_per_head_max': 0.344,
+        'native_out_norm_ratio_mean': 0.7538,
+        'conditional_vs_native_cls_cosine_mean': 0.9919,
+        'conditional_vs_native_projected_cosine_mean': 0.9938,
+        'native_attention_cls_self_mass': [0.20 + index / 100.0 for index in range(12)],
+        'conditional_attention_cls_self_mass': [0.23 + index / 100.0 for index in range(12)],
+        'native_attention_shape': [256, 12, 1, 197],
+        'attention_head_axis_note': 'per-head CLS-self mass over the 12 vision heads in head order',
+        'cls_self_mass_unit': 'softmax probability mass on the CLS token itself',
+        'scope': 'rank-local batch',
+        'gate_grid_samples': [
+            {'sample': index, 'side': 14, 'note': 'token order of the 14x14 patch sequence from '
+                                                  'block 11; not a semantic map',
+             'grid': [(index + offset) % 2 * 1.0 for offset in range(196)]}
+            for index in range(2)],
+    }
+
+
+def _cgclip_record(step, heavy=True, **extra):
+    record = {'completed_steps': step, 'arm': 'CG_CLIP_V01', 'objective': 'clip_native_caption_gated_cls',
+              'loss_global_i2t': 0.61, 'loss_global_t2i': 0.69, 'loss_global_sum': 1.30,
+              'loss_attention_i2t': 0.61, 'loss_attention_t2i': 0.69, 'loss_attention_sum': 1.30,
+              'loss_sparse': 0.79, 'loss_total': 14.05, 'weighted_loss_global': 6.52,
+              'weighted_loss_attention': 6.52, 'weighted_loss_sparse': 0.79,
+              'lr': 5e-9, 'gate_lr': 1e-3, 'sec_per_step': 1.99, 'samples_per_sec': 514.5,
+              'peak_memory_gb': 40.67, 'peak_memory_gi_b': 40.67,
+              'peak_memory_note': 'GiB (1024^3 bytes)', 'gate_bias_value': 2.055,
+              'gate_grad_norm': 0.865, 'gate_query_weight_norm': 2.63, 'gate_key_weight_norm': 11.2,
+              'clip_grad_norm': 310.4, 'last_block_grad_norm': 51.8, 'epoch': 0,
+              'captions_seen': 6400, 'synchronized_pair_presentations': 25600,
+              'pair_presentations_per_sec': 2058.1, 'effective_length_mean': 95.7,
+              'global_pairs': 1024, 'world_size': 4, 'weights_5_5_1': [5.0, 5.0, 1.0],
+              'statistics_scope': 'rank0_local_batch', 'gate_param_digest': 'cafe1234',
+              'clip_state_digest_prefix': 'dfdeabc1'}
+    for path in ('path_global', 'path_attention'):
+        for direction in ('i2t', 't2i'):
+            prefix = '%s_%s_' % (path, direction)
+            record[prefix + 'positive_mean'] = 32.97
+            record[prefix + 'strongest_negative_mean'] = 27.71
+            record[prefix + 'max_margin_mean'] = 5.25
+            record[prefix + 'lse_margin_mean'] = 4.50
+            record[prefix + 'ce_mean'] = 0.41
+            record[prefix + 'top1'] = 0.87
+            record[prefix + 'positive_win_fraction'] = 0.87
+            record[prefix + 'lse_margin_min'] = -6.6
+            record[prefix + 'max_margin_min'] = -6.5
+            record[prefix + 'ce_from_lse_margin_max_abs_diff'] = 1.6e-06
+    if heavy:
+        record.update(_cg_heavy_fields())
+    record.update(extra)
+    return record
+
+
+def write_cgclip(run_dir, records=2, status=None, evaluation=True, heavy=True, student=False,
+                 attention_snapshot=False):
+    """A CG-CLIP run directory; every optional artifact can be withheld (the run is still training)."""
+    (run_dir / 'config.json').write_text(json.dumps(_cgclip_config()), encoding='utf-8')
+    with open(run_dir / 'salu_log.jsonl', 'w', encoding='utf-8') as handle:
+        for index in range(records):
+            handle.write(json.dumps(_cgclip_record((index + 1) * 25, heavy=heavy)) + '\n')
+    (run_dir / 'run_status.json').write_text(json.dumps(status or {
+        'run_id': 'cgclip_v01', 'phase': 'training', 'stage': 'train',
+        'stages': ['train', 'verify', 'export', 'coco', 'urban', 'report'],
+        'implementation_sha': 'e' * 40, 'world_size': 4, 'max_steps': 500,
+        'gpu_check': '4 GPUs idle', 'gpu_ok': True,
+        'gpu': {'nvidia_smi_visible_devices': 4, 'per_gpu': [{'index': '0'}]},
+        'run_dir': str(run_dir)}), encoding='utf-8')
+    if evaluation:
+        directory = run_dir / 'evaluation'
+        directory.mkdir(exist_ok=True)
+        (directory / 'CG_CLIP_V01_step000500_canonical.json').write_text(json.dumps({
+            'canonical': {'CG_CLIP_V01@500': {
+                'coco_val2017': {'image2text_R1': 0.59012, 'image2text_R5': 0.82123,
+                                 'image2text_R10': 0.88871, 'text2image_R1': 0.40288,
+                                 'text2image_R5': 0.66812, 'text2image_R10': 0.76401},
+                'checkpoint_sha256': 'd' * 64}}}), encoding='utf-8')
+        (directory / 'CG_CLIP_V01_step000500_urban1k.json').write_text(json.dumps({
+            'label': 'CG_CLIP_V01@500',
+            'urban1k': {'image2text': {'R1': 0.861, 'R5': 0.9701, 'R10': 0.9871},
+                        'text2image': {'R1': 0.8302, 'R5': 0.9613, 'R10': 0.9801}},
+            'checkpoint_sha256': 'd' * 64}), encoding='utf-8')
+    if student:
+        directory = run_dir / 'student_export'
+        directory.mkdir(exist_ok=True)
+        (directory / 'cgclip_v01_student.pt').write_bytes(b'not-a-real-checkpoint')
+        (directory / 'cgclip_v01_student_metadata.json').write_text(json.dumps({
+            'student': 'cgclip_v01', 'completed_steps': 500}), encoding='utf-8')
+    if attention_snapshot:
+        directory = run_dir / 'cgclip_v01_diag'
+        directory.mkdir(exist_ok=True)
+        (directory / 'cgclip_attention_snapshot.json').write_text(json.dumps({
+            'probe': 'cgclip_attention_snapshot', 'read_only': True}), encoding='utf-8')
+    return run_dir
+
+
+def test_cgclip_builder_never_raises_without_the_artifacts(tmp_path):
+    """The 4-GPU run is still training: an almost empty directory must still render."""
+    from dashboard_data import DashboardData, RunRegistry
+    run_dir = tmp_path / 'cgclip_v01'
+    run_dir.mkdir(parents=True, exist_ok=True)
+    registry = RunRegistry()
+    registry.register('cgclip_v01', str(run_dir), arm='CG_CLIP_V01', evaluation_prefix='CG_CLIP_V01')
+    payload = DashboardData(registry).cgclip('cgclip_v01')          # no config, no log at all
+    assert payload['available'] is False and payload['status'] == '未运行'
+    assert payload['error']                                         # an explicit reason
+    assert payload['grid'] is None and payload['series'] is None
+    assert payload['files']['config']['available'] is False
+    assert payload['files']['student']['available'] is False
+    # a config but nothing else: available, tolerant, every optional artifact reported as missing
+    (run_dir / 'config.json').write_text(json.dumps(_cgclip_config()), encoding='utf-8')
+    payload = DashboardData(registry).cgclip('cgclip_v01')
+    assert payload['available'] is True and payload['status'] == '已运行'
+    assert payload['record_count'] == 0 and payload['latest'] is None
+    assert payload['grid']['available'] is False and payload['grid']['not_run']
+    assert payload['evaluation']['coco'] is None and payload['evaluation']['not_run']
+    assert payload['attention_snapshot']['available'] is False
+    assert payload['identity']['fixed_scale'] == 100.0
+
+
+def test_cgclip_builder_parses_a_synthetic_log_line(tmp_path):
+    from dashboard_data import DashboardData, RunRegistry
+    run_dir = tmp_path / 'cgclip_v01'
+    run_dir.mkdir(parents=True, exist_ok=True)
+    write_cgclip(run_dir, records=2, evaluation=False)
+    registry = RunRegistry()
+    registry.register('cgclip_v01', str(run_dir), arm='CG_CLIP_V01', evaluation_prefix='CG_CLIP_V01')
+    payload = DashboardData(registry).cgclip('cgclip_v01')
+    assert payload['available'] is True and payload['record_count'] == 2
+    assert payload['steps'] == [25, 50]
+    # both paths, both directions, parsed into their own fields
+    assert payload['series']['loss_global_i2t'] == [0.61, 0.61]
+    assert payload['series']['path_global_i2t_top1'] == [0.87, 0.87]
+    assert payload['series']['path_attention_t2i_positive_win_fraction'] == [0.87, 0.87]
+    assert payload['curves']['path_global']['i2t']['path_global_i2t_positive_mean'] == 32.97
+    assert payload['curves']['path_attention']['t2i']['path_attention_t2i_ce_mean'] == 0.41
+    assert payload['curves']['path_global']['i2t']['path_global_i2t_lse_margin_mean'] == 4.50
+    assert payload['identity']['loss_weights'] == {'global': 5.0, 'attention': 5.0, 'sparse': 1.0}
+    assert payload['identity']['gate_kind'] == 'caption_gated_final_cls_attention'
+    assert payload['identity']['fixed_scale'] == 100.0
+    assert payload['gate']['patches'] == 196
+    assert payload['gate']['bias_init_log'].startswith('log 8 = 2.079')
+    assert payload['precision'].startswith('fp32 core')
+    assert payload['tf32'] == {'cudnn_allow_tf32': True, 'matmul_allow_tf32': False}
+    assert payload['latest_heavy']['tile_gate_pair_sample'] == 16
+    assert payload['latest_heavy']['tile_gate_variation_across_images_same_text'] == 0.2534
+    assert payload['latest_heavy']['positive_pairs_gate_kept_mean'] == 100.5
+    assert payload['latest_heavy']['tile_gate_probability_quantiles'] == [0.029, 0.282, 0.540,
+                                                                         0.729, 0.894]
+    assert payload['cls_read']['native_cls_self_mass_mean'] == 0.215
+    assert payload['cls_read']['conditional_vs_native_projected_cosine_mean'] == 0.9938
+    assert len(payload['cls_read']['native_attention_cls_self_mass']) == 12
+    assert len(payload['cls_read']['conditional_attention_cls_self_mass']) == 12
+    assert payload['cost']['peak_memory_gi_b'] == 40.67
+    assert payload['cost']['peak_memory_note'] == 'GiB (1024^3 bytes)'
+    assert payload['cost']['synchronized_pair_presentations'] == 25600
+    assert payload['cost']['captions_seen'] == 6400
+    assert payload['cost']['global_pairs'] == 1024
+    # the 512,000 global figure is reported separately from the single-rank counts
+    assert payload['cost']['global_pair_presentations_total'] == 512000
+    assert payload['cost']['horizon_steps'] == 500
+    assert '500' in payload['cost']['global_pair_presentations_note']
+
+
+def test_cgclip_grid_is_14x14_and_never_folds_in_the_cls_slot(tmp_path):
+    from dashboard_data import DashboardData, RunRegistry
+    run_dir = tmp_path / 'cgclip_v01'
+    run_dir.mkdir(parents=True, exist_ok=True)
+    write_cgclip(run_dir)
+    registry = RunRegistry()
+    registry.register('cgclip_v01', str(run_dir), arm='CG_CLIP_V01', evaluation_prefix='CG_CLIP_V01')
+    payload = DashboardData(registry).cgclip('cgclip_v01')
+    grid = payload['grid']
+    assert grid['available'] is True and grid['side'] == 14 and grid['expected_cells'] == 196
+    assert len(grid['samples']) == 4                     # 2 heavy records x 2 sampled grids
+    for sample in grid['samples']:
+        # exactly 196 patch gates, and the CLS slot is reported next to the grid, never inside it
+        assert len(sample['grid']) == 196 and sample['cells'] == 196
+        assert sample['side'] * sample['side'] == 196
+        assert sample['note'].startswith('token order of the 14x14 patch sequence')
+        assert sample['kept'] == sum(1 for value in sample['grid'] if value >= 0.5)
+        assert sample['cls_slot_gate_value'] == 1.0
+    assert [sample['sample'] for sample in grid['samples']] == [0, 1, 0, 1]
+    assert [sample['completed_steps'] for sample in grid['samples']] == [25, 25, 50, 50]
+    assert grid['cls_slot_gate_value'] == 1.0
+    assert 'CLS' in grid['cls_slot_gate_note']
+    # a malformed sample is dropped instead of being padded or truncated
+    run_dir2 = tmp_path / 'cgclip_bad'
+    run_dir2.mkdir(parents=True, exist_ok=True)
+    write_cgclip(run_dir2, records=0)
+    record = _cgclip_record(25)
+    record['gate_grid_samples'] = [{'sample': 0, 'side': 14, 'grid': [1.0] * 195},
+                                   {'sample': 1, 'side': 14, 'grid': [1.0] * 195}]
+    (run_dir2 / 'salu_log.jsonl').write_text(json.dumps(record) + '\n', encoding='utf-8')
+    registry2 = RunRegistry()
+    registry2.register('cgclip_bad', str(run_dir2))
+    payload2 = DashboardData(registry2).cgclip('cgclip_bad')
+    assert payload2['available'] is True
+    assert payload2['grid']['available'] is False and payload2['grid']['error']
+
+
+def test_cgclip_progress_and_evaluation_are_reported_as_the_files_give_them(tmp_path):
+    from dashboard_data import DashboardData, RunRegistry
+    run_dir = tmp_path / 'cgclip_v01'
+    run_dir.mkdir(parents=True, exist_ok=True)
+    write_cgclip(run_dir, student=True, attention_snapshot=True)
+    registry = RunRegistry()
+    registry.register('cgclip_v01', str(run_dir), arm='CG_CLIP_V01', evaluation_prefix='CG_CLIP_V01')
+    payload = DashboardData(registry).cgclip('cgclip_v01')
+    # the frozen floors are shown for COCO and the numbers are reported unchanged
+    assert payload['evaluation']['gate']['coco_i2t_r1'] == 0.6058
+    assert payload['evaluation']['gate']['coco_t2i_r1'] == 0.41236
+    assert payload['evaluation']['coco']['i2t_r1'] == 0.59012
+    assert payload['evaluation']['coco']['t2i_r1'] == 0.40288
+    assert payload['evaluation']['urban1k']['i2t_r1'] == 0.861
+    assert payload['evaluation']['urban1k']['t2i_r1'] == 0.8302
+    assert payload['evaluation']['not_run'] == []
+    assert payload['cost']['student']['available'] is True
+    assert payload['cost']['student']['sha256'] is None            # the checkpoint is never read
+    assert payload['cost']['student_metadata']['completed_steps'] == 500
+    assert payload['attention_snapshot']['available'] is True
+    assert payload['cost']['implementation_sha'] == 'e' * 40
+
+
+def test_cgclip_records_a_heavy_row_without_the_grid_and_without_the_optional_files(tmp_path):
+    """Missing optional artifacts (evaluation, export, snapshot, grid) must degrade, not raise."""
+    from dashboard_data import DashboardData, RunRegistry
+    run_dir = tmp_path / 'cgclip_v01'
+    run_dir.mkdir(parents=True, exist_ok=True)
+    write_cgclip(run_dir, records=1, evaluation=False, heavy=False)
+    registry = RunRegistry()
+    registry.register('cgclip_v01', str(run_dir), arm='CG_CLIP_V01', evaluation_prefix='CG_CLIP_V01')
+    payload = DashboardData(registry).cgclip('cgclip_v01')
+    assert payload['available'] is True and payload['record_count'] == 1
+    assert payload['latest_heavy'] is None
+    assert payload['cls_read'] is not None                  # falls back to the scalar record
+    assert payload['grid']['available'] is False and payload['grid']['not_run']
+    assert payload['curves']['path_global']['t2i']['path_global_t2i_top1'] == 0.87
+    assert payload['curves']['path_attention']['i2t']['path_attention_i2t_ce_mean'] == 0.41
+    assert payload['evaluation']['coco'] is None
+    assert payload['evaluation']['urban1k'] is None
+    assert payload['evaluation']['not_run']                # an explicit reason, never a fake row
+    assert payload['evaluation']['gate']['coco_t2i_r1'] == 0.41236
+    assert payload['cost']['student']['available'] is False
+    assert payload['summary'] is None and payload['summary_error'] is None
+
+
+def test_cgclip_endpoint_without_a_log_still_returns_json(tmp_path):
+    """The run is registered while its artifacts appear one by one; the endpoint must never 500."""
+    run_dir = build_run(tmp_path)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/cgclip')
+    assert status == 200
+    assert payload['available'] is False and payload['status'] == '未运行'
+    for key in ('identity', 'gate', 'precision', 'series', 'latest', 'grid', 'cls_read', 'cost',
+                'evaluation'):
+        assert payload[key] is None, key
+    assert payload['reminders'] and payload['objective_expected'] == 'clip_native_caption_gated_cls'
+
+
+def test_cgclip_endpoint_serves_the_grid_the_two_paths_and_the_cls_read(tmp_path):
+    run_dir = build_run(tmp_path)
+    write_cgclip(run_dir)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/cgclip')
+    assert status == 200
+    assert payload['available'] is True and payload['status'] == '已运行'
+    assert payload['identity']['arm'] == 'CG_CLIP_V01'
+    assert payload['identity']['objective'] == 'clip_native_caption_gated_cls'
+    assert payload['record_count'] == 2
+    assert len(payload['grid']['samples'][0]['grid']) == 196
+    assert payload['grid']['side'] == 14
+    assert payload['curves']['path_attention']['t2i']['path_attention_t2i_top1'] == 0.87
+    assert payload['curves']['path_global']['i2t']['path_global_i2t_top1'] == 0.87
+    assert payload['cls_read']['native_out_norm_ratio_mean'] == 0.7538
+    assert payload['cost']['gpu']['nvidia_smi_visible_devices'] == 4
+    assert payload['evaluation']['gate']['coco_i2t_r1'] == 0.6058
+
+
+def test_cgclip_reads_only_whitelisted_files_and_writes_nothing(tmp_path, monkeypatch):
+    from dashboard_data import CGCLIP_FILES
+    run_dir = build_run(tmp_path)
+    write_cgclip(run_dir, student=True, attention_snapshot=True)
+    (run_dir / 'anything_else.json').write_text('{"secret": 1}', encoding='utf-8')
+    opened = []
+    real_open = open
+
+    def tracking_open(path, *args, **kwargs):
+        opened.append(str(path))
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr('builtins.open', tracking_open)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/cgclip')
+    assert status == 200 and payload['available'] is True
+    assert not any('anything_else' in path for path in opened)
+    before = sorted(os.listdir(str(run_dir)))
+    with Server(registry_for(run_dir), free_port()) as server:
+        server.get('/api/run/hs_test/cgclip')
+    assert sorted(os.listdir(str(run_dir))) == before
+    served = set(CGCLIP_FILES.values())
+    for path in opened:
+        real = os.path.realpath(path)
+        assert real.startswith(os.path.realpath(str(run_dir))), path
+        if os.path.basename(real) in [os.path.basename(name) for name in served]:
+            continue
+        assert os.path.basename(os.path.dirname(real)) == 'evaluation', path
+
+
+def test_dashboard_modules_and_endpoint_still_never_import_torch(tmp_path):
+    """The read-only layers must not gain a torch dependency with the CG-CLIP section."""
+    import ast
+    for name in ('dashboard_data.py', 'serve_training_dashboard.py'):
+        source = open(os.path.join(TOOLS_DIR, name), 'r', encoding='utf-8').read()
+        imported = set()
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split('.')[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported.add(node.module.split('.')[0])
+        assert not ({'torch', 'torchvision', 'cupy'} & imported), (name, sorted(imported))
+    run_dir = build_run(tmp_path)
+    write_cgclip(run_dir)
+    script = (
+        'import json, sys, threading, urllib.request\n'
+        'sys.path.insert(0, %r)\n'
+        'from dashboard_data import RunRegistry\n'
+        'from serve_training_dashboard import build_server\n'
+        'registry = RunRegistry()\n'
+        'registry.register("hs_test", %r)\n'
+        'server, data, port = build_server(registry, "127.0.0.1", 0, %r)\n'
+        'threading.Thread(target=server.serve_forever, daemon=True).start()\n'
+        'with urllib.request.urlopen("http://127.0.0.1:%%d/api/run/hs_test/cgclip" %% port) as r:\n'
+        '    payload = json.loads(r.read())\n'
+        'assert payload["available"] is True, payload.get("error")\n'
+        'assert len(payload["grid"]["samples"][0]["grid"]) == 196\n'
+        'assert "torch" not in sys.modules, sorted(m for m in sys.modules if "torch" in m)\n'
+        'print("CGCLIP_NO_TORCH_OK")\n'
+    ) % (TOOLS_DIR, str(run_dir), WEB_DIR)
+    result = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True,
+                            timeout=60, cwd=REPO_ROOT)
+    assert result.returncode == 0, result.stderr[-2000:]
+    assert 'CGCLIP_NO_TORCH_OK' in result.stdout

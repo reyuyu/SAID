@@ -29,6 +29,7 @@ let state = {
   nuisance: null,
   clip512: null,
   pgclip: null,
+  cgclip: null,
   pollTimer: null,
 };
 
@@ -550,6 +551,9 @@ async function pollOnce() {
       .catch(reportError);
     getJSON('/api/run/' + runId + '/pgclip')
       .then(renderPgClip)
+      .catch(reportError);
+    getJSON('/api/run/' + runId + '/cgclip')
+      .then(renderCgClip)
       .catch(reportError);
   }
 }
@@ -1848,6 +1852,445 @@ function renderPgClip(payload) {
         + detail.t2i_delta_points.toFixed(2) + ' pp）' : '')
     + '。Urban-1k 单列，不参与判定。'
     + ' 本轮没有 native-only / native+post-projection 控制臂，因此即使提升也只能归因于 PG-CLIP 这一整套组合。');
+}
+
+/* ---------------------------------------------------------------- J: CG-CLIP v0.1
+ *
+ * Native alignment plus a text-gated final-block CLS attention. Everything here comes from one
+ * read-only JSON (`/api/run/<id>/cgclip`) built from the run's own small files. The 4-GPU job is
+ * still training, so most artifacts (evaluation rows, student export, the optional attention
+ * snapshot) do not exist yet: every absent field renders as 暂无/未产出 and never as 0.
+ */
+
+const CG_PATH_LABELS = { path_global: '原生（native）path_global_*', path_attention: '条件（gate）path_attention_*' };
+const CG_DIRECTION_LABELS = { i2t: 'I2T', t2i: 'T2I' };
+const CG_DIRECTION_KEYS = ['i2t', 't2i'];
+const CG_STAT_LABELS = [
+  ['top1', 'top1', 4],
+  ['positive_win_fraction', '正例胜出比例', 4],
+  ['positive_mean', 'positive_mean（正配分数）', 3],
+  ['strongest_negative_mean', 'strongest_negative_mean（最强负配）', 3],
+  ['max_margin_mean', 'max_margin_mean', 3],
+  ['lse_margin_mean', 'lse_margin_mean', 3],
+  ['ce_mean', 'ce_mean', 5],
+  ['lse_margin_min', 'lse_margin_min（最差）', 3],
+  ['max_margin_min', 'max_margin_min（最差）', 3],
+  ['ce_from_lse_margin_max_abs_diff', 'CE 与 LSE margin 的自洽差（绝对值上限）', 8],
+];
+
+function cgNum(value, digits) {
+  return (typeof value === 'number' && Number.isFinite(value)) ? value.toFixed(digits) : '暂无';
+}
+
+function cgTable(container, headers, rows) {
+  return tableBlock(container, headers, rows.length ? rows : [['暂无']]);
+}
+
+/* one table per (path, direction) pair, so the two paths and the two directions are never mixed */
+function cgDirectionTable(container, payload, path, direction) {
+  container.textContent = '';
+  const curves = (payload.curves || {})[path] || {};
+  const block = curves[direction] || {};
+  const prefix = path + '_' + direction + '_';
+  const caption = document.createElement('p');
+  caption.className = 'muted';
+  caption.textContent = CG_PATH_LABELS[path] + ' · ' + CG_DIRECTION_LABELS[direction]
+    + '（字段前缀 ' + prefix + '*）';
+  container.appendChild(caption);
+  tableBlock(container,
+    ['统计量（字段 ' + prefix + '…）', '最新值'],
+    CG_STAT_LABELS.map(entry => [entry[1], cgNum(block[prefix + entry[0]], entry[2])]));
+}
+
+function cgRange(values) {
+  const numbers = (values || []).filter(value => typeof value === 'number' && Number.isFinite(value));
+  if (!numbers.length) return ['暂无', '暂无', '暂无', '暂无'];
+  return [cgNum(numbers[0], 5), cgNum(numbers[numbers.length - 1], 5),
+          cgNum(Math.min.apply(null, numbers), 5), cgNum(Math.max.apply(null, numbers), 5)];
+}
+
+/* the 14x14 patch grid; the CLS slot is a separate box and is never a 197th cell in the grid */
+function renderCgGrid(container, payload) {
+  container.textContent = '';
+  const grid = payload.grid || {};
+  const samples = grid.samples || [];
+  if (!grid.available || !samples.length) {
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = grid.not_run || ('未产出：' + (grid.error || '日志里没有 gate_grid_samples'));
+    container.appendChild(note);
+    return;
+  }
+  samples.forEach(sample => {
+    const wrap = document.createElement('div');
+    wrap.className = 'gate-sample';
+    const head = document.createElement('div');
+    head.className = 'mask-caption';
+    head.textContent = '样本 #' + sample.sample + '（第 ' + sample.completed_steps + ' 步）· 保留 '
+      + sample.kept + '/' + sample.cells + ' 格';
+    wrap.appendChild(head);
+    const row = document.createElement('div');
+    row.className = 'gridrow';
+    const board = document.createElement('div');
+    board.className = 'gate-grid';
+    board.style.gridTemplateColumns = 'repeat(' + sample.side + ', 12px)';
+    (sample.grid || []).forEach((value, index) => {
+      const cell = document.createElement('span');
+      cell.className = 'gcell ' + (value >= 0.5 ? 'on' : 'off');
+      cell.title = 'token #' + index + ' = ' + value;
+      board.appendChild(cell);
+    });
+    row.appendChild(board);
+    const cls = document.createElement('div');
+    cls.className = 'cls-slot';
+    const clsCell = document.createElement('span');
+    clsCell.className = 'gcell on';
+    clsCell.title = 'CLS 槽位固定 gate = ' + sample.cls_slot_gate_value;
+    cls.appendChild(clsCell);
+    const label = document.createElement('div');
+    label.className = 'k';
+    label.textContent = 'CLS 槽位（固定 gate = ' + sample.cls_slot_gate_value + '，不进 14×14 网格）';
+    cls.appendChild(label);
+    row.appendChild(cls);
+    wrap.appendChild(row);
+    container.appendChild(wrap);
+  });
+}
+
+function renderCgClip(payload) {
+  state.cgclip = payload;
+  const ids = ['cg-scope', 'cg-identity', 'cg-gate', 'cg-precision', 'cg-losses', 'cg-curves',
+    'cg-curve-note', 'cg-direction-i2t', 'cg-direction-t2i', 'cg-direction-note',
+    'cg-gate-stats', 'cg-gate-note',
+    'cg-tile-stats', 'cg-tile-note', 'cg-grid', 'cg-grid-note', 'cg-cls', 'cg-heads',
+    'cg-cls-note', 'cg-snapshot', 'cg-cost', 'cg-export', 'cg-eval'];
+  if (!payload.available) {
+    setText(qs('cg-banner'), '未运行：这个 run 不是 CG-CLIP v0.1（objective='
+      + pgValue(payload.objective) + '，期望 ' + pgValue(payload.objective_expected) + '）。'
+      + '只有 objective = clip_native_caption_gated_cls 的 run 才会在这里显示两路损失与门控网格。');
+    setText(qs('cg-reminders'), '本区域不显示推测值：objective 不匹配时只显示"未运行"'
+      + (payload.error ? '（' + payload.error + '）' : ''));
+    ids.forEach(id => { qs(id).textContent = ''; });
+    setText(qs('cg-conclusion'), '');
+    return;
+  }
+  setText(qs('cg-reminders'), (payload.reminders || []).join('   '));
+  const identity = payload.identity || {};
+  const gate = payload.gate || {};
+  const weights = identity.loss_weights || {};
+  const cost = payload.cost || {};
+  setText(qs('cg-banner'),
+    '已运行（只读，训练进行中）· objective ' + pgValue(identity.objective) + ' · arm '
+    + pgValue(identity.arm) + ' · phase ' + pgValue(identity.phase) + ' · 记录 '
+    + pgValue(payload.record_count) + ' 条 · 实现 SHA '
+    + String(cost.implementation_sha || '').slice(0, 12)
+    + ' · 本页不加载 checkpoint、不触发 GPU 前向、不写入任何文件');
+
+  kvGrid(qs('cg-scope'), [
+    ['run id', payload.run_id],
+    ['状态口径', '这份数据来自正在运行的 4 卡训练：config 与日志先出现，'
+      + 'evaluation/ 与 student_export/ 在导出与评估阶段才写出'],
+    ['日志统计口径', pgValue(identity.statistics_scope)],
+    ['每步记录', '标量记录每 10 步、重统计每 25 步；缺失字段显示"暂无"，不会以 0 出现'],
+    ['CLS 槽位', pgValue(gate.cls_self_gate)],
+    ['gate patch 数', pgValue(gate.patches) + ' 个，12 个视觉头共享同一份'],
+  ]);
+
+  cgTable(qs('cg-identity'), ['身份项', '值'], [
+    ['arm', pgValue(identity.arm)],
+    ['objective', pgValue(identity.objective)],
+    ['phase', pgValue(identity.phase)],
+    ['gate kind', pgValue(identity.gate_kind)],
+    ['损失权重（global / attention / sparse）', pgValue(weights.global) + ' / '
+      + pgValue(weights.attention) + ' / ' + pgValue(weights.sparse)],
+    ['损失组合', pgValue(identity.loss_combination)],
+    ['固定分数尺度 fixed_scale', pgValue(identity.fixed_scale) + '（分数 = 100 × 余弦，从不缩放）'],
+    ['原生路径定义', pgValue((identity.two_paths || {}).native)],
+    ['条件路径定义', pgValue((identity.two_paths || {}).attention)],
+    ['条件路径使用范围', pgValue((identity.attention_route || {}).conditional_path_use)],
+    ['候选规则', pgValue(identity.candidate_rule)],
+    ['梯度职责', pgValue(identity.grader)],
+    ['caption 流', pgValue(identity.caption_stream)],
+    ['视图', pgValue(identity.view)],
+    ['DDP 路线', pgValue(identity.ddp_route) + '（world_size 倍率：'
+      + (identity.no_world_size_factor ? '无' : '有') + '）'],
+    ['分块', 'image_chunk=' + pgValue((identity.chunking || {}).image_chunk)
+      + '，text_chunk=' + pgValue((identity.chunking || {}).text_chunk)
+      + '，cond_checkpoint=' + pgValue((identity.chunking || {}).cond_checkpoint)],
+    ['x11 取点', pgValue(identity.x11_source)],
+    ['文本侧', pgValue(identity.text_source)],
+    ['种子 / gate 种子', pgValue(identity.seed) + ' / ' + pgValue(identity.gate_seed)],
+    ['max_steps / epochs / 每 epoch 步数', pgValue(identity.max_steps) + ' / '
+      + pgValue(identity.epochs) + ' / ' + pgValue(identity.loader_batches)],
+    ['CLIP lr / gate lr / warmup / weight decay', pgValue(identity.lr) + ' / '
+      + pgValue(identity.gate_lr) + ' / ' + pgValue(identity.warmup_length) + ' / '
+      + pgValue(identity.weight_decay)],
+    ['初始化 state', pgValue(identity.init_state)],
+  ]);
+
+  cgTable(qs('cg-gate'), ['gate 结构（' + pgValue(gate.kind) + '）', '值'], [
+    ['gate 描述', pgValue(gate.description)],
+    ['gate patch 数', pgValue(gate.patches) + '（期望 ' + pgValue(gate.patches_expected) + '）'],
+    ['key 维度', pgValue(gate.key_dim)],
+    ['A（query 侧）初始化', pgValue(gate.query_init)],
+    ['B（key 侧）初始化', pgValue(gate.key_init)],
+    ['可训练标量 bias 初始化', 'log 8 = ' + pgValue(gate.bias_init_log) + '（记录值 '
+      + pgValue(gate.bias_init) + '）；当前值 '
+      + cgNum((payload.latest || {}).gate_bias_value, 6)],
+    ['前向', pgValue(gate.forward)],
+    ['A 的输入', pgValue(gate.query_input)],
+    ['B 的输入', pgValue(gate.key_input)],
+    ['CLS 槽位', pgValue(gate.cls_self_gate)],
+    ['soft_floor / top_k', pgValue(gate.soft_floor) + ' / ' + pgValue(gate.top_k)],
+    ['初始化实测（logits / 概率）', 'logits ' + pgValue((gate.init || {}).logits_min) + ' … '
+      + pgValue((gate.init || {}).logits_max) + '，概率均值 '
+      + pgValue((gate.init || {}).probability_mean) + '（全开 ' + pgValue((gate.init || {}).mask_all_one)
+      + '）'],
+  ]);
+  pgTable(qs('cg-precision'), ['精度', '配置值'], [
+    ['核心精度', pgValue(payload.precision)],
+    ['TF32（matmul / cudnn）', 'matmul_allow_tf32 = ' + pgValue((payload.tf32 || {}).matmul_allow_tf32)
+      + '，cudnn_allow_tf32 = ' + pgValue((payload.tf32 || {}).cudnn_allow_tf32)],
+    ['视觉末块形状', JSON.stringify((gate.visual_spec || {}).last_num_heads || '') + ' 头 × dim '
+      + pgValue((gate.visual_spec || {}).last_head_dim) + '，embed '
+      + pgValue((gate.visual_spec || {}).last_embed_dim) + '，context '
+      + pgValue((gate.visual_spec || {}).context_length)],
+  ]);
+
+  const series = payload.series || {};
+  const steps = payload.steps || [];
+  const latest = payload.latest || {};
+  cgTable(qs('cg-losses'), ['损失项（' + steps.length + ' 个记录点）', '首', '末', '最小', '最大'], [
+    ['LG = 原生对齐（I2T + T2I）'].concat(cgRange(series.loss_global_sum)),
+    ['LA = 条件对齐（I2T + T2I）'].concat(cgRange(series.loss_attention_sum)),
+    ['LS = 正例对 196 个 patch gate 的均值'].concat(cgRange(series.loss_sparse)),
+    ['5×LG / 5×LA / 1×LS（末值）',
+      cgNum(latest.weighted_loss_global, 5) + ' / ' + cgNum(latest.weighted_loss_attention, 5)
+      + ' / ' + cgNum(latest.weighted_loss_sparse, 5), '', '', ''],
+    ['L_total = 5·LG + 5·LA + LS（末值）', cgNum(latest.loss_total, 5), '', '',
+      '方向内双向相加、不取平均'],
+  ]);
+  const curveFields = [
+    'loss_global_i2t', 'loss_global_t2i', 'loss_attention_i2t', 'loss_attention_t2i',
+    'loss_sparse', 'loss_total', 'sec_per_step', 'gate_bias_value', 'gate_grad_norm',
+    'gate_query_weight_norm', 'gate_key_weight_norm', 'clip_grad_norm', 'last_block_grad_norm',
+    'lr', 'gate_lr', 'samples_per_sec', 'peak_memory_gb', 'epoch', 'captions_seen',
+    'synchronized_pair_presentations', 'effective_length_mean',
+  ];
+  cgTable(qs('cg-curves'), ['曲线（' + steps.length + ' 个记录点）', '首', '末', '最小', '最大'],
+    curveFields.filter(field => (series[field] || []).some(v => typeof v === 'number'))
+      .map(field => {
+        const values = (series[field] || []).filter(v => typeof v === 'number');
+        return [field, cgNum(values[0], 5), cgNum(values[values.length - 1], 5),
+                cgNum(Math.min.apply(null, values), 5), cgNum(Math.max.apply(null, values), 5)];
+      }));
+  setText(qs('cg-curve-note'),
+    '曲线点来自 run 自己的 salu_log.jsonl（completed_steps = ' + pgValue(payload.record_count)
+    + ' 条记录）。两路各自独立成表：原生 path_global_* 与条件 path_attention_* 不会混在同一列里；'
+    + '缺失字段显示"暂无"，不会填 0。'
+    + (payload.log_error ? '读取告警：' + payload.log_error : ''));
+
+  CG_DIRECTION_KEYS.forEach(direction => {
+    const container = qs('cg-direction-' + direction);
+    container.textContent = '';
+    const heading = document.createElement('h4');
+    heading.textContent = CG_DIRECTION_LABELS[direction] + ' 方向：原生路径与条件路径（分开成表）';
+    container.appendChild(heading);
+    const nativeBox = document.createElement('div');
+    const attentionBox = document.createElement('div');
+    container.appendChild(nativeBox);
+    container.appendChild(attentionBox);
+    cgDirectionTable(nativeBox, payload, 'path_global', direction);
+    cgDirectionTable(attentionBox, payload, 'path_attention', direction);
+  });
+  setText(qs('cg-direction-note'),
+    '每一格都来自重统计行的对应字段，原生与条件两路各自一表，正例/负例/margin/top1 全部同池同规则可比；'
+    + '缺失字段显示"暂无"，不会用另一路的值代填。');
+
+  const heavy = payload.latest_heavy || {};
+  cgTable(qs('cg-gate-stats'),
+    ['正例对 gate 统计（重统计行，第 ' + pgValue(heavy.completed_steps) + ' 步）', '数值'], [
+      ['保留 patch 数：均值 / 最小 / 最大（共 196）',
+        cgNum(heavy.positive_pairs_gate_kept_mean, 3) + ' / '
+        + cgNum(heavy.positive_pairs_gate_kept_min, 0) + ' / '
+        + cgNum(heavy.positive_pairs_gate_kept_max, 0)],
+      ['保留比例均值 / 坐标级平均',
+        cgNum(heavy.positive_pairs_gate_keep_fraction_mean, 4) + ' / '
+        + cgNum(heavy.positive_pairs_gate_coordinate_mean, 4)],
+      ['全关 / 全开比例', cgNum(heavy.positive_pairs_gate_all_off_fraction, 4) + ' / '
+        + cgNum(heavy.positive_pairs_gate_all_on_fraction, 4)],
+      ['软概率：均值 / 标准差 / 最小 / 最大',
+        cgNum(heavy.positive_pairs_gate_probability_mean, 4) + ' / '
+        + cgNum(heavy.positive_pairs_gate_probability_std, 4) + ' / '
+        + cgNum(heavy.positive_pairs_gate_probability_min, 4) + ' / '
+        + cgNum(heavy.positive_pairs_gate_probability_max, 4)],
+      ['阈值附近（软概率）比例',
+        cgNum(heavy.positive_pairs_gate_probability_near_threshold_fraction, 6)],
+      ['软概率分位数',
+        (heavy.positive_pairs_gate_probability_quantiles || []).map(v => Number(v).toFixed(4)).join(' / ')],
+      ['作用范围', pgValue(heavy.positive_pairs_gate_scope)],
+    ]);
+  setText(qs('cg-gate-note'),
+    '口径：保留数/保留比例来自硬门（mask = 1 的 patch 数），软概率分布来自同一批正例对的 gate 概率；'
+    + '两者口径不同，不可互相替代。正例对只统计 rank0 本地 batch 的真实 (image, caption) 正例，'
+    + 'CLS 槽位被排除在外。');
+
+  cgTable(qs('cg-tile-stats'), ['tile 统计（text_chunk × image_chunk 分块）', '数值'], [
+    ['保留 patch 数：均值 / 最小 / 最大（共 196）',
+      cgNum(heavy.tile_gate_kept_mean, 3) + ' / ' + cgNum(heavy.tile_gate_kept_min, 0) + ' / '
+      + cgNum(heavy.tile_gate_kept_max, 0)],
+    ['保留比例均值 / 坐标级平均',
+      cgNum(heavy.tile_gate_keep_fraction_mean, 4) + ' / ' + cgNum(heavy.tile_gate_coordinate_mean, 4)],
+    ['全关 / 全开比例',
+      cgNum(heavy.tile_gate_all_off_fraction, 4) + ' / ' + cgNum(heavy.tile_gate_all_on_fraction, 4)],
+    ['软概率：均值 / 标准差 / 最小 / 最大',
+      cgNum(heavy.tile_gate_probability_mean, 4) + ' / ' + cgNum(heavy.tile_gate_probability_std, 4)
+      + ' / ' + cgNum(heavy.tile_gate_probability_min, 6) + ' / '
+      + cgNum(heavy.tile_gate_probability_max, 4)],
+    ['阈值附近比例', cgNum(heavy.tile_gate_probability_near_threshold_fraction, 6)],
+    ['软概率分位数',
+      (heavy.tile_gate_probability_quantiles || []).map(v => Number(v).toFixed(4)).join(' / ')],
+    ['跨图同文本变化量（sample = ' + pgValue(heavy.tile_gate_pair_sample) + '）',
+      cgNum(heavy.tile_gate_variation_across_images_same_text, 5)],
+    ['跨文本同图变化量（sample = ' + pgValue(heavy.tile_gate_pair_sample) + '）',
+      cgNum(heavy.tile_gate_variation_across_texts_same_image, 5)],
+    ['变化量样本数（tile_gate_pair_sample / gate_pair_variation_sample）',
+      pgValue(heavy.tile_gate_pair_sample) + ' / ' + pgValue(heavy.gate_pair_variation_sample)],
+    ['tile 范围', pgValue(heavy.tile_scope)],
+  ]);
+  setText(qs('cg-tile-note'),
+    '两个变化量只有在 tile_gate_pair_sample 这么大的样本上才算出来，不是全量统计，'
+    + '也不能当成语义信息比例：它们只描述 gate 取值在"换图"和"换文本"两个方向上的分布。');
+
+  renderCgGrid(qs('cg-grid'), payload);
+  const grid = payload.grid || {};
+  const firstSample = (grid.samples || [])[0] || {};
+  setText(qs('cg-grid-note'),
+    '网格每一格是一个 patch 的硬 gate 取值（' + pgValue(grid.side) + '×' + pgValue(grid.side) + ' = '
+    + pgValue(grid.cells) + ' 格，期望 ' + pgValue(grid.expected_cells) + '）：绿色 = 保留（gate = 1），'
+    + '灰色 = 关闭（gate = 0）。网格说明：' + pgValue(firstSample.note || grid.note)
+    + '。样本序号：' + pgValue(firstSample.sample)
+    + '（第 ' + pgValue(firstSample.completed_steps) + ' 步）。CLS 槽位是固定的 gate = 1，'
+    + '在右侧单独显示，永远不折进这 196 格。'
+    + (grid.error ? ' 解析告警：' + grid.error : ''));
+
+  const cls = payload.cls_read || {};
+  cgTable(qs('cg-cls'), ['CLS 读出诊断（原生 vs 条件）', '数值'], [
+    ['原生 CLS 自注意力质量均值', cgNum(cls.native_cls_self_mass_mean, 6)],
+    ['条件 CLS 自注意力质量均值', cgNum(cls.conditional_cls_self_mass_mean, 6)],
+    ['原生 / 条件 patch 质量均值',
+      cgNum(cls.native_patch_mass_mean, 6) + ' / ' + cgNum(cls.conditional_patch_mass_mean, 6)],
+    ['原生自质量逐头最小 / 最大',
+      cgNum(cls.native_cls_self_mass_per_head_min, 6) + ' / '
+      + cgNum(cls.native_cls_self_mass_per_head_max, 6)],
+    ['native_out_norm_ratio_mean', cgNum(cls.native_out_norm_ratio_mean, 6)],
+    ['条件 vs 原生 CLS 余弦（末块输出）', cgNum(cls.conditional_vs_native_cls_cosine_mean, 6)],
+    ['条件 vs 原生投影后余弦', cgNum(cls.conditional_vs_native_projected_cosine_mean, 6)],
+    ['单位', pgValue(cls.cls_self_mass_unit)],
+    ['原生注意力形状', JSON.stringify(cls.native_attention_shape || null)],
+    ['统计范围', pgValue(cls.scope)],
+  ]);
+  const nativeHeads = cls.native_attention_cls_self_mass || [];
+  const conditionalHeads = cls.conditional_attention_cls_self_mass || [];
+  const headCount = Math.max(nativeHeads.length, conditionalHeads.length);
+  const headRows = [];
+  for (let index = 0; index < headCount; index += 1) {
+    headRows.push(['head ' + index, cgNum(nativeHeads[index], 6), cgNum(conditionalHeads[index], 6)]);
+  }
+  cgTable(qs('cg-heads'), ['逐头显示值（12 个视觉头，按头顺序）', '原生 CLS 自质量',
+    '条件 CLS 自质量'], headRows);
+  setText(qs('cg-cls-note'),
+    '逐头两张列表是"每头显示值"，不是 12 个可独立训练的门：gate 只有一份 196 维，'
+    + '被 12 个头共享（' + pgValue(cls.attention_head_axis_note) + '）。'
+    + '余弦高只说明条件路径与原生路径的读出接近，不等于检索更好。');
+
+  const snapshotInfo = payload.attention_snapshot || {};
+  cgTable(qs('cg-snapshot'), ['可选注意力快照诊断', '状态'], [
+    ['cgclip_v01_diag/cgclip_attention_snapshot.json',
+      snapshotInfo.available ? '已读取' : '未产出'],
+    ['说明', snapshotInfo.available ? JSON.stringify(snapshotInfo.payload).slice(0, 400)
+      : pgValue(snapshotInfo.not_run || snapshotInfo.error)],
+  ]);
+
+  cgTable(qs('cg-cost'), ['溯源与成本', '值'], [
+    ['implementation_sha', pgValue(cost.implementation_sha)],
+    ['run 状态 / 阶段 / 尝试次数', pgValue(cost.phase) + ' / ' + pgValue(cost.stage) + ' / '
+      + pgValue(cost.attempt)],
+    ['阶段列表与退出码', (cost.stages || []).join(' → ') + '　退出码 '
+      + JSON.stringify(cost.exit_codes || {})],
+    ['GPU 数（world_size）', pgValue(cost.world_size) + '（' + pgValue(cost.gpu_check) + '）'],
+    ['每卡 batch × 全局 batch',
+      pgValue(cost.batch_size_per_gpu) + ' × ' + pgValue(cost.global_batch)],
+    ['峰值显存（GiB，1024³ 字节）',
+      cgNum(cost.peak_memory_gi_b !== null && cost.peak_memory_gi_b !== undefined
+        ? cost.peak_memory_gi_b : cost.peak_memory_gb, 3) + ' GiB'
+      + '（记录字段 peak_memory_gb 的实际单位：' + pgValue(cost.peak_memory_note) + '）'],
+    ['sec/step / samples/sec', cgNum(cost.sec_per_step, 3) + ' s / '
+      + cgNum(cost.samples_per_sec, 3)],
+    ['单卡累计 captions_seen / 全局累计 pair 表示数',
+      pgValue(cost.captions_seen) + '（每一步单卡 ' + pgValue(cost.batch_size_per_gpu)
+      + ' 条文本，rank 本地累计） / ' + pgValue(cost.synchronized_pair_presentations)
+      + '（同步计数，约等于 completed_steps × global_batch，与单卡数不同口径）'],
+    ['单步全局 pair 数（global_pairs / global_batch）', pgValue(cost.global_pairs)
+      + '（每步全局同步的 (图, 文本) 对）'],
+    ['500 步 × 1024 的全局 pair 表示数', pgValue(cost.global_pair_presentations_total)
+      + '（' + pgValue(cost.global_pair_presentations_note) + '）'],
+    ['pair 表示速率 / 样本速率',
+      cgNum(cost.pair_presentations_per_sec, 3) + ' pair/s · ' + cgNum(cost.samples_per_sec, 3)
+      + ' 样本/s'],
+    ['统计范围 statistics_scope', pgValue(cost.statistics_scope)],
+    ['初始化文件 SHA256', pgValue(cost.init_file_sha256)],
+    ['初始化 state 摘要', pgValue(cost.initial_state_digest)],
+    ['gate 参数摘要 / clip 状态摘要', pgValue(cost.gate_param_digest) + ' / '
+      + pgValue(cost.clip_state_digest_prefix)],
+    ['rank 本地流摘要', JSON.stringify(cost.rank_local_stream_digests || null).slice(0, 300)],
+    ['5/5/1 权重的日志记录', JSON.stringify(cost.weights_5_5_1 || weights)],
+    ['base model / clip lr', pgValue(cost.base_model) + ' / ' + pgValue(cost.clip_lr)],
+    ['run 目录 / 仓库', pgValue(cost.run_dir) + ' / ' + pgValue(cost.repo)],
+    ['启动时间 / 保存步', pgValue(cost.started_at_iso) + ' / ' + pgValue(cost.save_steps)],
+  ]);
+  const checkpoint = cost.checkpoint || {};
+  const student = cost.student || {};
+  const checkpointRow = ck => (ck.available
+    ? '已产出（' + (ck.bytes ? (ck.bytes / (1024 * 1024)).toFixed(1) + ' MiB' : '大小未知') + '）'
+    : '未产出');
+  cgTable(qs('cg-export'), ['产物', '状态', 'SHA256'], [
+    ['CG_CLIP_V01_step000500.pt', checkpointRow(checkpoint), pgValue(checkpoint.sha256 || '未计算（不打开 checkpoint）')],
+    ['student_export/cgclip_v01_student.pt', checkpointRow(student), pgValue(student.sha256 || '未计算（不打开 checkpoint）')],
+    ['student_metadata.json',
+      (cost.student_metadata ? '已读取' : '未产出'),
+      JSON.stringify(cost.student_metadata || {}).slice(0, 500)],
+  ]);
+
+  const evaluation = payload.evaluation || {};
+  const coco = evaluation.coco || {};
+  const urban = evaluation.urban1k || {};
+  const floors = evaluation.gate || {};
+  const cocoFloor = `冻结地板 0.6058 / 0.41236`;
+  cgTable(qs('cg-eval'),
+    ['检索结果（原生 CLS/EOS，不用 gate、不融合、不 rerank）', 'I2T R@1 / R@5 / R@10',
+     'T2I R@1 / R@5 / R@10', '对照'], [
+      ['COCO canonical ' + pgValue(coco.name || '（未产出）'),
+        fmt(coco.i2t_r1, 5) + ' / ' + fmt(coco.i2t_r5, 5) + ' / ' + fmt(coco.i2t_r10, 5),
+        fmt(coco.t2i_r1, 5) + ' / ' + fmt(coco.t2i_r5, 5) + ' / ' + fmt(coco.t2i_r10, 5),
+        cocoFloor],
+      ['Urban-1k ' + pgValue(urban.name || '（未产出）'),
+        fmt(urban.i2t_r1, 5) + ' / ' + fmt(urban.i2t_r5, 5) + ' / ' + fmt(urban.i2t_r10, 5),
+        fmt(urban.t2i_r1, 5) + ' / ' + fmt(urban.t2i_r5, 5) + ' / ' + fmt(urban.t2i_r10, 5),
+        '不参与冻结门'],
+      ['S0@500 冻结参照（COCO）',
+        fmt((evaluation.baseline_s0_500 || {}).i2t_r1, 5) + ' / '
+        + fmt((evaluation.baseline_s0_500 || {}).i2t_r5, 5) + ' / '
+        + fmt((evaluation.baseline_s0_500 || {}).i2t_r10, 5),
+        fmt((evaluation.baseline_s0_500 || {}).t2i_r1, 5) + ' / '
+        + fmt((evaluation.baseline_s0_500 || {}).t2i_r5, 5) + ' / '
+        + fmt((evaluation.baseline_s0_500 || {}).t2i_r10, 5), '—'],
+    ]);
+  setText(qs('cg-conclusion'),
+    '冻结晋级门（只在 500 步、只看 COCO 原始精度）：' + pgValue(floors.rule)
+    + '。本 run 的两个检索结果文件出现之前，这里只显示"未产出"，不会预填任何数字：'
+    + (evaluation.not_run || []).join('；')
+    + '。页面按文件原样报告（不做四舍五入到地板位数之外的加工），也不把 Urban-1k 混进判定。');
 }
 
 function download(filename, text, type) {

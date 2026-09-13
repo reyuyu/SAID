@@ -106,6 +106,103 @@ PGCLIP_REMINDERS = [
     '本轮没有运行 native-only 或 native+post-projection 控制臂，因此提升（若有）只能归因于 PG-CLIP 这一整套组合。',
     '页面只读取 run 目录里的小型日志与结果文件：不 import torch、不加载 checkpoint、不触发 GPU 前向。',
 ]
+# CG-CLIP v0.1 (caption-gated final-block CLS attention) keeps the ordinary trainer files plus its
+# own export directory; every reader is tolerant because the run is still training, so most of these
+# files simply do not exist yet. Nothing here is ever written and no checkpoint is ever opened.
+CGCLIP_FILES = {
+    'config': 'config.json',
+    'log': 'salu_log.jsonl',
+    'summary': 'run_summary.json',
+    'status': 'run_status.json',
+    'student': 'student_export/cgclip_v01_student.pt',
+    'student_metadata': 'student_export/cgclip_v01_student_metadata.json',
+    'checkpoint': 'CG_CLIP_V01_step000500.pt',
+    # the optional later diagnostic; never created by this service, only read when it already exists
+    'attention_snapshot': 'cgclip_v01_diag/cgclip_attention_snapshot.json',
+}
+CGCLIP_OBJECTIVE = 'clip_native_caption_gated_cls'
+CGCLIP_ARM = 'CG_CLIP_V01'
+# the frozen training horizon and global batch: 500 steps x 1024 global pairs = 512,000 global
+# pair presentations, which is a *global* figure and never the single-rank one
+CGCLIP_HORIZON_STEPS = 500
+CGCLIP_GLOBAL_BATCH = 1024
+CGCLIP_GLOBAL_PAIR_PRESENTATIONS = CGCLIP_HORIZON_STEPS * CGCLIP_GLOBAL_BATCH
+# the two paths. path_global_* is the native alignment (same shape as PG-CLIP's native path) and
+# path_attention_* is the conditional CLS path whose attention weights are renormalised by the gate.
+CGCLIP_PATH_NAMES = ('path_global', 'path_attention')
+CGCLIP_DIRECTIONS = ('i2t', 't2i')
+# every per-direction statistic the page reads; a missing field is reported as 暂无, never as 0
+CGCLIP_PATH_STATS = (
+    'positive_mean', 'strongest_negative_mean', 'max_margin_mean', 'lse_margin_mean', 'ce_mean',
+    'top1', 'positive_win_fraction', 'lse_margin_min', 'max_margin_min',
+    'ce_from_lse_margin_max_abs_diff',
+)
+# the scalar log fields the two-path section plots; the *_sum fields are the trainer's own sums
+CGCLIP_SERIES = (
+    'loss_global_i2t', 'loss_global_t2i', 'loss_global_sum', 'loss_attention_i2t',
+    'loss_attention_t2i', 'loss_attention_sum', 'loss_sparse', 'loss_total',
+    'weighted_loss_global', 'weighted_loss_attention', 'weighted_loss_sparse',
+    'lr', 'gate_lr', 'sec_per_step', 'samples_per_sec', 'peak_memory_gb', 'gate_bias_value',
+    'gate_grad_norm', 'gate_query_weight_norm', 'gate_key_weight_norm', 'clip_grad_norm',
+    'last_block_grad_norm', 'epoch', 'captions_seen', 'synchronized_pair_presentations',
+    'pair_presentations_per_sec', 'effective_length_mean',
+)
+for _path in ('path_global', 'path_attention'):
+    for _direction in ('i2t', 't2i'):
+        for _stat in CGCLIP_PATH_STATS:
+            CGCLIP_SERIES = CGCLIP_SERIES + ('%s_%s_%s' % (_path, _direction, _stat),)
+# the gate / grid statistics that only the heavy log rows carry
+CGCLIP_HEAVY_FIELDS = (
+    'completed_steps', 'positive_pairs_gate_kept_mean', 'positive_pairs_gate_kept_min',
+    'positive_pairs_gate_kept_max', 'positive_pairs_gate_keep_fraction_mean',
+    'positive_pairs_gate_all_off_fraction', 'positive_pairs_gate_all_on_fraction',
+    'positive_pairs_gate_coordinate_mean', 'positive_pairs_gate_probability_mean',
+    'positive_pairs_gate_probability_std', 'positive_pairs_gate_probability_min',
+    'positive_pairs_gate_probability_max', 'positive_pairs_gate_probability_quantiles',
+    'positive_pairs_gate_probability_near_threshold_fraction', 'positive_pairs_gate_scope',
+    'tile_gate_kept_mean', 'tile_gate_kept_min', 'tile_gate_kept_max',
+    'tile_gate_keep_fraction_mean', 'tile_gate_all_off_fraction', 'tile_gate_all_on_fraction',
+    'tile_gate_coordinate_mean', 'tile_gate_probability_mean', 'tile_gate_probability_std',
+    'tile_gate_probability_min', 'tile_gate_probability_max',
+    'tile_gate_probability_quantiles', 'tile_gate_probability_near_threshold_fraction',
+    'tile_gate_variation_across_images_same_text', 'tile_gate_variation_across_texts_same_image',
+    'tile_gate_pair_sample', 'gate_pair_variation_sample', 'tile_scope',
+    'cls_slot_gate_value', 'cls_slot_gate_note', 'gate_head_sharing',
+)
+# the CLS-read diagnostics: native vs conditional CLS-self attention mass and the two cosines
+CGCLIP_CLS_FIELDS = (
+    'native_cls_self_mass_mean', 'conditional_cls_self_mass_mean', 'native_patch_mass_mean',
+    'conditional_patch_mass_mean', 'native_cls_self_mass_per_head_min',
+    'native_cls_self_mass_per_head_max', 'native_out_norm_ratio_mean',
+    'conditional_vs_native_cls_cosine_mean', 'conditional_vs_native_projected_cosine_mean',
+    'native_attention_cls_self_mass', 'conditional_attention_cls_self_mass',
+    'native_attention_shape', 'attention_head_axis_note', 'cls_self_mass_unit', 'scope',
+)
+# the provenance / cost block
+CGCLIP_COST_FIELDS = (
+    'implementation_sha', 'exit_codes', 'gpu', 'gpu_check', 'gpu_ok', 'world_size',
+    'batch_size_per_gpu', 'global_batch', 'statistics_scope', 'init_file_sha256',
+    'initial_state_digest', 'peak_memory_gb', 'peak_memory_gi_b', 'peak_memory_note',
+    'sec_per_step', 'samples_per_sec', 'pair_presentations_per_sec',
+    'synchronized_pair_presentations', 'global_pairs', 'rank_local_stream_digests',
+    'gate_param_digest', 'clip_state_digest_prefix', 'tf32', 'weights_5_5_1',
+)
+# the frozen promotion floors this run is measured against (COCO, original precision)
+CGCLIP_GATE = {
+    'coco_i2t_r1': 0.6058, 'coco_t2i_r1': 0.41236,
+    'rule': 'COCO I2T R@1 >= 0.6058 且 COCO T2I R@1 >= 0.41236，且至少一项严格提高（原始精度）',
+}
+CGCLIP_REMINDERS = [
+    '条件（gate）路径只在训练时使用：冻结晋级门的评估只用原生 encode_image/encode_text 的 CLS/EOS 表示。',
+    '14×14 网格是视觉块 11 输出后的 patch 序列 token 顺序，不代表图像语义位置；CLS 槽位固定 gate = 1，'
+    '单独显示，从不折进 196 格网格。',
+    'gate 是硬直通（hard straight-through）：训练用二值 mask，反向用软概率梯度，因此 all_on/all_off '
+    '比例与软概率均值并不相同口径。',
+    '正例对 gate 统计只统计 rank0 本地 batch 的真实正例对；跨图/跨文本变化量有自己的样本数 '
+    'tile_gate_pair_sample，不能当成全量统计。',
+    '页面只读取 run 目录里的小型日志与结果文件：不 import torch、不加载 checkpoint、不触发 GPU 前向、'
+    '不写入任何文件。',
+]
 DIAGNOSTIC_LABELS = {'available': '已诊断', 'missing': '未诊断'}
 # fixed reminders attached to every diagnostics response, so the page cannot present the numbers
 # without them
@@ -267,6 +364,17 @@ class RunRegistry:
         if key not in PGCLIP_FILES:
             raise RunNotFound(key)
         return os.path.join(self.resolve(run_id)['directory'], PGCLIP_FILES[key])
+
+    def cgclip_path(self, run_id, key):
+        """Resolve one whitelisted CG-CLIP v0.1 file inside the registered run directory.
+
+        Several of them (the step-500 checkpoint, the student export, the evaluation rows, the
+        optional attention snapshot) only appear after the still-running 4-GPU job reaches a later
+        stage, so a missing path is the normal case and never an error.
+        """
+        if key not in CGCLIP_FILES:
+            raise RunNotFound(key)
+        return os.path.join(self.resolve(run_id)['directory'], CGCLIP_FILES[key])
 
 
 def read_json(path):
@@ -929,6 +1037,305 @@ class DashboardData:
                         't2i_r10': (urban.get('text2image') or {}).get('R10'),
                         'checkpoint_sha256': payload.get('checkpoint_sha256')}
         return rows['coco'], rows['urban1k']
+
+    # ---------------------------------------------------------------- CG-CLIP v0.1
+    def _cgclip_records(self, run_id):
+        """The scalar log records of a CG-CLIP run (bounded); a missing or partial file is fine."""
+        path = self.registry.cgclip_path(run_id, 'log')
+        records, error = [], None
+        try:
+            with open(path, 'r', encoding='utf-8') as handle:
+                for line in handle:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        records.append(json.loads(line))
+                    except ValueError:
+                        continue
+        except FileNotFoundError:
+            pass
+        except OSError as problem:
+            error = str(problem)
+        return records[-MAX_RECORDS_PER_READ:], error
+
+    def _cgclip_subset(self, record, fields):
+        return {key: json_safe(record.get(key)) for key in fields}
+
+    def _cgclip_grid(self, records):
+        """The heavy rows' 14x14 patch grids, with the CLS slot kept out of the grid.
+
+        ``gate_grid_samples[].grid`` holds exactly ``side * side`` patch gates in the token order of
+        block 11; the CLS slot is a fixed gate of 1 and is therefore never part of those 196 values.
+        A sample whose length does not match ``side * side`` is dropped instead of being padded.
+        """
+        samples, error = [], None
+        for record in records:
+            raw = record.get('gate_grid_samples')
+            if not isinstance(raw, list):
+                continue
+            for entry in raw:
+                if not isinstance(entry, dict):
+                    continue
+                try:
+                    side = int(entry.get('side'))
+                except (TypeError, ValueError):
+                    error = 'gate_grid_samples[].side 不是整数，该样本被忽略'
+                    continue
+                grid = entry.get('grid')
+                if not isinstance(grid, list) or len(grid) != side * side:
+                    error = ('gate_grid_samples[].grid 长度与 side*side 不一致，该样本被忽略')
+                    continue
+                values = [json_safe(value) if isinstance(value, (int, float)) else None
+                          for value in grid]
+                if any(value is None for value in values):
+                    error = 'gate_grid_samples[].grid 含非有限值，该样本被忽略'
+                    continue
+                rows = entry.get('rows')
+                samples.append({
+                    'sample': entry.get('sample'),
+                    'side': side,
+                    'cells': side * side,
+                    'note': entry.get('note'),
+                    'grid': values,
+                    'rows': [[json_safe(value) for value in row] for row in rows]
+                    if isinstance(rows, list) and len(rows) == side else None,
+                    'completed_steps': record.get('completed_steps'),
+                    'cls_slot_gate_value': json_safe(record.get('cls_slot_gate_value', 1.0)),
+                    'cls_slot_gate_note': record.get('cls_slot_gate_note'),
+                    'kept': sum(1 for value in values if value >= 0.5),
+                })
+        return samples[-8:], error
+
+    def _cgclip_artifact(self, path):
+        """``(exists, size, mtime, sha256_or_None)`` -- a big checkpoint is never hashed or opened."""
+        try:
+            stat = os.stat(path)
+        except OSError:
+            return {'available': False, 'file': os.path.basename(path)}
+        view = {'available': True, 'file': os.path.basename(path), 'bytes': stat.st_size,
+                'modified': stat.st_mtime, 'sha256': None}
+        return view
+
+    def cgclip(self, run_id):
+        """The read-only CG-CLIP v0.1 view: native alignment plus a text-gated final-block CLS.
+
+        The run is still training, so every artifact below the config and the log may be absent; each
+        missing file becomes an explicit 未产出/暂无 field instead of an exception or a fake zero.
+        Only small files are opened: no torch import, no checkpoint read, no GPU forward, no write.
+        """
+        self.registry.resolve(run_id)
+        paths = {key: self.registry.cgclip_path(run_id, key) for key in CGCLIP_FILES}
+        files = {key: {'file': name, 'available': os.path.isfile(paths[key])}
+                 for key, name in CGCLIP_FILES.items()}
+        config, config_error = read_json(paths['config'])
+        config = config or {}
+        status_payload, status_error = read_json(paths['status'])
+        status_payload = status_payload or {}
+        summary, summary_error = read_json(paths['summary'])
+        metadata, metadata_error = read_json(paths['student_metadata'])
+        snapshot, snapshot_error = read_json(paths['attention_snapshot'])
+        objective = config.get('objective') or status_payload.get('objective')
+        arm = config.get('arm') or status_payload.get('arm')
+        is_cgclip = bool(config) and objective == CGCLIP_OBJECTIVE
+        if not config:
+            error = config_error or 'run 目录里还没有 config.json（训练尚在早期或目录未就绪）'
+        elif not is_cgclip:
+            error = 'objective=%r，不是 %s' % (objective, CGCLIP_OBJECTIVE)
+        else:
+            error = None
+        result = {
+            'run_id': run_id, 'available': is_cgclip,
+            'status': '已运行' if is_cgclip else '未运行',
+            'objective': objective, 'arm': arm,
+            'phase_name': config.get('phase') or status_payload.get('phase_name'),
+            'error': error, 'config_error': config_error, 'status_error': status_error,
+            'summary_error': summary_error,
+            'files': files, 'reminders': CGCLIP_REMINDERS,
+            'series_fields': list(CGCLIP_SERIES),
+            'objective_expected': CGCLIP_OBJECTIVE,
+        }
+        if not is_cgclip:
+            for key in ('identity', 'gate', 'precision', 'series', 'steps', 'latest',
+                        'latest_heavy', 'heavy', 'curves', 'grid', 'cls_read', 'cost',
+                        'evaluation', 'export', 'summary', 'attention_snapshot'):
+                result[key] = None
+            result['log_error'] = None
+            result['record_count'] = 0
+            return result
+
+        records, log_error = self._cgclip_records(run_id)
+        series = {field: [] for field in CGCLIP_SERIES}
+        steps = []
+        for record in records:
+            steps.append(json_safe(record.get('completed_steps')))
+            for field in CGCLIP_SERIES:
+                value = record.get(field)
+                series[field].append(json_safe(value) if isinstance(value, (int, float)) else None)
+        heavy_records = [record for record in records
+                         if isinstance(record.get('gate_grid_samples'), list)
+                         or record.get('tile_gate_probability_mean') is not None
+                         or record.get('positive_pairs_gate_kept_mean') is not None]
+        latest = records[-1] if records else None
+        latest_heavy = heavy_records[-1] if heavy_records else None
+        gate = config.get('gate') or {}
+        weights = config.get('loss_weights') or {}
+        grid_samples, grid_error = self._cgclip_grid(records)
+        coco, urban = self._pgclip_evaluation(run_id)
+        checkpoint_view = self._cgclip_artifact(paths['checkpoint'])
+        student_view = self._cgclip_artifact(paths['student'])
+        result.update({
+            'record_count': len(records), 'log_error': log_error,
+            'steps': steps, 'series': series,
+            'latest': self._cgclip_subset(latest, CGCLIP_SERIES) if latest else None,
+            'latest_heavy': self._cgclip_subset(latest_heavy, CGCLIP_HEAVY_FIELDS)
+            if latest_heavy else None,
+            'heavy': [dict(self._cgclip_subset(record, CGCLIP_HEAVY_FIELDS),
+                           completed_steps=json_safe(record.get('completed_steps')))
+                      for record in heavy_records[-8:]],
+            'identity': {
+                'arm': arm, 'objective': objective, 'phase': config.get('phase'),
+                'gate_kind': config.get('gate_kind') or gate.get('gate_kind'),
+                'loss_weights': {'global': weights.get('global', config.get('lambda_global')),
+                                 'attention': weights.get('attention',
+                                                          config.get('lambda_attention')),
+                                 'sparse': weights.get('sparse', config.get('lambda_sparse'))},
+                'fixed_scale': json_safe(config.get('fixed_scale')),
+                'loss_combination': config.get('loss_combination'),
+                'two_paths': config.get('two_paths'),
+                'candidate_rule': config.get('candidate_rule'),
+                'grader': config.get('grader'),
+                'caption_stream': config.get('caption_stream'),
+                'view': config.get('view'),
+                'ddp_route': config.get('ddp_route'),
+                'no_world_size_factor': config.get('no_world_size_factor'),
+                'chunking': config.get('chunking'),
+                'seed': config.get('seed'), 'gate_seed': config.get('gate_seed'),
+                'max_steps': config.get('max_steps'), 'epochs': config.get('epochs'),
+                'world_size': config.get('world_size'),
+                'batch_size_per_gpu': config.get('batch_size_per_gpu'),
+                'global_batch': config.get('global_batch'),
+                'loader_batches': config.get('loader_batches'),
+                'lr_horizon_steps': config.get('lr_horizon_steps'),
+                'lr': config.get('lr'), 'gate_lr': config.get('gate_lr'),
+                'warmup_length': config.get('warmup_length'),
+                'weight_decay': config.get('weight_decay'),
+                'init_state': config.get('init_state'),
+                'git_head': config.get('git_head'),
+                'attention_route': config.get('attention_route'),
+                'x11_source': config.get('x11_source'),
+                'text_source': config.get('text_source'),
+                'norm_eps': config.get('norm_eps'),
+                'statistics_scope': config.get('statistics_scope'),
+            },
+            'gate': {
+                'kind': config.get('gate_kind') or gate.get('gate_kind'),
+                'patches': gate.get('gate_patches', 196),
+                'patches_expected': 196,
+                'key_dim': gate.get('gate_key_dim', config.get('gate_key_dim')),
+                'query_init': gate.get('gate_query_init'),
+                'key_init': gate.get('gate_key_init'),
+                'bias_init': json_safe(gate.get('gate_bias_init')),
+                'bias_init_log': 'log 8 = %.6f' % math.log(8.0),
+                'bias': gate.get('gate_bias'),
+                'forward': gate.get('gate_forward'),
+                'shared_over_heads': gate.get('shared_over_heads'),
+                'cls_self_gate': gate.get('cls_self_gate'),
+                'query_input': gate.get('gate_query_input'),
+                'key_input': gate.get('gate_key_input'),
+                'soft_floor': gate.get('soft_floor'), 'top_k': gate.get('top_k'),
+                'seed': gate.get('gate_seed'),
+                'description': ('Linear 512→64（权重零初始化，无 bias）作 A、Linear 768→64'
+                                '（xavier_uniform，无 bias）作 B，一个可训练标量 bias（初始 log 8）；'
+                                '直通硬门；12 个视觉头共享同一个 196 维 gate；CLS 槽位固定 gate 1'),
+                'init': config.get('gate_init'),
+                'visual_spec': config.get('visual_spec'),
+            },
+            'precision': config.get('precision'),
+            'tf32': config.get('tf32'),
+            'curves': {path: {direction: self._cgclip_subset(latest, [
+                '%s_%s_%s' % (path, direction, stat) for stat in CGCLIP_PATH_STATS])
+                for direction in CGCLIP_DIRECTIONS}
+                for path in CGCLIP_PATH_NAMES} if latest else None,
+            'grid': {
+                'available': bool(grid_samples), 'samples': grid_samples,
+                'side': grid_samples[0]['side'] if grid_samples else 14,
+                'cells': grid_samples[0]['cells'] if grid_samples else None,
+                'expected_cells': 196,
+                'cls_slot_gate_value': json_safe((latest_heavy or {}).get('cls_slot_gate_value',
+                                                                         1.0)),
+                'cls_slot_gate_note': (latest_heavy or {}).get('cls_slot_gate_note'),
+                'error': grid_error,
+                'not_run': None if grid_samples else
+                '还没到重统计步（heavy_log_every=25）：日志里暂无 gate_grid_samples，'
+                '页面不会用聚合均值伪造 14×14 网格。',
+            },
+            'cls_read': self._cgclip_subset(latest_heavy or latest, CGCLIP_CLS_FIELDS)
+            if (latest_heavy or latest) else None,
+            'cost': {
+                'implementation_sha': status_payload.get('implementation_sha')
+                or config.get('git_head'),
+                'exit_codes': status_payload.get('exit_codes'),
+                'gpu': status_payload.get('gpu'), 'gpu_check': status_payload.get('gpu_check'),
+                'gpu_ok': status_payload.get('gpu_ok'),
+                'world_size': config.get('world_size') or status_payload.get('world_size'),
+                'batch_size_per_gpu': config.get('batch_size_per_gpu')
+                or status_payload.get('batch_size_per_gpu'),
+                'global_batch': config.get('global_batch') or status_payload.get('batch_size'),
+                'statistics_scope': config.get('statistics_scope'),
+                'init_file_sha256': config.get('init_file_sha256')
+                or status_payload.get('init_file_sha256'),
+                'initial_state_digest': config.get('initial_state_digest'),
+                'peak_memory_gb': json_safe((latest or {}).get('peak_memory_gb')),
+                'peak_memory_gi_b': json_safe((latest or {}).get('peak_memory_gi_b')),
+                'peak_memory_note': (latest or {}).get('peak_memory_note'),
+                'sec_per_step': json_safe((latest or {}).get('sec_per_step')),
+                'samples_per_sec': json_safe((latest or {}).get('samples_per_sec')),
+                'pair_presentations_per_sec': json_safe((latest or {}).get(
+                    'pair_presentations_per_sec')),
+                'synchronized_pair_presentations': json_safe((latest or {}).get(
+                    'synchronized_pair_presentations')),
+                'captions_seen': json_safe((latest or {}).get('captions_seen')),
+                'horizon_steps': config.get('max_steps') or CGCLIP_HORIZON_STEPS,
+                'global_pair_presentations_total': CGCLIP_GLOBAL_PAIR_PRESENTATIONS,
+                'global_pair_presentations_note': (
+                    '%d = %d 步 × %d 全局 batch（全程全局口径的总量；单卡口径是每步 %s 条，'
+                    '两者不可混用）' % (CGCLIP_GLOBAL_PAIR_PRESENTATIONS, CGCLIP_HORIZON_STEPS,
+                                        CGCLIP_GLOBAL_BATCH,
+                                        (config.get('batch_size_per_gpu') or '?'))),
+                'global_pairs': json_safe((latest or {}).get('global_pairs')),
+                'rank_local_stream_digests': (latest or {}).get('rank_local_stream_digests'),
+                'gate_param_digest': (latest or {}).get('gate_param_digest'),
+                'clip_state_digest_prefix': (latest or {}).get('clip_state_digest_prefix'),
+                'weights_5_5_1': (latest or {}).get('weights_5_5_1'),
+                'checkpoint': checkpoint_view, 'student': student_view,
+                'student_metadata': metadata, 'student_metadata_error': metadata_error,
+                'stage': status_payload.get('stage'), 'stages': status_payload.get('stages'),
+                'phase': status_payload.get('phase'),
+                'started_at_iso': status_payload.get('started_at_iso'),
+                'run_dir': status_payload.get('run_dir'), 'repo': status_payload.get('repo'),
+                'attempt': status_payload.get('attempt'),
+                'attempt_history': status_payload.get('attempt_history'),
+                'save_steps': status_payload.get('save_steps'),
+                'base_model': status_payload.get('base_model'),
+                'clip_lr': status_payload.get('clip_lr'),
+            },
+            'evaluation': {
+                'coco': coco, 'urban1k': urban, 'gate': CGCLIP_GATE,
+                'baseline_s0_500': (BASELINES.get('S0@500') or {}).get('coco'),
+                'not_run': [] if (coco or urban) else
+                ['COCO canonical 与 Urban-1k 都在训练末尾的 export/coco/urban 阶段才写出，'
+                 '现在还没有 evaluation 目录；页面不会预填任何结果。'],
+            },
+            'summary': summary,
+            'attention_snapshot': ({'available': True, 'error': snapshot_error, 'payload': snapshot}
+                                   if snapshot else
+                                   {'available': False, 'error': snapshot_error,
+                                    'not_run': '可选的注意力快照诊断未运行：本服务不创建 '
+                                               'cgclip_v01_diag/cgclip_attention_snapshot.json，'
+                                               '只在它已经存在时读取。'}),
+        })
+        return result
 
     # ---------------------------------------------------------------- evaluation
     def evaluation(self, run_id):

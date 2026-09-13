@@ -230,6 +230,48 @@
     <div id="pg-eval"></div>
     <p class="note" id="pg-conclusion"></p>
   </section>
+  <section id="panel-cgclip" class="card">
+    <h2>J · CG-CLIP v0.1（原生对齐 + 文本门控的末块 CLS 注意力）</h2>
+    <div id="cg-banner" class="note"></div>
+    <p class="muted" id="cg-reminders"></p>
+    <div id="cg-scope" class="grid"></div>
+
+    <h3>A · 身份：arm / objective / phase / 门类型 / 权重 / 精度</h3>
+    <div id="cg-identity"></div>
+    <div id="cg-gate"></div>
+    <div id="cg-precision"></div>
+
+    <h3>B · 两路训练曲线（原生 path_global_* 与条件 path_attention_*）</h3>
+    <div id="cg-losses"></div>
+    <div id="cg-curves"></div>
+    <p class="muted" id="cg-curve-note"></p>
+    <div id="cg-direction-i2t"></div>
+    <div id="cg-direction-t2i"></div>
+    <p class="muted" id="cg-direction-note"></p>
+    <h3>C · gate 统计（重统计行）与两个变化量</h3>
+    <div id="cg-gate-stats"></div>
+    <p class="muted" id="cg-gate-note"></p>
+    <div id="cg-tile-stats"></div>
+    <p class="muted" id="cg-tile-note"></p>
+
+    <h3>D · 14×14 patch gate 网格（CLS 槽位单独显示，不进网格）</h3>
+    <div id="cg-grid"></div>
+    <p class="muted" id="cg-grid-note"></p>
+
+    <h3>E · CLS 读出诊断（原生 vs 条件）</h3>
+    <div id="cg-cls"></div>
+    <div id="cg-heads"></div>
+    <p class="muted" id="cg-cls-note"></p>
+    <div id="cg-snapshot"></div>
+
+    <h3>F · 溯源与成本</h3>
+    <div id="cg-cost"></div>
+    <div id="cg-export"></div>
+
+    <h3>G · 检索结果与冻结门（未产出时不预填）</h3>
+    <div id="cg-eval"></div>
+    <p class="note" id="cg-conclusion"></p>
+  </section>
 </main>
 
 <footer class="muted">
