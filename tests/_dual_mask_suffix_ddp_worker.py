@@ -60,6 +60,7 @@ def main():
         torch.tensor([False, False, False, False]),
         torch.tensor([True, False, False, False]) if rank == 0 else torch.tensor([False, False, False, False]),
         torch.tensor([True, False, False, False]) if rank == 0 else torch.tensor([False, False, False, False]),
+        torch.tensor([True, False, True, False]) if rank == 0 else torch.tensor([False, True, False, True]),
     ]
     results = []
     for index, valid in enumerate(cases):

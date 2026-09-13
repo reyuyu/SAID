@@ -162,6 +162,24 @@ def _setup_ddp() -> Tuple[int, int, int]:
     return rank, local_rank, world
 
 
+def _all_ranks_finite(value: torch.Tensor, world: int) -> bool:
+    flag = torch.tensor(1 if bool(torch.isfinite(value).all()) else 0,
+                        device=value.device, dtype=torch.int32)
+    if world > 1:
+        dist.all_reduce(flag, op=dist.ReduceOp.MIN)
+    return bool(flag.item())
+
+
+def _check_gradients_finite(module: torch.nn.Module, world: int, device: torch.device) -> None:
+    local_ok = all(parameter.grad is None or bool(torch.isfinite(parameter.grad).all())
+                   for parameter in module.parameters())
+    flag = torch.tensor(1 if local_ok else 0, device=device, dtype=torch.int32)
+    if world > 1:
+        dist.all_reduce(flag, op=dist.ReduceOp.MIN)
+    if not bool(flag.item()):
+        raise FloatingPointError("non-finite loss or gradient on at least one rank")
+
+
 def _atomic_torch_save(payload: Dict, path: str) -> None:
     temporary = path + ".tmp"
     torch.save(payload, temporary)
@@ -219,6 +237,7 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--amp-dtype", choices=("bf16", "fp32"), default="bf16")
     parser.add_argument("--save-every", type=int, default=0)
     parser.add_argument("--resume", default=None)
+    parser.add_argument("--run-type", choices=("debug", "formal"), default="debug")
     return parser.parse_args()
 
 
@@ -250,6 +269,7 @@ def main() -> int:
     horizon = args.epochs * len(loader)
     clip_schedule = cosine_lr(clip_opt, args.lr, args.warmup, horizon)
     mask_schedule = cosine_lr(mask_opt, args.mask_lr, 0, horizon)
+    suffix_schedule = cosine_lr(suffix_opt, args.suffix_lr, 0, horizon) if suffix_opt is not None else None
     os.makedirs(args.output_dir, exist_ok=True)
     config = {
         "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
@@ -259,7 +279,10 @@ def main() -> int:
         "loader_batches": len(loader), "lr_horizon_steps": horizon, "max_steps": args.max_steps,
         "seed": args.seed, "total_len": args.total_len, "image_chunk": args.image_chunk,
         "text_chunk": args.text_chunk, "precision": "fp32 master + "+args.amp_dtype+" autocast",
-        "formal_optimizer_updates": 0, "init_state": args.init_state,
+        "run_type": args.run_type,
+        "formal_optimizer_updates": 0 if args.run_type == "debug" else args.max_steps,
+        "debug_optimizer_updates": args.max_steps if args.run_type == "debug" else 0,
+        "init_state": args.init_state,
     }
     log_path = os.path.join(args.output_dir, "salu_log.jsonl")
     if rank == 0:
@@ -273,9 +296,8 @@ def main() -> int:
             if completed >= args.max_steps:
                 break
             clip_schedule(completed); mask_schedule(completed)
-            if suffix_opt is not None:
-                for group in suffix_opt.param_groups:
-                    group["lr"] = args.suffix_lr
+            if suffix_schedule is not None:
+                suffix_schedule(completed)
             image_a = batch["image_a"].to(device, non_blocking=True)
             prefix = longclip.tokenize(batch["caption_said"], truncate=True).to(device)
             suffix = longclip.tokenize(batch["suffix_text"], truncate=True).to(device)
@@ -287,7 +309,10 @@ def main() -> int:
             amp_enabled = args.amp_dtype == "bf16" and device.type == "cuda"
             with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=amp_enabled):
                 out = module(image_a, prefix, suffix, valid, ids)
+            if not _all_ranks_finite(out["loss_total"], world):
+                raise FloatingPointError("non-finite loss on at least one rank")
             out["loss_total"].backward()
+            _check_gradients_finite(inner, world, device)
             clip_opt.step(); mask_opt.step()
             if suffix_opt is not None:
                 suffix_opt.step()
@@ -297,10 +322,14 @@ def main() -> int:
                           "suffix_mode": args.suffix_mode, "lr": clip_opt.param_groups[0]["lr"],
                           "mask_lr": mask_opt.param_groups[0]["lr"],
                           "suffix_lr": suffix_opt.param_groups[0]["lr"] if suffix_opt else None,
-                          "formal_optimizer_updates": 0}
+                          "run_type": args.run_type,
+                          "formal_optimizer_updates": completed if args.run_type == "formal" else 0,
+                          "debug_optimizer_updates": completed if args.run_type == "debug" else 0}
                 for key, value in out.items():
                     if torch.is_tensor(value) and value.numel() == 1:
                         record[key] = float(value.detach().cpu())
+                    elif value is None and key in ("m_u_keep_ratio", "m_u_probability_mean"):
+                        record[key] = None
                 with open(log_path, "a", encoding="utf-8") as h:
                     h.write(json.dumps(record, sort_keys=True) + "\n")
                 if args.save_every and completed % args.save_every == 0:

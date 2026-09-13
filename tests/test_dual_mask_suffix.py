@@ -96,8 +96,8 @@ def test_gate_initialization_is_all_open_and_restores_rng():
 def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients():
     torch.manual_seed(3)
     g = torch.randn(2, 4, requires_grad=True)
-    m = torch.rand(2, 4)
-    t = torch.randn(3, 4)
+    m = torch.rand(3, 4)
+    t = torch.randn(3, 4, requires_grad=True)
     gate = build_suffix_gate(seed=4, input_dim=8, hidden_dim=6, output_dim=4)
     with torch.no_grad():
         gate[2].weight.normal_(0, 0.2)
@@ -112,7 +112,7 @@ def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients()
     for i in range(2):
         row = []
         for j in range(3):
-            x = torch.cat((g_norm[i].detach(), (g_norm[i].detach() * m[i].detach())))
+            x = torch.cat((g_norm[i].detach(), (g_norm[i].detach() * m[j].detach())))
             p = torch.sigmoid(gate_ref(x))
             hard = (p >= 0.5).float() + (p - p.detach())
             u = F.normalize(g_norm[i] * hard, dim=-1, eps=1e-6)
@@ -122,16 +122,43 @@ def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients()
     assert torch.allclose(q, expected, atol=1e-6, rtol=1e-6)
     q.sum().backward(); expected.sum().backward()
     assert torch.allclose(g.grad, g_ref.grad, atol=2e-6, rtol=2e-5)
+    assert t.grad is not None
 
 
 def test_all_open_masked_scores_equal_native_scores():
     torch.manual_seed(5)
     g = torch.randn(2, 4)
-    m = torch.randint(0, 2, (2, 4)).float()
+    m = torch.randint(0, 2, (3, 4)).float()
     t = torch.randn(3, 4)
     gate = build_suffix_gate(seed=0, input_dim=8, hidden_dim=6, output_dim=4)
     masked, _ = pairwise_masked_scores(g, m, t, gate, image_chunk=2, text_chunk=3)
     assert torch.allclose(masked, native_scores(g, t), atol=1e-5, rtol=1e-5)
+
+
+def test_candidate_column_condition_and_same_image_counterexample():
+    torch.manual_seed(31)
+    g = torch.randn(2, 4)
+    t = torch.randn(3, 4)
+    masks = torch.zeros(3, 4)
+    gate = nn.Sequential(nn.Linear(8, 4), nn.GELU(), nn.Linear(4, 4))
+    with torch.no_grad():
+        gate[0].weight.zero_(); gate[0].bias.zero_()
+        gate[0].weight[0, 4] = 1.0
+        gate[2].weight.zero_(); gate[2].bias.zero_()
+        gate[2].weight[0, 0] = 10.0
+    captured = []
+    hook = gate[0].register_forward_hook(lambda _m, inp, _out: captured.append(inp[0].detach().clone()))
+    q0, _ = pairwise_masked_scores(g, masks, t, gate, image_chunk=2, text_chunk=2)
+    masks_changed = masks.clone(); masks_changed[1] = 1.0
+    q1, _ = pairwise_masked_scores(g, masks_changed, t, gate, image_chunk=2, text_chunk=2)
+    hook.remove()
+    assert torch.allclose(q0[:, 0], q1[:, 0]) and torch.allclose(q0[:, 2], q1[:, 2])
+    assert not torch.allclose(q0[:, 1], q1[:, 1])
+    assert captured and torch.allclose(captured[0][0, :4], captured[0][1, :4])
+
+    g_same = g[:1].expand(2, -1).clone()
+    q_same, _ = pairwise_masked_scores(g_same, masks_changed, t, gate, image_chunk=1, text_chunk=2)
+    assert torch.allclose(q_same[0], q_same[1])
 
 
 def test_suffix_loss_preserves_global_labels_and_matches_compact_reference():
@@ -208,5 +235,5 @@ def test_real_two_process_ddp_dynamic_valid_sets(tmp_path):
     completed = subprocess.run(command, capture_output=True, text=True, timeout=180, env=env)
     assert completed.returncode == 0, completed.stdout + "\n" + completed.stderr
     results = json.loads(open(output, encoding="utf-8").read())
-    assert [row["global_valid"] for row in results] == [4, 0, 1, 1]
+    assert [row["global_valid"] for row in results] == [4, 0, 1, 1, 4]
     assert results[1]["loss_suffix"] == 0.0

@@ -6,6 +6,11 @@ task. The original caption is split as `P = '. '.join(parts[:K])` and
 `R = '. '.join(parts[K:last_nonempty])`; the final non-empty sentence is reserved, while the
 dataset's original `K` and prefix stream are preserved exactly.
 
+Erratum for commit `3137140`: that implementation used the image row's prefix mask for every
+candidate column. This fix uses the S0 prefix mask for candidate text column `j`, gathered in the
+same rank order as the suffix text bank. The original eight tests did not cover that protocol
+difference; candidate-column and same-image counterexamples now do.
+
 `native` scores normalized image features against separately encoded suffix features. `masked`
 uses `mS` from the unchanged S0 helper and a new `Linear(1024,512) -> GELU -> Linear(512,512)`
 gate. Its first layer is Xavier initialized with seed 0, the final weight is zero and final bias is

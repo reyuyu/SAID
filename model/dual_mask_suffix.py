@@ -107,24 +107,25 @@ def pairwise_masked_scores(g: torch.Tensor, m_s: torch.Tensor, t_r: torch.Tensor
     """Compute ``Q_local[B,G]`` in pair blocks using the prescribed detached gate inputs."""
     if g.ndim != 2 or m_s.ndim != 2 or t_r.ndim != 2:
         raise ValueError("g, m_s and t_r must be rank-2 tensors")
-    if m_s.ndim != 2 or m_s.shape[0] != g.shape[0] or m_s.shape[1] != g.shape[1] or g.shape[1] != t_r.shape[1]:
+    if m_s.ndim != 2 or m_s.shape[0] != t_r.shape[0] or m_s.shape[1] != g.shape[1] or g.shape[1] != t_r.shape[1]:
         raise ValueError("feature and mask dimensions do not match")
     rows, candidates, dim = g.shape[0], t_r.shape[0], g.shape[1]
     chunks = []
-    keep_values = []
-    prob_values = []
+    keep_sum = g.new_zeros((), dtype=torch.float32)
+    prob_sum = g.new_zeros((), dtype=torch.float32)
+    element_count = 0
     with torch.autocast(device_type="cuda" if g.is_cuda else "cpu", enabled=False):
         g_fp = F.normalize(g.float(), p=2, dim=-1, eps=1e-6)
         m_fp = m_s.detach().float()
         t_fp = F.normalize(t_r.float(), p=2, dim=-1, eps=1e-6)
         for i in range(0, rows, max(1, int(image_chunk))):
             g_block = g_fp[i:i + max(1, int(image_chunk))]
-            m_image = m_fp[i:i + max(1, int(image_chunk))]
             row_chunks = []
             for j in range(0, candidates, max(1, int(text_chunk))):
+                m_block = m_fp[j:j + max(1, int(text_chunk))]
                 t_block = t_fp[j:j + max(1, int(text_chunk))]
                 g_det = g_block.detach()[:, None, :]
-                m_det = m_image.detach()[:, None, :]
+                m_det = m_block.detach()[None, :, :]
                 r_s = g_det * m_det
                 g_pair = g_det.expand(-1, t_block.shape[0], -1)
                 x_u = torch.cat((g_pair, r_s.expand(-1, t_block.shape[0], -1)), dim=-1)
@@ -134,12 +135,15 @@ def pairwise_masked_scores(g: torch.Tensor, m_s: torch.Tensor, t_r: torch.Tensor
                 m_u = hard_st(probability)
                 u = F.normalize(g_block[:, None, :] * m_u, p=2, dim=-1, eps=1e-6)
                 row_chunks.append(100.0 * (u * t_block[None, :, :]).sum(dim=-1))
-                keep_values.append((m_u.detach() >= 0.5).float().mean())
-                prob_values.append(probability.detach().mean())
+                keep_sum = keep_sum + (m_u.detach() >= 0.5).float().sum()
+                prob_sum = prob_sum + probability.detach().float().sum()
+                element_count += int(m_u.numel())
             chunks.append(torch.cat(row_chunks, dim=1))
+    count = g.new_tensor(float(element_count), dtype=torch.float32)
     return torch.cat(chunks, dim=0), {
-        "m_u_keep_ratio": torch.stack(keep_values).mean() if keep_values else g.sum() * 0.0,
-        "m_u_probability_mean": torch.stack(prob_values).mean() if prob_values else g.sum() * 0.0,
+        "m_u_keep_ratio": keep_sum / count.clamp_min(1.0),
+        "m_u_probability_mean": prob_sum / count.clamp_min(1.0),
+        "m_u_element_count": count.detach(),
     }
 
 
@@ -239,7 +243,7 @@ class DualMaskSuffixTrainModule(nn.Module):
         if int(valid_global.sum().item()) < 2:
             zero = g_raw.sum() * 0.0
             return self._pack(s0, zero, zero.detach(), valid_global, valid_local,
-                              m_u_keep_ratio=zero.detach(), m_u_probability_mean=zero.detach())
+                              m_u_keep_ratio=None, m_u_probability_mean=None)
 
         # Suffix is separately encoded and is never passed to suffix_gate.
         t_r_raw = self.clip.encode_text(suffix_tokens)
@@ -247,11 +251,11 @@ class DualMaskSuffixTrainModule(nn.Module):
         with fp32_core(g_raw.device):
             if self.suffix_mode == "native":
                 q_local = native_scores(g_raw, t_r_global)
-                gate_logs = {"m_u_keep_ratio": g_raw.new_ones(()),
-                             "m_u_probability_mean": g_raw.new_ones(())}
+                gate_logs = {"m_u_keep_ratio": None, "m_u_probability_mean": None}
             else:
+                m_s_global = detached_gather(m_s)
                 q_local, gate_logs = pairwise_masked_scores(
-                    g_raw, m_s, t_r_global, self.suffix_gate,
+                    g_raw, m_s_global, t_r_global, self.suffix_gate,
                     image_chunk=self.image_chunk, text_chunk=self.text_chunk)
             q_global = differentiable_gather(q_local)
             suffix = suffix_loss_from_scores(q_local, valid_local, self.rank, world,
@@ -280,8 +284,8 @@ class DualMaskSuffixTrainModule(nn.Module):
             "valid_global": valid_global.sum().detach(),
             "valid_local_count": valid_local.sum().detach(),
             "valid_local_fraction": valid_local.float().mean().detach(),
-            "m_u_keep_ratio": m_u_keep_ratio.detach(),
-            "m_u_probability_mean": m_u_probability_mean.detach(),
+            "m_u_keep_ratio": None if m_u_keep_ratio is None else m_u_keep_ratio.detach(),
+            "m_u_probability_mean": None if m_u_probability_mean is None else m_u_probability_mean.detach(),
             "suffix_mode": self.suffix_mode,
             "s0_sidm": s0["loss_sidm"].detach(),
             "s0_dism": s0["loss_dism"].detach(),
