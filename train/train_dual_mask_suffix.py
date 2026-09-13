@@ -320,8 +320,12 @@ def main() -> int:
         resume_epoch = int(resume_payload.get('epoch', 0))
         resume_step_in_epoch = int(resume_payload.get('step_in_epoch', -1))
         previous_config = resume_payload.get('config', {})
-        if previous_config.get('training_sha') and previous_config['training_sha'] != config['training_sha']:
-            raise RuntimeError('resume training SHA does not match current code')
+        previous_sha = previous_config.get('training_sha')
+        # The only accepted predecessor is the immediately previous clean training SHA;
+        # it contains the same model/objective and predates the continuation plumbing.
+        compatible_previous = {'3b67bcec222691d06f0443f8e8129b197b800e82', config['training_sha']}
+        if previous_sha and previous_sha not in compatible_previous:
+            raise RuntimeError('resume training SHA is not compatible with current code')
         config['resumed_from'] = os.path.abspath(args.resume)
         config['resume_completed_steps'] = completed
         config['resume_epoch'] = resume_epoch
