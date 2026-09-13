@@ -1,0 +1,54 @@
+# real-entry smoke, S0_SUFFIX_NATIVE: head + the CUDA device-side assert region
+WARNING:__main__:
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+/root/SAID-s0-suffix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/SAID-s0-suffix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/SAID-s0-suffix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/SAID-s0-suffix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+...
+38-/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:632: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+39-  return fn(*args, **kwargs)
+40-/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:632: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+41-  return fn(*args, **kwargs)
+42:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [0,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+43:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [1,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+44:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [2,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+45:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [3,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+46:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [4,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+47:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [5,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+48:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [6,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+49:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [7,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+50:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [8,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+51:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [9,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+52:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [10,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+53:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [11,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+54:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [12,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+55:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [13,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+56:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [14,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+57:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [15,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+58:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [16,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+59:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [17,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+60:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [18,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+61:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [19,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+62:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [20,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+63:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [21,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+64:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [22,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+65:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [23,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+66:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [24,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+67:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [25,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+68:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [26,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+69:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [27,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+70:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [28,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+71:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [29,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+72:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [30,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+73:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [31,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+74:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [32,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+75:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [33,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+76:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [34,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+77:../aten/src/ATen/native/cuda/Indexing.cu:1308: indexSelectLargeIndex: block: [190,0,0], thread: [35,0,0] Assertion `srcIndex < srcSelectDimSize` failed.

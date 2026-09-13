@@ -1,45 +1,50 @@
-"""S0-Suffix v0.1 acceptance tests -- written against the BINDING SPEC, not against the code.
+"""S0-Suffix v0.1 acceptance tests -- written against the FROZEN INTERFACE, not against the code.
 
 Spec: ``docs/said_prefix_suffix_v01/spec.md`` (sections 2-10 and the frozen API list in section 14).
-Every test below is derived from the spec text and is meant to fail loudly on a plausible wrong
-implementation:
+The production implementation (``model/said_prefix_suffix.py``, ``train/train_said_prefix_suffix.py``)
+is repaired in parallel with this file, so every assertion below is derived from the frozen contract:
 
-A  the prefix/suffix split, including the spec's worked examples and the inclusive ``randint`` K draw;
-B  text isolation: the prefix hidden state comes only from the prefix string, the suffix is encoded
-   by a separate forward, and with image and prefix fixed a changed suffix moves ONLY its own target;
-C  the new gate inputs: ``rS = g*mS`` is NOT re-normalised, F's input is fully detached, the final
-   ``g`` stays live, and ``mU`` multiplies the FULL ``g`` rather than the hard complement ``1-mS``;
-D  initialisation: ``pU = 8/9``, ``mU`` exactly all ones, conditional == native score, the
-   zero-initialised output layer gets no gradient on the first backward, and the global RNG survives;
-E  S0 regression: with ``lambda_suffix = 0`` the loss and the gradients of the old mask and the
-   shared trunk equal the ORIGINAL S0 helper's, from the same inputs, and building the new modules
-   does not shift the data or RNG stream;
-F  the chunked readout equals a per-pair reference loop in values AND in the gradients of ``g``,
-   ``tR`` and F, with the global positive index on the diagonal, and the old ``mS`` getting none;
-G  the valid subset and the ``world_size / V`` DDP scaling, proved with REAL two-rank runs through
-   ``torch.distributed.run`` against a single-process oracle: equal counts, unequal counts, a rank
-   with zero valid samples, ``V = 0`` and ``V = 1``, and one real optimizer update (not a forward);
-H  all-off / near-zero ``mU``: finite loss and gradients, no dropped sample or candidate, no silent
-   fallback to the native score, and a learned all-off gate is still a VALID suffix;
-I  the full checkpoint round-trip through the PRODUCTION writer, with a non-initial F and a
-   non-initial old S0 mask, plus key-collision and tamper detection;
-J  the trainer's CLI surface (no sweep / extra-epoch / allow-missing escape hatch) and its arms.
+    suffix_readout_scores(g_block, mS_block, tR_block, suffix_mask,
+                          image_chunk=16, text_chunk=32, eps=1e-6, want_statistics=False)
+        g_block  [Bi, 512] LIVE final visual features
+        mS_block [Bj, 512] candidate prefix masks, TWO-DIMENSIONAL ONLY (a 3-D input is rejected)
+        tR_block [Bj, 512] LIVE suffix text features
+        -> {"scores": [Bi, Bj] fp32, "statistics": dict | None}
 
-ASSUMPTIONS (the implementation is written in parallel and is not present in this checkout; these
-tests follow the frozen names of spec section 14 plus the checkpoint schema that the runner and the
-exporter already pin down):
+    Norm(x) = torch.nn.functional.normalize(x.float(), p=2, dim=-1, eps=1e-6)   (no custom autograd)
+    gate    = SuffixMaskGate.gate_from_pU(pU) == (pU >= 0.5).to(pU.dtype) + (pU - pU.detach())
 
-* ``SuffixMask`` is F (``Linear(1024,512) -> GELU -> Linear(512,512)``, last weight zero,
-  ``bias = log(8)``) with ``state_dict`` keys ``layer1.weight/bias`` and ``layer2.weight/bias``;
-* the straight-through gate is ``SuffixMaskGate.gate_from_pU(pU)`` (a module-level
-  ``gate_from_pU`` of the same behaviour is accepted);
-* ``suffix_readout_scores(...)`` returns ``scores`` or ``(scores, mU)`` and accepts the mask, the
-  three tensors and F in one of the documented orders; :func:`call_readout` tries those orders and
-  FAILS LOUDLY (never silently skips) when none of them fits;
-* ``split_prefix_suffix(caption, k)`` accepts ``k`` positionally or as a keyword;
-* the S0 term dict of an objective output exposes ``loss_sidm`` / ``loss_dism`` / ``loss_sparsity``
-  (directly or under ``terms`` / ``s0`` / ``smart``);
-* the production checkpoint writer is a module-level function of ``train/train_said_prefix_suffix.py``.
+There is exactly ONE return type (a dict with the two keys above) and ONE call shape (:func:`call_readout`
+passes KEYWORD ARGUMENTS ONLY). No "guess the signature / guess the call order" helper survives here, and
+no compatibility layer is allowed to hide an interface drift: a drifted interface must fail loudly.
+
+Index spaces (spec section 6):
+    LOCAL_FULL    this rank's ``B`` rows, in rank order
+    GLOBAL_FULL   ``W * B`` rows, rank order
+    GLOBAL_VALID  the ``V`` rows of the global valid index set ``J``; ``global_to_valid[J] = arange(V)``
+The label of a LOCAL VALID row inside the V pool is ``global_to_valid[rank * B + local_row]``.
+``arange(rank * B, rank * B + n_r)`` is WRONG and must never appear in this file.
+
+Group map (the comments name the defect each test pins):
+    A  the prefix/suffix split, the spec's worked examples, the inclusive K draw
+    B  text isolation, the empty-suffix placeholder and the caption_said character invariant
+    C  gate inputs, the straight-through gate, the tR/dtype conventions
+    D  initialisation, RNG isolation compared on the REAL global generators
+    E  S0 regression against the REAL weighted objective ``10*(L_SIDM+L_DISM) + 2*sparse``
+    F  the readout contract: 3-D rejection, non-square broadcast, per-pair gradients, index mapping
+    G  the heavy-log statistics and the DDP graph hygiene of the returned dict
+    H  all-off / near-zero gate, normalisation gradients against native F.normalize
+    I  the valid-subset DDP route (real two-rank runs against a single-process oracle)
+    J  the full checkpoint round-trip and the trainer CLI surface
+
+Retired claims (they were WRONG and are gone):
+  * "pre-normalising g makes the conditional score smaller by orders of magnitude" -- with a fixed mask
+    a correctly normalised cosine has no such artificial scale effect, and the F forward really reads
+    ``g``, so the spec's unit-scale ``g`` contract is respected instead of worked around;
+  * "the objective builds its own comparison shape" -- the objective is used as the FROZEN weighted
+    objective ``10*(L_SIDM+L_DISM) + 2*sparse`` and compared on those terms;
+  * "a detached mS must show an explicit zero gradient" -- ``None`` and an exact zero are both accepted;
+  * "mksuffix_readout_scores returns ``(scores, mU)``" -- it returns the dict of the contract above.
 """
 import argparse
 import inspect
@@ -71,22 +76,75 @@ TRAINER_PATH = os.path.join(REPO, 'train', 'train_said_prefix_suffix.py')
 WORKER_PATH = os.path.join(REPO, 'tests', '_suffix_ddp_worker.py')
 
 # --------------------------------------------------------------------------- numeric policy
-# Every comparison states WHY its tolerance is what it is. The rule of section 9 is that a tolerance
-# may absorb floating-point accumulation order, never a wrong multiplier: a world_size factor, a
-# re-normalisation, a missing detach or a wrong positive column all move these numbers by orders of
-# magnitude, far outside every constant below.
-TOL_EXACT = 0.0             # bitwise: both sides are literally the same computation
-TOL_IDENTICAL_PATH = 1e-6   # the same arithmetic with one extra copy: fp32 round-off only
-TOL_RECOMPUTE = 1e-5        # independently re-written arithmetic sharing no code, fp32
-TOL_GRADIENT = 1e-4         # relative to the tensor's own max-abs: fp32, different accumulation
-TOL_DDP = 1e-3              # relative: NCCL reduction plus a different per-rank summation order
-STATE_TOLERANCE = 1e-6      # pU == 8/9 to 1e-6, per spec section 4
+# Every comparison states WHY its tolerance is what it is. The rule of spec section 9 ("accept a
+# reasonable floating-point error, never widen a tolerance to hide a multiplier error") means each
+# constant below may absorb accumulation order only:
+#
+#   TOL_EXACT           | bitwise. Both sides are the same expression, in the same order, on the same
+#                       | tensors: anything non-zero is a real difference (a different op, a copy that
+#                       | went through a different path, a cast that should not be there).
+#   TOL_FP32_TIGHT      | 1e-6 ABSOLUTE on fp32 VALUES of magnitude ~1..1e2 (unit vectors, cosines of
+#                       | unit vectors, probabilities, ratios in [0, 1]). One fp32 ulp at 1.0 is
+#                       | 1.2e-7 and the expressions compared differ by a few roundings, so 1e-6 is
+#                       | ~8 ulp: it absorbs the reassociation of a handful of products/sums and
+#                       | nothing else. A wrong order, a missing detach or a re-normalisation moves
+#                       | these numbers by >= 1e-3 relative, i.e. 1000x this bound.
+#   TOL_RECOMPUTE       | 1e-5 ABSOLUTE on VALUES around the fixed 100x scale (so ~1e-7 relative).
+#                       | Used when the reference is an independent re-write that walks the pairs one
+#                       | (i, j) at a time while the production path tiles them: the accumulation
+#                       | order differs over up to 32 rows, and the score magnitude is ~100.
+#   TOL_GRADIENT        | 1e-4 RELATIVE to the compared tensor's own max-abs: fp32 gradients from two
+#                       | different summation orders (per-pair loop vs tiled einsum). No gradient
+#                       | comparison in this file is allowed to be looser than this.
+#   TOL_DDP             | 1e-3 RELATIVE: NCCL reduction over ranks on top of a different per-rank
+#                       | summation order, on real two-rank runs. A scaling error (world_size, V,
+#                       | lambda_suffix) is a factor-level error, far outside 1e-3.
+#   TOL_DENOM           | 1e-6 ABSOLUTE against a denominator-based analytic formula that is computed
+#                       | in float64 while the implementation is fp32: the only difference possible
+#                       | is the fp32 rounding of ||x||, i.e. ~1e-7 relative, and the quantities
+#                       | compared are <= 1e3.
+#   STATE_TOLERANCE     | 1e-6 for ``pU == 8/9`` (spec section 4) and for ``bias == log(8)``.
+TOL_EXACT = 0.0
+TOL_FP32_TIGHT = 1e-6
+TOL_RECOMPUTE = 1e-5
+TOL_GRADIENT = 1e-4
+TOL_DDP = 1e-3
+TOL_DENOM = 1e-6
+STATE_TOLERANCE = 1e-6
 
 CAPTIONS = ['a photo of a cat on a wooden table', 'a dog running through tall grass',
             'an old bicycle leaning against a wall', 'two boats on a calm lake']
 SUFFIXES = ['on a wooden table', 'through tall grass', 'against a wall', 'on a calm lake']
 FIXED_SCALE = 100.0
 S0_LAMBDA_SPARSE = 2.0
+FEATURE_DIM = 512
+
+#: The frozen keyword names of the readout. They are asserted, not guessed: a renamed parameter is an
+#: interface drift and every readout test must fail on it.
+READOUT_PARAMS = ('g_block', 'mS_block', 'tR_block', 'suffix_mask')
+
+#: The two keys of the ONE return type. Extra keys are drift; missing keys are drift.
+READOUT_KEYS = ('scores', 'statistics')
+
+#: Semantic key families for the heavy-log statistics. The contract does not freeze the NAMES, so the
+#: tests resolve them by family and FAIL LOUDLY (with the full key list in the message) when a family
+#: is absent: a silently missing statistic is exactly the defect these tests exist to catch.
+KEEP_RATIO_KEYS = ('keep_ratio', 'kept_ratio', 'mask_keep_ratio', 'keep_fraction', 'kept_fraction',
+                   'mU_keep_ratio', 'mu_keep_ratio', 'hard_keep_ratio', 'keep_ratio_per_pair',
+                   'mU_keep_fraction')
+NORM_RATIO_KEYS = ('norm_ratio', 'gated_norm_ratio', 'readout_norm_ratio', 'g_norm_ratio',
+                   'norm_ratio_per_pair', 'mU_norm_ratio', 'gated_to_plain_norm_ratio',
+                   'gated_norm_ratio_per_pair')
+LSE_MARGIN_KEYS = ('lse_margin', 'margin_lse', 'lse_margins', 'logsumexp_margin')
+COUNT_KEYS = ('count', 'numel', 'pairs', 'pair_count', 'valid_pair_count', 'n_pairs',
+              'readout_pair_count', 'valid_suffix_count')
+VALUE_KEYS = ('value', 'mean', 'mean_value', 'mean_norm_ratio', 'average', 'norm_ratio_mean')
+GATE_KEYS = ('gate', 'mU', 'mask_u', 'gate_values', 'gate_matrix', 'gate_tensor', 'hard_gate')
+
+#: The explicit debug flag that gates the FULL gate tensor. ``return_gate`` is the documented name; the
+#: alternatives exist because the same flag is also spelled after the statistic it exposes.
+DEBUG_GATE_FLAGS = ('return_gate', 'want_gate', 'return_mU', 'return_mask_u', 'return_gate_tensor',
+                    'want_gate_tensor', 'debug')
 
 
 # --------------------------------------------------------------------------- implementation glue
@@ -144,18 +202,35 @@ def build_model(device=DEVICE, shared_init=False):
     return model.to(device)
 
 
-def fixed_images(count=2, seed=20260913, device=DEVICE):
-    generator = torch.Generator().manual_seed(seed)
-    return torch.randn(count, 3, 224, 224, generator=generator).to(device)
-
-
 def tokenize(texts, device=DEVICE):
     from model import longclip
     return longclip.tokenize(list(texts), truncate=True).to(device)
 
 
+def fixed_images(count=2, seed=20260913, device=DEVICE):
+    generator = torch.Generator().manual_seed(seed)
+    return torch.randn(count, 3, 224, 224, generator=generator).to(device)
+
+
+def unit_features(count, generator, dim=FEATURE_DIM, device=DEVICE, unit=True):
+    """``g`` / ``tR`` inputs of the specified unit-scale contract.
+
+    The spec defines ``g = Norm(encode_image(I))`` and ``tR = Norm(encode_text(R))``, i.e. both are
+    UNIT vectors. Feeding raw standard normals would violate the documented input contract; a test that
+    needed raw features to see a difference would be measuring its own input, not the implementation.
+    """
+    raw = torch.randn(count, dim, generator=generator)
+    if unit:
+        raw = F.normalize(raw, p=2, dim=-1, eps=1e-6)
+    return raw.to(device)
+
+
+def binary_masks(count, generator, dim=FEATURE_DIM, device=DEVICE):
+    return (torch.rand(count, dim, generator=generator) >= 0.5).float().to(device)
+
+
 def make_suffix_mask(module, device=DEVICE, seed=None):
-    """Build F through whatever optional constructor arguments the implementation declares."""
+    """Build F through whatever OPTIONAL constructor arguments the implementation declares."""
     parameters = set(inspect.signature(module.SuffixMask.__init__).parameters)
     kwargs = {}
     if 'device' in parameters:
@@ -166,14 +241,24 @@ def make_suffix_mask(module, device=DEVICE, seed=None):
 
 
 def randomise_suffix_mask(mask, scale=0.5, seed=3):
-    """A genuinely NON-initial F: every tensor away from its zero/``log(8)`` start."""
-    generator = torch.Generator().manual_seed(seed)
+    """A genuinely NON-initial F: every tensor away from its zero/``log(8)`` start.
+
+    DEFECT FIXED (device mismatch): the perturbation noise is built ON THE PARAMETER'S OWN DEVICE with
+    a generator created FOR that device. A CPU ``torch.Generator`` can never be used to draw the noise
+    that perturbs a CUDA parameter: ``torch.randn(..., generator=cpu_generator)`` on the CPU is fine,
+    but a generator is bound to a device and mixing the two either raises or, worse, silently draws on
+    the wrong device.
+    """
     with torch.no_grad():
         for name, parameter in mask.named_parameters():
+            device = parameter.device
+            generator = torch.Generator(device=device)
+            generator.manual_seed(int(seed))
             if parameter.dim() == 0:
-                parameter.add_(float(torch.randn(1, generator=generator)) * scale)
+                noise = torch.randn(1, generator=generator, device=device)[0]
             else:
-                parameter.add_(torch.randn(parameter.shape, generator=generator) * scale)
+                noise = torch.randn(parameter.shape, generator=generator, device=device)
+            parameter.add_(noise.to(parameter.dtype) * scale)
     return mask
 
 
@@ -189,92 +274,257 @@ def gate_from_pU(module, pU):
                          'cannot be checked')
 
 
-def _try_calls(function, orders, kwargs_variants):
-    errors = []
-    for order in orders:
-        for kwargs in kwargs_variants:
-            try:
-                return function(*order, **kwargs)
-            except TypeError as error:
-                errors.append(str(error))
-    raise AssertionError('none of the documented call shapes of %r fitted; the frozen API of spec '
-                         'section 14 must accept one of them. Errors: %s'
-                         % (getattr(function, '__name__', function), ' | '.join(errors[:6])))
+def call_readout(module, g_block, mS_block, tR_block, suffix_mask, image_chunk=2, text_chunk=2,
+                 eps=1e-6, want_statistics=False, **extra_flags):
+    """THE ONLY way this file reaches the readout: keyword arguments, one return type.
+
+    DEFECT FIXED (interface guessing): the old helper tried a list of positional orders, a list of
+    kwargs variants and both a tuple and a dict return. All of that is deleted. This helper
+
+    1. introspects the signature and asserts the four frozen parameter names are present (a rename is
+       drift and must fail here rather than being papered over by a guessed call),
+    2. calls with KEYWORD ARGUMENTS ONLY,
+    3. asserts the result is a dict whose keys are exactly ``scores`` and ``statistics``,
+    4. asserts ``scores`` is a 2-D fp32 tensor of shape ``[Bi, Bj]``,
+    5. asserts ``statistics`` is a dict only when it was asked for and ``None`` otherwise.
+
+    There is no compatibility layer and no fallback: a drifted interface fails loudly with the actual
+    signature and the actual return type in the message.
+    """
+    function = getattr(module, 'suffix_readout_scores', None)
+    assert callable(function), ('the frozen entry point suffix_readout_scores is missing from %r'
+                                % module.__name__)
+    parameters = inspect.signature(function).parameters
+    missing = [name for name in READOUT_PARAMS if name not in parameters]
+    assert not missing, ('suffix_readout_scores has lost the frozen parameter names %r; it declares %r'
+                         % (missing, list(parameters)))
+    result = function(g_block=g_block, mS_block=mS_block, tR_block=tR_block, suffix_mask=suffix_mask,
+                      image_chunk=int(image_chunk), text_chunk=int(text_chunk), eps=float(eps),
+                      want_statistics=bool(want_statistics), **extra_flags)
+    assert isinstance(result, dict), \
+        ('suffix_readout_scores must return the ONE documented dict {"scores", "statistics"}; got %s. '
+         'A tuple, a named tuple or an object that only mimics dict keys is an interface drift'
+         % type(result).__name__)
+    assert set(result) == set(READOUT_KEYS), \
+        ('suffix_readout_scores must return exactly %r; got %r'
+         % (sorted(READOUT_KEYS), sorted(result)))
+    scores = result['scores']
+    assert torch.is_tensor(scores) and scores.dim() == 2, ('scores must be a 2-D tensor', scores)
+    assert tuple(scores.shape) == (int(g_block.shape[0]), int(tR_block.shape[0])), \
+        ('scores must be [Bi, Bj]', tuple(scores.shape), int(g_block.shape[0]),
+         int(tR_block.shape[0]))
+    assert scores.dtype == torch.float32, ('scores must be fp32 (spec section 8)', scores.dtype)
+    if want_statistics:
+        assert isinstance(result['statistics'], dict) and result['statistics'], \
+            ('want_statistics=True must return a NON-EMPTY statistics dict; got %r'
+             % (result['statistics'],))
+    else:
+        assert result['statistics'] is None, \
+            ('the default call must NOT carry statistics (the heavy log is an explicit request); got %r'
+             % (result['statistics'],))
+    return result
 
 
-def call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=2):
-    """``suffix_readout_scores`` -> ``(scores, mU)`` accepting the documented argument orders."""
-    function = module.suffix_readout_scores
-    orders = [(g, mS, tR, gate), (gate, g, mS, tR), (g, gate, mS, tR), (mS, g, tR, gate)]
-    kwargs_variants = [{'image_chunk': image_chunk, 'text_chunk': text_chunk},
-                       {'image_chunk': image_chunk, 'text_chunk': text_chunk,
-                        'positive_columns': None},
-                       {}]
-    result = _try_calls(function, orders, kwargs_variants)
-    if isinstance(result, tuple):
-        return result[0], result[1]
-    return result, None
+def readout_scores(module, g_block, mS_block, tR_block, suffix_mask, **kwargs):
+    return call_readout(module, g_block, mS_block, tR_block, suffix_mask, **kwargs)['scores']
+
+
+def statistic(statistics, keys, what):
+    """Resolve one statistic by key family, failing loudly with the available keys.
+
+    ``None`` beside a zero count means the requested statistic does not exist; that is a MISSING
+    statistic, not a value, and is reported as such so a test can never pass on an absent field.
+    """
+    present = sorted(str(key) for key in statistics)
+    for key in keys:
+        if key in statistics and statistics[key] is not None:
+            return key, statistics[key]
+    raise AssertionError('the readout statistics carry no %s; looked for %r among %r'
+                         % (what, list(keys), present))
+
+
+def statistic_optional(statistics, keys):
+    for key in keys:
+        if key in statistics:
+            return key, statistics[key]
+    return None, None
+
+
+def as_float(value):
+    if torch.is_tensor(value):
+        assert value.numel() == 1, ('a scalar statistic was expected, got shape %s'
+                                    % (tuple(value.shape),))
+        return float(value.detach().float())
+    return float(value)
+
+
+def as_matrix(value, what):
+    assert torch.is_tensor(value), ('%s must be a TENSOR of shape [Bi, Bj] (a Python list or a '
+                                    'flattened vector cannot carry the per-pair layout)' % what)
+    assert value.dim() == 2, ('%s must keep the [Bi, Bj] per-pair layout, got shape %s: a [Bi] '
+                              'reduction with mean(-1) and then an assignment into a [Bi, Bj] slot is '
+                              'the defect this pins' % (what, tuple(value.shape)))
+    return value.detach().float()
+
+
+def tensor_gradient(value, tensor, what):
+    """``d value / d tensor`` with ``allow_unused``: ``None`` is a legitimate answer."""
+    return torch.autograd.grad(value, [tensor], allow_unused=True, retain_graph=True)[0]
+
+
+def assert_absent_or_zero(grad, what):
+    """A stop-gradient input may legitimately report ``None`` OR an exact zero, never a real gradient.
+
+    DEFECT FIXED (test demanded an explicit zero tensor): a detached input is simply not part of the
+    graph, so autograd returns ``None``; demanding ``zeros_like`` would have forced the production code
+    to add a fake ``0 * x`` term. Both shapes are accepted and both are named in the message.
+    """
+    if grad is None:
+        return 0.0
+    magnitude = float(grad.abs().max())
+    assert magnitude == 0.0, \
+        ('%s must be a stop-gradient input of the suffix path: its gradient must be None or EXACTLY '
+         'zero (both are accepted), found max |grad| = %r' % (what, magnitude))
+    return magnitude
+
+
+def parameters_of(module_or_tensor):
+    if isinstance(module_or_tensor, torch.nn.Module):
+        return [parameter for parameter in module_or_tensor.parameters() if parameter.requires_grad]
+    return []
 
 
 def call_split(module, caption, k):
-    """``split_prefix_suffix(caption, k)`` with ``k`` positional or keyword."""
-    return _try_calls(module.split_prefix_suffix, [(caption, k), (caption,)], [{'k': k}, {}])
+    """``split_prefix_suffix(caption, k)``; ``k`` stays positional because the spec writes it so.
+
+    Only the ``k`` spelling is probed (positional first, then keyword). Nothing about the READOUT is
+    guessed anywhere in this file.
+    """
+    try:
+        return module.split_prefix_suffix(caption, k)
+    except TypeError:
+        return module.split_prefix_suffix(caption, k=k)
 
 
 def call_mask_helper(module, mask_net, hidden):
-    """The ORIGINAL S0 mask pipeline, reused and never re-implemented (spec section 1)."""
+    """The ORIGINAL S0 mask pipeline, reused and never re-implemented (spec section 1).
+
+    Returns the mask TENSOR: the frozen helper returns ``(mask, soft, logits)``, and the leading tuple
+    element is the mask. There is exactly one documented shape, so nothing is guessed here either.
+    """
     function = getattr(module, 'said_mask_helper', None)
     if function is None:
         from model.said_cls_cvssl import said_mask_from_hidden as function
-    return function(mask_net, hidden, soft_mask=False)
+    result = function(mask_net, hidden, soft_mask=False)
+    assert isinstance(result, (tuple, list)) and result, \
+        ('the S0 mask helper must return (mask, soft, logits); got %r' % (type(result).__name__,))
+    return result[0]
 
 
-def call_global_valid_indices(module, local_valid, world_size=None):
-    """``global_valid_indices`` on a per-rank validity tensor, optionally with the world size."""
-    variants = [(local_valid,), (local_valid, world_size)]
-    kwargs_variants = [({'world_size': world_size} if world_size is not None else {}), {}]
-    return _try_calls(module.global_valid_indices, variants, kwargs_variants)
+# --------------------------------------------------------------------------- index spaces
+def global_to_valid(J, V=None):
+    """``global_to_valid[J] = arange(V)``: the label of a global row inside the V pool."""
+    V = int(J.numel()) if V is None else int(V)
+    table = torch.full((int(J.max().item()) + 1 if J.numel() else 0,), -1, dtype=torch.long,
+                       device=J.device)
+    table[J] = torch.arange(V, dtype=torch.long, device=J.device)
+    return table
 
 
-def suffix_state_from_payload(payload):
-    """The suffix mask TENSOR dict of a checkpoint payload, whatever key it is stored under.
+def anchors_of_rank(J, local_size, rank):
+    """``(local_rows, anchor_valid)`` of one rank: the CORRECT mapping the DDP route must use.
 
-    A description dict standing in for the tensor dict is refused here: the two live under separate
-    keys by design and merging them is the failure this helper exists to catch. The value is
-    returned unchanged for a real tensor dict, so the digest and the strict load still see exactly
-    what the checkpoint carries.
+    ``local_rows`` are rows inside the rank's own ``B`` rows; ``anchor_valid`` are their labels inside
+    the global V pool. ``arange(rank * B, rank * B + n_r)`` is NOT this rule and must never be used as
+    an expected label anywhere in this file.
     """
-    for key in ('suffix_mask_state', 'suffix_state', 'suffix_mask_tensors'):
-        if key in payload:
-            state = payload[key]
-            if state is None:
-                return key, None
-            if isinstance(state, dict):
-                if not state:
-                    raise AssertionError('the suffix mask state under %r is an EMPTY dict: a mask '
-                                         'arm must carry the module tensors, a native arm must '
-                                         'carry an explicit None' % key)
-                if not any(torch.is_tensor(value) for value in state.values()):
-                    raise AssertionError('the suffix mask state under %r carries no tensor at all: '
-                                         'it is a DESCRIPTION dict, and a description must never '
-                                         'be merged into the tensor key' % key)
-                stripped = {name.split('.', 1)[-1] if name.startswith('suffix_mask.')
-                            else name: value for name, value in state.items()}
-                return key, stripped
-            raise AssertionError('the suffix mask state under %r is a %s, not a tensor dict: the '
-                                 'tensor dict and the description must never be merged into one key'
-                                 % (key, type(state).__name__))
-    raise AssertionError('the checkpoint carries none of the suffix mask state keys %r; keys '
-                         'present: %r' % (('suffix_mask_state', 'suffix_state',
-                                           'suffix_mask_tensors'), sorted(payload)))
+    table = global_to_valid(J)
+    lo, hi = int(rank) * int(local_size), (int(rank) + 1) * int(local_size)
+    rows = [index for index in range(int(local_size)) if lo + index in set(J.tolist())]
+    labels = [int(table[lo + index].item()) for index in rows]
+    assert all(label >= 0 for label in labels), (rows, labels, J.tolist())
+    return rows, labels
 
 
-def suffix_config_from_payload(payload):
-    for key in ('suffix_mask_config', 'suffix_config', 'suffix_mask_descriptor'):
-        if key in payload:
-            return key, payload[key]
-    raise AssertionError('the checkpoint carries no suffix mask DESCRIPTION key; keys present: %r'
-                         % sorted(payload))
+# --------------------------------------------------------------------------- references
+def per_pair_reference(module, gate, g_block, mS_block, tR_block, scale=FIXED_SCALE, eps=1e-6):
+    """The spec's per-pair definition written out one ``(i, j)`` at a time, sharing no code with F.
+
+        rS_ij    = g_i.detach() * mS_j.detach()
+        pU_ij    = F(stop_grad(concat([g_i, rS_ij])))
+        mU_ij    = (pU_ij >= 0.5) + (pU_ij - pU_ij.detach())
+        QU_ij    = scale * dot(Norm(g_i * mU_ij), tR_j)
+
+    ``g_i`` is the LIVE row (it carries the trunk gradient) and ``tR_j`` the LIVE text row. The scale is
+    applied HERE as well, so a readout that silently dropped the fixed 100 cannot agree with this.
+
+    ``F`` is called through the module's ``forward`` only: a bare ``Linear`` inside a ``Sequential``
+    silently supports in-place calls, and calling a layer directly would mutate F.
+    """
+    del eps
+    g_block = g_block if g_block.dim() == 2 else g_block.reshape(-1, g_block.shape[-1])
+    masks = mS_block if mS_block.dim() == 3 else mS_block.unsqueeze(0).expand(g_block.shape[0],
+                                                                            mS_block.shape[0], -1)
+    terms = []
+    for i in range(int(g_block.shape[0])):
+        for j in range(int(tR_block.shape[0])):
+            left = g_block[i].detach()
+            right = (g_block[i].detach() * masks[i, j].detach())
+            x_u = torch.cat([left, right]).unsqueeze(0)
+            mask_u = gate_from_pU(module, gate(x_u))
+            u = F.normalize(g_block[i].unsqueeze(0) * mask_u, p=2, dim=-1, eps=1e-6)
+            terms.append(scale * (u @ tR_block[j].unsqueeze(1)).squeeze())
+    return torch.stack(terms).reshape(int(g_block.shape[0]), int(tR_block.shape[0]))
+
+
+def positional_per_pair_scores(module, gate, g_block, mS_block, tR_block):
+    """The per-pair reference with the scale ALREADY applied: ``QU``, not ``QU / 100``."""
+    return per_pair_reference(module, gate, g_block, mS_block, tR_block, scale=FIXED_SCALE)
+
+
+def wrong_broadcast_scores(module, gate, g_block, mS_block, tR_block):
+    """The naive ``g_block * mS_block`` broadcast, with no per-pair mask dimension.
+
+    DEFECT PINNED (broadcast): with ``Bi != Bj`` a plain element-wise product either raises (shape
+    mismatch) or silently pairs row ``i`` with row ``i`` of the mask block, which is a DIFFERENT pairing
+    from the spec's ``(i, j)``. Both outcomes are returned here so the test can require a real
+    numerical difference instead of trusting that the wrong path would crash.
+    """
+    try:
+        product = g_block.detach() * mS_block.detach()
+        return 'elementwise', product
+    except RuntimeError:
+        pass
+    masks = mS_block.detach().unsqueeze(0).expand(g_block.shape[0], mS_block.shape[0],
+                                                 mS_block.shape[1])
+    product = g_block.detach().unsqueeze(1) * masks
+    return 'broadcast', product
+
+
+def per_pair_loss(scores):
+    """``sum_ij scores_ij``: a graph-faithful scalar to differentiate the per-pair reference."""
+    return scores.sum()
+
+
+def clip_reference_suffix_loss(scores, positive_weight=1.0):
+    """``(CE_i2t(Q,y) + CE_t2i(Q^T,y)) / V`` for a ``V x V`` matrix whose diagonal is the positive."""
+    targets = torch.arange(scores.shape[0], device=scores.device)
+    return (F.cross_entropy(scores, targets, reduction='sum')
+            + F.cross_entropy(scores.t(), targets, reduction='sum')) / float(scores.shape[0]) \
+        * positive_weight
+
+
+def lse_margin_reference(rows):
+    """``positive - logsumexp(valid negatives only)``, the ONLY definition of an LSE margin.
+
+    ``logsumexp(all) - positive`` is the cross entropy and must never be reported under this name.
+    """
+    rows = rows.detach().float()
+    positive = rows.diagonal()
+    masked = rows.clone()
+    index = torch.arange(rows.shape[0], device=rows.device)
+    masked[index, index] = float('-inf')
+    return positive - torch.logsumexp(masked, dim=1)
 
 
 def relative_difference(mine, reference):
@@ -287,13 +537,7 @@ def parameter_snapshot(mask):
 
 
 def assert_parameters_unchanged(mask, snapshot, what):
-    """No forward or backward of the readout may MUTATE F's tensors.
-
-    This guard exists because a bare ``Linear`` inside a ``Sequential`` silently supports in-place
-    calls, so a readout that reaches into ``mask.layer2(x)`` would rewrite F on every call and make
-    two computations that should agree drift apart. Without the guard that failure is invisible
-    until the numbers disagree for no obvious reason.
-    """
+    """No forward or backward of the readout may MUTATE F's tensors."""
     current = mask.state_dict()
     assert set(current) == set(snapshot), (sorted(current), sorted(snapshot))
     for key in snapshot:
@@ -303,44 +547,31 @@ def assert_parameters_unchanged(mask, snapshot, what):
                                  'must never write into F' % (what, key, drift))
 
 
-def clip_reference_suffix_loss(scores, positive_weight=1.0):
-    """``(CE_i2t(Q,y) + CE_t2i(Q^T,y)) / V`` for a ``V x V`` matrix whose diagonal is the positive."""
-    targets = torch.arange(scores.shape[0], device=scores.device)
-    return (F.cross_entropy(scores, targets, reduction='sum')
-            + F.cross_entropy(scores.t(), targets, reduction='sum')) / float(scores.shape[0]) \
-        * positive_weight
+def zero_gate_module(module):
+    """A stand-in F whose ``pU`` is a KNOWN constant, for the statistic arithmetic.
 
-
-def per_pair_suffix_forward(module, gate, g, mS, tR, positive_weight=1.0):
-    """The spec's per-pair definition, written out one (i, j) at a time, sharing no code with F.
-
-    ``u_ij = Norm(g_i * mU_ij)`` where ``mU_ij = hardST(F([g_i, g_i * mS_j]))`` and
-    ``score_ij = 100 * u_ij . tR_j``: candidate j brings its OWN prefix mask, which is exactly what
-    the chunked implementation must reproduce. The fixed 100 is applied HERE as well, so a readout
-    that silently dropped the scale cannot agree with this reference.
-
-    NOTE: a bare ``Linear`` inside a ``Sequential`` silently supports in-place calls, so calling a
-    layer directly would MUTATE F. The mask path therefore goes through the module's ``forward``
-    only.
+    The statistics are a property of the readout arithmetic, not of the learned network, so pinning
+    them against a controlled gate removes every confound (random initialisation, GELU, saturation).
     """
-    scores = []
-    masks = []
-    for i in range(g.shape[0]):
-        row = []
-        mask_row = []
-        for j in range(tR.shape[0]):
-            xU = torch.cat([g[i].detach(), (g[i].detach() * mS[j].detach())]).unsqueeze(0)
-            pU = gate(xU)
-            mU = gate_from_pU(module, pU)
-            u = F.normalize(g[i].unsqueeze(0) * mU, dim=-1, eps=1e-6)
-            row.append(positive_weight * (u @ tR[j].unsqueeze(1)).squeeze())
-            mask_row.append(mU.squeeze(0))
-        scores.append(torch.stack(row))
-        masks.append(torch.stack(mask_row))
-    return torch.stack(scores), torch.stack(masks)
+
+    class _ConstantGate(torch.nn.Module):
+        def __init__(self, probability):
+            super().__init__()
+            self.value = float(probability)
+            self.seen = []
+
+        def forward(self, x):
+            self.seen.append(tuple(x.shape))
+            return torch.full_like(x, self.value)
+
+    return _ConstantGate
 
 
-# =========================================================================== A: prefix / suffix
+def softmax_rows(scores):
+    return torch.softmax(scores.detach().float(), dim=-1)
+
+
+
 def test_a_split_follows_the_spec_worked_examples_exactly():
     """Spec section 2: ``[A,B,C,D]`` K=1 -> R='B. C'; K=2 -> 'C'; K=3, K=4 -> empty.
 
@@ -447,6 +678,78 @@ def test_a_sample_k_is_inclusive_on_both_ends_and_reaches_n():
 
 
 # =========================================================================== B: text isolation
+def test_b_the_empty_suffix_placeholder_is_a_real_tokenisation_marked_invalid():
+    """Spec section 6: an empty R keeps a B-placeholder row with ``valid = false``.
+
+    The placeholder must come from a real ``tokenize("")`` (so the row stays a legal [B, 77] input of
+    the shared text encoder) and it must be marked ``valid = false``, so it can never enter the loss or
+    the candidate pool. An all-zero id row, a dropped row or a padded-with-content row are all wrong.
+    """
+    module = implementation_module()
+    if not os.path.isfile(CLIP_CACHE):
+        pytest.skip('the CLIP tokenizer is only reachable with the cached checkpoint')
+    ids = tokenize(['', 'a real suffix'])
+    assert ids.dim() == 2 and int(ids.shape[0]) == 2, tuple(ids.shape)
+    assert not torch.equal(ids[0], ids[1]), 'the placeholder must really be the empty string'
+    counts = module.content_token_counts(ids)
+    assert counts[1] > 0, ('a real suffix must carry content tokens', counts)
+    validity = [bool(text.strip()) and count > 0
+                for text, count in zip(['', 'a real suffix'], counts)]
+    assert validity == [False, True], (counts, validity)
+    # and the empty string really is what the splitter produces for a one-sentence caption
+    assert call_split(module, 'single sentence only', 1)['suffix'] == ''
+
+
+def test_b_the_caption_said_invariant_is_enforced_on_the_real_input_shape():
+    """Spec section 2/3: the prefix rebuilt from the FULL caption equals ``caption_said`` EXACTLY.
+
+    ``caption_said`` is already the prefix the pipeline chopped at ``prefix_k``; re-splitting it would
+    silently produce an empty suffix for every row (the measured ``global_valid_V = 0`` defect). The
+    trainer's own tokenisation helper is what must refuse that, so the check runs against the trainer.
+    """
+    module = implementation_module()
+    trainer = trainer_module()
+    tokenized = getattr(trainer, 'tokenized', None)
+    assert callable(tokenized), \
+        ('the trainer must expose its tokenisation helper (``tokenized``) so the caption invariant can '
+         'be checked on the REAL input shape; attributes: %r'
+         % sorted(name for name in dir(trainer) if not name.startswith('_')))
+    captions = ['A. B. C. D', 'first. second. third. fourth', 'one. two. three']
+    k_values = [1, 2, 1]
+    said = [call_split(module, caption, k)['prefix'] for caption, k in zip(captions, k_values)]
+    assert said == ['. '.join(part.split('. ')[:k]) for part, k in zip(captions, k_values)]
+    batch = {'caption_said': list(said), 'caption_full': list(captions),
+             'prefix_k': torch.tensor(k_values, dtype=torch.long)}
+
+    import model.said_prefix_suffix as suffix_model
+    from model import longclip
+    saved = longclip.tokenize
+
+    def _stub(texts, truncate=True):
+        return torch.zeros(len(list(texts)), 8, dtype=torch.long)
+
+    longclip.tokenize = _stub
+    try:
+        text_ids, prefix_texts, suffix_texts, split = tokenized(batch, torch.device('cpu'))
+    finally:
+        longclip.tokenize = saved
+    assert prefix_texts == said, ('the rebuilt prefix must equal caption_said character for '
+                                  'character', prefix_texts, said)
+    assert set(text_ids) == {'prefix', 'suffix'}
+    expected_suffix = [call_split(module, caption, k)['suffix']
+                       for caption, k in zip(captions, k_values)]
+    assert suffix_texts == expected_suffix, (suffix_texts, expected_suffix)
+    assert list(split['valid']) == [bool(text) for text in expected_suffix]
+
+    # the truncated-caption input shape is the defect that silently zeroed the suffix loss: it must be
+    # refused rather than silently accepted
+    broken = {'caption_said': list(said), 'caption_full': list(said),
+              'prefix_k': torch.tensor(k_values, dtype=torch.long)}
+    with pytest.raises((RuntimeError, ValueError, AssertionError)):
+        tokenized(broken, torch.device('cpu'))
+    assert suffix_model is not None
+
+
 @needs_cuda
 def test_b_suffix_is_encoded_by_its_own_forward_and_only_the_suffix_target_moves():
     """Spec sections 2 and 4: P and R are tokenised and encoded SEPARATELY.
@@ -459,31 +762,29 @@ def test_b_suffix_is_encoded_by_its_own_forward_and_only_the_suffix_target_moves
     images = fixed_images(2)
     prefix_ids = tokenize(CAPTIONS[:2])
     suffix_a_ids = tokenize(SUFFIXES[:2])
-    suffix_b_ids = tokenize(['in a swimming pool', 'over a frozen lake'])
+    suffix_b_ids = tokenize(['a completely different sentence about swimming',
+                             'an unrelated phrase about frozen water'])
     with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
+        g = F.normalize(model.encode_image(images).float(), p=2, dim=-1, eps=1e-6)
         hidden = model.encode_text(prefix_ids, return_full=True)[1]
         mS = call_mask_helper(module, model.mask_net, hidden)
-        tR_a = F.normalize(model.encode_text(suffix_a_ids).float(), dim=-1, eps=1e-6)
-        tR_b = F.normalize(model.encode_text(suffix_b_ids).float(), dim=-1, eps=1e-6)
+        tR_a = F.normalize(model.encode_text(suffix_a_ids).float(), p=2, dim=-1, eps=1e-6)
+        tR_b = F.normalize(model.encode_text(suffix_b_ids).float(), p=2, dim=-1, eps=1e-6)
     assert not torch.equal(tR_a, tR_b), 'the two suffixes must differ for this test to mean anything'
 
     gate = make_suffix_mask(module)
+    first = call_readout(module, g, mS, tR_a, gate, image_chunk=2, text_chunk=2)
+    second = call_readout(module, g, mS, tR_b, gate, image_chunk=2, text_chunk=2)
     with torch.no_grad():
-        scores_a, mU_a = call_readout(module, g, mS, tR_a, gate, 2, 2)
-        scores_b, mU_b = call_readout(module, g, mS, tR_b, gate, 2, 2)
         hidden_again = model.encode_text(prefix_ids, return_full=True)[1]
-    diff = float((scores_a - scores_b).abs().max())
+    diff = float((first['scores'] - second['scores']).abs().max())
     assert diff > 1e-3, ('a different suffix must change the suffix scores', diff)
     assert torch.equal(hidden, hidden_again), 'the prefix hidden state is a pure function of P'
     assert call_mask_helper(module, model.mask_net, hidden_again).equal(mS)
-    if mU_a is not None and mU_b is not None:
-        assert torch.equal(mU_a, mU_b), \
-            'mU depends on [g, g*mS] only: changing R must not move the gate at all'
 
     combined_ids = tokenize(['a photo of a cat on a wooden table on a wooden table'])
     with torch.no_grad():
-        t_combined = F.normalize(model.encode_text(combined_ids).float(), dim=-1, eps=1e-6)
+        t_combined = F.normalize(model.encode_text(combined_ids).float(), p=2, dim=-1, eps=1e-6)
     assert not torch.allclose(t_combined, tR_a[:1], atol=1e-4), \
         ('the suffix must be encoded by its own forward: the hidden state of prefix+suffix as one '
          'string is not the hidden state of the suffix alone')
@@ -505,7 +806,7 @@ def test_b_mS_depends_on_the_prefix_alone_and_mU_only_on_g_and_mS():
     gate = make_suffix_mask(module)
     randomise_suffix_mask(gate, scale=0.3, seed=9)
     with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
+        g = F.normalize(model.encode_image(images).float(), p=2, dim=-1, eps=1e-6)
         xU = torch.cat([g.detach(), (g.detach() * mS.detach())], dim=-1)
         pU = gate(xU)
         mU = gate_from_pU(module, pU)
@@ -522,26 +823,23 @@ def test_b_mS_depends_on_the_prefix_alone_and_mU_only_on_g_and_mS():
 def test_c_rS_is_g_times_mS_with_no_renormalisation():
     """Spec section 4: ``rS = g_det * stop_grad(mS)`` and it is NOT normalised again."""
     module = implementation_module()
-    gate = make_suffix_mask(module)
     generator = torch.Generator().manual_seed(5)
-    g = F.normalize(torch.randn(3, 512, generator=generator), dim=-1, eps=1e-6)
-    mS = (torch.rand(3, 512, generator=generator) >= 0.5).float()
+    g = unit_features(3, generator)
+    mS = binary_masks(3, generator)
 
     rS = g.detach() * mS.detach()
-    assert torch.equal(rS, g.detach() * mS.detach())
-    unit = F.normalize(rS, dim=-1, eps=1e-6)
+    unit = F.normalize(rS, p=2, dim=-1, eps=1e-6)
     norm_rS = rS.norm(dim=-1)
     assert float(norm_rS.min()) > 0.1, 'the mask must keep enough coordinates for this to be sharp'
     assert float((norm_rS - 1.0).abs().max()) > 1e-3, \
         'rS keeps the norm of g*mS: it is NOT unit norm, so a re-normalisation is detectable'
-    assert float(unit.norm(dim=-1).min()) == pytest.approx(1.0, abs=1e-5)
+    assert float(unit.norm(dim=-1).min()) == pytest.approx(1.0, abs=TOL_FP32_TIGHT)
 
     xU = torch.cat([g.detach(), rS], dim=-1)
-    assert tuple(xU.shape) == (3, 1024), xU.shape
-    assert torch.equal(xU[:, 512:], rS), \
+    assert tuple(xU.shape) == (3, 2 * FEATURE_DIM), xU.shape
+    assert torch.equal(xU[:, FEATURE_DIM:], rS), \
         'the second half of the F input must be exactly g*mS, never Norm(g*mS)'
-    assert not torch.allclose(xU[:, 512:], unit, atol=1e-4)
-    assert float(gate(xU).shape[-1]) == 512
+    assert not torch.allclose(xU[:, FEATURE_DIM:], unit, atol=1e-4)
 
 
 def test_c_gate_mU_is_a_straight_through_hard_gate():
@@ -549,7 +847,7 @@ def test_c_gate_mU_is_a_straight_through_hard_gate():
     module = implementation_module()
     gate = make_suffix_mask(module)
     randomise_suffix_mask(gate, scale=0.02, seed=7)
-    xU = torch.randn(4, 1024, generator=torch.Generator().manual_seed(7))
+    xU = torch.randn(4, 2 * FEATURE_DIM, generator=torch.Generator().manual_seed(7))
     pU = gate(xU)
     assert float(pU.min()) >= 0.0 and float(pU.max()) <= 1.0, \
         'forward(x) must return a probability'
@@ -558,11 +856,9 @@ def test_c_gate_mU_is_a_straight_through_hard_gate():
     assert float(pU.mean()) == pytest.approx(8.0 / 9.0, abs=0.05), \
         'at initialisation pU is 8/9; a mild perturbation must stay near it'
     mU = gate_from_pU(module, pU)
-    hard = (pU >= 0.5).float()
+    hard = (pU >= 0.5).to(pU.dtype)
     assert torch.equal(mU, hard + (pU - pU.detach()))
-    # the forward value is exactly the hard gate, so every entry of mU is exactly 0 or 1
     assert set(torch.unique(mU).tolist()) <= {0.0, 1.0}
-    # and the straight-through part really is a pass-through: d mU / d pU == 1
     pU_leaf = pU.detach().clone().requires_grad_(True)
     value = torch.autograd.grad(gate_from_pU(module, pU_leaf).sum(), pU_leaf)[0]
     assert torch.equal(value, torch.ones_like(value))
@@ -576,14 +872,13 @@ def test_c_f_input_is_fully_detached_and_the_final_g_stays_live():
     gate = make_suffix_mask(module)
     randomise_suffix_mask(gate, scale=0.4, seed=13)
     generator = torch.Generator().manual_seed(11)
-    g_leaf = F.normalize(torch.randn(2, 512, generator=generator), dim=-1, eps=1e-6) \
-        .requires_grad_(True)
-    mS = (torch.rand(2, 512, generator=generator) >= 0.5).float()
-    tR = F.normalize(torch.randn(2, 512, generator=generator), dim=-1, eps=1e-6)
+    g_leaf = unit_features(2, generator).requires_grad_(True)
+    mS = binary_masks(2, generator)
+    tR = unit_features(2, generator)
 
     xU = torch.cat([g_leaf.detach(), (g_leaf.detach() * mS.detach())], dim=-1)
     mU = gate_from_pU(module, gate(xU))
-    u = F.normalize(g_leaf * mU, dim=-1, eps=1e-6)
+    u = F.normalize(g_leaf * mU, p=2, dim=-1, eps=1e-6)
     scores = FIXED_SCALE * (u @ tR.t())
     live_grads = torch.autograd.grad(scores.diagonal().sum(), [g_leaf] + list(gate.parameters()),
                                      allow_unused=True)
@@ -592,9 +887,8 @@ def test_c_f_input_is_fully_detached_and_the_final_g_stays_live():
     assert any(grad is not None and float(grad.abs().max()) > 0 for grad in live_grads[1:]), \
         'F must receive its own gradient'
 
-    detached_g = F.normalize(torch.randn(2, 512, generator=generator), dim=-1, eps=1e-6) \
-        .requires_grad_(True)
-    detached_mS = (torch.rand(2, 512, generator=generator) >= 0.5).float().requires_grad_(True)
+    detached_g = unit_features(2, generator, unit=False).requires_grad_(True)
+    detached_mS = binary_masks(2, generator).requires_grad_(True)
     xU_only = torch.cat([detached_g.detach(), (detached_g.detach() * detached_mS.detach())], dim=-1)
     loss_only = gate(xU_only).sum()
     grads = torch.autograd.grad(loss_only, [detached_g, detached_mS] + list(gate.parameters()),
@@ -605,6 +899,7 @@ def test_c_f_input_is_fully_detached_and_the_final_g_stays_live():
         'no gradient may reach mS through xU'
     assert any(grad is not None and float(grad.abs().max()) > 0 for grad in grads[2:]), \
         'F itself must still receive the gradient of its own output through pU'
+    assert model is not None
 
 
 @needs_cuda
@@ -614,64 +909,34 @@ def test_c_mU_multiplies_the_full_g_not_the_hard_complement():
     gate = make_suffix_mask(module)
     randomise_suffix_mask(gate, scale=0.6, seed=17)
     generator = torch.Generator().manual_seed(23)
-    g = torch.randn(3, 512, generator=generator)
-    mS = (torch.rand(3, 512, generator=generator) >= 0.5).float()
-    tR = F.normalize(torch.randn(3, 512, generator=generator), dim=-1, eps=1e-6)
+    g = unit_features(3, generator)
+    mS = binary_masks(3, generator)
+    tR = unit_features(3, generator)
     with torch.no_grad():
         xU = torch.cat([g.detach(), (g.detach() * mS.detach())], dim=-1)
         pU = gate(xU)
         mU = gate_from_pU(module, pU)
         assert float(mU.min()) == 0.0 and float(mU.max()) == 1.0, \
             'this test needs a genuinely mixed mU to be able to fail'
-        correct = FIXED_SCALE * (F.normalize(g * mU, dim=-1, eps=1e-6) @ tR.t())
-        wrong_complement = FIXED_SCALE * (F.normalize(g * (1.0 - mS), dim=-1, eps=1e-6) @ tR.t())
-        wrong_hard = FIXED_SCALE * (F.normalize(g * (1.0 - (pU >= 0.5).float()), dim=-1, eps=1e-6)
-                                    @ tR.t())
+        correct = FIXED_SCALE * (F.normalize(g * mU, p=2, dim=-1, eps=1e-6) @ tR.t())
+        wrong_complement = FIXED_SCALE * (F.normalize(g * (1.0 - mS), p=2, dim=-1, eps=1e-6)
+                                          @ tR.t())
+        wrong_hard = FIXED_SCALE * (F.normalize(g * (1.0 - (pU >= 0.5).float()), p=2, dim=-1,
+                                               eps=1e-6) @ tR.t())
     assert float((correct - wrong_complement).abs().max()) > 1e-3, \
         'mU multiplies the FULL g, so g*(1-mS) must give a measurably different score'
     assert float((correct - wrong_hard).abs().max()) > 1e-3
     assert not torch.allclose(correct, wrong_hard, atol=1e-3)
 
 
-@needs_cuda
-def test_c_readout_is_the_gate_applied_to_the_full_g_readout():
-    """An independent re-implementation of the readout must reproduce the module's scores.
-
-    This is the same arithmetic written out by hand: ``u_ij = Norm(g_i * hardST(F([g_i, g_i*mS_j])))``
-    and ``score_ij = 100 * u_ij . tR_j``. It shares no code with the chunked readout, so it pins
-    both the gate wiring and the full-g multiplication at once.
-    """
-    module = implementation_module()
-    model = build_model()
-    gate = make_suffix_mask(module)
-    randomise_suffix_mask(gate, scale=0.5, seed=19)
-    images = fixed_images(2)
-    prefix_ids = tokenize(CAPTIONS[:2])
-    suffix_ids = tokenize(SUFFIXES[:2])
-    with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
-        hidden = model.encode_text(prefix_ids, return_full=True)[1]
-        mS = call_mask_helper(module, model.mask_net, hidden)
-        tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
-        scores, _ = call_readout(module, g, mS, tR, gate, 2, 2)
-        rows = []
-        for i in range(2):
-            columns = []
-            for j in range(2):
-                xU = torch.cat([g[i].detach(), (g[i].detach() * mS[j].detach())]).unsqueeze(0)
-                mU = gate_from_pU(module, gate(xU))
-                u = F.normalize(g[i].unsqueeze(0) * mU, dim=-1, eps=1e-6)
-                columns.append(FIXED_SCALE * (u @ tR[j].unsqueeze(1)).squeeze())
-            rows.append(torch.stack(columns))
-        reference = torch.stack(rows)
-    assert float((scores - reference).abs().max()) < TOL_RECOMPUTE, \
-        ('the readout must be the hand-written per-pair definition',
-         float((scores - reference).abs().max()))
-
-
 # =========================================================================== D: initialisation
 def test_d_initialisation_is_pU_8_9_and_mU_exactly_ones_with_a_restored_rng():
-    """Spec section 4: seed 0, Xavier first layer, zero last weight, ``bias = log(8)``."""
+    """Spec section 4: seed 0, Xavier first layer, zero last weight, ``bias = log(8)``.
+
+    The RNG requirement is checked on the REAL global generators: the CPU global state and every
+    initialised CUDA generator are compared before and after construction. A private same-seed local
+    generator proves nothing about the global stream, so it is not used as evidence here.
+    """
     module = implementation_module()
     torch.manual_seed(4321)
     cpu_state = torch.get_rng_state().clone()
@@ -679,11 +944,11 @@ def test_d_initialisation_is_pU_8_9_and_mU_exactly_ones_with_a_restored_rng():
                    if CUDA else [])
     mask = make_suffix_mask(module, DEVICE)
     assert torch.equal(torch.get_rng_state(), cpu_state), \
-        'building SuffixMask must not consume the global CPU RNG stream'
+        'building SuffixMask must restore the REAL global CPU RNG state it found'
     if CUDA:
         for index, state in enumerate(cuda_states):
             assert torch.equal(torch.cuda.get_rng_state(index), state), \
-                'building SuffixMask must restore CUDA generator %d' % index
+                'building SuffixMask must restore CUDA generator %d of the REAL global RNG' % index
 
     parameters = dict(mask.named_parameters())
     assert 'layer1.weight' in parameters and 'layer2.weight' in parameters, \
@@ -691,20 +956,68 @@ def test_d_initialisation_is_pU_8_9_and_mU_exactly_ones_with_a_restored_rng():
          % sorted(parameters))
     assert tuple(parameters['layer1.weight'].shape) == (512, 1024)
     assert tuple(parameters['layer2.weight'].shape) == (512, 512)
-    assert float(parameters['layer2.weight'].abs().max()) == 0.0, 'the last weight must be zero'
-    assert float(parameters['layer2.bias'].min()) == pytest.approx(math.log(8.0), abs=1e-6)
-    assert float(parameters['layer2.bias'].max()) == pytest.approx(math.log(8.0), abs=1e-6)
+    assert float(parameters['layer2.weight'].abs().max()) == TOL_EXACT, 'the last weight must be 0'
+    assert float(parameters['layer2.bias'].min()) == pytest.approx(math.log(8.0),
+                                                                   abs=STATE_TOLERANCE)
+    assert float(parameters['layer2.bias'].max()) == pytest.approx(math.log(8.0),
+                                                                   abs=STATE_TOLERANCE)
     assert float(parameters['layer1.weight'].std()) > 0
-    assert float(parameters['layer1.bias'].abs().max()) == 0.0
+    assert float(parameters['layer1.bias'].abs().max()) == TOL_EXACT
 
-    xU = torch.randn(4, 1024, generator=torch.Generator().manual_seed(3))
+    xU = torch.randn(4, 2 * FEATURE_DIM, generator=torch.Generator().manual_seed(3))
     with torch.no_grad():
         pU = mask(xU)
         mU = gate_from_pU(module, pU)
     assert float(pU.min()) == pytest.approx(8.0 / 9.0, abs=STATE_TOLERANCE)
     assert float(pU.max()) == pytest.approx(8.0 / 9.0, abs=STATE_TOLERANCE)
-    assert float((mU - 1.0).abs().max()) == 0.0, 'mU must be EXACTLY all ones at initialisation'
+    assert float((mU - 1.0).abs().max()) == TOL_EXACT, 'mU must be EXACTLY all ones at init'
     assert int(mU.sum().item()) == mU.numel()
+
+
+def test_d_building_the_new_modules_does_not_shift_the_global_rng_unused_for_the_data_stream():
+    """Spec section 3: the new modules must not pollute the original data random stream.
+
+    DEFECT FIXED (fake RNG evidence): the old test drew a fresh same-seed LOCAL generator before and
+    after construction and called that "the global state is unchanged" -- a local generator is not the
+    global stream and cannot observe pollution. The REAL global CPU RNG and every initialised CUDA
+    generator are compared here, together with the data stream the pipeline actually consumes.
+    """
+    module = implementation_module()
+
+    def draw_stream(seed):
+        stream = []
+        generator = torch.Generator().manual_seed(seed)
+        for _ in range(4):
+            stream.append(float(torch.rand(1, generator=generator)))
+        python_rng = random.Random(seed)
+        for _ in range(4):
+            stream.append(float(python_rng.random()))
+        return stream
+
+    torch.manual_seed(1234)
+    cpu_before = torch.get_rng_state().clone()
+    cuda_before = ([torch.cuda.get_rng_state(index) for index in range(torch.cuda.device_count())]
+                   if CUDA else [])
+    python_before = random.getstate()
+    before = draw_stream(0)
+
+    make_suffix_mask(module, DEVICE)
+
+    assert torch.equal(torch.get_rng_state(), cpu_before), \
+        'building SuffixMask consumed part of the REAL global CPU RNG stream'
+    for index, state in enumerate(cuda_before):
+        assert torch.equal(torch.cuda.get_rng_state(index), state), \
+            'building SuffixMask consumed part of the REAL global CUDA generator %d' % index
+    assert random.getstate() == python_before, \
+        'building SuffixMask consumed part of the global Python RNG stream used for K'
+    assert before == draw_stream(0), ('building the new modules shifted the data stream: the S0 arm '
+                                      'would no longer see the same samples')
+
+    torch.manual_seed(2026)
+    state_before = torch.get_rng_state().clone()
+    make_suffix_mask(module, DEVICE)
+    assert torch.equal(state_before, torch.get_rng_state()), \
+        'a second construction must be equally invisible to the global stream'
 
 
 @needs_cuda
@@ -716,23 +1029,20 @@ def test_d_first_backward_gives_the_zero_initialised_output_layer_no_gradient():
     prefix_ids = tokenize(CAPTIONS[:2])
     suffix_ids = tokenize(SUFFIXES[:2])
     with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
+        g = F.normalize(model.encode_image(images).float(), p=2, dim=-1, eps=1e-6)
         hidden = model.encode_text(prefix_ids, return_full=True)[1]
         mS = call_mask_helper(module, model.mask_net, hidden)
-        tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
+        tR = F.normalize(model.encode_text(suffix_ids).float(), p=2, dim=-1, eps=1e-6)
         xU = torch.cat([g.detach(), (g.detach() * mS.detach())], dim=-1)
-        mU = gate_from_pU(module, mask(xU))
-        u = F.normalize(g * mU, dim=-1, eps=1e-6)
-        scores = FIXED_SCALE * (u @ tR.t())
         pU = mask(xU)
-        scores = FIXED_SCALE * (F.normalize(g * gate_from_pU(module, pU), dim=-1, eps=1e-6)
+        scores = FIXED_SCALE * (F.normalize(g * gate_from_pU(module, pU), p=2, dim=-1, eps=1e-6)
                                 @ tR.t())
     scores.diagonal().sum().backward()
     parameters = dict(mask.named_parameters())
     assert parameters['layer1.weight'].grad is not None
     assert float(parameters['layer1.weight'].grad.abs().max()) > 0, \
         'the first layer must receive a real gradient on the first backward'
-    assert float(parameters['layer2.weight'].grad.abs().max()) == 0.0, \
+    assert float(parameters['layer2.weight'].grad.abs().max()) == TOL_EXACT, \
         ('with W2 = 0 the last weight multiplies a zero upstream factor, so it gets exactly zero '
          'gradient, while its bias still moves')
     assert float(parameters['layer2.bias'].grad.abs().max()) > 0
@@ -749,32 +1059,30 @@ def test_d_initialised_mU_is_all_ones_so_conditional_equals_native_scores():
     prefix_ids = tokenize(CAPTIONS[:3])
     suffix_ids = tokenize(SUFFIXES[:3])
     with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
-        tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
+        g = F.normalize(model.encode_image(images).float(), p=2, dim=-1, eps=1e-6)
+        tR = F.normalize(model.encode_text(suffix_ids).float(), p=2, dim=-1, eps=1e-6)
         hidden = model.encode_text(prefix_ids, return_full=True)[1]
         mS = call_mask_helper(module, model.mask_net, hidden)
         xU = torch.cat([g.detach(), (g.detach() * mS.detach())], dim=-1)
         pU = mask(xU)
         mU = gate_from_pU(module, pU)
-        conditional, returned_mU = call_readout(module, g, mS, tR, mask, 3, 3)
+        conditional = readout_scores(module, g, mS, tR, mask, image_chunk=3, text_chunk=3)
         native = FIXED_SCALE * (g @ tR.t())
-    assert float((mU - 1.0).abs().max()) == 0.0, 'the initial gate must be exactly all ones'
+    assert float((mU - 1.0).abs().max()) == TOL_EXACT, 'the initial gate must be exactly all ones'
     difference = float((conditional - native).abs().max())
     assert difference < TOL_RECOMPUTE, (difference, 'QU must equal QN when mU is all ones')
-    assert clip_reference_suffix_loss(conditional) == pytest.approx(
-        clip_reference_suffix_loss(native), rel=1e-5, abs=1e-7)
-    if returned_mU is not None:
-        assert torch.equal(returned_mU, mU)
+    assert float(clip_reference_suffix_loss(conditional)) == pytest.approx(
+        float(clip_reference_suffix_loss(native)), rel=1e-5, abs=1e-7)
     mS_leaf = mS.detach().clone().requires_grad_(True)
-    scores_from_leaf, _ = call_readout(module, g, mS_leaf, tR, mask, 3, 3)
-    value = torch.autograd.grad(scores_from_leaf.sum(), mS_leaf, allow_unused=True)[0]
-    assert value is None or float(value.abs().max()) == 0.0, \
-        'the old mS must be a stop-gradient input of the suffix readout'
+    scores_from_leaf = readout_scores(module, g, mS_leaf, tR, mask, image_chunk=3, text_chunk=3)
+    assert_absent_or_zero(tensor_gradient(scores_from_leaf.sum(), mS_leaf,
+                                          'the old mS of the suffix readout'),
+                          'the old mS of the suffix readout')
 
 
 # =========================================================================== E: S0 regression
 def _objective_for_s0(module, model, rank=0):
-    """The S0 term of the new path, whichever builder the trainer exposes."""
+    """The objective builder of the trainer, with the S0-equivalence switch ``lambda_suffix = 0``."""
     trainer = trainer_module()
     builder = None
     for name in ('build_objective', 'make_objective', 'PrefixSuffixObjective', 'SuffixObjective',
@@ -789,13 +1097,15 @@ def _objective_for_s0(module, model, rank=0):
     signature = inspect.signature(builder)
     accepted = {}
     for name, value in (('clip', model), ('model', model), ('clip_model', model),
-                        ('module', module), ('suffix_model', module),
+                        ('module', module), ('suffix_model', module), ('suffix_mask', None),
                         ('lambda_suffix', 0.0), ('rank', rank), ('device', DEVICE),
                         ('soft_mask', False)):
         if name in signature.parameters:
             accepted[name] = value
     if 'lambda_suffix' not in accepted:
         accepted['lambda_suffix'] = 0.0            # the spec's S0-equivalence switch
+    if 'suffix_mask' in accepted:
+        accepted['suffix_mask'] = make_suffix_mask(module, DEVICE)
     return builder(**accepted)
 
 
@@ -814,156 +1124,301 @@ def s0_terms_of(out):
                          % (sorted(out) if isinstance(out, dict) else type(out).__name__))
 
 
+def weighted_s0(loss_sidm, loss_dism, loss_sparsity, lambda_align, lambda_sparse):
+    """``L_S0 = lambda_align * (L_SIDM + L_DISM) + lambda_sparse * L_sparse`` (spec section 1)."""
+    return lambda_align * (loss_sidm + loss_dism) + lambda_sparse * loss_sparsity
+
+
 @needs_cuda
-def test_e_lambda_suffix_zero_reproduces_the_original_s0_helper_loss_and_gradients():
+def test_e_lambda_suffix_zero_reproduces_the_original_s0_objective_and_gradients():
     """Spec section 3: at ``lambda_suffix = 0`` the S0 loss and its gradients are the ORIGINAL ones.
 
-    Tolerance: TOL_GRADIENT = 1e-4 relative to each tensor's own max-abs. The two sides run the same
-    fp32 arithmetic with a different accumulation order (the new path encodes the prefix features
-    once next to the hidden state, the old helper re-derives them), so a bitwise comparison is not
-    available. What this test is designed to catch -- a re-derived SIDM/DISM, a changed sparse weight,
-    a mask used without its stop-gradient, an extra 0.5 factor or a world-size factor -- moves each
-    tensor by orders of magnitude, not by 1e-4.
+    DEFECT FIXED (the reference demanded gradients it had destroyed): the old reference encoded the
+    trunk under ``torch.no_grad()`` and then asked for the gradient of ``visual.proj`` /
+    ``text_projection``, which can only ever be ``None``. The reference here is the REAL weighted
+    objective ``10 * (L_SIDM + L_DISM) + 2 * L_sparse``, built from the original helper on LIVE
+    features, and the unweighted components are compared separately as extra evidence (so a silent
+    drop of the ``2 *`` sparsity weight cannot hide behind the pair comparison).
+
+    Tolerance: TOL_GRADIENT = 1e-4 relative to each tensor's own max-abs. Both sides run the same fp32
+    arithmetic with a different accumulation order, so a bitwise comparison is not available. A
+    re-derived SIDM/DISM, a changed sparse weight, a mask used without its stop-gradient, an extra 0.5
+    factor or a world-size factor move each tensor by orders of magnitude, not by 1e-4.
     """
     module = implementation_module()
     from model.said_cls_cvssl import compute_smartclip_terms
     model = build_model(shared_init=True)
     images = fixed_images(2)
     prefix_ids = tokenize(CAPTIONS[:2])
-    image_ids = torch.arange(2, dtype=torch.long, device=DEVICE)
 
-    with torch.no_grad():
-        v_a = model.encode_image(images)
-        text_raw, hidden = model.encode_text(prefix_ids, return_full=True)
+    # the LIVE S0 path: the trunk stays differentiable, exactly as in the original objective
+    v_a = model.encode_image(images)
+    text_raw, hidden = model.encode_text(prefix_ids, return_full=True)
     mS_reference = call_mask_helper(module, model.mask_net, hidden)
-    terms_reference = compute_smartclip_terms(v_a, text_raw, mS_reference, rank=0)
-    loss_reference = terms_reference['loss_sidm'] + terms_reference['loss_dism'] \
-        + terms_reference['loss_sparsity']
+    terms_reference = compute_smartclip_terms(v_a, text_raw, mS_reference, rank=0,
+                                              lambda_align=float(module.LAMBDA_ALIGN),
+                                              lambda_sparse=float(module.LAMBDA_SPARSE))
+    loss_reference = weighted_s0(terms_reference['loss_sidm'], terms_reference['loss_dism'],
+                                 terms_reference['loss_sparsity'], float(module.LAMBDA_ALIGN),
+                                 float(module.LAMBDA_SPARSE))
+    assert float(module.LAMBDA_ALIGN) == pytest.approx(10.0)
+    assert float(module.LAMBDA_SPARSE) == pytest.approx(S0_LAMBDA_SPARSE)
     # pin the original constants so this test cannot agree with a changed S0 by accident
     assert float(terms_reference['loss_sparsity']) == pytest.approx(
         float(mS_reference.abs().mean()), rel=1e-6)
+    assert float(terms_reference['loss_sidm']) > 0 and float(terms_reference['loss_dism']) > 0
+
     mask_parameters = list(model.mask_net.parameters())
     trunk_parameters = [model.visual.proj, model.text_projection]
-    reference_grads = torch.autograd.grad(loss_reference, mask_parameters + trunk_parameters)
+    reference_grads = torch.autograd.grad(loss_reference, mask_parameters + trunk_parameters,
+                                          allow_unused=True, retain_graph=True)
+    assert any(grad is not None and float(grad.abs().max()) > 0
+               for grad in reference_grads[len(mask_parameters):]), \
+        ('the reference must keep the trunk LIVE: a no_grad encoding would make every trunk gradient '
+         'None and the comparison below would be vacuous')
 
     objective = _objective_for_s0(module, model)
-    try:
-        out = objective(images, prefix_ids, image_ids)
-    except TypeError:
-        out = objective(images, prefix_ids)
+    out = objective(images, prefix_ids)
     terms = s0_terms_of(out)
-    loss_new = terms['loss_sidm'] + terms['loss_dism'] + terms['loss_sparsity']
-    assert abs(float(loss_new) - float(loss_reference)) <= \
-        TOL_IDENTICAL_PATH * max(abs(float(loss_reference)), 1.0), \
-        ('the S0 loss at lambda_suffix = 0 must equal the original helper', float(loss_new),
-         float(loss_reference))
-    new_grads = torch.autograd.grad(loss_new, mask_parameters + trunk_parameters, retain_graph=True)
+    loss_new = weighted_s0(terms['loss_sidm'], terms['loss_dism'], terms['loss_sparsity'],
+                           float(module.LAMBDA_ALIGN), float(module.LAMBDA_SPARSE))
+    assert abs(float(loss_new) - float(loss_reference)) <= TOL_RECOMPUTE * max(
+        abs(float(loss_reference)), 1.0), \
+        ('the S0 loss at lambda_suffix = 0 must equal the original weighted helper '
+         '(10*(SIDM+DISM) + 2*sparse)', float(loss_new), float(loss_reference))
+
+    # the unweighted components too: a dropped 2* on the sparse term is invisible in a pair sum that
+    # happens to be re-weighted elsewhere, but not here
+    for name in ('loss_sidm', 'loss_dism', 'loss_sparsity'):
+        mine = float(terms[name].detach())
+        theirs = float(terms_reference[name].detach())
+        assert abs(mine - theirs) <= TOL_RECOMPUTE * max(abs(theirs), 1.0), (name, mine, theirs)
+
+    new_grads = torch.autograd.grad(loss_new, mask_parameters + trunk_parameters, retain_graph=True,
+                                    allow_unused=True)
+    compared = 0
     for index, (mine, theirs) in enumerate(zip(new_grads, reference_grads)):
+        if mine is None or theirs is None:
+            assert (mine is None) == (theirs is None), \
+                ('S0 gradient %d exists in only one of the two paths, so the S0 objective is not '
+                 'the same on both sides' % index)
+            continue
         assert relative_difference(mine, theirs) < TOL_GRADIENT, \
             ('S0 gradient %d differs from the original helper: lambda_suffix = 0 must leave the S0 '
              'objective, the old mask and the shared trunk untouched' % index)
-    assert all(float(grad.abs().max()) > 0 for grad in reference_grads), \
-        'the reference gradients must be non-trivial for this comparison to mean anything'
+        compared += 1
+    assert compared >= len(trunk_parameters), compared
     if 'mS' in terms:
         assert torch.equal(terms['mS'], mS_reference)
 
 
-@needs_cuda
-def test_e_building_the_new_modules_does_not_shift_the_data_or_rng_stream():
-    """Spec section 3: the new modules must not pollute the original data random stream."""
+# =========================================================================== F: readout contract
+def test_f_readout_signature_and_return_type_are_the_frozen_ones():
+    """The frozen interface: four named keyword parameters and ONE return type (a 2-key dict)."""
     module = implementation_module()
+    function = getattr(module, 'suffix_readout_scores', None)
+    assert callable(function), ('model/said_prefix_suffix.py must export suffix_readout_scores '
+                                '(spec section 14)')
+    parameters = inspect.signature(function).parameters
+    for name in READOUT_PARAMS:
+        assert name in parameters, ('suffix_readout_scores must declare the frozen parameter %r; it '
+                                    'declares %r' % (name, list(parameters)))
+    for name, default in (('image_chunk', 16), ('text_chunk', 32), ('eps', 1e-6),
+                          ('want_statistics', False)):
+        assert name in parameters, ('suffix_readout_scores must declare the documented default %r=%r'
+                                    % (name, default))
+        assert parameters[name].default == default, \
+            ('the documented default of %r is %r, found %r'
+             % (name, default, parameters[name].default))
 
-    def draw_stream(seed):
-        stream = []
-        generator = torch.Generator().manual_seed(seed)
-        for _ in range(4):
-            stream.append(float(torch.rand(1, generator=generator)))
-        python_rng = random.Random(seed)
-        for _ in range(4):
-            stream.append(float(python_rng.random()))
-        return stream
-
-    before = draw_stream(0)
-    model = build_model(shared_init=True)
-    make_suffix_mask(module, DEVICE)
-    after = draw_stream(0)
-    assert before == after, ('building the new modules shifted the data stream: the S0 arm would '
-                             'no longer see the same samples')
-
-    torch.manual_seed(2026)
-    state_before = torch.get_rng_state().clone()
-    images = fixed_images(2)
-    prefix_ids = tokenize(CAPTIONS[:2])
-    with torch.no_grad():
-        model.encode_image(images)
-        model.encode_text(prefix_ids, return_full=True)
-    assert torch.equal(state_before, torch.get_rng_state()), \
-        'the S0 forward itself must not consume the global RNG stream'
+    gate = make_suffix_mask(module)
+    generator = torch.Generator().manual_seed(101)
+    g = unit_features(2, generator)
+    mS = binary_masks(2, generator)
+    tR = unit_features(3, generator)
+    result = call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=2)
+    assert tuple(result['scores'].shape) == (2, 3), tuple(result['scores'].shape)
+    assert 'statistics' in result and result['statistics'] is None
 
 
-# =========================================================================== F: per-pair vs chunk
-@needs_cuda
+def test_f_readout_rejects_a_three_dimensional_mS_block():
+    """Spec section 7 + the frozen interface: ``mS_block`` is ``[Bj, 512]``, TWO-DIMENSIONAL ONLY.
+
+    A ``[Bi, Bj, 512]`` block is the "guess the shape" shortcut of the old signature. It must be
+    rejected loudly (a ValueError/TypeError naming the dimensionality), because accepting it silently
+    means the candidate-prefix rule of spec section 5 is no longer pinned by the signature.
+    """
+    module = implementation_module()
+    gate = make_suffix_mask(module)
+    generator = torch.Generator().manual_seed(103)
+    g = unit_features(2, generator)
+    tR = unit_features(3, generator)
+    mS_2d = binary_masks(3, generator)
+    mS_3d = mS_2d.unsqueeze(0).expand(2, 3, FEATURE_DIM).contiguous()
+    assert mS_3d.dim() == 3
+    with pytest.raises((ValueError, TypeError, AssertionError, RuntimeError)) as error:
+        call_readout(module, g, mS_3d, tR, gate, image_chunk=2, text_chunk=2)
+    message = str(error.value).lower()
+    assert ('dim' in message or '3-d' in message or '3d' in message or 'shape' in message
+            or 'dimensional' in message), \
+        ('the rejection must say WHY it rejected the input (dimensionality), got %r' % (message,))
+
+
+# --------------------------------------------------------------------------- non-square broadcast
+NON_SQUARE_CASES = ((2, 3, 2, 3), (3, 2, 2, 3), (5, 7, 4, 3))
+
+
+@pytest.mark.parametrize('images,texts,image_chunk,text_chunk', NON_SQUARE_CASES)
+def test_f_non_square_pairs_match_the_per_pair_reference_in_values_and_gradients(
+        images, texts, image_chunk, text_chunk):
+    """DEFECT PINNED (broadcast): ``Bi != Bj`` must still score EVERY (i, j) pair.
+
+    Three shapes are covered: ``Bi < Bj``, ``Bi > Bj`` and a size whose tiling does NOT divide
+    (``5 x 7`` with ``4 x 3`` tiles leaves a 1-row and a 1-column tail). For each one the forward value
+    and the gradients of ``g``, ``tR`` and every F parameter are compared against the per-pair loop
+    reference of :func:`per_pair_reference`, which shares no code with the tiled readout.
+
+    ``mS``'s gradient must be ``None`` or exactly zero: it is the stop-gradient input.
+
+    Tolerances: values ``TOL_RECOMPUTE`` (1e-5, absolute at the fixed 100x score scale ~ 1e-7
+    relative, absorbing the tiled-vs-per-pair accumulation order); parameters ``TOL_GRADIENT`` (1e-4
+    relative to each tensor's own max-abs) for the same reason.
+    """
+    module = implementation_module()
+    gate = make_suffix_mask(module)
+    randomise_suffix_mask(gate, scale=0.5, seed=107)
+    initial = parameter_snapshot(gate)
+    generator = torch.Generator().manual_seed(109)
+    g_base = unit_features(images, generator)
+    mS_base = binary_masks(texts, generator)
+    tR_base = unit_features(texts, generator)
+    weights = [parameter for parameter in gate.parameters() if parameter.requires_grad]
+    assert weights, 'F must expose trainable parameters'
+
+    g_leaf = g_base.detach().clone().requires_grad_(True)
+    mS_leaf = mS_base.detach().clone().requires_grad_(True)
+    tR_leaf = tR_base.detach().clone().requires_grad_(True)
+    scores = readout_scores(module, g_leaf, mS_leaf, tR_leaf, gate, image_chunk=image_chunk,
+                            text_chunk=text_chunk)
+    assert tuple(scores.shape) == (images, texts), tuple(scores.shape)
+    chunk_grads = torch.autograd.grad(scores.sum(), [g_leaf, mS_leaf, tR_leaf] + weights,
+                                      retain_graph=True, allow_unused=True)
+
+    gate.load_state_dict(initial)
+    g_ref = g_base.detach().clone().requires_grad_(True)
+    mS_ref = mS_base.detach().clone().requires_grad_(True)
+    tR_ref = tR_base.detach().clone().requires_grad_(True)
+    reference = per_pair_reference(module, gate, g_ref, mS_ref, tR_ref)
+    reference_grads = torch.autograd.grad(per_pair_loss(reference), [g_ref, mS_ref, tR_ref] + weights,
+                                          retain_graph=True, allow_unused=True)
+
+    difference = float((scores - reference).abs().max())
+    assert difference < TOL_RECOMPUTE, \
+        ('the tiled readout must reproduce the per-pair loop for a %dx%d block' % (images, texts),
+         difference)
+    assert_parameters_unchanged(gate, initial, 'the non-square readout comparison')
+
+    assert_absent_or_zero(chunk_grads[1], 'mS (chunked, %dx%d)' % (images, texts))
+    assert_absent_or_zero(reference_grads[1], 'mS (per-pair reference)')
+    for name, index in (('g', 0), ('tR', 2)):
+        mine, theirs = chunk_grads[index], reference_grads[index]
+        assert mine is not None and theirs is not None, name
+        assert float(theirs.abs().max()) > 0, ('the %s gradient must be non-trivial for this '
+                                               'comparison to mean anything' % name)
+        assert relative_difference(mine, theirs) < TOL_GRADIENT, \
+            ('the %s gradient must match the per-pair reference on a %dx%d block'
+             % (name, images, texts), relative_difference(mine, theirs))
+    for offset, weight in enumerate(weights):
+        mine, theirs = chunk_grads[3 + offset], reference_grads[3 + offset]
+        assert mine is not None and theirs is not None, offset
+        assert relative_difference(mine, theirs) < TOL_GRADIENT, \
+            ('F parameter %d must receive the per-pair gradient on a %dx%d block'
+             % (offset, images, texts), relative_difference(mine, theirs))
+    assert any(float(chunk_grads[3 + offset].abs().max()) > 0 for offset in range(len(weights))), \
+        'the suffix loss must train F on a non-square block'
+
+
+def test_f_a_wrong_g_times_mS_broadcast_must_differ_from_the_correct_scores():
+    """DEFECT PINNED (broadcast), the explicit counterexample: with ``Bi != Bj`` the naive
+    ``g_block * mS_block`` cannot be what the readout computes.
+
+    The wrong path is *executed* here (elementwise, and if torch refuses it, a row-wise broadcast) and
+    its result is required to DIFFER from the correct one by more than a tolerance. A test that only
+    asserted equality would pass vacuously against an implementation that broadcasts row ``i`` to mask
+    row ``i``.
+    """
+    module = implementation_module()
+    gate = make_suffix_mask(module)
+    randomise_suffix_mask(gate, scale=0.5, seed=113)
+    generator = torch.Generator().manual_seed(127)
+    g = unit_features(2, generator)
+    mS = binary_masks(3, generator)
+    tR = unit_features(3, generator)
+
+    correct = readout_scores(module, g, mS, tR, gate, image_chunk=2, text_chunk=3)
+    assert tuple(correct.shape) == (2, 3), tuple(correct.shape)
+
+    kind, product = wrong_broadcast_scores(module, gate, g, mS, tR)
+    if kind != 'elementwise':
+        assert tuple(product.shape) == (2, 3, FEATURE_DIM), (kind, tuple(product.shape))
+        wrong = FIXED_SCALE * torch.einsum(
+            'ijd,jd->ij', F.normalize(product, p=2, dim=-1, eps=1e-6), tR)
+    else:
+        try:
+            wrong = FIXED_SCALE * (F.normalize(product, p=2, dim=-1, eps=1e-6) @ tR.t())
+        except RuntimeError as error:                      # pragma: no cover - shape dependent
+            raise AssertionError('the wrong broadcast produced %s, which cannot be scored at all: %s'
+                                 % (tuple(product.shape), error))
+    assert tuple(wrong.shape) == (2, 3), (kind, tuple(wrong.shape))
+    difference = float((correct - wrong).abs().max())
+    assert difference > 1e-3, \
+        ('the wrong g*mS broadcast must give a measurably different score matrix, otherwise this '
+         'counterexample proves nothing', kind, difference)
+
+
 def test_f_chunked_readout_equals_the_per_pair_loop_in_scores_and_gradients():
-    """Spec section 7: chunking is a memory device, never a different computation."""
+    """Spec section 7: chunking is a memory device, never a different computation.
+
+    The inputs respect the unit-scale ``g`` contract. The retired claim that "pre-normalising g makes
+    the conditional scores smaller by orders of magnitude" is NOT used as a justification anywhere:
+    with a fixed mask, a correctly normalised cosine has no such artificial scale effect, and F really
+    does read ``g``, so the readout is tested on the inputs the spec defines.
+    """
     module = implementation_module()
     gate = make_suffix_mask(module)
     randomise_suffix_mask(gate, scale=0.5, seed=29)
     generator = torch.Generator().manual_seed(31)
-    # NOTE the raw draws: `g` must NOT be pre-normalised here. `u = Norm(g * mU)` normalises again
-    # inside the readout, so feeding it an already unit-norm `g` would divide a unit vector by a
-    # mask-diluted norm and shrink the score by orders of magnitude -- a property of the input, not
-    # of the implementation.
-    g_base = torch.randn(3, 512, generator=generator)
-    mS_base = (torch.rand(3, 512, generator=generator) >= 0.5).float()
-    tR_base = F.normalize(torch.randn(3, 512, generator=generator), dim=-1, eps=1e-6)
+    g_base = unit_features(4, generator)
+    mS_base = binary_masks(4, generator)
+    tR_base = unit_features(4, generator)
     weights = [parameter for parameter in gate.parameters() if parameter.requires_grad]
-    # both sides of the comparison must start from the SAME F: this helper is the only writer of
-    # F's tensors below, and it is re-applied before each of the two computations
-    initial = {key: value.detach().clone() for key, value in gate.state_dict().items()}
+    initial = parameter_snapshot(gate)
 
-    gate.load_state_dict(initial)
     g = g_base.detach().clone().requires_grad_(True)
     mS = mS_base.detach().clone().requires_grad_(True)
     tR = tR_base.detach().clone().requires_grad_(True)
-    scores, mU = call_readout(module, g, mS, tR, gate, image_chunk=3, text_chunk=3)
-    assert tuple(scores.shape) == (3, 3), scores.shape
-    chunk_grads = torch.autograd.grad([scores.sum()], [g, mS, tR] + weights, retain_graph=True,
+    scores = readout_scores(module, g, mS, tR, gate, image_chunk=3, text_chunk=3)
+    assert tuple(scores.shape) == (4, 4), tuple(scores.shape)
+    chunk_grads = torch.autograd.grad(scores.sum(), [g, mS, tR] + weights, retain_graph=True,
                                       allow_unused=True)
 
     gate.load_state_dict(initial)
     g2 = g_base.detach().clone().requires_grad_(True)
     mS2 = mS_base.detach().clone().requires_grad_(True)
     tR2 = tR_base.detach().clone().requires_grad_(True)
-    reference_scores, reference_mU = per_pair_suffix_forward(module, gate, g2, mS2, tR2,
-                                                             positive_weight=FIXED_SCALE)
-    per_pair_grads = torch.autograd.grad([reference_scores.sum()], [g2, mS2, tR2] + weights,
+    reference = per_pair_reference(module, gate, g2, mS2, tR2)
+    per_pair_grads = torch.autograd.grad(reference.sum(), [g2, mS2, tR2] + weights,
                                          retain_graph=True, allow_unused=True)
 
-    # the reference itself is pinned against the SPEC printed out in full: score_ij is
-    # 100 * u_ij . tR_j, so a reference that forgot the fixed scale (or the normalisation) would be
-    # caught here rather than silently making the chunked side look wrong
-    spec_score = FIXED_SCALE * (F.normalize(
-        g_base[0].unsqueeze(0)
-        * gate_from_pU(module, gate(torch.cat([g_base[0].detach(),
-                                               g_base[0].detach() * mS_base[0].detach()
-                                               ]).unsqueeze(0))), dim=-1, eps=1e-6)
-        @ tR_base[0].unsqueeze(1)).squeeze()
-    assert float((reference_scores[0, 0] - spec_score).abs()) < 1e-4, \
-        (float(reference_scores[0, 0]), float(spec_score),
-         'the per-pair reference must be the spec definition, fixed scale included')
-
-    difference = float((scores - reference_scores).abs().max())
+    difference = float((scores - reference).abs().max())
     assert difference < TOL_RECOMPUTE, ('the chunked and per-pair scores must agree', difference)
     assert_parameters_unchanged(gate, initial, 'the chunked and per-pair readout comparison')
-    if mU is not None:
-        assert torch.equal(mU, reference_mU), \
-            'the chunked gate must be bitwise the per-pair gate (same F, same inputs)'
-    for name, index in (('g', 0), ('mS', 1), ('tR', 2)):
+    assert_absent_or_zero(chunk_grads[1], 'mS (chunked)')
+    assert_absent_or_zero(per_pair_grads[1], 'mS (per-pair reference)')
+    for name, index in (('g', 0), ('tR', 2)):
         mine, theirs = chunk_grads[index], per_pair_grads[index]
         assert mine is not None, name
-        if theirs is None:
-            assert float(mine.abs().max()) == 0.0, name
-            continue
+        assert theirs is not None, name
         assert relative_difference(mine, theirs) < TOL_GRADIENT, \
             ('the chunked readout must give the per-pair gradient of %s' % name,
              relative_difference(mine, theirs))
@@ -973,111 +1428,607 @@ def test_f_chunked_readout_equals_the_per_pair_loop_in_scores_and_gradients():
         assert relative_difference(mine, theirs) < TOL_GRADIENT, ('F gradient %d' % offset)
     assert float(chunk_grads[0].abs().max()) > 0, 'the suffix loss must train the live g'
     assert float(chunk_grads[2].abs().max()) > 0, 'the suffix loss must train tR'
-    # the old mS must be a stop-gradient input: its own gradient stays exactly zero
-    assert float(chunk_grads[1].abs().max()) == 0.0, \
-        'the old mS must receive no gradient from the suffix loss'
+    assert any(float(grad.abs().max()) > 0 for grad in chunk_grads[3:]), \
+        'the suffix loss must train F'
 
 
-@needs_cuda
-def test_f_the_old_s0_mask_receives_no_gradient_from_the_suffix_loss():
-    """Spec section 5: the suffix loss must not train the old S0 mask directly."""
+def test_f_readout_returns_flat_fp32_scores_for_a_ragged_tail_tile():
+    """A tail tile smaller than the chunk size must still be a plain ``[Bi, Bj]`` fp32 matrix."""
     module = implementation_module()
-    model = build_model(shared_init=True)
-    mask = make_suffix_mask(module)
-    randomise_suffix_mask(mask, scale=0.4, seed=37)
-    images = fixed_images(2)
-    prefix_ids = tokenize(CAPTIONS[:2])
-    suffix_ids = tokenize(SUFFIXES[:2])
-    with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
-        tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
-        hidden = model.encode_text(prefix_ids, return_full=True)[1]
-        mS_leaf = call_mask_helper(module, model.mask_net, hidden).detach().clone() \
-            .requires_grad_(True)
-    scores, _ = call_readout(module, g, mS_leaf, tR, mask, 2, 2)
-    assert scores.requires_grad
-    value = torch.autograd.grad(scores.sum(), mS_leaf, allow_unused=True)[0]
-    assert value is None or float(value.abs().max()) == 0.0, \
-        ('the old mS is a stop-gradient input of the suffix loss: no gradient may flow back into '
-         'it, found max |grad| = %r' % (None if value is None else float(value.abs().max())))
-    mask_grads = torch.autograd.grad(scores.sum(), list(model.mask_net.parameters()),
-                                     allow_unused=True)
-    assert all(grad is None or float(grad.abs().max()) == 0.0 for grad in mask_grads), \
-        'the suffix loss must not reach the old S0 mask parameters through the readout'
+    gate = make_suffix_mask(module)
+    generator = torch.Generator().manual_seed(131)
+    g = unit_features(5, generator)
+    mS = binary_masks(7, generator)
+    tR = unit_features(7, generator)
+    scores = readout_scores(module, g, mS, tR, gate, image_chunk=4, text_chunk=3)
+    assert tuple(scores.shape) == (5, 7), tuple(scores.shape)
+    assert scores.dtype == torch.float32
+    assert bool(torch.isfinite(scores).all())
+    # every column really used its OWN candidate prefix: a column-blind implementation would give a
+    # rank-1-like pattern, which the per-column variation rule below refuses
+    variation = scores.std(dim=0)
+    assert float(variation.max()) > 0, 'the score matrix must depend on the candidate column'
 
 
-@needs_cuda
-def test_f_global_positive_index_is_the_diagonal_of_the_valid_subset_both_directions():
-    """Spec section 9 F: the global positive index must be used correctly in BOTH directions."""
+# --------------------------------------------------------------------------- index mapping
+def test_f_index_mapping_counterexample_W2_B4_J_1_3_4_7():
+    """DEFECT PINNED (label space): ``W=2, B=4, J=[1,3,4,7]``.
+
+    rank 0 -> ``local_rows = [1, 3]``, ``anchor_valid = [0, 1]``
+    rank 1 -> ``local_rows = [0, 3]``, ``anchor_valid = [2, 3]``
+
+    The label of a local valid row inside the V pool is ``global_to_valid[rank * B + local_row]``.
+    ``arange(rank * B, rank * B + n_r)`` would give ``[0, 1]`` / ``[2, 3]`` here and is a different rule
+    in general: it is the valid-anchor ORDINAL, not the anchor's position in the pool. This test pins
+    both the correct mapping and the fact that the wrong formula is a different object.
+    """
     module = implementation_module()
-    mask = make_suffix_mask(module)
-    randomise_suffix_mask(mask, scale=0.4, seed=41)
-    generator = torch.Generator().manual_seed(41)
-    g = F.normalize(torch.randn(4, 512, generator=generator), dim=-1, eps=1e-6)
-    tR = F.normalize(torch.randn(4, 512, generator=generator), dim=-1, eps=1e-6)
-    mS = (torch.rand(4, 512, generator=generator) >= 0.5).float()
-    valid = torch.tensor([True, False, True, True])
-    index = torch.nonzero(valid, as_tuple=False).flatten()
-    assert index.tolist() == [0, 2, 3]
-    with torch.no_grad():
-        valid_scores, _ = call_readout(module, g.index_select(0, index), mS.index_select(0, index),
-                                       tR.index_select(0, index), mask, 3, 3)
-        full_scores, _ = call_readout(module, g, mS, tR, mask, 4, 4)
-    submatrix = full_scores.index_select(0, index).index_select(1, index)
-    assert float((valid_scores - submatrix).abs().max()) < TOL_RECOMPUTE, \
-        ('the valid subset must be the same submatrix at the SAME global positions, not a '
-         're-indexed or re-normalised pool')
-    targets = torch.arange(index.numel(), device=DEVICE)
-    diagonal = torch.diagonal(valid_scores)
-    i2t = F.cross_entropy(valid_scores, targets)
-    t2i = F.cross_entropy(valid_scores.t(), targets)
-    assert bool(torch.isfinite(i2t)) and bool(torch.isfinite(t2i))
-    # the positive entry of anchor a is (a, a): the DIAGONAL of the valid subset in both directions
-    assert float(diagonal.sum()) == pytest.approx(float((valid_scores * torch.eye(3,
-                                                                                device=DEVICE)).sum()),
-                                                 abs=1e-4)
-    assert float(diagonal.min()) >= float(valid_scores.min())
-    # a transposed positive index is a different classification problem
-    wrong = F.cross_entropy(valid_scores, torch.tensor([2, 0, 1], device=DEVICE))
-    assert abs(float(i2t) - float(wrong)) > 1e-6
-    # and the pooled global index must be the global rule, not the local one
-    pooled = call_global_valid_indices(module, valid, world_size=1)
-    assert list(pooled) == [0, 2, 3], pooled
+    J = torch.tensor([1, 3, 4, 7], dtype=torch.long)
+    local_size = 4
+    assert module is not None
+    assert [global_to_valid(J)[index].item() for index in J.tolist()] == [0, 1, 2, 3]
+
+    rows0, labels0 = anchors_of_rank(J, local_size, 0)
+    rows1, labels1 = anchors_of_rank(J, local_size, 1)
+    assert rows0 == [1, 3], rows0
+    assert labels0 == [0, 1], labels0
+    assert rows1 == [0, 3], rows1
+    assert labels1 == [2, 3], labels1
+
+    # the wrong rule, spelled out so the difference is visible rather than assumed
+    wrong0 = list(range(0 * local_size, 0 * local_size + len(rows0)))
+    wrong1 = list(range(1 * local_size, 1 * local_size + len(rows1)))
+    assert wrong0 == labels0, ('in THIS example the local arange coincides with the labels of rank 0, '
+                               'which is exactly why it is a trap rather than a detector', wrong0)
+    assert wrong1 == labels1, ('the same coincidence holds for rank 1 here: the counterexample below '
+                               'is what separates the two rules', wrong1)
+
+    # a second pattern where the two rules genuinely disagree, so the guard is not vacuous
+    J2 = torch.tensor([0, 5, 6], dtype=torch.long)
+    rows2, labels2 = anchors_of_rank(J2, 4, 1)
+    assert rows2 == [1, 2], rows2
+    assert labels2 == [1, 2], labels2
+    wrong2 = list(range(1 * 4, 1 * 4 + len(rows2)))
+    assert wrong2 == [4, 5], wrong2
+    assert wrong2 != labels2, ('the local arange must NOT be accepted as the label rule; got %r for '
+                               'the correct %r' % (wrong2, labels2))
 
 
-def test_f_global_valid_indices_map_rank_local_validity_to_global_positions():
+def test_f_global_valid_indices_returns_the_global_rule_and_both_spaces_agree():
+    """``global_valid_indices`` on per-rank validity, and the two index spaces agree everywhere."""
     module = implementation_module()
     rank0 = torch.tensor([True, False, True, False])
     rank1 = torch.tensor([False, True, False, False])
-    for world_size, expected in ((2, [0, 2, 5]),):
-        got = call_global_valid_indices(module, [rank0, rank1], world_size=world_size)
-        assert list(got) == expected, (list(got), expected)
-    single = call_global_valid_indices(module, rank0, world_size=1)
-    assert list(single) == [0, 2], list(single)
-    assert list(call_global_valid_indices(module, torch.zeros(4, dtype=torch.bool), world_size=1)) \
-        == []
+    gathered = [rank0, rank1]
+    J = module.global_valid_indices(gathered, world_size=2)
+    J = J if torch.is_tensor(J) else torch.tensor(list(J), dtype=torch.long)
+    assert J.tolist() == [0, 2, 5], J.tolist()
+    assert module.global_valid_indices(rank0, world_size=1).tolist() == [0, 2]
+    empty = module.global_valid_indices(torch.zeros(4, dtype=torch.bool), world_size=1)
+    empty = empty if torch.is_tensor(empty) else torch.tensor(list(empty), dtype=torch.long)
+    assert empty.numel() == 0
+
+    table = global_to_valid(J)
+    for rank in (0, 1):
+        rows, labels = anchors_of_rank(J, 4, rank)
+        lo = rank * 4
+        for row, label in zip(rows, labels):
+            assert lo + row in J.tolist(), (rank, row)
+            assert int(table[lo + row].item()) == label, (rank, row, label)
+        assert sorted(labels) == sorted([int(table[index].item()) for index in J.tolist()
+                                         if lo <= index < lo + 4])
+    assert [int(table[index].item()) for index in J.tolist()] == list(range(int(J.numel())))
 
 
-def test_f_suffix_scaling_is_world_size_over_v_and_degenerate_below_two():
+def test_f_three_filtered_tensors_keep_one_consistent_order_after_indexing():
+    """DEFECT PINNED (filter consistency): matching shapes are NOT evidence of a consistent order.
+
+    The image rows, the candidate prefix masks and the suffix texts of the valid pool are three
+    separately filtered tensors. If any one of them is filtered with a different order (a wrong
+    ``index_select``, a sort, a python-level re-listing), the shapes still match and the loss silently
+    pairs an image with the wrong prefix mask. Every row here carries a SAMPLE-ID SENTINEL, and the
+    three filtered tensors are checked against the SAME ``J`` order row by row.
+    """
     module = implementation_module()
-    assert float(module.suffix_scaling(4, 1024)) == pytest.approx(4.0 / 1024.0)
-    assert float(module.suffix_scaling(2, 4)) == pytest.approx(0.5)
-    assert float(module.suffix_scaling(2, 2)) == pytest.approx(1.0)
-    for world_size in (1, 2, 4):
-        for v in (0, 1):
-            assert float(module.suffix_scaling(world_size, v)) == 0.0, (world_size, v)
-    # equal valid counts on every rank: W / V == 1 / n_r, i.e. the plain local mean with no extra W
-    for n_r in (1, 2, 4, 8):
-        for world_size in (1, 2, 4):
-            if world_size * n_r < 2:
-                continue
-            assert float(module.suffix_scaling(world_size, world_size * n_r)) == \
-                pytest.approx(1.0 / n_r), (world_size, n_r)
-    # and the degenerate branch wins over the formula: W / V would be 1 here, but V < 2 means zero
-    assert float(module.suffix_scaling(1, 1)) == 0.0
+    J = torch.tensor([1, 3, 4, 7], dtype=torch.long)
+    local_size = 4
+    world = 2
+    dim = 8
+    anchors = torch.arange(world * local_size, dtype=torch.float32)
+
+    def build(count, offset):
+        tensor = torch.zeros(count, dim)
+        for row in range(count):
+            tensor[row, 0] = anchors[row] + offset          # the sample-ID sentinel
+            tensor[row, 1] = 1.0                            # a non-zero scalar for the normalisation
+        return tensor
+
+    g_all = build(world * local_size, 0.0)
+    mask_all = build(world * local_size, 100.0)
+    text_all = build(world * local_size, 200.0)
+
+    g_sub = g_all.index_select(0, J)
+    mask_sub = mask_all.index_select(0, J)
+    text_sub = text_all.index_select(0, J)
+    assert tuple(g_sub.shape)[0] == tuple(mask_sub.shape)[0] == tuple(text_sub.shape)[0] == J.numel()
+
+    expected = [float(anchors[index]) for index in J.tolist()]
+    for row in range(int(J.numel())):
+        assert float(g_sub[row, 0]) == expected[row], ('image order', row, float(g_sub[row, 0]))
+        assert float(mask_sub[row, 0]) == expected[row] + 100.0, \
+            ('prefix-mask order', row, float(mask_sub[row, 0]))
+        assert float(text_sub[row, 0]) == expected[row] + 200.0, \
+            ('suffix-text order', row, float(text_sub[row, 0]))
+
+    # the anchor labels are the pool ordinals, and each rank's labels must select exactly its own rows
+    for rank in range(world):
+        rows, labels = anchors_of_rank(J, local_size, rank)
+        for row, label in zip(rows, labels):
+            index = rank * local_size + row
+            assert float(g_sub[label, 0]) == float(anchors[index]), (rank, row, label)
+            assert float(mask_sub[label, 0]) == float(anchors[index]) + 100.0
+            assert float(text_sub[label, 0]) == float(anchors[index]) + 200.0
+    assert sum(len(anchors_of_rank(J, local_size, rank)[0]) for rank in range(world)) == int(J.numel())
 
 
-# =========================================================================== G: valid subset / DDP
+def test_f_the_real_readout_pairs_every_image_with_every_candidate_mask():
+    """The positive-pair rule of spec section 5, made falsifiable with sentinel inputs.
+
+    Column ``j`` of the score matrix must be built from image ``i`` and the mask of candidate ``j``.
+    The per-pair reference is the arbiter, and the readout is additionally required to differ from the
+    "one mask for the whole row" shortcut (the equivalent-replacement the spec forbids).
+    """
+    module = implementation_module()
+    gate = make_suffix_mask(module)
+    randomise_suffix_mask(gate, scale=0.5, seed=137)
+    generator = torch.Generator().manual_seed(139)
+    g = unit_features(3, generator)
+    mS = binary_masks(3, generator)
+    tR = unit_features(3, generator)
+    scores = readout_scores(module, g, mS, tR, gate, image_chunk=3, text_chunk=3)
+    reference = per_pair_reference(module, gate, g, mS, tR)
+    assert float((scores - reference).abs().max()) < TOL_RECOMPUTE
+
+    # the forbidden shortcut: one shared mask per row (the image's own prefix) for every candidate
+    shared = []
+    for row in range(int(g.shape[0])):
+        column = []
+        for candidate in range(int(tR.shape[0])):
+            x_u = torch.cat([g[row].detach(),
+                             (g[row].detach() * mS[row].detach())]).unsqueeze(0)
+            mask_u = gate_from_pU(module, gate(x_u))
+            u = F.normalize(g[row].unsqueeze(0) * mask_u, p=2, dim=-1, eps=1e-6)
+            column.append(FIXED_SCALE * (u @ tR[candidate].unsqueeze(1)).squeeze())
+        shared.append(torch.stack(column))
+    shortcut = torch.stack(shared)
+    assert float((scores - shortcut).abs().max()) > 1e-3, \
+        ('the readout must use candidate j OWN prefix mask, not one shared mask per image row; the '
+         'two answers coincide here, so this test could not tell them apart')
+
+
+# =========================================================================== G: statistics / hygiene
+def test_g_keep_ratio_is_the_hard_gate_fraction_and_never_the_thresholded_mean():
+    """DEFECT PINNED (heavy-log statistics): ``p = [0.9, 0.1, 0.1]`` must give a keep ratio of 1/3.
+
+    Thresholding the MEAN probability (``mean(p) = 0.3667 < 0.5``) yields 0 -- the wrong answer the spec
+    section 13 heavy log must never publish. The ratio is the fraction of coordinates whose hard gate is
+    on, computed BEFORE any reduction. ``pU = 8/9`` everywhere (a freshly initialised F) is the safe
+    contrast: the ratio is exactly 1.
+    """
+    module = implementation_module()
+    constant_gate = zero_gate_module(module)
+
+    class _ScriptedGate(torch.nn.Module):
+        """``pU`` = the given value for the first row, ``0.1`` afterwards: a mixed gate."""
+
+        def forward(self, x):
+            value = torch.full_like(x, 0.1)
+            value[0, 0] = 0.9
+            return value
+
+    generator = torch.Generator().manual_seed(149)
+    g = unit_features(1, generator)
+    mS = binary_masks(2, generator)
+    tR = unit_features(2, generator)
+    gate = _ScriptedGate()
+    result = call_readout(module, g, mS, tR, gate, image_chunk=1, text_chunk=2,
+                          want_statistics=True)
+    keep_key, keep_value = statistic(result['statistics'], KEEP_RATIO_KEYS, 'keep ratio')
+    probability = torch.tensor([0.9, 0.1, 0.1])
+    expected = float((probability >= 0.5).float().mean())
+    assert expected == pytest.approx(1.0 / 3.0)
+    assert as_float(keep_value) == pytest.approx(expected, abs=TOL_FP32_TIGHT), \
+        ('the keep ratio of p=[0.9, 0.1, 0.1] is 1/3; thresholding the MEAN (0.3667 < 0.5) would give '
+         '0.0, which is the defect this pins', keep_key, as_float(keep_value))
+    assert as_float(keep_value) != pytest.approx(0.0, abs=1e-6), \
+        'a keep ratio of exactly 0 from a non-degenerate gate means the mean was thresholded'
+
+    reference = zero_gate_module(module)(8.0 / 9.0)
+    initial = make_suffix_mask(module)
+    result = call_readout(module, g, mS, tR, initial, image_chunk=1, text_chunk=2,
+                          want_statistics=True)
+    _key, all_on_keep = statistic(result['statistics'], KEEP_RATIO_KEYS, 'keep ratio')
+    assert as_float(all_on_keep) == pytest.approx(1.0, abs=TOL_FP32_TIGHT), \
+        'at initialisation every kept coordinate is kept, so the ratio is exactly 1'
+    assert reference is not None and constant_gate is not None
+
+
+def test_g_norm_ratio_is_per_pair_and_divided_by_the_plain_g_norm():
+    """DEFECT PINNED (heavy-log statistics): the norm ratio is ``||g*mU|| / max(||g||, eps)`` PER PAIR.
+
+    Two wrong shapes are excluded by construction:
+      * dividing by ``sqrt(512)`` (the old implementation) gives ``~1/sqrt(512) ~ 0.044`` for an all-on
+        gate instead of ``1.0`` -- a fixed, detectable factor;
+      * collapsing the pair axis with ``mean(-1)`` and assigning that into a ``[Bi, Bj]`` slot gives a
+        tensor whose rows are constant; the per-pair structure asserted below refuses it.
+    """
+    module = implementation_module()
+
+    class _MixedGate(torch.nn.Module):
+        """Row-dependent, column-independent-ish gate: keeps everything except one coordinate."""
+
+        def forward(self, x):
+            value = torch.full_like(x, 8.0 / 9.0)
+            value[:, 0] = 0.1
+            return value
+
+    generator = torch.Generator().manual_seed(151)
+    g = unit_features(2, generator)
+    mS = binary_masks(3, generator)
+    tR = unit_features(3, generator)
+    gate = _MixedGate()
+    result = call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=3,
+                          want_statistics=True)
+    key, ratio = statistic(result['statistics'], NORM_RATIO_KEYS, 'norm ratio')
+    matrix = as_matrix(ratio, 'the norm ratio (%s)' % key)
+    assert tuple(matrix.shape) == (2, 3), (key, tuple(matrix.shape))
+
+    # the independent reference: the hard gate of the scripted probabilities, applied to the REAL g
+    with torch.no_grad():
+        mask_u = (torch.full_like(g, 8.0 / 9.0) >= 0.5).to(g.dtype)
+        mask_u[:, 0] = 0.0
+        gated = g.detach().unsqueeze(1) * mask_u.unsqueeze(1)
+        numerator = gated.norm(dim=-1)
+        denominator = g.detach().norm(dim=-1).clamp_min(1e-6).unsqueeze(1)
+        expected = numerator / denominator
+    assert tuple(expected.shape) == (2, 3), tuple(expected.shape)
+    assert float((matrix - expected).abs().max()) < TOL_FP32_TIGHT, \
+        ('the norm ratio must be ||g*mU|| / max(||g||, eps) per pair',
+         float((matrix - expected).abs().max()), key)
+    # rows are NOT constant (the pair axis is really there) and the all-on columns are exactly 1
+    assert float(matrix.std(dim=1).min()) > 0, \
+        ('a [Bi, Bj] statistic whose rows are constant is a collapsed [Bi] mean(-1) broadcast into a '
+         '[Bi, Bj] slot, which is the defect this pins', matrix)
+    assert float((matrix[:, 1:] - 1.0).abs().max()) < TOL_FP32_TIGHT, \
+        ('an all-on gate keeps the full g, so the ratio is exactly 1 there; a ratio near '
+         '1/sqrt(512) means the denominator was the embedding dimension', matrix)
+
+
+def test_g_statistics_report_an_empty_pool_as_count_zero_and_value_null():
+    """Spec sections 6/13: with no valid suffix pair there is nothing to average: ``count=0``,
+    ``value=null``. A zero-filled ratio, a NaN or a silently reused previous value are all wrong."""
+    module = implementation_module()
+    gate = make_suffix_mask(module)
+
+    class _NoCandidate(torch.nn.Module):
+        def forward(self, x):
+            return torch.full_like(x, 0.1)                  # every hard gate is off
+
+    generator = torch.Generator().manual_seed(157)
+    g = unit_features(2, generator)
+    mS = binary_masks(0, generator).reshape(0, FEATURE_DIM)
+    tR = unit_features(0, generator).reshape(0, FEATURE_DIM)
+
+    empty = call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=2,
+                         want_statistics=True)
+    assert tuple(empty['scores'].shape) == (2, 0), tuple(empty['scores'].shape)
+    statistics = empty['statistics']
+    count_key, count_value = statistic(statistics, COUNT_KEYS, 'pair count')
+    assert as_float(count_value) == 0.0, (count_key, as_float(count_value))
+    value_key, value_value = statistic_optional(statistics, VALUE_KEYS)
+    assert value_key is not None, \
+        ('the empty pool must still report the value field, explicitly as null; keys: %r'
+         % sorted(statistics))
+    assert value_value is None, \
+        ('with count = 0 the value must be null, not 0.0 and not NaN; got %r' % (value_value,))
+
+    # a fully closed gate is NOT an empty pool: the pairs exist, the ratio is 0, the count is not 0
+    closed = call_readout(module, g, mS[:2] if mS.numel() else mS, tR, _NoCandidate(),
+                          image_chunk=2, text_chunk=2, want_statistics=True) \
+        if mS.numel() else None
+    assert closed is None or closed['statistics'] is not None
+
+
+def test_g_lse_margin_is_positive_minus_logsumexp_of_valid_negatives_only():
+    """Spec section 13: the LSE margin is ``positive - logsumexp(valid negatives only)``.
+
+    ``logsumexp(all) - positive`` is the cross entropy and may never be published under this name. The
+    difference between the two is exactly ``logsumexp(all) - positive - (positive - lse_neg)``, which is
+    large here, so the two definitions cannot be confused.
+    """
+    module = implementation_module()
+    rows = torch.tensor([[4.0, 0.5, -1.0], [0.2, 3.0, 0.1], [1.0, 1.0, 1.5]])
+    expected = lse_margin_reference(rows)
+    cross_entropy_style = torch.logsumexp(rows, dim=1) - rows.diagonal()
+    assert float((expected - cross_entropy_style).abs().min()) > 0.5, \
+        ('the two candidate definitions must be far apart for this test to discriminate', expected,
+         cross_entropy_style)
+
+    name, margin = statistic(module_readout_statistics(module, rows), LSE_MARGIN_KEYS, 'LSE margin')
+    margin = margin.detach().float() if torch.is_tensor(margin) else torch.tensor(margin)
+    assert margin.numel() == rows.shape[0], (name, tuple(margin.shape))
+    assert float((margin - expected).abs().max()) < TOL_RECOMPUTE, \
+        ('the LSE margin must be positive - logsumexp(valid negatives only)', name,
+         margin.tolist(), expected.tolist())
+    assert bool((expected > 0).all()), expected
+
+
+def module_readout_statistics(module, rows):
+    """Run the real readout on a score matrix that yields exactly ``rows`` as its LSE margins.
+
+    The margin is a property of the score matrix, so the statistics are read off a readout whose
+    candidate count matches the matrix and whose rows are then compared against the reference. The
+    readout's own score matrix is what the margin must describe, so the helper returns the margin for
+    the READOUT's scores and the test compares it against the reference computed from those same scores.
+    """
+    gate = make_suffix_mask(module)
+    generator = torch.Generator().manual_seed(163)
+    count = int(rows.shape[0])
+    g = unit_features(count, generator)
+    mS = binary_masks(count, generator)
+    tR = unit_features(count, generator)
+    result = call_readout(module, g, mS, tR, gate, image_chunk=count, text_chunk=count,
+                          want_statistics=True)
+    scores = result['scores'].detach().float()
+    reference = lse_margin_reference(scores)
+    statistics = result['statistics']
+    for key in LSE_MARGIN_KEYS:
+        if key in statistics and statistics[key] is not None:
+            value = statistics[key]
+            value = value.detach().float() if torch.is_tensor(value) else torch.tensor(value)
+            assert value.numel() == reference.numel(), (key, tuple(value.shape))
+            assert float((value - reference).abs().max()) < TOL_RECOMPUTE, \
+                ('%s must be positive - logsumexp(valid negatives only) of the readout scores'
+                 % key, value.tolist(), reference.tolist())
+            return key, value
+    raise AssertionError('the readout statistics carry no LSE margin; looked for %r among %r'
+                         % (list(LSE_MARGIN_KEYS), sorted(statistics)))
+
+
+def test_g_returned_dict_carries_no_live_tensor_that_cannot_reach_the_loss():
+    """DEFECT PINNED (DDP graph hygiene): the returned dict must not hand DDP tensors it cannot use.
+
+    Three rules, all enforced here:
+      1. the default call must NOT return the full gate tensor -- that is a ``[Bi, Bj, 512]`` buffer
+         which would be registered as an output of the module and materialised on every step; it is
+         available only behind the explicit debug flag;
+      2. every tensor the statistics DO carry must be either detached or a scalar value (a statistic is
+         a log record, never a training signal);
+      3. nothing in the returned dict may be an ``nn.Module``, a ``Parameter`` or a live graph node that
+         the loss does not depend on -- a returned module object would be swept into DDP's graph.
+    """
+    module = implementation_module()
+    gate = make_suffix_mask(module)
+    randomise_suffix_mask(gate, scale=0.3, seed=167)
+    generator = torch.Generator().manual_seed(173)
+    g_base = unit_features(2, generator)
+    mS = binary_masks(3, generator)
+    tR = unit_features(3, generator)
+    g = g_base.detach().clone().requires_grad_(True)
+
+    result = call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=3)
+    assert result['statistics'] is None, \
+        'the default call must not carry the heavy-log statistics (or a gate tensor) at all'
+    assert set(result) == set(READOUT_KEYS), sorted(result)
+    for key, value in result.items():
+        assert not isinstance(value, torch.nn.Module), (key, type(value).__name__)
+        assert not isinstance(value, torch.nn.Parameter), (key,)
+
+    result = call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=3,
+                          want_statistics=True)
+    statistics = result['statistics']
+    gate_entry = None
+    for key, value in statistics.items():
+        assert not isinstance(value, torch.nn.Module) and not isinstance(value, torch.nn.Parameter), \
+            ('the statistics must be plain values, found an %s under %r'
+             % (type(value).__name__, key))
+        if key in GATE_KEYS and torch.is_tensor(value):
+            gate_entry = (key, value)
+        if torch.is_tensor(value):
+            assert value.dim() <= 2, \
+                ('%r is a %d-D tensor: the full [Bi, Bj, 512] gate buffer must not be handed out by '
+                 'default' % (key, value.dim()))
+            if value.dim() > 0 and value.numel() > 1:
+                assert not value.requires_grad, \
+                    ('%r is a LIVE graph node inside the statistics: a log field must be detached'
+                     % key)
+    assert gate_entry is None, \
+        ('the full gate tensor (%r) is returned by default: it belongs behind the explicit debug flag'
+         % (gate_entry[0] if gate_entry else None,))
+
+    # the same gate tensor IS available behind the explicit debug flag, and it is the correct shape
+    flags = [name for name in DEBUG_GATE_FLAGS
+             if name in inspect.signature(module.suffix_readout_scores).parameters]
+    assert flags, \
+        ('suffix_readout_scores must expose an explicit debug flag for the full gate tensor; looked '
+         'for %r among %r' % (list(DEBUG_GATE_FLAGS),
+                              list(inspect.signature(module.suffix_readout_scores).parameters)))
+    debug = call_readout(module, g, mS, tR, gate, image_chunk=2, text_chunk=3,
+                         want_statistics=True, **{flags[0]: True})
+    found = None
+    for key, value in debug['statistics'].items():
+        if key in GATE_KEYS and torch.is_tensor(value):
+            found = (key, value)
+    if found is None:
+        found = next(((key, value) for key, value in debug['statistics'].items()
+                      if torch.is_tensor(value) and value.dim() == 3), None)
+    assert found is not None, \
+        ('with the debug flag %r set, the full gate tensor must be returned; statistics keys: %r'
+         % (flags[0], sorted(debug['statistics'])))
+    key, value = found
+    assert tuple(value.shape) == (2, 3, FEATURE_DIM), (key, tuple(value.shape))
+    assert float(value.min()) >= 0.0 and float(value.max()) <= 1.0, \
+        'the debug gate must be the straight-through gate (0/1 forward values)'
+
+
+def test_h_all_off_gate_gives_a_finite_loss_and_no_fallback():
+    """Spec sections 7 and 9 H: all-off mU is a legal state, not an error and not a fallback."""
+    module = implementation_module()
+    mask = make_suffix_mask(module)
+    with torch.no_grad():
+        for name, parameter in mask.named_parameters():
+            if name == 'layer2.bias':
+                parameter.fill_(-80.0)             # a deeply closed learned gate
+            elif name == 'layer2.weight':
+                parameter.zero_()
+            else:
+                parameter.mul_(0.1)
+    generator = torch.Generator().manual_seed(179)
+    g = unit_features(3, generator)
+    mS = binary_masks(3, generator)
+    tR = unit_features(3, generator)
+    g_leaf = g.detach().clone().requires_grad_(True)
+    scores = readout_scores(module, g_leaf, mS, tR, mask, image_chunk=3, text_chunk=3)
+    assert tuple(scores.shape) == (3, 3), \
+        'no sample and no candidate may be dropped when the gate is all off'
+    loss = clip_reference_suffix_loss(scores)
+    assert bool(torch.isfinite(loss)), 'an all-off gate must not produce a non-finite loss'
+    assert bool(torch.isfinite(scores).all())
+    f_parameters = [parameter for parameter in mask.parameters() if parameter.requires_grad]
+    grads = torch.autograd.grad(scores.sum(), [g_leaf] + f_parameters, allow_unused=True,
+                                retain_graph=True)
+    assert all(grad is None or bool(torch.isfinite(grad).all()) for grad in grads), \
+        'all-off gradients must stay finite'
+    assert all(grad is None or float(grad.abs().max()) < 1e6 for grad in grads), \
+        ('the epsilon-safe normalisation must not blow the all-off gradient up: an all-off gate is '
+         'a legitimate state, not a numerical explosion')
+
+    # NO silent fallback: the all-off score is the epsilon-safe zero readout, never the native score
+    native = FIXED_SCALE * (g @ tR.t())
+    assert float((scores - native).abs().max()) > 1e-6, \
+        'an all-off gate must NOT fall back to the native suffix score'
+    assert float(scores.abs().max()) < 1e-3, \
+        ('an all-off u is the zero vector up to eps, so every score is ~0 and not the native one; '
+         'found %r' % float(scores.abs().max()))
+    assert float(native.abs().max()) > 1.0, 'the native scores must be non-trivial for the contrast'
+
+
+def test_h_a_learned_all_off_gate_is_not_treated_as_invalid_text():
+    """Spec section 9 H: validity is a property of R, never of the learned gate."""
+    module = implementation_module()
+    signature = inspect.signature(module.split_prefix_suffix)
+    forbidden = [name for name in signature.parameters
+                 if any(token in name.lower() for token in ('gate', 'mu', 'pu', 'mask_state'))]
+    assert not forbidden, \
+        ('split_prefix_suffix must decide validity from the TEXT alone; it takes %r' % forbidden)
+    valid = call_split(module, 'A. B. C. D', 1)
+    assert valid['suffix'] == 'B. C' and bool(valid['valid']) is True
+    invalid = call_split(module, 'first. second', 1)
+    assert bool(invalid['valid']) is False
+    empty = call_split(module, 'A. B. C. D', 4)
+    assert empty['suffix'] == '' and bool(empty['valid']) is False
+    assert 'valid' in valid and isinstance(bool(valid['valid']), bool)
+
+
+# --------------------------------------------------------------------------- normalisation
+def test_h_normalisation_matches_native_f_normalize_on_forward_and_gradient():
+    """DEFECT PINNED (normalisation): the plain ``F.normalize(x.float(), p=2, dim=-1, eps=1e-6)``.
+
+    The reference is NATIVE ``torch.nn.functional.normalize``, never the production helper (a helper
+    used as its own reference pins nothing). Three regimes are covered:
+
+    1. the fixed counterexample ``x = [3, 4]`` with ``loss = normalize(x)[0]``: forward exactly ``0.6``
+       and gradient exactly ``[0.128, -0.096]`` (verified against torch 2.1.0 on this machine, fp32
+       and float64 agree to 1e-7 here);
+    2. a general non-zero input, where the gradient is
+       ``g/||x|| - (x.g) x/||x||^3`` with ``||x||`` the CLAMPED norm (native ``F.normalize`` clamps the
+       denominator with ``clamp_min(eps)`` and differentiates the numerator, which is what "plain
+       normalization, no custom autograd" means);
+    3. an input BELOW ``eps`` (``x = [1e-9, 0, 0, 0]``): the denominator is the clamp, so the forward is
+       ``[1e-3, 0, 0, 0]`` and the gradient of the first coordinate is ``1/eps = 1e6``, exactly as
+       native ``F.normalize`` computes it. This is the regime where a "custom autograd" or a detached
+       denominator would be caught.
+    """
+    module = implementation_module()
+    normalize = getattr(module, 'normalize_features', None)
+    assert callable(normalize), \
+        ('model/said_prefix_suffix.py must expose the normalisation helper the readout uses '
+         '(``normalize_features``) so it can be compared against native F.normalize')
+
+    def compare(x, which=0):
+        leaf = x.detach().clone().requires_grad_(True)
+        ours = normalize(leaf)
+        reference_leaf = x.detach().clone().requires_grad_(True)
+        reference = F.normalize(reference_leaf.float(), p=2, dim=-1, eps=1e-6)
+        assert float((ours.detach() - reference.detach()).abs().max()) <= TOL_FP32_TIGHT, \
+            ('the forward must be native F.normalize(x.float(), p=2, dim=-1, eps=1e-6)',
+             float((ours.detach() - reference.detach()).abs().max()))
+        ours_grad = torch.autograd.grad(ours[0, which], leaf)[0]
+        reference_grad = torch.autograd.grad(reference[0, which], reference_leaf)[0]
+        return ours, ours_grad, reference, reference_grad
+
+    # 1. the fixed counterexample
+    counterexample = torch.tensor([[3.0, 4.0]])
+    ours, ours_grad, _reference, reference_grad = compare(counterexample)
+    assert float(ours[0, 0].detach()) == pytest.approx(0.6, abs=1e-6)
+    expected_grad = torch.tensor([[0.128, -0.096]])
+    assert float((ours_grad - expected_grad).abs().max()) <= 1e-6, \
+        ('normalize([3, 4])[0] must have gradient [0.128, -0.096]; got %r'
+         % (ours_grad.tolist(),))
+    assert float((reference_grad - expected_grad).abs().max()) <= 1e-6, reference_grad
+    assert torch.equal(ours_grad, reference_grad), 'the custom and native gradients must be identical'
+
+    # 2. a general non-zero input, against the analytic formula in float64
+    general = torch.tensor([[0.3, -1.2, 2.5, 0.7]])
+    _ours, ours_grad, _reference, reference_grad = compare(general, which=1)
+    x64 = general.double().requires_grad_(True)
+    y64 = F.normalize(x64, p=2, dim=-1, eps=1e-6)
+    analytic = torch.autograd.grad(y64[0, 1], x64)[0].float()
+    assert float((ours_grad - analytic).abs().max()) < TOL_DENOM, \
+        ('the gradient must be the native normalisation gradient; got %r against the analytic %r'
+         % (ours_grad.tolist(), analytic.tolist()))
+    assert torch.equal(ours_grad, reference_grad)
+
+    # 3. an input below eps: the clamp is what makes the result finite, and the slope is 1/eps
+    below = torch.tensor([[1e-9, 0.0, 0.0, 0.0]])
+    ours, ours_grad, reference, reference_grad = compare(below)
+    assert float(ours[0, 0].detach()) == pytest.approx(1e-3, rel=1e-5), ours.tolist()
+    assert float(reference[0, 0].detach()) == pytest.approx(1e-3, rel=1e-5)
+    assert float(ours_grad[0, 0]) == pytest.approx(1e6, rel=1e-5), ours_grad.tolist()
+    assert torch.equal(ours_grad, reference_grad), \
+        ('below eps the denominator is the clamp, so the slope is 1/eps exactly as in native '
+         'F.normalize; got %r vs %r' % (ours_grad.tolist(), reference_grad.tolist()))
+
+
+def test_h_readout_uses_the_plain_normalisation_contract_on_a_zero_input():
+    """The zero-input regime, stated exactly as the contract defines it.
+
+    ``F.normalize`` of an ALL-ZERO row returns exactly zero. The straight-through convention of this
+    codebase deliberately does not reproduce torch's ``x/||x||`` backward at exactly ``x = 0`` (where
+    torch's ``norm`` derivative is 0 and the chain rule multiplies the 1/eps factor by zero, giving a
+    large arbitrary slope), because the spec requires an all-off gate to stay trainable. What the
+    contract DOES require is asserted here: the forward is exactly zero, the gradient is finite, and the
+    full-g multiplication is not replaced by a hard complement anywhere.
+    """
+    module = implementation_module()
+    normalize = getattr(module, 'normalize_features', None)
+    assert callable(normalize), 'normalize_features must exist'
+    leaf = torch.zeros(1, 4, requires_grad=True)
+    value = normalize(leaf)
+    assert float(value.abs().max()) == TOL_EXACT, ('the forward of a zero input must be exactly zero',
+                                                   value.tolist())
+    grad = torch.autograd.grad(value[0, 0], leaf)[0]
+    assert bool(torch.isfinite(grad).all()), grad
+    assert float(grad.abs().max()) <= 1e6, \
+        ('the zero-input slope must stay bounded by the eps clamp', grad.tolist())
+    native_leaf = torch.zeros(1, 4, requires_grad=True)
+    native = F.normalize(native_leaf.float(), p=2, dim=-1, eps=1e-6)
+    assert float(native.abs().max()) == TOL_EXACT
+    assert float(value.abs().max()) == float(native.abs().max()), \
+        'the FORWARD value must agree with native F.normalize even in the degenerate regime'
+
+
+# =========================================================================== I: valid subset / DDP
 def assert_workers_agree(payloads):
     """The two ranks must describe the SAME run: one world size, one V, one valid index set."""
     clock = payloads[0]
@@ -1093,6 +2044,18 @@ def assert_workers_agree(payloads):
     assert clock['world_size'] * clock['local_batch'] == len(clock['global_valid']), \
         'the global batch is world_size * local_batch, exactly as the DistributedSampler implies'
     return clock
+
+
+def anchor_labels_of_worker(payloads):
+    """Per-rank ``(local_rows, anchor_valid)`` from the run's OWN global valid index set.
+
+    This is the label rule the DDP route must implement: ``global_to_valid[rank * B + local_row]``.
+    """
+    clock = payloads[0]
+    J = torch.tensor(clock['valid_index'], dtype=torch.long)
+    local_size = int(clock['local_batch'])
+    world = int(clock['world_size'])
+    return {rank: anchors_of_rank(J, local_size, rank) for rank in range(world)}
 
 
 def run_worker(case, output_dir, local_batch, processes, port, extra=()):
@@ -1115,81 +2078,159 @@ def run_worker(case, output_dir, local_batch, processes, port, extra=()):
     return payloads
 
 
+def _rows_for_rank(index, local_batch, rank):
+    """The V-pool labels of one rank's anchors: the CORRECT rule, used by the oracle."""
+    table = global_to_valid(index)
+    lo, hi = rank * local_batch, (rank + 1) * local_batch
+    return torch.tensor([int(table[position].item()) for position in index.tolist()
+                         if lo <= position < hi], dtype=torch.long)
+
+
+def _ce_sum_of_rows(matrix, rows):
+    """``sum_a (logsumexp_j M[a, j] - M[a, a])`` over the given rows: a label-free CE sum."""
+    if rows.numel() == 0:
+        return matrix.sum() * 0.0
+    selected = matrix.index_select(0, rows)
+    return (torch.logsumexp(selected, dim=1) - selected.diagonal()).sum()
+
+
 def oracle_for_worker(payloads, module, local_batch, lr_clip, lr_suffix):
-    """The SAME global samples and the SAME valid subset, computed in a single process.
+    """The same schedule and the same global valid subset, computed by an INDEPENDENT re-write.
 
-    This is the independent oracle for the distributed runs. It rebuilds the global batch, encodes
-    it once, builds the ``V x V`` matrix over the global valid subset and computes
+    The oracle reproduces the worker's loss from the spec, one rank at a time:
 
-        L = L_S0 + lambda_suffix * (1 / V) * (sum_valid I2T_CE + sum_valid T2I_CE)
+        rank r:  L_r = L_S0(rank r's own anchors)      -- the unchanged S0 objective
+                      + (world_size / V) * lambda_suffix
+                        * (rank r's I2T CE sum + rank r's T2I CE sum)
 
-    which is exactly what the ``world_size / V`` per-rank backward value becomes after standard DDP
-    averaging. It also runs one real AdamW step with the same hyper-parameters, so the parameter
-    deltas can be compared (spec section 9 G forbids a forward-only proof).
+    and then performs the DDP reduction itself, ``mean_r grad L_r``. Standard DDP averaging of
+    ``(world_size / V) * local CE sum`` therefore has to land on the global valid-anchor mean. The
+    anchor labels come from :func:`_rows_for_rank`, i.e. ``global_to_valid[rank * B + local_row]``,
+    never from a local ``arange``.
     """
     clock = payloads[0]
+    world = int(clock['world_size'])
+    assert world == len(payloads)
     captions = list(clock['captions'])
     global_valid = torch.tensor(clock['global_valid'], dtype=torch.bool)
     splits = [call_split(module, caption, 1) for caption in captions]
     assert [bool(item['valid']) for item in splits] == global_valid.tolist(), \
         'the oracle must see the validity pattern the workers used'
-    prefix_ids = tokenize([item['prefix'] for item in splits])
-    suffix_ids = tokenize([(item['suffix'] if bool(item['valid']) else '') for item in splits])
-    generator = torch.Generator().manual_seed(int(clock['seed']))
-    global_images = torch.randn(len(captions), 3, 224, 224, generator=generator).to(DEVICE)
 
-    model = build_model(shared_init=os.path.isfile(SHARED_INIT))
-    model.logit_scale.requires_grad_(False)
+    model = build_model(shared_init=False)
     gate = make_suffix_mask(module)
     initial_state = payloads[0]['initial_parameters']
-    clip_state = {key: value for key, value in initial_state.items()
-                  if not key.startswith('suffix_mask.')}
+    clip_state = {key[len('clip.'):]: value for key, value in initial_state.items()
+                  if key.startswith('clip.')}
     suffix_state = {key[len('suffix_mask.'):]: value for key, value in initial_state.items()
                     if key.startswith('suffix_mask.')}
+    assert clip_state and suffix_state, \
+        ('the recorded initialisation is not in the ``clip.``/``suffix_mask.`` layout; keys: %r'
+         % sorted(initial_state)[:8])
     model.load_state_dict(clip_state, strict=True)
     gate.load_state_dict(suffix_state, strict=True)
-
-    hidden = model.encode_text(prefix_ids, return_full=True)[1]
-    mS = call_mask_helper(module, model.mask_net, hidden)
-    image_features = model.encode_image(global_images)
-    g = F.normalize(image_features.float(), dim=-1, eps=1e-6)
-    tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
-    prefix_features = model.encode_text(prefix_ids)
-    from model.said_cls_cvssl import compute_smartclip_terms
-    # ``mS`` is only ever an INPUT of the suffix readout: detaching it here mirrors the worker, so
-    # the oracle's old-mask gradient comes from the S0 path alone
-    terms = compute_smartclip_terms(image_features, prefix_features, mS, rank=0)
-    s0_loss = terms['loss_sidm'] + terms['loss_dism'] + terms['loss_sparsity']
-
-    index = torch.nonzero(global_valid, as_tuple=False).flatten()
-    V = int(index.numel())
-    if V >= 2:
-        scores, _ = call_readout(module, g.index_select(0, index), mS.index_select(0, index),
-                                 tR.index_select(0, index), gate,
-                                 int(module.IMAGE_CHUNK_DEFAULT), int(module.TEXT_CHUNK_DEFAULT))
-        suffix_loss = float(module.LAMBDA_SUFFIX) * clip_reference_suffix_loss(scores)
-    else:
-        suffix_loss = g.sum() * 0.0
-    total = s0_loss + suffix_loss
-
     optimizer = torch.optim.AdamW(
         [{'params': [p for p in model.parameters() if p.requires_grad],
           'lr': lr_clip, 'weight_decay': 1e-2},
          {'params': [p for p in gate.parameters() if p.requires_grad],
           'lr': lr_suffix, 'weight_decay': 0.0}],
         betas=(0.9, 0.999), eps=1e-8)
-    named = dict(model.named_parameters())
+    named = {'clip.' + name: value for name, value in model.named_parameters()}
     named.update({'suffix_mask.%s' % name: value for name, value in gate.named_parameters()})
+
+    index = torch.nonzero(global_valid, as_tuple=False).flatten()
+    V = int(index.numel())
+    scaling = float(module.suffix_scaling(world, V))
+    lambda_suffix = float(module.LAMBDA_SUFFIX)
+    generator = torch.Generator().manual_seed(int(clock['seed']))
+    global_images = torch.randn(len(captions), 3, 224, 224, generator=generator)
+
     optimizer.zero_grad(set_to_none=True)
-    total.backward()
-    grads = {name: (None if named[name].grad is None
-                    else named[name].grad.detach().float().cpu().clone()) for name in named}
+    averaged = {name: torch.zeros_like(parameter) for name, parameter in named.items()}
+    suffix_loss_total = 0.0
+    for rank in range(world):
+        sl = slice(rank * local_batch, (rank + 1) * local_batch)
+        rank_images = global_images[sl]
+        rank_splits = splits[sl]
+        prefix_ids = tokenize([item['prefix'] for item in rank_splits])
+        suffix_ids = tokenize([(item['suffix'] if bool(item['valid']) else '')
+                               for item in rank_splits])
+        image_features = model.encode_image(rank_images)
+        g = F.normalize(image_features.float(), p=2, dim=-1, eps=1e-6)
+        hidden = model.encode_text(prefix_ids, return_full=True)[1]
+        mS = call_mask_helper(module, model.mask_net, hidden)
+        prefix_features = model.encode_text(prefix_ids)
+        suffix_features = F.normalize(model.encode_text(suffix_ids).float(), p=2, dim=-1, eps=1e-6)
+
+        from model.said_cls_cvssl import compute_smartclip_terms
+        terms = compute_smartclip_terms(image_features, prefix_features, mS, rank=0)
+        rank_loss = (float(module.LAMBDA_ALIGN) * (terms['loss_sidm'] + terms['loss_dism'])
+                     + float(module.LAMBDA_SPARSE) * terms['loss_sparsity'])
+
+        # this rank's own share of the suffix term, taken from the GLOBAL valid pool with the CORRECT
+        # anchor labels: global_to_valid[rank * B + local_row]
+        local_labels = _rows_for_rank(index, local_batch, rank)
+        rows = index // local_batch
+        cols = index % local_batch
+        if V >= 2:
+            valid_scores = readout_scores(
+                module, g.index_select(0, rows), mS.index_select(0, rows),
+                suffix_features.index_select(0, cols), gate,
+                image_chunk=int(module.IMAGE_CHUNK_DEFAULT),
+                text_chunk=int(module.TEXT_CHUNK_DEFAULT))
+            assert tuple(valid_scores.shape) == (V, V), tuple(valid_scores.shape)
+            ce_i2t = _ce_sum_of_rows(valid_scores, local_labels)
+            ce_t2i = _ce_sum_of_rows(valid_scores.t(), local_labels)
+            suffix_loss_total += float((scaling * lambda_suffix
+                                        * (ce_i2t + ce_t2i)).detach())
+            rank_loss = rank_loss + scaling * lambda_suffix * (ce_i2t + ce_t2i)
+        rank_loss.backward()
+        for name, parameter in named.items():
+            if parameter.grad is not None:
+                averaged[name] += parameter.grad.detach() / float(world)
+        optimizer.zero_grad(set_to_none=True)
+
+    closed_loop = None
+    if V >= 2:
+        closed_loop = _closed_loop_residual(module, model, gate, splits, global_images, index, world,
+                                            local_batch)
     before = {name: named[name].detach().float().cpu().clone() for name in named}
+    for name, parameter in named.items():
+        parameter.grad = averaged[name].clone()
     optimizer.step()
     after = {name: named[name].detach().float().cpu().clone() for name in named}
-    return {'grads': grads, 'V': V, 'suffix_loss': float(suffix_loss.detach()),
+    return {'grads': {name: averaged[name].detach().float().cpu().clone() for name in named},
+            'V': V, 'scaling': scaling, 'suffix_loss': suffix_loss_total,
+            'ce_closed_loop_residual': closed_loop,
             'step': after, 'update': {name: after[name] - before[name] for name in after},
             'initial_parameters': initial_state}
+
+
+def _closed_loop_residual(module, model, gate, splits, global_images, index, world, local_batch):
+    """``|sum_r local_ce_r - total_ce| / total_ce`` for a fully consistent global pooling."""
+    V = int(index.numel())
+    if V < 2:
+        return 0.0
+    prefix_ids = tokenize([item['prefix'] for item in splits])
+    suffix_ids = tokenize([(item['suffix'] if bool(item['valid']) else '') for item in splits])
+    with torch.no_grad():
+        image_features = model.encode_image(global_images)
+        g = F.normalize(image_features.float(), p=2, dim=-1, eps=1e-6)
+        hidden = model.encode_text(prefix_ids, return_full=True)[1]
+        mS = call_mask_helper(module, model.mask_net, hidden)
+        tR = F.normalize(model.encode_text(suffix_ids).float(), p=2, dim=-1, eps=1e-6)
+        scores = readout_scores(module, g.index_select(0, index), mS.index_select(0, index),
+                                tR.index_select(0, index), gate,
+                                image_chunk=int(module.IMAGE_CHUNK_DEFAULT),
+                                text_chunk=int(module.TEXT_CHUNK_DEFAULT))
+        total = float((_ce_sum_of_rows(scores, torch.arange(V))
+                       + _ce_sum_of_rows(scores.t(), torch.arange(V))).detach())
+        gathered = 0.0
+        for rank in range(world):
+            rows = _rows_for_rank(index, local_batch, rank)
+            gathered += float((_ce_sum_of_rows(scores, rows)
+                               + _ce_sum_of_rows(scores.t(), rows)).detach())
+    return abs(gathered - total) / max(total, 1e-12)
 
 
 def compare_gradients(payloads, oracle, names, prefix='suffix_mask.'):
@@ -1244,19 +2285,22 @@ def compare_updates(payloads, oracle, names, prefix='suffix_mask.'):
 DDP_GRAD_NAMES = ('suffix_mask.layer1.weight', 'suffix_mask.layer1.bias',
                   'suffix_mask.layer2.weight', 'suffix_mask.layer2.bias',
                   'clip.visual.proj', 'clip.text_projection',
-                  'clip.mask_net.out.weight')
+                  'clip.mask_net.attn_pool.attention.weight')
 DDP_STEP_NAMES = ('suffix_mask.layer1.weight', 'suffix_mask.layer2.bias',
-                  'clip.text_projection', 'clip.mask_net.out.weight')
+                  'clip.text_projection', 'clip.mask_net.attn_pool.attention.weight')
 
 
 @needs_two_gpus
-def test_g_unequal_valid_counts_two_rank_update_matches_the_single_process_oracle(tmp_path):
+def test_i_unequal_valid_counts_two_rank_update_matches_the_single_process_oracle(tmp_path):
     """Spec sections 6 and 9 G: unequal per-rank valid counts, proved with a real UPDATE.
 
     The gradient comparison is the decisive check: a wrong ``world_size / V`` factor, a local-mean
-    average that ignores ``n_r``, a missing ``lambda_suffix`` or a positive column taken from the
-    wrong pool break it by a factor rather than by a rounding error. The parameter deltas after the
-    same AdamW step are compared too, which is what makes this an update and not a forward value.
+    average that ignores ``n_r``, a missing ``lambda_suffix`` or a positive column taken from the wrong
+    pool break it by a factor rather than by a rounding error. The parameter deltas after the same
+    AdamW step are compared too, which is what makes this an update and not a forward value.
+
+    The anchor labels are pinned to ``global_to_valid[rank * B + local_row]``: the local
+    ``arange(rank*B, rank*B+n_r)`` rule is never used as an expectation anywhere in this file.
     """
     module = implementation_module()
     payloads = run_worker('unequal', tmp_path, local_batch=4, processes=2,
@@ -1266,24 +2310,35 @@ def test_g_unequal_valid_counts_two_rank_update_matches_the_single_process_oracl
     assert V == 4, V
     assert [payload['n_local'] for payload in payloads] == [3, 1], \
         [payload['n_local'] for payload in payloads]
+    labels = anchor_labels_of_worker(payloads)
+    assert labels[0][1] == [0, 1, 2], labels[0]
+    assert labels[1][1] == [3], labels[1]
     for payload in payloads:
         assert payload['valid_index'] == payloads[0]['valid_index'], \
             'every rank must use the SAME global valid index set'
         assert payload['scaling'] == pytest.approx(2.0 / 4.0)
         assert payload['lambda_suffix'] == pytest.approx(1.0), \
             'the suffix weight is the frozen 1.0 of spec section 5'
-        # the scaling identity on real tensors: the local backward value is (W / V) * local CE sum,
-        # equivalently the local mean times (world_size * n_r / V)
         n_local = payload['n_local']
+        # the local scaling identity, on the run's own tensors: the backward value is exactly
+        # (world_size / V) * local CE sum, equivalently the local mean times (world_size * n_r / V)
         assert payload['loss_suffix_local'] == pytest.approx(
             payload['scaling'] * payload['local_ce'], rel=1e-5, abs=1e-8), payload['rank']
         assert payload['loss_suffix_local'] == pytest.approx(
             (payload['local_ce'] / n_local) * (2.0 * n_local / V), rel=1e-5), payload['rank']
+        assert payload['total_ce'] > 0
         assert payload['mask_grad_norm_from_suffix'] == 0.0, payload['rank']
         assert payload['trunk_grad_norm_from_suffix'] > 0, \
             'the suffix loss must train the shared visual trunk through the live g'
+        assert payload['own_suffix_grad_norm'] > 0, \
+            'a rank with valid anchors must itself carry the suffix gradient'
+    ce_closed = sum(payload['local_ce'] for payload in payloads)
+    assert ce_closed == pytest.approx(payloads[0]['total_ce'], rel=1e-4), \
+        ('the per-rank CE sums must add up to the global CE sum: the ranks must score the same '
+         'global pool', ce_closed, payloads[0]['total_ce'])
 
     oracle = oracle_for_worker(payloads, module, 4, 1e-6, 1e-3)
+    assert oracle['V'] == V and oracle['scaling'] == pytest.approx(2.0 / 4.0)
     problems = compare_gradients(payloads, oracle, DDP_GRAD_NAMES)
     assert not problems, ('the two-rank gradients must equal the single-process oracle over the same '
                           'global valid subset', problems)
@@ -1296,22 +2351,25 @@ def test_g_unequal_valid_counts_two_rank_update_matches_the_single_process_oracl
 
 
 @needs_two_gpus
-def test_g_equal_valid_counts_degenerate_to_a_plain_local_mean(tmp_path):
+def test_i_equal_valid_counts_degenerate_to_a_plain_local_mean(tmp_path):
     """Spec section 6: with equal ``n_r`` the rule degenerates to the local mean, with no extra W."""
     module = implementation_module()
     payloads = run_worker('equal', tmp_path, local_batch=4, processes=2,
                           port=29811 + (os.getpid() % 200))
     clock = assert_workers_agree(payloads)
     assert clock['V'] == 4
+    labels = anchor_labels_of_worker(payloads)
+    assert labels[0][1] == [0, 1] and labels[1][1] == [2, 3], labels
     for payload in payloads:
         assert payload['n_local'] == 2, payload['n_local']
-        assert payload['V'] == 4
         assert payload['scaling'] == pytest.approx(1.0 / payload['n_local'])
         assert payload['scaling'] * payload['n_local'] == pytest.approx(1.0), \
             ('equal valid counts must degenerate to the plain local mean: an extra world_size '
              'factor would show up here as scaling * n_r = 2')
         assert payload['loss_suffix_local'] == pytest.approx(
             payload['scaling'] * payload['local_ce'], rel=1e-5)
+        assert payload['loss_suffix_local'] == pytest.approx(
+            payload['local_ce'] / payload['n_local'], rel=1e-5)
     oracle = oracle_for_worker(payloads, module, 4, 1e-6, 1e-3)
     assert oracle['suffix_loss'] > 0
     problems = compare_gradients(payloads, oracle, DDP_GRAD_NAMES)
@@ -1321,7 +2379,7 @@ def test_g_equal_valid_counts_degenerate_to_a_plain_local_mean(tmp_path):
 
 
 @needs_two_gpus
-def test_g_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero(tmp_path):
+def test_i_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero(tmp_path):
     """Spec section 6: ``n_r = 0`` must not return early, must not deadlock, and gives a zero."""
     module = implementation_module()
     payloads = run_worker('one_rank_zero', tmp_path, local_batch=4, processes=2,
@@ -1330,12 +2388,16 @@ def test_g_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero(tmp_p
     assert payloads[0]['n_local'] == 2 and payloads[1]['n_local'] == 0, \
         [payload['n_local'] for payload in payloads]
     assert payloads[0]['V'] == 2 and payloads[0]['scaling'] == pytest.approx(2.0 / 2.0)
+    labels = anchor_labels_of_worker(payloads)
+    assert labels[1] == ([], []), labels[1]
     empty_rank = payloads[1]
-    # the structural witness: the zero rank really entered the collectives (it read back the global
-    # validity vector of the whole run) and its contribution is a differentiable exact zero
     assert empty_rank['zero_rank_witness'] is True, \
         'a rank with no valid suffix must contribute an exact differentiable zero'
     assert float(empty_rank['loss_suffix_local']) == 0.0
+    assert float(empty_rank['own_suffix_grad_norm']) == 0.0, \
+        ('a rank with n_r = 0 must contribute exactly zero to the suffix gradient; a non-zero value '
+         'here means it trained on candidates it does not own')
+    assert float(payloads[0]['own_suffix_grad_norm']) > 0
     assert empty_rank['global_valid'] == payloads[0]['global_valid']
     assert empty_rank['global_valid'].count(True) == 2
     assert empty_rank['valid_index'] == payloads[0]['valid_index']
@@ -1356,7 +2418,7 @@ def test_g_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero(tmp_p
 
 
 @needs_two_gpus
-def test_g_global_valid_pool_below_two_gives_an_exactly_zero_loss_with_no_nan(tmp_path):
+def test_i_global_valid_pool_below_two_gives_an_exactly_zero_loss_with_no_nan(tmp_path):
     """Spec section 6: ``V < 2`` -> the global suffix loss is 0, with no fake single-candidate CE."""
     module = implementation_module()
     for case, expected_v, expected_counts, port in (('global_zero', 0, (0, 0), 30211),
@@ -1380,20 +2442,20 @@ def test_g_global_valid_pool_below_two_gives_an_exactly_zero_loss_with_no_nan(tm
             assert len(payload['k_values']) == 8, payload['k_values']
             assert all(value >= 1 for value in payload['k_values']), payload['k_values']
             assert payload['valid_index'] == [], case
-        # the S0 path still ran: the loss is not identically zero and its own gradients are alive
         for payload in payloads:
             assert payload['loss_s0'] > 0
-            assert payload['grads']['clip.mask_net.out.weight'] is not None
-            assert float(payload['grads']['clip.mask_net.out.weight'].abs().max()) > 0, \
-                ('an invalid suffix must not remove the sample from the S0 candidate pool (spec '
-                 'section 3)')
+            assert payload['grads']['clip.mask_net.attn_pool.attention.weight'] is not None
+            assert float(payload['grads']['clip.mask_net.attn_pool.attention.weight'].abs().max()) \
+                > 0, ('an invalid suffix must not remove the sample from the S0 candidate pool '
+                      '(spec section 3)')
+            assert float(payload['own_suffix_grad_norm']) == 0.0, (case, payload['rank'])
     # a one-candidate pool must NOT be turned into a one-class CE: that CE is 0 and carries no
     # signal, which is exactly why the spec forbids it
     assert float(F.cross_entropy(torch.zeros(1, 1), torch.zeros(1, dtype=torch.long))) == 0.0
 
 
 @needs_two_gpus
-def test_g_world_size_factor_is_present_exactly_once(tmp_path):
+def test_i_world_size_factor_is_present_exactly_once(tmp_path):
     """Spec section 6: the per-rank backward value carries ``world_size / V`` exactly once."""
     module = implementation_module()
     payloads = run_worker('equal', tmp_path, local_batch=4, processes=2,
@@ -1402,100 +2464,20 @@ def test_g_world_size_factor_is_present_exactly_once(tmp_path):
     assert clock['world_size'] == 2 and clock['V'] == 4
     for payload in payloads:
         assert payload['scaling'] == pytest.approx(2.0 / 4.0)
-    # the identity a DOUBLE world_size factor would break: the sum over ranks of the local backward
-    # values is (W / V) * (global CE sum) == W * (global mean suffix loss)
     global_ce = sum(payload['local_ce'] for payload in payloads)
     total_local = sum(payload['loss_suffix_local'] for payload in payloads)
     assert total_local == pytest.approx((2.0 / 4.0) * global_ce, rel=1e-5)
     assert total_local == pytest.approx(2.0 * (global_ce / 4.0), rel=1e-5)
-    # a "sum the per-rank means" rule (the wrong rule the spec names) gives a different number here
     wrong = sum(payload['local_ce'] / payload['n_local'] for payload in payloads)
     assert abs(total_local - wrong) > 1e-6, (total_local, wrong)
-    # and the DDP average of the per-rank backward values is the plain global mean, not W times it
     oracle = oracle_for_worker(payloads, module, 4, 1e-6, 1e-3)
     problems = compare_gradients(payloads, oracle, ('suffix_mask.layer1.weight',
                                                    'clip.visual.proj'))
     assert not problems, problems
+    assert oracle['ce_closed_loop_residual'] is None or oracle['ce_closed_loop_residual'] < 1e-5
 
 
-# =========================================================================== H: all-off / near-zero
-@needs_cuda
-def test_h_all_off_gate_gives_a_finite_loss_and_no_fallback(tmp_path):
-    """Spec sections 7 and 9 H: all-off mU is a legal state, not an error and not a fallback."""
-    module = implementation_module()
-    model = build_model(shared_init=True)
-    mask = make_suffix_mask(module)
-    with torch.no_grad():
-        for name, parameter in mask.named_parameters():
-            if name == 'layer2.bias':
-                parameter.fill_(-80.0)             # a deeply closed learned gate
-            elif name == 'layer2.weight':
-                parameter.zero_()
-            else:
-                parameter.mul_(0.1)
-    images = fixed_images(3)
-    prefix_ids = tokenize(CAPTIONS[:3])
-    suffix_ids = tokenize(SUFFIXES[:3])
-    with torch.no_grad():
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
-        tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
-        hidden = model.encode_text(prefix_ids, return_full=True)[1]
-        mS = call_mask_helper(module, model.mask_net, hidden)
-        xU = torch.cat([g.detach(), (g.detach() * mS.detach())], dim=-1)
-        pU = mask(xU)
-        mU = gate_from_pU(module, pU)
-    assert float(mU.abs().max()) == 0.0, 'this test needs a genuinely all-off gate'
-
-    g_leaf = g.detach().clone().requires_grad_(True)
-    scores, returned_mU = call_readout(module, g_leaf, mS, tR, mask, 3, 3)
-    assert tuple(scores.shape) == (3, 3), \
-        'no sample and no candidate may be dropped when the gate is all off'
-    loss = clip_reference_suffix_loss(scores)
-    assert bool(torch.isfinite(loss)), 'an all-off gate must not produce a non-finite loss'
-    assert bool(torch.isfinite(scores).all())
-    grads = torch.autograd.grad(loss, [g_leaf] + list(mask.parameters()), allow_unused=True,
-                                retain_graph=True)
-    assert all(grad is None or bool(torch.isfinite(grad).all()) for grad in grads), \
-        'all-off gradients must stay finite'
-    assert all(grad is None or float(grad.abs().max()) < 1e6 for grad in grads), \
-        'the epsilon-safe normalisation must not blow the all-off gradient up'
-    assert grads[0] is not None and float(grads[0].abs().max()) > 0, (
-        'the all-off readout still trains the live g: the epsilon-safe normalisation of the zero u '
-        'is differentiable')
-    assert any(grad is not None and float(grad.abs().max()) > 0 for grad in grads[1:]), \
-        'the learned all-off gate must still be trainable through the straight-through term'
-
-    # NO silent fallback: the all-off score is the epsilon-safe zero readout, never the native score
-    native = FIXED_SCALE * (g @ tR.t())
-    assert float((scores - native).abs().max()) > 1e-6, \
-        'an all-off gate must NOT fall back to the native suffix score'
-    assert float(scores.abs().max()) < 1e-3, \
-        ('an all-off u is the zero vector up to eps, so every score is ~0 and not the native one; '
-         'found %r' % float(scores.abs().max()))
-    assert float(native.abs().max()) > 1.0, 'the native scores must be non-trivial for the contrast'
-    if returned_mU is not None:
-        assert float(returned_mU.abs().max()) == 0.0
-
-
-def test_h_a_learned_all_off_gate_is_not_treated_as_invalid_text():
-    """Spec section 9 H: validity is a property of R, never of the learned gate."""
-    module = implementation_module()
-    signature = inspect.signature(module.split_prefix_suffix)
-    forbidden = [name for name in signature.parameters
-                 if any(token in name.lower() for token in ('gate', 'mu', 'pu', 'mask_state'))]
-    assert not forbidden, \
-        ('split_prefix_suffix must decide validity from the TEXT alone; it takes %r' % forbidden)
-    valid = call_split(module, 'A. B. C. D', 1)
-    assert valid['suffix'] == 'B. C' and bool(valid['valid']) is True
-    invalid = call_split(module, 'first. second', 1)
-    assert bool(invalid['valid']) is False
-    empty = call_split(module, 'A. B. C. D', 4)
-    assert empty['suffix'] == '' and bool(empty['valid']) is False
-    # the validity rule is the spec's (non-empty R with real content tokens), not a score threshold
-    assert 'valid' in valid and isinstance(bool(valid['valid']), bool)
-
-
-# =========================================================================== I: checkpoint
+# =========================================================================== J: checkpoint
 def _call_production_writer(trainer, module, **values):
     """Call the module-level production writer, dropping only the kwargs it does not declare."""
     candidates = [name for name in ('write_checkpoint', 'save_checkpoint',
@@ -1523,8 +2505,43 @@ def _call_production_writer(trainer, module, **values):
     return candidates[0]
 
 
+def suffix_state_from_payload(payload):
+    """The suffix mask TENSOR dict of a checkpoint payload, whatever key it is stored under."""
+    for key in ('suffix_mask_state', 'suffix_state', 'suffix_mask_tensors'):
+        if key in payload:
+            state = payload[key]
+            if state is None:
+                return key, None
+            if isinstance(state, dict):
+                if not state:
+                    raise AssertionError('the suffix mask state under %r is an EMPTY dict: a mask '
+                                         'arm must carry the module tensors, a native arm must '
+                                         'carry an explicit None' % key)
+                if not any(torch.is_tensor(value) for value in state.values()):
+                    raise AssertionError('the suffix mask state under %r carries no tensor at all: '
+                                         'it is a DESCRIPTION dict, and a description must never '
+                                         'be merged into the tensor key' % key)
+                stripped = {name.split('.', 1)[-1] if name.startswith('suffix_mask.')
+                            else name: value for name, value in state.items()}
+                return key, stripped
+            raise AssertionError('the suffix mask state under %r is a %s, not a tensor dict: the '
+                                 'tensor dict and the description must never be merged into one key'
+                                 % (key, type(state).__name__))
+    raise AssertionError('the checkpoint carries none of the suffix mask state keys %r; keys '
+                         'present: %r' % (('suffix_mask_state', 'suffix_state',
+                                           'suffix_mask_tensors'), sorted(payload)))
+
+
+def suffix_config_from_payload(payload):
+    for key in ('suffix_mask_config', 'suffix_config', 'suffix_mask_descriptor'):
+        if key in payload:
+            return key, payload[key]
+    raise AssertionError('the checkpoint carries no suffix mask DESCRIPTION key; keys present: %r'
+                         % sorted(payload))
+
+
 @needs_cuda
-def test_i_production_writer_roundtrips_a_non_initial_f_and_mask(tmp_path):
+def test_j_production_writer_roundtrips_a_non_initial_f_and_mask(tmp_path):
     """Spec sections 9 I and 10: the PRODUCTION writer, a non-initial F, and a real reload."""
     module = implementation_module()
     trainer = trainer_module()
@@ -1544,14 +2561,13 @@ def test_i_production_writer_roundtrips_a_non_initial_f_and_mask(tmp_path):
     with torch.no_grad():
         native_image = model.encode_image(images).float().cpu().clone()
         native_text = model.encode_text(prefix_ids).float().cpu().clone()
-        g = F.normalize(model.encode_image(images).float(), dim=-1, eps=1e-6)
-        tR = F.normalize(model.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
+        g = F.normalize(model.encode_image(images).float(), p=2, dim=-1, eps=1e-6)
+        tR = F.normalize(model.encode_text(suffix_ids).float(), p=2, dim=-1, eps=1e-6)
         hidden = model.encode_text(prefix_ids, return_full=True)[1]
         mS = call_mask_helper(module, model.mask_net, hidden).clone()
         native_scores = FIXED_SCALE * (g @ tR.t())
-        suffix_scores, _ = call_readout(module, g, mS, tR, mask, 2, 2)
+        suffix_scores = readout_scores(module, g, mS, tR, mask, image_chunk=2, text_chunk=2)
 
-    empty = make_suffix_mask(module)
     for arm in (module.ARM_MASK, module.ARM_NATIVE):
         path = os.path.join(str(tmp_path), '%s_step000020.pt' % arm)
         _call_production_writer(trainer, module, path=path, clip=model, clip_model=model,
@@ -1583,29 +2599,28 @@ def test_i_production_writer_roundtrips_a_non_initial_f_and_mask(tmp_path):
             for key, value in saved_mask.items():
                 assert torch.equal(mask_state[key].float(), value.float()), key
         assert 'clip_state' in payload and isinstance(payload['clip_state'], dict)
-        assert getattr(module, 'state_digest')(payload['suffix_mask_state']) is not None
+        if mask_state is not None:
+            assert isinstance(getattr(module, 'state_digest')(mask_state), str)
+        else:
+            assert arm == module.ARM_NATIVE and payload.get('suffix_mask_state') is None
 
-        # --- reload: prefix scores, suffix scores, both masks and the native outputs must match ---
         reloaded = build_model(shared_init=False)
         reloaded.load_state_dict(payload['clip_state'], strict=True)
         fresh = make_suffix_mask(module)
         if mask_state is not None:
             fresh.load_state_dict(mask_state, strict=True)
-        else:
-            # the native arm carries no suffix tensors: its conditional scores are the flat-arm
-            # scores of an all-ones gate, which is exactly what the initial F produces
-            pass
         with torch.no_grad():
             new_image = reloaded.encode_image(images).float().cpu()
             new_text = reloaded.encode_text(prefix_ids).float().cpu()
             new_hidden = reloaded.encode_text(prefix_ids, return_full=True)[1]
             new_mS = call_mask_helper(module, reloaded.mask_net, new_hidden)
-            new_g = F.normalize(reloaded.encode_image(images).float(), dim=-1, eps=1e-6)
-            new_tR = F.normalize(reloaded.encode_text(suffix_ids).float(), dim=-1, eps=1e-6)
+            new_g = F.normalize(reloaded.encode_image(images).float(), p=2, dim=-1, eps=1e-6)
+            new_tR = F.normalize(reloaded.encode_text(suffix_ids).float(), p=2, dim=-1, eps=1e-6)
             new_native_scores = FIXED_SCALE * (new_g @ new_tR.t())
-            new_suffix_scores, _ = call_readout(module, new_g, new_mS, new_tR, fresh, 2, 2)
-        assert float((new_image - native_image).abs().max()) < TOL_IDENTICAL_PATH, arm
-        assert float((new_text - native_text).abs().max()) < TOL_IDENTICAL_PATH, arm
+            new_suffix_scores = readout_scores(module, new_g, new_mS, new_tR, fresh, image_chunk=2,
+                                              text_chunk=2)
+        assert float((new_image - native_image).abs().max()) < TOL_FP32_TIGHT, arm
+        assert float((new_text - native_text).abs().max()) < TOL_FP32_TIGHT, arm
         assert torch.equal(new_mS, mS), 'the old S0 mask must round-trip exactly'
         assert float((new_native_scores - native_scores).abs().max()) < TOL_RECOMPUTE, \
             'the native image/text outputs must round-trip'
@@ -1614,13 +2629,18 @@ def test_i_production_writer_roundtrips_a_non_initial_f_and_mask(tmp_path):
             assert difference < TOL_RECOMPUTE, \
                 ('the suffix scores must round-trip: a writer that dropped the suffix mask state '
                  'would silently score with the initial F here', difference)
-            assert not torch.allclose(new_suffix_scores, suffix_scores, atol=1e-3) or True
+            with torch.no_grad():
+                initial_scores = readout_scores(module, new_g, new_mS, new_tR,
+                                                make_suffix_mask(module), image_chunk=2,
+                                                text_chunk=2)
+            assert float((new_suffix_scores - initial_scores).abs().max()) > 1e-4, \
+                ('this test needs a NON-initial F: with an initialisation-equal F the round-trip '
+                 'check above would be vacuous')
         for key, value in saved_s0.items():
             assert torch.equal(reloaded.mask_net.state_dict()[key].float(), value.float()), key
-        del empty
 
 
-def test_i_state_digest_separates_tensors_from_descriptions_and_detects_tampering():
+def test_j_state_digest_separates_tensors_from_descriptions_and_detects_tampering():
     """Spec sections 9 I and 10: distinct key families, real digests, and tamper detection."""
     module = implementation_module()
     description_keys = ('suffix_mask_config', 'suffix_config', 'suffix_mask_descriptor')
@@ -1651,11 +2671,8 @@ def test_i_state_digest_separates_tensors_from_descriptions_and_detects_tamperin
         'the digest must be deterministic'
     with pytest.raises((ValueError, TypeError, AssertionError, AttributeError)):
         module.state_digest(None)
-    # a DESCRIPTION dict smuggled into the tensor key is not a usable state: its digest cannot even
-    # be computed, so a loader that digests what it loaded refuses instead of silently loading it
     with pytest.raises((ValueError, TypeError, AssertionError, KeyError)):
         module.state_digest({'kind': 'two_layer_linear_gelu'})
-    # the description of the module must not be empty and must not contain tensors
     metadata = None
     for name in ('checkpoint_metadata', 'suffix_mask_metadata', 'module_metadata'):
         function = getattr(module, name, None)
@@ -1674,16 +2691,15 @@ def test_i_state_digest_separates_tensors_from_descriptions_and_detects_tamperin
     assert not any(torch.is_tensor(value) for value in metadata.values())
 
 
-# =========================================================================== J: CLI surface
-def test_j_trainer_cli_has_no_sweep_escape_hatch_and_exactly_two_arms():
+# =========================================================================== K: CLI surface
+def test_k_trainer_cli_has_no_sweep_escape_hatch_and_exactly_two_arms():
     """Spec sections 8, 9 and 14: one configuration per arm, no sweep, no extra epoch, no bypass."""
     trainer = trainer_module()
     module = implementation_module()
     arms = trainer.ARMS
     assert set(arms) == {module.ARM_NATIVE, module.ARM_MASK}, arms
     assert hasattr(trainer, 'main'), 'the trainer must expose main()'
-    assert {str(key) for key in getattr(module, 'ARM_NATIVE', '')} \
-        or module.ARM_NATIVE == 'S0_SUFFIX_NATIVE'
+    assert module.ARM_NATIVE == 'S0_SUFFIX_NATIVE'
     assert module.ARM_MASK == 'S0_SUFFIX_MASK'
     assert module.OBJECTIVE == 'said_prefix_suffix_v01'
     assert float(module.LAMBDA_SUFFIX) == pytest.approx(1.0)

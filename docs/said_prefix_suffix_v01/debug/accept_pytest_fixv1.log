@@ -1,0 +1,141 @@
+########## hashes under test ##########
+  10494600e6655eb927a4b993c30855b37f1bda5c8262400c6772d8b65a632dc1  model/said_prefix_suffix.py
+  bec83f9bfdc8bccca624e959897f73799f71649de99d91a8e984b7714a8d7c5c  train/train_said_prefix_suffix.py
+  6ad3db0e945c4a44106550e8f5b9eb264e7f43c240dfd0ecfd36b40ea4075b68  tests/test_said_prefix_suffix.py
+  3ab13d13f94c8a1e7f63f3fb8c78433a01b7d2eca91858a4e1f249dbba566bfa  tests/_suffix_ddp_worker.py
+########## git state ##########
+  HEAD 74bf9c07f803059072dca2d6aec13f036fb629d0
+   M model/said_prefix_suffix.py
+   M tests/_suffix_ddp_worker.py
+   M tests/test_said_prefix_suffix.py
+   M train/train_said_prefix_suffix.py
+
+########## LAYER 1+2: pytest ##########
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['/root/miniconda3/envs/said-smartclip/bin/python', '-m', 'torch.distributed.run', '--nproc_per_...: https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n').returncode
+_______________ test_i_world_size_factor_is_present_exactly_once _______________
+tests/test_said_prefix_suffix.py:2461: in test_i_world_size_factor_is_present_exactly_once
+    payloads = run_worker('equal', tmp_path, local_batch=4, processes=2,
+tests/test_said_prefix_suffix.py:2072: in run_worker
+    assert result.returncode == 0, (command, result.stdout[-6000:], result.stderr[-6000:])
+E   AssertionError: (['/root/miniconda3/envs/said-smartclip/bin/python', '-m', 'torch.distributed.run', '--nproc_per_node=2', '--master_po...: https://pytorch.org/docs/stable/elastic/errors.html
+E     ============================================================
+E     ')
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['/root/miniconda3/envs/said-smartclip/bin/python', '-m', 'torch.distributed.run', '--nproc_per_...: https://pytorch.org/docs/stable/elastic/errors.html\n============================================================\n').returncode
+_________ test_j_production_writer_roundtrips_a_non_initial_f_and_mask _________
+tests/test_said_prefix_suffix.py:2555: in test_j_production_writer_roundtrips_a_non_initial_f_and_mask
+    model.mask_net.out.weight.add_(torch.randn_like(model.mask_net.out.weight) * 0.05)
+../miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/modules/module.py:1931: in __getattr__
+    raise AttributeError(
+E   AttributeError: 'MaskNetwork' object has no attribute 'out'
+_ test_j_state_digest_separates_tensors_from_descriptions_and_detects_tampering _
+tests/test_said_prefix_suffix.py:2674: in test_j_state_digest_separates_tensors_from_descriptions_and_detects_tampering
+    with pytest.raises((ValueError, TypeError, AssertionError, KeyError)):
+E   Failed: DID NOT RAISE any of (ValueError, TypeError, AssertionError, KeyError)
+=============================== warnings summary ===============================
+tests/test_said_prefix_suffix.py::test_a_split_follows_the_spec_worked_examples_exactly
+  /root/SAID-s0-suffix-v01/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import packaging
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 10 durations =============================
+13.27s call     tests/test_said_prefix_suffix.py::test_i_global_valid_pool_below_two_gives_an_exactly_zero_loss_with_no_nan
+13.16s call     tests/test_said_prefix_suffix.py::test_i_unequal_valid_counts_two_rank_update_matches_the_single_process_oracle
+12.36s call     tests/test_said_prefix_suffix.py::test_i_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero
+12.32s call     tests/test_said_prefix_suffix.py::test_i_equal_valid_counts_degenerate_to_a_plain_local_mean
+11.92s call     tests/test_said_prefix_suffix.py::test_i_world_size_factor_is_present_exactly_once
+4.49s call     tests/test_said_prefix_suffix.py::test_b_suffix_is_encoded_by_its_own_forward_and_only_the_suffix_target_moves
+3.47s call     tests/test_said_prefix_suffix.py::test_b_mS_depends_on_the_prefix_alone_and_mU_only_on_g_and_mS
+3.42s call     tests/test_said_prefix_suffix.py::test_d_initialised_mU_is_all_ones_so_conditional_equals_native_scores
+3.39s call     tests/test_said_prefix_suffix.py::test_j_production_writer_roundtrips_a_non_initial_f_and_mask
+3.28s call     tests/test_said_prefix_suffix.py::test_e_lambda_suffix_zero_reproduces_the_original_s0_objective_and_gradients
+=========================== short test summary info ============================
+FAILED tests/test_said_prefix_suffix.py::test_b_the_caption_said_invariant_is_enforced_on_the_real_input_shape
+FAILED tests/test_said_prefix_suffix.py::test_c_gate_mU_is_a_straight_through_hard_gate
+FAILED tests/test_said_prefix_suffix.py::test_d_initialisation_is_pU_8_9_and_mU_exactly_ones_with_a_restored_rng
+FAILED tests/test_said_prefix_suffix.py::test_d_first_backward_gives_the_zero_initialised_output_layer_no_gradient
+FAILED tests/test_said_prefix_suffix.py::test_e_lambda_suffix_zero_reproduces_the_original_s0_objective_and_gradients
+FAILED tests/test_said_prefix_suffix.py::test_f_readout_signature_and_return_type_are_the_frozen_ones
+FAILED tests/test_said_prefix_suffix.py::test_f_index_mapping_counterexample_W2_B4_J_1_3_4_7
+FAILED tests/test_said_prefix_suffix.py::test_g_keep_ratio_is_the_hard_gate_fraction_and_never_the_thresholded_mean
+FAILED tests/test_said_prefix_suffix.py::test_g_norm_ratio_is_per_pair_and_divided_by_the_plain_g_norm
+FAILED tests/test_said_prefix_suffix.py::test_g_statistics_report_an_empty_pool_as_count_zero_and_value_null
+FAILED tests/test_said_prefix_suffix.py::test_g_lse_margin_is_positive_minus_logsumexp_of_valid_negatives_only
+FAILED tests/test_said_prefix_suffix.py::test_g_returned_dict_carries_no_live_tensor_that_cannot_reach_the_loss
+FAILED tests/test_said_prefix_suffix.py::test_i_unequal_valid_counts_two_rank_update_matches_the_single_process_oracle
+FAILED tests/test_said_prefix_suffix.py::test_i_equal_valid_counts_degenerate_to_a_plain_local_mean
+FAILED tests/test_said_prefix_suffix.py::test_i_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero
+FAILED tests/test_said_prefix_suffix.py::test_i_global_valid_pool_below_two_gives_an_exactly_zero_loss_with_no_nan
+FAILED tests/test_said_prefix_suffix.py::test_i_world_size_factor_is_present_exactly_once
+FAILED tests/test_said_prefix_suffix.py::test_j_production_writer_roundtrips_a_non_initial_f_and_mask
+FAILED tests/test_said_prefix_suffix.py::test_j_state_digest_separates_tensors_from_descriptions_and_detects_tampering
+19 failed, 29 passed, 1 warning in 96.95s (0:01:36)
+PYTEST_EXIT=1
+
+########## small ARM S0_SUFFIX_NATIVE (batch=16 steps=2) ##########
+  EXIT=1
+[0]:
+  time      : 2026-09-14_01:18:29
+  host      : cloud-ai-master-devbox-2329866500-vscode-4dcad680-devbox
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 3320623)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+  NO LOG
+  tail:
+  --- checkpoint round-trip ---
+  NO CHECKPOINT
+
+########## small ARM S0_SUFFIX_MASK (batch=16 steps=2) ##########
+  EXIT=1
+[0]:
+  time      : 2026-09-14_01:19:03
+  host      : cloud-ai-master-devbox-2329866500-vscode-4dcad680-devbox
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 3322975)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+  NO LOG
+  tail:
+  --- checkpoint round-trip ---
+  NO CHECKPOINT
+
+########## LAYER 4: production entry, 4 GPUs x 256, 2 steps ##########
+
+########## prod ARM S0_SUFFIX_NATIVE (batch=256 steps=2) ##########
+  EXIT=1
+[0]:
+  time      : 2026-09-14_01:19:45
+  host      : cloud-ai-master-devbox-2329866500-vscode-4dcad680-devbox
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 3325366)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+  NO LOG
+  tail:
+  --- checkpoint round-trip ---
+  NO CHECKPOINT
+
+########## prod ARM S0_SUFFIX_MASK (batch=256 steps=2) ##########
+  EXIT=1
+[0]:
+  time      : 2026-09-14_01:20:32
+  host      : cloud-ai-master-devbox-2329866500-vscode-4dcad680-devbox
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 3327999)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+  NO LOG
+  tail:
+  --- checkpoint round-trip ---
+  NO CHECKPOINT
+
+########## debug update accounting ##########
+  DEBUG_OPTIMIZER_UPDATES=0
+  formal_optimizer_updates=0
+ACCEPT_DONE 2026-09-14T01:20:35+08:00

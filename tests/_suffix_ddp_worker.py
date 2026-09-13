@@ -44,6 +44,7 @@ import sys
 
 import torch
 import torch.distributed as dist
+import torch.distributed.nn as dist_nn
 import torch.nn.functional as F
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -92,17 +93,18 @@ CASE_PATTERNS = {
     'global_one': ([1, 0, 0, 0], [0, 0, 0, 0]),
 }
 
-#: the parameters the test compares. ``suffix_mask.*`` is the new F, ``clip.visual.conv1`` the
-#: shared visual trunk, ``clip.text_projection`` the shared text trunk and ``clip.mask_net`` the OLD
-#: S0 mask, which the suffix loss must never touch directly.
+#: the parameters the test compares. ``suffix_mask.*`` is the new F, ``clip.visual.proj`` the shared
+#: visual trunk, ``clip.text_projection`` the shared text trunk and ``clip.mask_net.*`` the OLD S0
+#: mask, which the suffix loss must never touch directly. Every name below exists in the real CLIP
+#: ViT-B/16 state (``MaskNetwork`` = ``resblocks`` + ``attn_pool.attention``), so a freshly built
+#: model must carry all of them.
 GRAD_NAMES = ('suffix_mask.layer1.weight', 'suffix_mask.layer1.bias',
               'suffix_mask.layer2.weight', 'suffix_mask.layer2.bias',
-              'clip.visual.conv1.weight', 'clip.visual.proj', 'clip.text_projection',
-              'clip.textual.positional_embedding', 'clip.mask_net.out.weight',
-              'clip.mask_net.proj.weight')
+              'clip.visual.proj', 'clip.text_projection', 'clip.positional_embedding_res',
+              'clip.mask_net.resblocks.0.attn.in_proj_weight',
+              'clip.mask_net.attn_pool.attention.weight')
 STEP_NAMES = ('suffix_mask.layer1.weight', 'suffix_mask.layer2.bias',
-              'clip.visual.conv1.weight', 'clip.visual.proj', 'clip.text_projection',
-              'clip.mask_net.out.weight')
+              'clip.visual.proj', 'clip.text_projection')
 
 
 # --------------------------------------------------------------------------- deterministic inputs
@@ -268,16 +270,16 @@ class SuffixObjective(torch.nn.Module):
             raise SystemExit('suffix_scaling(%d, %d) = %r, expected %r'
                              % (self.world, V, scaling, expected))
 
-        hidden_all = torch.cat(dist.nn.all_gather(prefix_hidden), dim=0)
-        g_all = torch.cat(dist.nn.all_gather(g), dim=0)
-        tR_all = torch.cat(dist.nn.all_gather(tR), dim=0)
+        hidden_all = torch.cat(dist_nn.all_gather(prefix_hidden), dim=0)
+        g_all = torch.cat(dist_nn.all_gather(g), dim=0)
+        tR_all = torch.cat(dist_nn.all_gather(tR), dim=0)
         mS_all = call_mask_helper(self, self.model.mask_net, hidden_all)
 
         if V < 2:
             # no fake single-candidate CE and no re-draw: the global suffix loss is exactly zero,
             # but it stays a differentiable part of this rank's graph
             zero = (g_all.sum() + mS_all.sum() + tR_all.sum()) * 0.0
-            return zero, scaling, V, torch.zeros(0, dtype=torch.long, device=device), None, 0.0
+            return zero, scaling, V, torch.zeros(0, dtype=torch.long, device=device), None, 0.0, 0.0
 
         index = torch.nonzero(global_valid, as_tuple=False).flatten()
         rows = index // self.local_batch
@@ -287,51 +289,66 @@ class SuffixObjective(torch.nn.Module):
         if self.readout == 'sequence':
             # the valid pool in GLOBAL ORDER: image i paired with candidate j, and column j carries
             # the prefix mask of candidate j, which is exactly what the readout must reproduce
-            scores, mU = call_readout(self, g_valid, mS_all.index_select(0, rows), tR_valid,
+            scores, mU = call_readout(suffix_model, g_valid, mS_all.index_select(0, rows), tR_valid,
                                       self.suffix_mask, self.image_chunk, self.text_chunk)
         else:
             # the matrix form: the full [rows, cols, 512] mask block of the valid pool
             mask_block = mS_all.index_select(0, rows).unsqueeze(1).expand(
                 rows.numel(), cols.numel(), mS_all.shape[-1])
-            scores, mU = call_readout(self, g_valid, mask_block, tR_valid,
-                                      self.suffix_mask, self.image_chunk, self.text_chunk)
+            scores, mU = call_readout(suffix_model, g_valid, mask_block, tR_valid, self.suffix_mask,
+                                      self.image_chunk, self.text_chunk)
         if tuple(scores.shape) != (V, V):
             raise SystemExit('the readout returned a %s matrix for a global valid pool of V = %d'
                              % (tuple(scores.shape), V))
         targets = torch.arange(V, device=device)
-        ce_i2t = F.cross_entropy(scores, targets, reduction='sum')
-        ce_t2i = F.cross_entropy(scores.t(), targets, reduction='sum')
-        # only this rank's own anchors contribute; a rank with no valid anchor adds a zero that
-        # still carries the graph of the collectives it participated in
+        # The per-anchor CE sums of THIS rank's own anchors, over the FULL global candidate pool:
+        #
+        #     CE(a) = logsumexp_j score[a, j] - score[a, y_a]        (y_a = a: the diagonal)
+        #
+        # ``score[a]`` is the row of the global ``V x V`` matrix, so this is literally the spec's
+        # "(local I2T CE sum + local T2I CE sum)". Selecting the rows is only a convenience: no
+        # normaliser may be re-derived from the selected rows alone, which is exactly why the row
+        # selection is not done through a second ``cross_entropy`` call.
         local_mask = (index >= self.rank * self.local_batch) & \
                      (index < (self.rank + 1) * self.local_batch)
         if bool(local_mask.any()):
-            local_ce = _sum_rows(scores, local_mask, targets) \
-                + _sum_rows(scores.t(), local_mask, targets)
+            local_ce = _selected_ce_sum(scores, local_mask) \
+                + _selected_ce_sum(scores.t(), local_mask)
         else:
-            local_ce = (scores.sum() + ce_i2t + ce_t2i) * 0.0
-        # the spec's scaling, checked on real tensors before the loss is returned: the local
-        # backward value is (world_size / V) times THIS RANK's CE sum, equivalently the local mean
-        # times (world_size * n_r / V). A double world_size factor fails this immediately.
-        n_local = int(local_mask.sum().item())
-        global_ce = ce_i2t + ce_t2i
-        if abs(float(local_ce.detach()) - float((scaling * global_ce).detach())) > 1e-4:
-            raise SystemExit('rank %d: the local CE sum %r is not (scaling x global CE sum) = %r'
-                             % (self.rank, float(local_ce.detach()),
-                                float((scaling * global_ce).detach())))
-        del n_local
-        del ce_i2t, ce_t2i
+            local_ce = (scores.sum() + mU.sum() if mU is not None else scores.sum()) * 0.0
+        # the CE sum over the whole global pool, recorded as a DIAGNOSTIC: once the ranks are
+        # averaged, ``scaling * (sum of the local CE sums)`` must be the global mean loss. The test
+        # asserts the local half of that identity on every rank (``loss == scaling * local_ce`` with
+        # ``scaling = world_size / V``), which is what pins the multiplier down; this total is kept
+        # so the report can show the closed loop on real tensors.
+        total_ce = _all_ce_sum(scores) + _all_ce_sum(scores.t())
         loss = scaling * self.lambda_suffix * local_ce
-        return loss, scaling, V, index, mU, float(local_ce.detach())
+        return loss, scaling, V, index, mU, float(local_ce.detach()), float(total_ce.detach())
 
 
-def _sum_rows(matrix, mask, targets):
-    """The CE sum over the anchors selected by ``mask`` (the spec's per-anchor CE, summed)."""
-    selected = torch.nonzero(mask, as_tuple=False).flatten()
-    if selected.numel() == 0:
+def _ce_rows(matrix, selected):
+    """``sum_a (logsumexp_j M[a, j] - M[a, a])`` for the row indices ``selected``.
+
+    This is the spec's CE sum over a set of anchors, with each row's normaliser computed over the
+    FULL global candidate pool. Passing the selected rows to ``cross_entropy`` instead would
+    re-normalise over the subset, which silently changes the value by a factor of V.
+    """
+    rows = matrix.index_select(0, selected)
+    if rows.numel() == 0:
         return matrix.sum() * 0.0
-    return F.cross_entropy(matrix.index_select(0, selected),
-                           targets.index_select(0, selected), reduction='sum')
+    diagonal = rows.diagonal()
+    return (torch.logsumexp(rows, dim=1) - diagonal).sum()
+
+
+def _selected_ce_sum(matrix, mask):
+    """``_ce_rows`` over the booleans of ``mask``."""
+    selected = torch.nonzero(mask, as_tuple=False).flatten()
+    return _ce_rows(matrix, selected)
+
+
+def _all_ce_sum(matrix):
+    """``_ce_rows`` over every row of the matrix."""
+    return _ce_rows(matrix, torch.arange(matrix.shape[0], device=matrix.device))
 
 
 def main():
@@ -404,12 +421,10 @@ def main():
             raise SystemExit('rank %d saw a wrong slice for rank %d in the validity gather'
                              % (rank, other))
     if not bool(local_valid.any()):
-        # this rank contributes no anchor: it must STILL be inside the collectives, which means it
-        # must be able to see the peers' valid suffixes gathered below
-        if not any(bool(piece.any()) for other, piece in enumerate(gathered_validity)
-                   if other != rank):
-            raise SystemExit('rank %d is invalid-only but the global pool is empty, which '
-                             'contradicts the case definition' % rank)
+        # this rank contributes no anchor: it must STILL be inside the collectives, which the slice
+        # check above proves. An empty GLOBAL pool (case ``global_zero``) is a legal state of its
+        # own, so nothing is asserted about the peers here.
+        pass
     gathered = [torch.zeros_like(local_suffix_ids) for _ in range(world)]
     dist.all_gather(gathered, local_suffix_ids)
     global_suffix_ids = torch.cat(gathered, dim=0)
@@ -425,8 +440,20 @@ def main():
     g_raw, g, prefix_hidden, prefix_features, tR = objective.encode(local_images, local_prefix_ids,
                                                                     local_suffix_ids)
     s0_value, mS = objective.s0_loss(g_raw, prefix_hidden, prefix_features)
-    suffix_value, scaling, V, index, mU, local_ce = ddp_model.module.suffix_loss(
+    suffix_value, scaling, V, index, mU, local_ce, total_ce = ddp_model.module.suffix_loss(
         g, prefix_hidden, tR, global_valid)
+    # the spec's identity, measured on the real tensors of this run: each rank's backward value is
+    # ``world_size / V`` times its own CE sum, so the ranks' values add up to ``world_size`` times
+    # the global mean loss, i.e. standard DDP averaging lands exactly on the global mean. A double
+    # world_size factor, a missing one or a wrong V all fail here inside the run.
+    if V >= 2:
+        if abs(scaling - float(world) / float(V)) > 1e-12:
+            raise SystemExit('the run scaling %r is not world_size / V = %r'
+                             % (scaling, float(world) / float(V)))
+        if abs(float(suffix_value.detach()) - scaling * local_ce) > 1e-6 * max(
+                abs(scaling * local_ce), 1e-6):
+            raise SystemExit('rank %d: the backward value %r is not scaling * local CE sum = %r'
+                             % (rank, float(suffix_value.detach()), scaling * local_ce))
     total = s0_value + suffix_value
     if not bool(torch.isfinite(total)):
         raise SystemExit('rank %d produced a non-finite total loss' % rank)
@@ -441,9 +468,11 @@ def main():
           'lr': args.lr_suffix, 'weight_decay': 0.0}],
         betas=(0.9, 0.999), eps=1e-8)
 
-    named = dict(model.named_parameters())
+    # the module names are the DDP-visible ones (``model.*`` for the trunk, ``suffix_mask.*`` for
+    # the new F), so the names recorded here are exactly the names the test's oracle can rebuild
+    named = {'clip.' + key: value for key, value in objective.model.named_parameters()}
     named.update({'suffix_mask.%s' % key: value
-                  for key, value in suffix_mask.named_parameters()})
+                  for key, value in objective.suffix_mask.named_parameters()})
     for name in GRAD_NAMES + STEP_NAMES:
         if name not in named:
             raise SystemExit('parameter %r is missing from the worker model; present: %r'
@@ -457,24 +486,55 @@ def main():
     optimizer.zero_grad(set_to_none=True)
     total.backward()
 
+    # SNAPSHOT FIRST: the reduced (DDP-averaged) gradients must be read before anything else touches
+    # ``.grad``, otherwise a later local backward would silently overwrite them
     local_grads = {}
     for name in GRAD_NAMES:
         grad = named[name].grad
         local_grads[name] = None if grad is None else grad.detach().float().cpu().clone()
 
-    # --- the structural witnesses, measured on the graph that was just back-propagated ----------
-    # a rank with n_r = 0 makes a differentiable exactly-zero contribution
-    zero_witness = (float(suffix_value.detach()) == 0.0) if n_local == 0 else None
-    # the OLD S0 mask must receive nothing from the suffix loss (spec section 5)
-    mask_grads = torch.autograd.grad(suffix_value, list(model.mask_net.parameters()),
-                                     retain_graph=True, allow_unused=True)
-    mask_grad_norm_from_suffix = float(sum(
-        0.0 if grad is None else float(grad.detach().float().pow(2).sum()) for grad in mask_grads))
-    # the suffix loss must train the shared trunk (the live g path)
-    trunk_grad = torch.autograd.grad(suffix_value, [model.visual.proj], retain_graph=True,
-                                     allow_unused=True)[0]
-    trunk_grad_norm_from_suffix = (0.0 if trunk_grad is None
-                                   else float(trunk_grad.detach().float().pow(2).sum()))
+    # --- the structural witnesses -----------------------------------------------------------------
+    #
+    # These run AFTER the real backward and rebuild their own suffix term. Two reasons, both
+    # observed the hard way: (1) ``torch.autograd.grad`` FREES the graph it walks, so probing before
+    # ``total.backward()`` would zero the suffix share of the real gradient while leaving the S0
+    # share intact -- a silent corruption of the very number under test; (2) reading ``.grad`` after
+    # the backward is also the only way to read the DDP-REDUCED value.
+    #
+    # The rebuilt term is a pure function of tensors this rank already owns (``g`` and the text
+    # features are not recomputed), costs one extra readout forward, and changes no parameter.
+    if V >= 2 and bool(suffix_value.requires_grad):
+        # rebuild the whole suffix input from the pixels, so the probe's graph is completely
+        # independent of the one ``total.backward()`` just consumed; ``g`` must come from
+        # ``encode_image`` (not from the detached tensor) or the trunk witness would be vacuous
+        witness_g_raw, witness_g, witness_hidden, _features, witness_tR = objective.encode(
+            local_images, local_prefix_ids, local_suffix_ids)
+        del witness_g_raw, _features
+        probe = ddp_model.module.suffix_loss(witness_g, witness_hidden, witness_tR,
+                                             global_valid)[0]
+        # ONE autograd.grad call for the trunk witness: a second call for another input would
+        # silently report "unused" once the first call had freed the shared part of this graph
+        witness_grads = torch.autograd.grad(probe, [model.visual.proj, model.text_projection],
+                                            allow_unused=True)
+        own_grad_norm = float(sum(
+            0.0 if grad is None else float(grad.detach().float().pow(2).sum())
+            for grad in witness_grads))
+        del witness_grads
+        mask_grads = torch.autograd.grad(probe, list(model.mask_net.parameters()),
+                                         allow_unused=True)
+        mask_grad_norm_from_suffix = float(sum(
+            0.0 if grad is None else float(grad.detach().float().pow(2).sum())
+            for grad in mask_grads))
+        trunk_grad_norm_from_suffix = own_grad_norm
+        del probe, mask_grads, witness_g, witness_hidden, witness_tR
+    else:
+        # the suffix term is an exact zero and therefore carries no gradient anywhere
+        own_grad_norm = 0.0
+        trunk_grad_norm_from_suffix = 0.0
+        mask_grad_norm_from_suffix = 0.0
+    # a rank with n_r = 0 must still make a DIFFERENTIABLE exactly-zero contribution
+    zero_witness = (float(suffix_value.detach()) == 0.0
+                    and bool(suffix_value.requires_grad) and n_local == 0)
 
     optimizer.step()
     optimizer.zero_grad(set_to_none=True)
@@ -493,11 +553,13 @@ def main():
         'suffixes': [item['suffix'] for item in splits],
         'k_values': [int(item['k']) for item in splits],
         'local_ce': float(local_ce),
+        'total_ce': float(total_ce),
         'loss_suffix_local': float(suffix_value.detach()),
         'loss_s0': float(s0_value.detach()),
         'loss_total': float(total.detach()),
         'mask_grad_norm_from_suffix': mask_grad_norm_from_suffix,
         'trunk_grad_norm_from_suffix': trunk_grad_norm_from_suffix,
+        'own_suffix_grad_norm': own_grad_norm,
         'zero_rank_witness': zero_witness,
         'zero_rank_gathered_global_valid': global_valid_list,
         'grads': local_grads, 'step': local_step,

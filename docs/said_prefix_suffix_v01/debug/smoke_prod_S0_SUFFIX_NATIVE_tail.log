@@ -1,0 +1,60 @@
+[rank0]:     out = suffix_train_step(ddp_model, batch, optimizers, device, amp_dtype,
+[rank0]:   File "/root/SAID-s0-suffix-v01/train/train_said_prefix_suffix.py", line 489, in suffix_train_step
+[rank0]:     out = ddp_model(image_a, text_ids,
+[rank0]:   File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank0]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank0]:   File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank0]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank0]:   File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/root/SAID-s0-suffix-v01/model/said_prefix_suffix.py", line 2155, in forward
+[rank0]:     return self.objective.forward(image_a, text_ids, prefix_captions=prefix_captions,
+[rank0]:   File "/root/SAID-s0-suffix-v01/model/said_prefix_suffix.py", line 1929, in forward
+[rank0]:     Q_local = suffix_native_scores_local(g_live, tR_valid,
+[rank0]:   File "/root/SAID-s0-suffix-v01/model/said_prefix_suffix.py", line 1404, in suffix_native_scores_local
+[rank0]:     tile = (g_block[i0:i1].float() * tR_block[j0:j1].float()).sum(-1)
+[rank0]: RuntimeError: The size of tensor a (16) must match the size of tensor b (32) at non-singleton dimension 0
+[rank0]:[W914 01:19:42.209014787 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W0914 01:19:45.553000 3325283 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3325367 closing signal SIGTERM
+W0914 01:19:45.554000 3325283 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3325368 closing signal SIGTERM
+W0914 01:19:45.554000 3325283 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3325369 closing signal SIGTERM
+E0914 01:19:48.284000 3325283 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 3325366) of binary: /root/miniconda3/envs/said-smartclip/bin/python
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/distributed/run.py", line 923, in <module>
+    main()
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/root/miniconda3/envs/said-smartclip/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train/train_said_prefix_suffix.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-14_01:19:45
+  host      : cloud-ai-master-devbox-2329866500-vscode-4dcad680-devbox
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 3325366)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

@@ -22,8 +22,22 @@ Per optimizer step
    suffix images and the suffix texts are restricted to J;
 4. the suffix scores are produced tile by tile (``[Bi, Bj]`` score tiles only, never
    ``[B_global, B_global, 1024]``, and never another rank's image rows);
-5. both directions are SUMMED over the local valid anchors and scaled by ``world_size / V``;
-6. a collective gradient-health check runs on every rank; then exactly one update of each group.
+5. both directions are SUMMED over the local valid anchors (``A_r``) and scaled ONCE by
+   ``world_size / V``: ``L_suffix_backward_local = (W / V) * A_r``. That per-rank scalar is a
+   different quantity from the reported global suffix loss and is logged under a different name;
+6. a collective reduction of the DETACHED local CE sums and of the gradient health runs on every
+   rank; then exactly one update of each group. The reported global suffix loss is
+   ``sum_r(local CE sum) / V``, never the local backward scalar.
+
+Two index spaces are named and never mixed: this rank's rows are the LOCAL space, the concatenation
+of every rank's rows in rank order is the GLOBAL space (``world_size * B`` rows) and the filtered
+valid rows are the VALID space (``V`` rows). The models' ``to_valid`` map is the only conversion
+between them; a local tensor is never selected with a global index and an already-filtered tensor is
+never selected again.
+
+``--resume`` is REFUSED for training (see :data:`RESUME_UNSUPPORTED`): the data cursor and the
+per-rank RNG/data state are not restored, so continuing from a checkpoint would silently restart the
+sample stream. Read-only acceptance loading lives in :func:`load_checkpoint_for_acceptance`.
 
 The first 20 steps belong to this same 500-step run: there is no separate smoke run, and the 501st
 optimizer update is never executed.
@@ -57,7 +71,8 @@ from model.said_prefix_suffix import (ARM_MASK, ARM_NATIVE, ARMS, BATCH_SIZE_PER
                                       SaidPrefixSuffixTrainModule, SuffixMask,
                                       assert_equal_local_batch, build_optimizers,
                                       checkpoint_metadata, split_batch_prefix_suffix,
-                                      state_digest, suffix_mask_config, suffix_mask_init_report)
+                                      state_digest, suffix_mask_config, suffix_mask_init_report,
+                                      suffix_scaling)
 from said_cvssl_data import Share4VCvsslDataset, cvssl_collate                 # noqa: E402
 from scheduler import cosine_lr                                                # noqa: E402
 
@@ -69,6 +84,38 @@ PRECISION_NOTE = ('fp32 master weights; the existing bf16 autocast policy for th
                   'identically in both arms')
 STATS_SCOPE = ('rank-local values unless the field name says otherwise; fields named global_* are '
                'all-gathered over ranks for that step')
+
+#: the two quantities the suffix path produces at every step, named apart on purpose: the reported
+#: global value is reduced from the DETACHED local CE sums of every rank, while the scalar that is
+#: back-propagated is this rank's own ``(W / V) * A_r``. They are never the same number.
+LOG_FIELD_SUFFIX_GLOBAL = 'loss_suffix_global_reduced'
+LOG_FIELD_SUFFIX_BACKWARD_LOCAL = 'loss_suffix_backward_local'
+
+#: index spaces. ``LOCAL_FULL`` is this rank's own ``B`` rows, ``GLOBAL_FULL`` is the concatenation of
+#: every rank's rows in rank order (``world_size * B``) and ``GLOBAL_VALID`` is the ``V`` rows left
+#: after filtering. The names are recorded in the log so a reader can tell which space a number is in.
+INDEX_SPACE_LOCAL_FULL = 'LOCAL_FULL'
+INDEX_SPACE_GLOBAL_FULL = 'GLOBAL_FULL'
+INDEX_SPACE_GLOBAL_VALID = 'GLOBAL_VALID'
+
+#: the explicit refusal text for the unsupported resume path (spec section 10 wants an honest status)
+RESUME_UNSUPPORTED = ('RESUME_UNSUPPORTED: training resume is disabled for objective %s. The '
+                      'checkpoint is complete and loadable (clip_state, suffix_mask_state, '
+                      'optimizer_clip, optimizer_mask, optimizer_suffix, the real config and '
+                      'completed_steps), but this trainer does NOT restore the data cursor or the '
+                      'per-rank RNG/data state, so continuing from a checkpoint would silently '
+                      'replay epoch 0 batch 0 while reporting the checkpoint step. Run a fresh arm '
+                      'from --init_state instead, or load the checkpoint read-only with '
+                      'load_checkpoint_for_acceptance() for verification.')
+
+#: the suffix-mask tensors and their exact shapes; the mask arm refuses to load without them
+SUFFIX_MASK_EXPECTED_SHAPES = {'layer1.weight': (512, 1024), 'layer1.bias': (512,),
+                               'layer2.weight': (512, 512), 'layer2.bias': (512,)}
+
+#: the config keys whose drift between the checkpoint and this invocation must be refused
+CHECKPOINT_CONFIG_IDENTITY = ('objective', 'phase', 'arm', 'base_sha', 'branch', 'init_state',
+                              'init_file_sha256', 'batch_size_per_gpu', 'world_size',
+                              'loader_batches', 'epochs')
 
 
 # --------------------------------------------------------------------------- small helpers
@@ -227,14 +274,36 @@ def tokenized(batch, device):
     yields an empty suffix for every row (measured: ``global_valid_V = 0`` on the first smoke test).
     ``prefix_k`` is the K the S0 stream actually drew and is never re-drawn here.
 
-    ``caption_said`` is then used as a hard, character-for-character INVARIANT: the prefix this file
-    produces from the full caption must equal it exactly, so the S0 prefix stream provably cannot
-    drift. An invalid suffix keeps the EMPTY STRING as its placeholder and is marked ``valid=False``
-    downstream, so a placeholder can never enter the suffix loss nor the suffix candidate pool.
+    The entry-point contract is explicit, never inferred from text length: the production batch MUST
+    carry ``caption_full``. A caption whose every fragment is shorter than ``K``, a one-sentence
+    caption, ``K == N`` and a whole batch with no suffix are all LEGAL batches, so no heuristic may
+    decide whether the caller passed a prefix instead of the full caption; the only evidence accepted
+    here is that the field is present (guaranteed by ``cvssl_collate`` of ``said_cvssl_data``) and
+    that the rebuilt prefix equals ``caption_said`` character for character.
+
+    ``caption_said`` is used as that hard, character-for-character INVARIANT: the prefix produced from
+    the full caption must equal it exactly, so the S0 prefix stream provably cannot drift.
+
+    An empty (or content-token-free) suffix keeps the REAL tokenisation of the empty string as its
+    placeholder -- ``longclip.tokenize('', truncate=True)``, i.e. SOT + EOT + padding, exactly what
+    ``tokenize('')`` produces -- and is marked ``valid=False`` downstream. A placeholder is therefore
+    ordinary text, never an arbitrary all-zero token tensor standing in for equivalent text, and it can
+    never enter the suffix loss nor the suffix candidate pool.
     """
+    if 'caption_full' not in batch:
+        raise RuntimeError('the batch carries no caption_full field: the suffix branch needs the FULL '
+                           'caption together with the prefix_k the S0 stream drew. Deriving P/R from '
+                           'caption_said (already a prefix) makes every suffix empty, and guessing '
+                           'from the text length is forbidden (a legal K == N, a one-sentence caption '
+                           'and a suffix-free batch all look identical to a wrongly passed prefix). '
+                           'Batch keys: %r' % sorted(batch))
     prefix_texts = [str(text) for text in batch['caption_said']]
-    full_texts = [str(text) for text in batch.get('caption_full', batch['caption_said'])]
+    full_texts = [str(text) for text in batch['caption_full']]
     prefix_k = [int(value) for value in batch['prefix_k'].tolist()]
+    if len(full_texts) != len(prefix_texts):
+        raise RuntimeError('caption_full has %d rows but caption_said has %d'
+                           % (len(full_texts), len(prefix_texts)))
+    # ONE split function, shared by the trainer, the read-only diagnostic and the docs
     split = split_batch_prefix_suffix(full_texts, prefix_k)
     suffix_texts = list(split['suffix'])
     prefix_from_full = [str(text) for text in split['prefix']]
@@ -247,8 +316,137 @@ def tokenized(batch, device):
                            % (len(mismatched), len(prefix_texts), mismatched[0],
                               prefix_from_full[mismatched[0]], prefix_texts[mismatched[0]]))
     prefix_ids = longclip.tokenize(prefix_texts, truncate=True).to(device)
-    suffix_ids = longclip.tokenize(suffix_texts, truncate=True).to(device)
+    # the placeholder is the REAL tokenisation of the empty string for every row whose suffix is empty
+    suffix_ids = longclip.tokenize([text if valid else ''
+                                    for text, valid in zip(suffix_texts, split['valid'])],
+                                   truncate=True).to(device)
     return {'prefix': prefix_ids, 'suffix': suffix_ids}, prefix_texts, suffix_texts, split
+
+
+# --------------------------------------------------------------------------- reduced / log helpers
+def _first_scalar(out, keys, default=0.0) -> float:
+    """The first present scalar of ``keys`` as a float, else ``default``.
+
+    The trainer owns the LOG NAMES of this objective and the model owns its output names; looking a
+    value up through a short alias list keeps the two in step while the model file is being finished,
+    and never turns a missing diagnostic into a crash inside the step.
+    """
+    for key in keys:
+        if key in out and torch.is_tensor(out[key]):
+            return float(out[key].detach())
+        if key in out and isinstance(out[key], (int, float)):
+            return float(out[key])
+    return float(default)
+
+
+def reduce_suffix_metrics(out, device, world_size: int = None, distributed: bool = None) -> dict:
+    """Reduce the DETACHED local CE sums and counts of every rank: the reported suffix quantity.
+
+    This is a NECESSARY collective: it runs on EVERY rank, from the main step path and never from a
+    rank-0-only logging branch. With ``V`` global valid anchors the global reported value is
+
+        loss_suffix_global_reduced = (sum_r local CE sum_r) / V
+
+    which is the ``L_U_global`` of the spec. The scalar that is back-propagated is a DIFFERENT number,
+    ``(W / V) * A_r`` on each rank, and is reported under its own name
+    (``loss_suffix_backward_local``) so the two can never be confused in a log or in a report.
+    """
+    local_i2t = _first_scalar(out, ('loss_suffix_i2t_sum',))
+    local_t2i = _first_scalar(out, ('loss_suffix_t2i_sum',))
+    local_sum = _first_scalar(out, ('loss_suffix_local_ce_sum', 'loss_suffix_local_sum'),
+                              default=local_i2t + local_t2i)
+    V = int(out.get('global_valid_V', 0))
+    total = int(out.get('global_batch_size', 0))
+    lam = float(out.get('lambda_suffix', LAMBDA_SUFFIX))
+    if distributed is None:
+        distributed = dist.is_initialized()
+    if distributed:
+        packed = torch.tensor([local_i2t, local_t2i, local_sum], dtype=torch.float64, device=device)
+        dist.all_reduce(packed, op=dist.ReduceOp.SUM)
+        global_i2t, global_t2i, global_sum = (float(value) for value in packed.tolist())
+        world = int(world_size if world_size is not None else dist.get_world_size())
+    else:
+        global_i2t, global_t2i, global_sum = local_i2t, local_t2i, local_sum
+        world = int(world_size if world_size is not None else 1)
+    divisor = float(V) if V >= 2 else 0.0
+    global_reduced = (global_sum / divisor) if divisor else 0.0
+    return {
+        'loss_suffix_global_reduced': global_reduced,
+        'loss_suffix_global_reduced_i2t': (global_i2t / divisor) if divisor else 0.0,
+        'loss_suffix_global_reduced_t2i': (global_t2i / divisor) if divisor else 0.0,
+        'loss_suffix_global_ce_sum': global_sum,
+        'loss_suffix_global_ce_sum_i2t': global_i2t,
+        'loss_suffix_global_ce_sum_t2i': global_t2i,
+        'loss_suffix_backward_local': _first_scalar(
+            out, (LOG_FIELD_SUFFIX_BACKWARD_LOCAL, 'loss_suffix')),
+        'weighted_loss_suffix_global_reduced': lam * global_reduced,
+        'loss_suffix_local_ce_sum': local_sum,
+        'loss_suffix_local_ce_sum_i2t': local_i2t,
+        'loss_suffix_local_ce_sum_t2i': local_t2i,
+        'suffix_reduction_world_size': world,
+        'suffix_reduction_global_valid_V': V,
+        'suffix_reduction_divisor': divisor,
+        'suffix_reduction_rule': ('loss_suffix_global_reduced = (sum over ranks of the DETACHED local '
+                                  'I2T/T2I CE sums) / V; the per-rank backward scalar '
+                                  '(W / V) * A_r is reported separately as '
+                                  'loss_suffix_backward_local and is never the reported global value'),
+    }
+
+
+def assert_forward_shape_and_index_legality(out: dict, batch, device, rank: int, world: int) -> dict:
+    """The all-rank shape/index legality check, run BEFORE any dangerous GPU indexing.
+
+    Every rank reaches the same verdict, because the values checked (``V``, the per-rank counts, the
+    local batch size and the world size) were all produced by the collectives of this step. The check
+    reports its full context -- every shape, the index space of each tensor and the local/global valid
+    counts -- instead of letting a stray index abort the backend on a device-side assertion with no
+    information about which space the index came from.
+    """
+    context = {
+        'rank': int(rank), 'world_size': int(world), 'device': str(device),
+        'local_batch': int(batch['image_a'].shape[0]),
+        'global_batch': int(out.get('global_batch_size', 0)),
+        'global_valid_V': int(out.get('global_valid_V', -1)),
+        'local_valid_count': int(out.get('local_valid_count', -1)),
+        'valid_counts_per_rank': [int(value) for value in out.get('valid_counts_per_rank', [])],
+        'index_spaces': {
+            'LOCAL_FULL': 'this rank\'s rows [0, local_batch)',
+            'GLOBAL_FULL': 'every rank\'s rows in rank order [0, world_size * local_batch)',
+            'GLOBAL_VALID': 'the filtered valid rows [0, V)',
+        },
+        'global_batch_size_key_present': 'global_batch_size' in out,
+        'suffix_valid_flags_shape': list(out['suffix_valid_flags'].shape)
+        if torch.is_tensor(out.get('suffix_valid_flags')) else None,
+    }
+    problems = []
+    if context['global_batch'] != context['world_size'] * context['local_batch']:
+        problems.append('global_batch_size %d != world_size * local_batch = %d'
+                        % (context['global_batch'], context['world_size'] * context['local_batch']))
+    if context['suffix_valid_flags_shape'] not in (None, [context['local_batch']]):
+        problems.append('suffix_valid_flags has shape %s, expected [local_batch=%d]'
+                        % (context['suffix_valid_flags_shape'], context['local_batch']))
+    if context['valid_counts_per_rank']:
+        counts = context['valid_counts_per_rank']
+        if len(counts) != context['world_size']:
+            problems.append('valid_counts_per_rank has %d entries but world_size is %d'
+                            % (len(counts), context['world_size']))
+        elif sum(counts) != context['global_valid_V']:
+            problems.append('valid_counts_per_rank sums to %d but global_valid_V is %d'
+                            % (sum(counts), context['global_valid_V']))
+        elif counts[int(rank)] != context['local_valid_count']:
+            problems.append('this rank\'s count %d disagrees with the gathered vector (%d)'
+                            % (counts[int(rank)], context['local_valid_count']))
+    if context['global_valid_V'] > context['global_batch']:
+        problems.append('global_valid_V %d exceeds the global batch %d: the valid index set can only '
+                        'name GLOBAL_FULL rows' % (context['global_valid_V'], context['global_batch']))
+    V = context['global_valid_V']
+    if V >= 2 and context['local_valid_count'] > V:
+        problems.append('this rank owns %d valid anchors but the global valid pool has only %d'
+                        % (context['local_valid_count'], V))
+    if problems:
+        raise RuntimeError('the forward is not shape/index legal on every rank, refusing to index '
+                           'with it: %r | context=%r' % (problems, context))
+    return context
 
 
 # --------------------------------------------------------------------------- one real step
@@ -256,11 +454,24 @@ def suffix_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabl
                       capture_grads: bool = False, completed_steps: int = 0,
                       want_statistics: bool = False, image_chunk: int = None,
                       text_chunk: int = None, text_ids=None, suffix_texts=None):
-    """DDP forward -> backward -> collective gradient health -> one update of all three groups.
+    """DDP forward -> backward -> collective reductions -> one update of all three groups.
 
     This is the *production* step function: the acceptance tests call it directly, so what is
     verified is what is run. ``lambda_suffix`` is never dropped here -- it is applied inside the
     objective, so a test that compares a one-step update cannot silently lose it.
+
+    The suffix path is entirely inside the DDP ``forward``, so every rank executes the same necessary
+    collectives and their backward: a rank with ``n_r = 0`` while the global ``V >= 2`` still builds
+    its own scores and still takes part in the differentiable gather, and a step with ``V < 2`` makes
+    every rank skip ONLY the candidate scoring communication, keeping ``L_suffix = 0`` and continuing
+    with S0. Nothing is fabricated to make an unused parameter look trained: a genuinely unused F
+    parameter legitimately has ``None`` gradient, which is exactly what plain
+    ``find_unused_parameters=True`` DDP expects (no ``_set_static_graph`` anywhere in this file).
+
+    The returned dict is safe to hand back across the DDP boundary: the live tensors and the modules
+    of the forward are replaced by detached, scalar-only diagnostics, because DDP walks the FORWARD
+    OUTPUT in ``prepare_for_backward`` and a live non-loss tensor or a ``Module`` in that structure
+    breaks its graph analysis.
     """
     image_a = batch['image_a'].to(device, non_blocking=True)
     suffix_texts = None
@@ -270,18 +481,26 @@ def suffix_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabl
         suffix_texts = [''] * int(image_a.shape[0])
     # a ragged batch must be refused BEFORE the first cross-rank gather
     module = getattr(ddp_model, 'module', ddp_model)
-    assert_equal_local_batch(int(image_a.shape[0]), world_size=module.objective._world(),
-                             device=device)
+    world = int(module.objective._world())
+    assert_equal_local_batch(int(image_a.shape[0]), world_size=world, device=device)
 
     device_type = 'cuda' if device.type == 'cuda' else 'cpu'
     with torch.autocast(device_type=device_type, dtype=amp_dtype, enabled=amp_enabled):
         out = ddp_model(image_a, text_ids,
-                        prefix_captions=list(batch.get('caption_full', batch['caption_said'])),
+                        prefix_captions=list(batch['caption_full']),
                         batch_prefix_texts=list(batch['caption_said']),
                         suffix_texts=suffix_texts, prefix_k=batch['prefix_k'],
                         image_chunk=image_chunk, text_chunk=text_chunk,
                         want_statistics=want_statistics)
+
+    # every rank checks the shapes and the index spaces of this step BEFORE anything indexes with
+    # them; the values were produced collectively, so all ranks reach the same verdict
+    index_context = assert_forward_shape_and_index_legality(out, batch, device, rank=module.rank,
+                                                            world=world)
+
     loss = out['loss_total_for_backward']
+    # the scalar that is back-propagated on THIS rank, named apart from the reported global value
+    out[LOG_FIELD_SUFFIX_BACKWARD_LOCAL] = _first_scalar(out, ('loss_suffix',))
     loss.backward()
 
     inspected = getattr(ddp_model, 'module', ddp_model)
@@ -302,6 +521,11 @@ def suffix_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabl
                          'threshold change, no skipped step)'
                          % (completed_steps, dist.get_world_size() if dist.is_initialized() else 1))
 
+    # the reported GLOBAL suffix loss, reduced from the DETACHED local CE sums of every rank. This is
+    # a necessary collective on the main step path (never a rank-0-only branch), and it is NOT the
+    # per-rank backward scalar.
+    reduced = reduce_suffix_metrics(out, device, world_size=world)
+
     health = {
         'grad_norm_clip_group': group_grad_norm(partition['backbone'], device),
         'grad_norm_mask_group': group_grad_norm(partition['mask_net'], device),
@@ -317,6 +541,12 @@ def suffix_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabl
         'loss_finite': bool(torch.isfinite(loss.detach()).all()),
         'grads_finite': bool(local_ok),
         'mask_grad_nonzero': bool(group_grad_norm(partition['mask_net'], device) > 0.0),
+        'suffix_mask_parameter_grad_is_none': bool(
+            inspected.suffix_mask is not None
+            and all(parameter.grad is None for parameter in inspected.suffix_mask.parameters())),
+        'suffix_mask_parameter_grad_unused_note': ('a None gradient on a genuinely unused F parameter '
+                                                   'is the correct DDP state for find_unused_'
+                                                   'parameters=True; no zero is fabricated'),
     }
     if capture_grads:
         out['_grads'] = {name: (None if parameter.grad is None else parameter.grad.detach().clone())
@@ -331,6 +561,22 @@ def suffix_train_step(ddp_model, batch, optimizers, device, amp_dtype, amp_enabl
         optimizers['suffix'].zero_grad(set_to_none=True)
     out['_grad_health'] = health
     out['_loss_value'] = float(loss.detach())
+    out['_suffix_metrics'] = reduced
+    out['_index_context'] = index_context
+    # ---- the DDP boundary: only detached scalars and the short summaries may cross it --------------
+    # ``g_live`` / ``mask_s`` / ``t_r_all`` / ``suffix_mask`` are live tensors and a Module of the
+    # forward that do NOT contribute to the loss. They are replaced by detached scalar diagnostics so
+    # that DDP's graph analysis sees a clean structure, and so that a caller cannot accidentally
+    # backward through a stale graph.
+    detached_scalars = {}
+    for key, source in (('g_live_norm_mean', 'g_live'), ('mask_s_keep_ratio_local', 'mask_s'),
+                        ('t_r_norm_mean', 't_r_all')):
+        value = out.get(source)
+        if torch.is_tensor(value):
+            detached_scalars[key] = float(value.detach().float().mean())
+    for key in ('g_live', 'mask_s', 'mask_s_positive_pair_local', 't_r_all', 'suffix_mask'):
+        out.pop(key, None)
+    out['_detached_diagnostics'] = detached_scalars
     return out
 
 
@@ -472,6 +718,151 @@ def build_objective(clip=None, clip_model=None, suffix_model=None, model=None, m
     return objective
 
 
+#: the suffix-mask TENSOR key family and the DESCRIPTION key family. They are disjoint by construction
+#: (spec section 10) and the loader refuses any checkpoint that merged the two.
+SUFFIX_TENSOR_KEYS = ('suffix_mask_state',)
+SUFFIX_DESCRIPTION_KEYS = ('suffix_mask_config', 'suffix_mask_descriptor')
+
+
+def load_checkpoint_for_acceptance(path, config=None, expect_arm=None, clip=None,
+                                   clip_model=None, suffix_mask=None, strict_identity: bool = True,
+                                   device=None) -> dict:
+    """Load a full checkpoint for a READ-ONLY acceptance check, and prove it is complete.
+
+    This is the loading half of spec section 10 and is deliberately NOT wired into training: the
+    training resume path is refused (see :data:`RESUME_UNSUPPORTED`) because the data cursor and the
+    per-rank RNG/data state are not restored there. Verification, export and the acceptance tests use
+    this function instead, and it never touches the sample stream.
+
+    It refuses, loudly and before any state reaches a model:
+
+    * a checkpoint whose frozen key list is incomplete (``clip_state``, ``suffix_mask_state``,
+      ``suffix_mask_config``, ``optimizer_clip``, ``optimizer_mask``, ``optimizer_suffix``, the real
+      config and ``completed_steps``);
+    * a mask-arm checkpoint with NO F tensors, instead of silently continuing with a random F;
+    * a state whose shape or digest disagrees with its own header, or a description dict that smuggled
+      tensors under the tensor key (or vice versa);
+    * an identity drift: objective, arm, base SHA, init state and the real config of the invocation
+      that wrote it.
+
+    Returns a report of everything that was verified; when ``clip`` (or the new gate) is given, the
+    verified tensors are also loaded into those modules, so the caller proves the round trip.
+    """
+    payload = torch.load(path, map_location='cpu', weights_only=False)
+    if not isinstance(payload, dict):
+        raise RuntimeError('%s does not hold a checkpoint payload (got %s)'
+                           % (path, type(payload).__name__))
+    missing = [key for key in CHECKPOINT_KEYS if key not in payload]
+    if missing:
+        raise RuntimeError('the checkpoint %s is incomplete: the frozen key(s) %r are absent'
+                           % (path, missing))
+    arm = payload.get('arm')
+    if arm not in ARMS:
+        raise RuntimeError('the checkpoint %s names arm %r, not one of %r' % (path, arm, ARMS))
+    if expect_arm is not None and arm != expect_arm:
+        raise RuntimeError('the checkpoint %s was written by arm %r, not %r' % (path, arm, expect_arm))
+    if payload.get('objective') != OBJECTIVE:
+        raise RuntimeError('the checkpoint %s carries objective %r instead of %r'
+                           % (path, payload.get('objective'), OBJECTIVE))
+    clip_state = payload['clip_state']
+    if not isinstance(clip_state, dict) or not clip_state:
+        raise RuntimeError('the checkpoint %s carries no clip_state tensor dict' % path)
+    recorded_clip_digest = payload.get('clip_state_digest')
+    if recorded_clip_digest is not None and state_digest(clip_state) != recorded_clip_digest:
+        raise RuntimeError('clip_state does not match its own header digest in %s (recorded %s, '
+                           'recomputed %s)' % (path, recorded_clip_digest, state_digest(clip_state)))
+
+    # ---- the suffix mask: TENSORS and DESCRIPTION live under different keys -----------------------
+    suffix_state = payload.get('suffix_mask_state')
+    suffix_config = payload.get('suffix_mask_config')
+    if not isinstance(suffix_config, dict) or not suffix_config:
+        raise RuntimeError('the checkpoint %s carries no suffix mask DESCRIPTION under %r'
+                           % (path, SUFFIX_DESCRIPTION_KEYS))
+    if any(torch.is_tensor(value) for value in suffix_config.values()):
+        raise RuntimeError('the suffix mask description of %s carries tensors: the description and the '
+                           'tensor state must never be merged' % path)
+    if not set(SUFFIX_TENSOR_KEYS) & set(payload) or set(SUFFIX_TENSOR_KEYS) & set(suffix_config):
+        raise RuntimeError('the suffix tensor key family %r and the description family %r must stay '
+                           'disjoint (ckpt %s)' % (SUFFIX_TENSOR_KEYS, SUFFIX_DESCRIPTION_KEYS, path))
+    if arm == ARM_NATIVE:
+        if suffix_state is not None:
+            raise RuntimeError('the native arm must carry suffix_mask_state = None, %s carries %s'
+                               % (path, type(suffix_state).__name__))
+        if int(payload.get('suffix_mask_count') or 0) != 0:
+            raise RuntimeError('the native arm checkpoint %s claims %r suffix mask parameters: the '
+                               'native arm must not own F' % (path, payload.get('suffix_mask_count')))
+    else:
+        if not isinstance(suffix_state, dict) or not suffix_state:
+            raise RuntimeError('REFUSING to load %s: the mask arm checkpoint carries no F tensors '
+                               '(suffix_mask_state = %r). Continuing would train or score with a '
+                               'randomly initialised gate while claiming the conditional model was '
+                               'restored' % (path, suffix_state))
+        stripped = {str(name).split('.', 1)[-1] if str(name).startswith('suffix_mask.')
+                    else str(name): value for name, value in suffix_state.items()}
+        if any(not torch.is_tensor(value) for value in stripped.values()):
+            raise RuntimeError('the suffix mask state of %s is not a pure tensor dict' % path)
+        absent = sorted(set(SUFFIX_MASK_EXPECTED_SHAPES) - set(stripped))
+        wrong = sorted('%s=%s' % (name, list(stripped[name].shape)) for name in stripped
+                       if name in SUFFIX_MASK_EXPECTED_SHAPES
+                       and tuple(int(dim) for dim in stripped[name].shape)
+                       != SUFFIX_MASK_EXPECTED_SHAPES[name])
+        if absent or wrong:
+            raise RuntimeError('the F tensors of %s do not match the module: absent %r, wrong shapes '
+                               '%r (state holds %r)' % (path, absent, wrong, sorted(stripped)))
+        recorded_suffix_digest = payload.get('suffix_mask_state_digest')
+        if recorded_suffix_digest is None:
+            raise RuntimeError('the mask arm checkpoint %s records no suffix_mask_state_digest: a '
+                               'missing F state must not be silently accepted' % path)
+        if state_digest(suffix_state) != recorded_suffix_digest:
+            raise RuntimeError('the F tensors of %s do not match their own header digest (recorded %s, '
+                               'recomputed %s)' % (path, recorded_suffix_digest,
+                                                   state_digest(suffix_state)))
+    if not isinstance(payload.get('completed_steps'), int):
+        raise RuntimeError('the checkpoint %s carries no integer completed_steps' % path)
+
+    # ---- identity: the invocation that wrote it must be the one loading it -----------------------
+    drift = {}
+    recorded_config = payload.get('config')
+    if recorded_config is not None and not isinstance(recorded_config, dict):
+        raise RuntimeError('the checkpoint config of %s is a %s, not a dict'
+                           % (path, type(recorded_config).__name__))
+    if strict_identity and isinstance(config, dict) and isinstance(recorded_config, dict):
+        for key in CHECKPOINT_CONFIG_IDENTITY:
+            if key in recorded_config and key in config and recorded_config[key] != config[key]:
+                drift[key] = {'checkpoint': recorded_config[key], 'invocation': config[key]}
+    if drift:
+        raise RuntimeError('the checkpoint %s was written by a different configuration: %r'
+                           % (path, drift))
+    loaded = {'clip': False, 'suffix_mask': False}
+    target_clip = clip if clip is not None else clip_model
+    if target_clip is not None:
+        target_clip.load_state_dict(clip_state, strict=True)
+        loaded['clip'] = True
+    if suffix_mask is not None and arm == ARM_MASK:
+        if device is not None:
+            suffix_mask = suffix_mask.to(device)
+        suffix_mask.load_state_dict(suffix_state, strict=True)
+        loaded['suffix_mask'] = True
+    return {
+        'path': os.path.abspath(path),
+        'arm': arm, 'objective': payload.get('objective'),
+        'completed_steps': int(payload['completed_steps']),
+        'clip_state_digest': recorded_clip_digest,
+        'suffix_mask_state_digest': payload.get('suffix_mask_state_digest'),
+        'suffix_tensor_keys': sorted(SUFFIX_TENSOR_KEYS),
+        'suffix_description_key': sorted(SUFFIX_DESCRIPTION_KEYS),
+        'optimizers_present': {name: payload.get('optimizer_' + name) is not None
+                               for name in ('clip', 'mask', 'suffix')},
+        'config_present': isinstance(recorded_config, dict),
+        'identity_keys_compared': list(CHECKPOINT_CONFIG_IDENTITY),
+        'data_cursor': payload.get('data_cursor'),
+        'rng_states_present': bool(payload.get('rng_states')),
+        'loaded_into': loaded,
+        'training_resume_used': False,
+        'training_resume_note': RESUME_UNSUPPORTED % OBJECTIVE,
+    }
+
+
 # --------------------------------------------------------------------------- logging
 def build_log_record(out, batch, optimizers, module, args, epoch, step_in_epoch, completed,
                      compute_time, presentations, synchronized_presentations, rank, world, device,
@@ -479,6 +870,7 @@ def build_log_record(out, batch, optimizers, module, args, epoch, step_in_epoch,
     """One JSON object per logged step, with the field names the dashboard reads."""
     statistics = out.get('_statistics') or {}
     health = out.get('_grad_health') or {}
+    metrics = out.get('_suffix_metrics') or {}
     validity = out['suffix_validity']
     local_size = int(batch['image_a'].shape[0])
     global_size = int(out['global_batch_size'])
@@ -511,15 +903,37 @@ def build_log_record(out, batch, optimizers, module, args, epoch, step_in_epoch,
         's0_candidate_count': int(out['actual_global_candidate_count']),
         's0_candidate_pool': 'FULL global batch; empty-suffix samples are NOT removed',
         # ---- the suffix task -----------------------------------------------------------------
-        'loss_suffix': float(out['loss_suffix'].detach()),
-        'loss_suffix_I2T': float(out['loss_suffix_i2t_sum'].detach()),
-        'loss_suffix_T2I': float(out['loss_suffix_t2i_sum'].detach()),
-        'loss_suffix_local_sum': float(out['loss_suffix_local_sum'].detach()),
-        'weighted_loss_suffix': float(out['loss_suffix_weighted'].detach()),
-        'loss_suffix_times_lambda_suffix': float(out['loss_suffix_weighted'].detach()),
+        # TWO different quantities, two different names. The headline suffix number of this objective
+        # is the GLOBAL one, reduced from the DETACHED local CE sums of every rank and divided by V;
+        # the per-rank scalar that is actually back-propagated is (W / V) * A_r and is reported only
+        # under the ``*_backward_local`` name, never as the global value.
+        LOG_FIELD_SUFFIX_GLOBAL: float(metrics.get(LOG_FIELD_SUFFIX_GLOBAL, 0.0)),
+        LOG_FIELD_SUFFIX_BACKWARD_LOCAL: float(out.get(LOG_FIELD_SUFFIX_BACKWARD_LOCAL, 0.0)),
+        'weighted_loss_suffix_global_reduced': float(
+            metrics.get('weighted_loss_suffix_global_reduced', 0.0)),
+        'loss_suffix_global_reduced_I2T': float(metrics.get('loss_suffix_global_reduced_i2t', 0.0)),
+        'loss_suffix_global_reduced_T2I': float(metrics.get('loss_suffix_global_reduced_t2i', 0.0)),
+        'loss_suffix_global_ce_sum': float(metrics.get('loss_suffix_global_ce_sum', 0.0)),
+        'loss_suffix_local_ce_sum': float(metrics.get('loss_suffix_local_ce_sum', 0.0)),
+        'loss_suffix_local_ce_sum_I2T': float(metrics.get('loss_suffix_local_ce_sum_i2t', 0.0)),
+        'loss_suffix_local_ce_sum_T2I': float(metrics.get('loss_suffix_local_ce_sum_t2i', 0.0)),
+        'suffix_reduction_divisor_V': float(metrics.get('suffix_reduction_divisor', 0.0)),
+        'suffix_reduction_rule': metrics.get(
+            'suffix_reduction_rule',
+            'the reported global suffix loss is (sum over ranks of the detached local CE sums) / V'),
+        'suffix_loss_naming_note': ('loss_suffix_global_reduced is the all-gathered DETACHED result '
+                                    'and is the only field to quote as the global suffix loss; '
+                                    'loss_suffix_backward_local is this rank\'s (W / V) * A_r and is '
+                                    'a different quantity'),
+        'suffix_local_equal_global_invariant': ('the per-rank local_ce_sum values SUM to the global '
+                                                'CE sum, and DDP\'s final parameter gradients equal '
+                                                'an independent global-mean objective; '
+                                                'local_ce_sum == (W/V)*global_ce_sum is NOT an '
+                                                'invariant and is never asserted'),
         'lambda_suffix': float(out['lambda_suffix']),
         'suffix_scale_world_over_V': float(out['suffix_scale_world_over_V']),
-        'suffix_scaling_rule': 'local (I2T CE sum + T2I CE sum) * world_size / V, then standard DDP '
+        'suffix_scaling_rule': 'A_r = local (I2T CE sum + T2I CE sum); L_suffix_backward_local = '
+                               '(world_size / V) * A_r applied EXACTLY once, then standard DDP '
                                'averaging; per-rank valid means are never averaged',
         'loss_total': float(out['loss_total'].detach()),
         # ---- valid subset --------------------------------------------------------------------
@@ -533,10 +947,16 @@ def build_log_record(out, batch, optimizers, module, args, epoch, step_in_epoch,
         'valid_suffix_counts_per_rank': [int(value) for value in validity['valid_counts_per_rank']],
         'valid_suffix_count_local_n_r': int(out['local_valid_count']),
         'global_valid_V': int(out['global_valid_V']),
-        'empty_suffix_fraction_local': 1.0 - float(out['suffix_valid_ratio_local']),
-        'empty_suffix_fraction_global': float(out['empty_suffix_fraction_global']),
-        'valid_subset_rule': 'J = all_gather(suffix_valid); both the suffix images and the suffix '
-                             'texts are restricted to J; V < 2 gives an exactly zero suffix loss',
+        'valid_suffix_counts_source_scope': INDEX_SPACE_GLOBAL_FULL + ' + ' + INDEX_SPACE_GLOBAL_VALID,
+        'empty_suffix_fraction_local': 1.0 - _first_scalar(out, ('suffix_valid_ratio_local',), 0.0),
+        'empty_suffix_fraction_global': _first_scalar(out, ('empty_suffix_fraction_global',), 1.0),
+        'valid_subset_rule': 'J = all_gather(suffix_valid) over the %s index space; both the suffix '
+                             'images and the suffix texts are restricted to J once; V < 2 gives an '
+                             'exactly zero suffix loss and every rank skips only the candidate '
+                             'scoring communication' % INDEX_SPACE_GLOBAL_FULL,
+        'index_space_names': {INDEX_SPACE_LOCAL_FULL: 'this rank\'s rows',
+                              INDEX_SPACE_GLOBAL_FULL: 'world_size * local_batch rows in rank order',
+                              INDEX_SPACE_GLOBAL_VALID: 'the V filtered valid rows'},
         # ---- token lengths and truncation ----------------------------------------------------
         'prefix_raw_length_max': int(statistics.get('prefix_raw_length_max', 0)),
         'suffix_raw_length_max': int(statistics.get('suffix_raw_length_max', 0)),
@@ -642,6 +1062,16 @@ def build_log_record(out, batch, optimizers, module, args, epoch, step_in_epoch,
                         'for mU',
     }
     record.update(dict((key, jsonable(value)) for key, value in health.items()))
+    # the detached scalars that REPLACED the live forward tensors (``g_live`` / ``mask_s`` /
+    # ``t_r_all``) at the DDP boundary: what used to be a whole tensor is now a named scalar
+    diagnostics = out.get('_detached_diagnostics') or {}
+    record['detached_diagnostics'] = {
+        'scope': 'rank-local rows, detached at the DDP boundary (the live tensors of the forward are '
+                 'not part of the returned dict)',
+        'g_live_norm_mean': diagnostics.get('g_live_norm_mean'),
+        'mask_s_keep_ratio_local': diagnostics.get('mask_s_keep_ratio_local'),
+        't_r_norm_mean': diagnostics.get('t_r_norm_mean'),
+    }
     return record
 
 
@@ -676,12 +1106,22 @@ def main():
     parser.add_argument('--text_chunk', type=int, default=TEXT_CHUNK_DEFAULT)
     parser.add_argument('--suffix_checkpoint', type=int, default=1,
                         help='1 (default): write the frozen checkpoint key list at the save steps')
-    parser.add_argument('--resume', default=None)
+    parser.add_argument('--resume', default=None,
+                        help='REFUSED for training: the data cursor and the per-rank RNG/data state '
+                             'are not restored, so the trainer stops with RESUME_UNSUPPORTED instead '
+                             'of silently restarting the sample stream. Read-only acceptance loading '
+                             'uses load_checkpoint_for_acceptance().')
     args = parser.parse_args()
     if args.base_model == 'B16':
         args.base_model = 'ViT-B/16'
     elif args.base_model == 'L14':
         args.base_model = 'ViT-L/14'
+    if args.resume:
+        # Honest refusal, BEFORE any process-group, CUDA or data work: the previous behaviour restored
+        # ``completed_steps`` and then continued from epoch 0 batch 0, which silently replayed the
+        # sample stream while claiming a resume. Either the data cursor and the per-rank RNG/data state
+        # are restored and PROVEN with an interrupted-vs-uninterrupted comparison, or resume is refused.
+        raise SystemExit(RESUME_UNSUPPORTED % OBJECTIVE)
 
     seed_everything(args.seed)
     rank, local_rank, world = setup_distributed()
@@ -717,7 +1157,11 @@ def main():
     ddp_model = torch.nn.parallel.DistributedDataParallel(
         train_module, device_ids=[local_rank], output_device=local_rank,
         find_unused_parameters=True)
-    ddp_model._set_static_graph()
+    # NO ``_set_static_graph()``: this objective's valid subset J changes from step to step (V = 0 ->
+    # valid -> V = 1 -> valid), so DDP must re-derive the unused-parameter set on every iteration.
+    # A static graph would freeze the first iteration's set and silently drop the synchronisation of a
+    # parameter that becomes used later. Genuinely unused F parameters keep a None gradient, which is
+    # the correct state for find_unused_parameters=True; no zero is ever fabricated for them.
     clip_handle = train_module.clip                        # read-only handle for checkpoints/logs
 
     optimizers = build_optimizers(clip_handle, train_module.suffix_mask,
@@ -850,22 +1294,15 @@ def main():
         with open(os.path.join(args.output_dir, 'config.json'), 'w') as handle:
             json.dump(jsonable(config), handle, indent=2, sort_keys=True)
 
-    if args.resume:
-        payload = torch.load(args.resume, map_location='cpu', weights_only=False)
-        if payload.get('arm') != args.arm:
-            raise ValueError('resume arm mismatch: %r vs %r' % (payload.get('arm'), args.arm))
-        clip_handle.load_state_dict(payload['clip_state'])
-        if train_module.suffix_mask is not None and payload.get('suffix_mask_state') is not None:
-            train_module.suffix_mask.load_state_dict(payload['suffix_mask_state'])
-        optimizers['clip'].load_state_dict(payload['optimizer_clip'])
-        optimizers['mask'].load_state_dict(payload['optimizer_mask'])
-        if optimizers['suffix'] is not None and payload.get('optimizer_suffix') is not None:
-            optimizers['suffix'].load_state_dict(payload['optimizer_suffix'])
-        start_step = int(payload['completed_steps'])
-        if rank == 0:
-            print('RESUMED from %s at completed step %d' % (args.resume, start_step), flush=True)
-    else:
-        start_step = 0
+    # ---- training resume: REFUSED, and refused unreachably --------------------------------------
+    # ``--resume`` already stopped the process before the process group was created, so this branch is
+    # unreachable in production. It is kept as the single documented place where the loading half of
+    # the checkpoint exists for READ-ONLY acceptance, and it is asserted here as well so that a future
+    # edit cannot quietly reinstate the "restore completed_steps and continue from epoch 0 batch 0"
+    # behaviour, nor the silent "keep the random F when the checkpoint has none" fallback.
+    if args.resume:                                            # pragma: no cover - guarded in main()
+        raise SystemExit(RESUME_UNSUPPORTED % OBJECTIVE)
+    start_step = 0
 
     caption_digest = hashlib.sha256()
     sample_digest = hashlib.sha256()
@@ -896,8 +1333,12 @@ def main():
             'candidate_protocol': 'column j is (P_j, R_j); image i is scored against R_j with the mask '
                                   'generated from P_j',
             'valid_subset': 'J = all_gather(suffix_valid), V = |J|, suffix images and texts both '
-                            'restricted to J, backward factor world_size / V',
+                            'restricted to J exactly once, backward factor world_size / V applied '
+                            'exactly once',
             'precision': PRECISION_NOTE,
+            'resume_support': RESUME_UNSUPPORTED % OBJECTIVE,
+            'resume_status': 'RESUME_UNSUPPORTED',
+            'read_only_loader': 'load_checkpoint_for_acceptance',
         }
 
     def save_checkpoint(steps, epoch, step_in_epoch, health=None):
@@ -921,7 +1362,11 @@ def main():
             data_cursor={'epoch': int(epoch), 'step_in_epoch': int(step_in_epoch),
                          'completed_steps': int(steps), 'loader_batches': steps_per_epoch,
                          'global_batch': args.batch_size * world,
-                         'rank_local_stream_digests': digests},
+                         'rank_local_stream_digests': digests,
+                         # the cursor is RECORDED for provenance but is NOT restored by this trainer:
+                         # that is exactly why training resume is refused rather than faked
+                         'restored_by_trainer': False,
+                         'resume_status': 'RESUME_UNSUPPORTED'},
             rng_states={'torch': torch.get_rng_state(),
                         'cuda': (torch.cuda.get_rng_state(device)
                                  if torch.cuda.is_available() else None)},
@@ -972,11 +1417,16 @@ def main():
             sample_digest.update(batch['sample_id'].numpy().tobytes())
             image_id_digest.update(batch['image_id'].numpy().tobytes())
             prefix_k_digest.update(batch['prefix_k'].numpy().tobytes())
-            suffix_valid_digest.update(
-                out['suffix_valid_flags'].detach().cpu().to(torch.uint8).numpy().tobytes())
+            valid_flags = out.get('suffix_valid_flags')
+            if torch.is_tensor(valid_flags):        # the field exists in every arm and at every V
+                suffix_valid_digest.update(
+                    valid_flags.detach().cpu().to(torch.uint8).numpy().tobytes())
 
             log_now = (completed % args.log_every == 0 or completed == 1
                        or completed in save_completed)
+            # NOTE: this branch is rank-0-only and therefore contains NO collective. Every collective
+            # of the step (the gradient-health flag and the suffix reduction) already ran on all ranks
+            # inside suffix_train_step.
             if rank == 0 and (log_now or heavy):
                 record = build_log_record(out, batch, optimizers, train_module, args, epoch, i,
                                          completed, step_time, presentations,
@@ -987,6 +1437,15 @@ def main():
                         continue
                     if torch.is_tensor(value) and value.numel() == 1:
                         record.setdefault(key, float(value.detach()))
+                metrics = out.get('_suffix_metrics') or {}
+                if metrics:
+                    # the reduced, global fields are recorded under their OWN names at the top level
+                    # of the record, so a reader never has to know a helper's return dict
+                    record['loss_suffix_global_reduced'] = float(
+                        metrics.get('loss_suffix_global_reduced', 0.0))
+                    record['loss_suffix_backward_local'] = float(
+                        out.get(LOG_FIELD_SUFFIX_BACKWARD_LOCAL, 0.0))
+                    record['suffix_reduction_fields_source'] = 'reduce_suffix_metrics (all-rank reduce)'
                 with open(log_path, 'a') as handle:
                     handle.write(json.dumps(jsonable(record), sort_keys=True) + '\n')
                 print('LOG ' + json.dumps(jsonable(record), sort_keys=True), flush=True)
@@ -1035,6 +1494,34 @@ def main():
             'precision': PRECISION_NOTE, 'statistics_scope': STATS_SCOPE,
             'saved_steps': sorted(step for step in save_completed if step <= completed),
             'chunking': {'image_chunk': args.image_chunk, 'text_chunk': args.text_chunk},
+            # ---- the honest resume status of this arm -------------------------------------------
+            'resume_support': RESUME_UNSUPPORTED % OBJECTIVE,
+            'resume_status': 'RESUME_UNSUPPORTED',
+            'resume_restores': ['nothing: this trainer never continues a run'],
+            'resume_refused_for_training': True,
+            'read_only_checkpoint_loader': 'load_checkpoint_for_acceptance',
+            'checkpoint_contains': ['clip_state', 'suffix_mask_state', 'suffix_mask_config',
+                                    'optimizer_clip', 'optimizer_mask', 'optimizer_suffix',
+                                    'config', 'completed_steps', 'data_cursor (recorded only)',
+                                    'rng_states (recorded only)'],
+            'checkpoint_verified_by': ('load_checkpoint_for_acceptance (frozen key list, shape and '
+                                       'digest checks, refusal to load a mask arm without F tensors)'),
+            'ddp_notes': {
+                'static_graph': False,
+                'find_unused_parameters': True,
+                'unused_parameter_policy': ('a genuinely unused F parameter keeps grad None; no zero is '
+                                            'fabricated to make it look trained'),
+                'forward_output_policy': ('live tensors and modules of the forward are replaced by '
+                                          'detached scalar diagnostics before the dict leaves the '
+                                          'step, so DDP analyses a clean graph'),
+                'collectives_on_every_rank': True,
+            },
+            'suffix_log_fields': {
+                'global_reported': LOG_FIELD_SUFFIX_GLOBAL,
+                'local_backward': LOG_FIELD_SUFFIX_BACKWARD_LOCAL,
+                'note': ('the two are different quantities; the global one is reduced from detached '
+                         'local CE sums and divided by V'),
+            },
         }
         with open(os.path.join(args.output_dir, 'run_summary.json'), 'w') as handle:
             json.dump(jsonable(summary), handle, indent=2, sort_keys=True)

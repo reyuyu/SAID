@@ -27,16 +27,32 @@ so the prefix stream stays bit-identical to the S0/CV-SSL run; the objective nev
 
 New gate F
 ----------
-    xU      = stop_grad(concat([g, rS])),  g = Norm(encode_image(I)),  rS = stop_grad(g) * stop_grad(mS_j)
-    pU      = sigmoid(F(xU));   hardU = (pU >= 0.5);   mU = hardU + (pU - pU.detach())
-    u       = Norm(g * mU)                      <- the FULL live g, never g * (1 - mS)
-    QU[i,j] = 100 * dot(u_i,j, tR_j)            <- column j carries (P_j, R_j); image i uses mS_j
+    g_det   = stop_grad(g_block)                       # [Bi, 512]
+    m_det   = stop_grad(mS_block)                      # [Bj, 512]
+    rS      = g_det[:, None, :] * m_det[None, :, :]    # [Bi, Bj, 512]
+    g_pair  = g_det[:, None, :].expand(-1, Bj, -1)     # [Bi, Bj, 512]
+    xU      = concat([g_pair, rS], -1)                 # [Bi, Bj, 1024]  <-- ONLY the concat is 1024
+    logits  = F.forward_logits(xU)                     # PRE-sigmoid; forward() = sigmoid of this
+    pU      = sigmoid(logits)                          # [Bi, Bj, 512]
+    hardU   = (pU >= 0.5);   mU = hardU + (pU - pU.detach())
+    u       = Norm(g_block[:, None, :] * mU)           # LIVE g, mU NOT detached
+    QU[i,j] = 100 * (u * tR_block[None, :, :]).sum(-1) <- column j carries (P_j, R_j)
 
-``F`` is ``Linear(1024, 512)`` -> GELU -> ``Linear(512, 512)``: the first layer is Xavier-uniform with
-a zero bias, the last layer starts at weight 0 and bias ``log(8)``, so ``pU = 8/9`` and ``mU`` is
-exactly 1 everywhere at initialisation. It is constructed inside a fully isolated and restorable RNG
-context (Python, NumPy, the CPU generator and EVERY initialised CUDA generator), so building it can
-never perturb the CLIP initialisation or the data stream.
+``g_block`` and ``tR_block`` are 512-d feature blocks; only ``xU`` is 1024-d. ``F`` is
+``Linear(1024, 512)`` -> GELU -> ``Linear(512, 512)``: the first layer is Xavier-uniform with a zero
+bias, the last layer starts at weight 0 and bias ``log(8)``, so ``pU = 8/9`` and ``mU`` is exactly 1
+everywhere at initialisation. It is constructed inside a fully isolated and restorable RNG context
+(Python, NumPy, the CPU generator and EVERY initialised CUDA generator), so building it can never
+perturb the CLIP initialisation or the data stream.
+
+Index spaces
+------------
+Exactly three spaces exist and they are never mixed. The code names them ``LOCAL_FULL``
+(this rank's ``B`` rows), ``GLOBAL_FULL`` (the ``W*B`` rows concatenated in rank order) and
+``GLOBAL_VALID`` (the ``V`` rows left after the validity filter, ``J``). ``J`` is a
+``GLOBAL_FULL`` index set: it may select from gathered ``W*B`` tensors only, never from a
+``[B, 512]`` LOCAL tensor and never a second time from an already filtered ``[V, 512]`` tensor.
+:func:`valid_pool_mapping` is the pure, CPU-testable map from LOCAL rows to ``GLOBAL_VALID`` labels.
 
 Gradient responsibilities
 -------------------------
@@ -49,7 +65,9 @@ Chunking
 --------
 The suffix scores are produced tile by tile (``image_chunk`` x ``text_chunk``) and a full
 ``[B_global, B_global, 1024]`` tensor is never materialised; each rank only ever computes its own
-image rows. ``suffix_readout_scores`` reproduces the naive per-pair reference forward exactly.
+``[B, V]`` block of suffix scores, which is then gathered row by row. Each rank therefore computes
+its own image rows only, and the gate network is executed exactly once per (image, candidate) pair --
+never a second time to obtain the log statistics.
 """
 import contextlib
 import hashlib
@@ -60,7 +78,6 @@ import sys
 
 import torch
 import torch.distributed as dist
-import torch.distributed.nn as nn_dist
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -151,19 +168,22 @@ __all__ = ['OBJECTIVE', 'PHASE', 'SUFFIX_BRANCH', 'ARM_NATIVE', 'ARM_MASK', 'ARM
            'sample_k', 'split_prefix_suffix', 'split_batch_prefix_suffix',
            'assert_prefix_matches_batch', 'suffix_validity', 'content_token_counts',
            'effective_token_length', 'raw_token_lengths', 'isolated_rng', 'SuffixMask',
-           'SuffixMaskGate', 'gate_from_pU', 'straight_through_gate', '_StraightThroughGate',
+           'SuffixMaskGate', 'gate_from_pU', 'straight_through_gate',
            'suffix_mask_config', 'suffix_mask_init_report',
            'normalize_features', 'suffix_masked_representation', 'suffix_gate_input',
-           'suffix_readout', '_eps_safe_normalize', 'lse_margin', 'block_statistics',
-           'SuffixReadoutResult', 'suffix_readout_scores',
-           'suffix_readout_statistics', 'suffix_cross_entropy', 'suffix_loss_native',
-           'suffix_native_scores', 'gather_local_rows', 'all_gather_flat',
-           'global_valid_indices', 'global_valid_subset', 'suffix_scaling', 'differentiable_zero',
-           'assert_equal_local_batch', 'partition_parameters', 'build_optimizers',
-           'SaidPrefixSuffixObjective', 'SaidPrefixSuffixTrainModule', 'state_digest',
-           'checkpoint_metadata', 'S0_MODULE', 'compute_smartclip_terms', 'said_mask_from_hidden',
-           'said_mask_helper', 's0_effective_lambda_u', 's0_arms', 'STREAM_SCOPE',
-           'STATISTICS_SCOPE']
+           'suffix_pair_gate_input', 'suffix_readout', 'lse_margin', 'block_statistics',
+           'statistics_accumulator', 'merge_statistics', 'finalize_statistics',
+           'tile_readout_statistics', 'full_grid_statistics', 'valid_pool_mapping',
+           'assert_global_full_index_space', 'positive_pair_selection',
+           'suffix_readout_scores', 'suffix_readout_statistics', 'suffix_readout_scores_with_gates',
+           'suffix_cross_entropy', 'suffix_cross_entropy_sum', 'native_grid_statistics',
+           'full_grid_statistics', 'suffix_native_scores', 'suffix_native_scores_local', 'differentiable_gather_rows', 'gather_local_rows',
+           'all_gather_flat', 'global_valid_indices', 'global_valid_subset', 'suffix_scaling',
+           'differentiable_zero', 'assert_equal_local_batch', 'partition_parameters',
+           'build_optimizers', 'SaidPrefixSuffixObjective', 'SaidPrefixSuffixTrainModule',
+           'state_digest', 'checkpoint_metadata', 'S0_MODULE', 'compute_smartclip_terms',
+           'said_mask_from_hidden', 'said_mask_helper', 's0_effective_lambda_u', 's0_arms',
+           'STREAM_SCOPE', 'STATISTICS_SCOPE']
 
 
 # --------------------------------------------------------------------------- S0 module import
@@ -427,53 +447,47 @@ class SuffixMask(nn.Module):
                         else layer.bias.float())
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """``pU = sigmoid(F(x))`` on the explicitly fp32 core (never under autocast).
+        """``pU = sigmoid(F(x))``: the PRE-sigmoid logits (``forward_logits``) put through sigmoid.
 
-        Numerically this is exactly the reference straight-through gate of the CG-CLIP lineage
-        (``probability = sigmoid(logits); mask = hard + (probability - probability.detach())``); the
-        fp32 cast makes the policy explicit rather than dependent on the ambient autocast state.
+        ``forward`` adds nothing to ``forward_logits`` and the readout calls ``forward_logits``
+        directly, so the gate the training step uses and the gate an audit reads are the same
+        function of the same parameters -- there is no second, differently-computed probability.
         """
         with torch.autocast(device_type=x.device.type, enabled=False):
-            hidden = F.gelu(self._double_linear(self.layer1, x))
-            return torch.sigmoid(self._double_linear(self.layer2, hidden))
+            return self.forward_logits(x).sigmoid()
 
     def forward_logits(self, x: torch.Tensor) -> torch.Tensor:
-        """The raw ``F(x)`` logits, for the gate and for initialisation audits (``pU`` = 8/9)."""
+        """The raw PRE-sigmoid ``F(x)`` logits: ``[..., 1024] -> [..., 512]``.
+
+        The suffix readout takes the gate from here, so a gate audit and the training forward cannot
+        disagree about which quantity was thresholded. Explicit fp32 core, never under autocast.
+        """
         with torch.autocast(device_type=x.device.type, enabled=False):
             hidden = F.gelu(self._double_linear(self.layer1, x))
             return self._double_linear(self.layer2, hidden)
 
 
-class _StraightThroughGate(torch.autograd.Function):
-    """``mU = (pU >= 0.5) + (pU - pU.detach())`` written out explicitly, forward value unchanged.
-
-    The forward returns the hard 0/1 gate. The backward returns the upstream gradient unchanged, which
-    IS the derivative of ``hard + (pU - pU.detach())`` with respect to ``pU`` (exactly 1 in autograd
-    for the whole 0 < pU < 1 range, since ``pU.detach()`` contributes nothing). Expressing it
-    explicitly keeps the straight-through slope alive in the far-saturated regime, where the fused
-    expression can round to a constant; the value and every non-degenerate gradient are identical.
-    """
-
-    @staticmethod
-    def forward(ctx, p_u: torch.Tensor):
-        probability = p_u.float()
-        return (probability >= 0.5).to(torch.float32)
-
-    @staticmethod
-    def backward(ctx, grad_output: torch.Tensor):
-        return grad_output
-
-
 def straight_through_gate(p_u: torch.Tensor) -> torch.Tensor:
-    """The frozen straight-through gate ``mU`` of one probability tensor."""
-    return _StraightThroughGate.apply(p_u)
+    """The frozen gate, written out exactly: ``mU = (pU >= 0.5) + (pU - pU.detach())``.
+
+    The hard value is the forward and the sigmoid slope is the backward, both of them ordinary
+    autograd of that one expression. There is deliberately NO custom ``torch.autograd.Function``
+    here: the expression already carries the straight-through slope, and a hand-written backward
+    would only be able to reproduce it or get it wrong. It is also NOT a fix for sigmoid saturation
+    -- far from the threshold ``pU - pU.detach()`` has a vanishing sigmoid derivative like any other
+    sigmoid term, and nothing in this module claims otherwise or requires a non-zero gate gradient
+    for an all-closed sample.
+    """
+    with torch.autocast(device_type=p_u.device.type, enabled=False):
+        probability = p_u.float()
+        return (probability >= 0.5).to(probability.dtype) + (probability - probability.detach())
 
 
 class SuffixMaskGate:
     """The straight-through gate of the suffix mask, kept separate from the network that produces it.
 
     ``gate_from_pU(pU)`` is the frozen entry point: ``mU = (pU >= 0.5) + (pU - pU.detach())``. There
-    is no top-k, no fixed retention count and no soft floor.
+    is no top-k, no fixed retention count and no soft floor, and no custom backward of any kind.
     """
 
     @staticmethod
@@ -489,7 +503,8 @@ class SuffixMaskGate:
         Always fp32, and always applied afterwards to the FULL live ``g`` at the readout.
         """
         with torch.autocast(device_type=pU.device.type, enabled=False):
-            return straight_through_gate(pU)
+            probability = pU.float()
+            return (probability >= 0.5).to(probability.dtype) + (probability - probability.detach())
 
     @staticmethod
     def gate_from_logits(logits: torch.Tensor) -> dict:
@@ -497,7 +512,9 @@ class SuffixMaskGate:
         with torch.autocast(device_type=logits.device.type, enabled=False):
             probability = torch.sigmoid(logits.float())
             hard = (probability >= 0.5).to(torch.float32)
-            return {'pU': probability, 'hardU': hard, 'mU': straight_through_gate(probability)}
+            return {'pU': probability, 'hardU': hard,
+                    'mU': (probability >= 0.5).to(probability.dtype)
+                          + (probability - probability.detach())}
 
 
 def gate_from_pU(pU: torch.Tensor) -> torch.Tensor:
@@ -520,12 +537,15 @@ def suffix_mask_config(mask: nn.Module = None) -> dict:
         'tensor_names': 'layer1.weight [512,1024], layer1.bias [512], layer2.weight [512,512], '
                         'layer2.bias [512]',
         'parameter_names': ['layer1.weight', 'layer1.bias', 'layer2.weight', 'layer2.bias'],
-        'input': 'stop_grad(concat([g, rS])), one 1024-d vector per (image, candidate prefix) pair',
-        'g_source': 'Norm(encode_image(I)): the live student output, not a frozen reference',
-        'mS_source': 'hard straight-through S0 mask_net on the prefix C_S hidden, detached',
-        'rS_rule': 'g.detach() * stop_grad(mS): NO re-normalisation, never Norm(g * mS)',
-        'readout': 'Norm(g * mU): the FULL live g, never g * (1 - mS)',
-        'output': 'pU = sigmoid(F(xU)); mU = (pU >= 0.5) + (pU - pU.detach())',
+        'input': 'stop_grad(concat([g, rS])): one 1024-d vector per (image, candidate) pair, built '
+                 'from the two 512-d blocks g and rS (only the concatenation is 1024-d)',
+        'g_source': 'Norm(encode_image(I)): the live student output, 512-d, not a frozen reference',
+        'mS_source': 'hard straight-through S0 mask_net on the prefix C_S hidden, 512-d, detached',
+        'rS_rule': 'g.detach() * mS.detach(), one 512-d block per pair: NO re-normalisation, never '
+                   'Norm(g * mS)',
+        'readout': 'Norm(g * mU) with the 512-d FULL live g, never g * (1 - mS)',
+        'output': 'pU = sigmoid(F.forward_logits(xU)); mU = (pU >= 0.5) + (pU - pU.detach()), '
+                  'both 512-d per pair',
         'layer1_init': 'xavier_uniform weight, zero bias',
         'layer2_init': 'zero weight, bias = log(8), so pU = 8/9 and mU is exactly 1 at step 0',
         'seed': SUFFIX_MASK_SEED,
@@ -580,58 +600,48 @@ def suffix_masked_representation(g_features: torch.Tensor, mask_s: torch.Tensor)
 
 
 def suffix_gate_input(g_features: torch.Tensor, r_s: torch.Tensor) -> torch.Tensor:
-    """``xU = stop_grad(concat([g, rS]))`` with the layout of the spec: ``[1024]`` per pair.
+    """``xU = stop_grad(concat([g, rS]))`` along the last dimension: ``[1024]`` per pair.
 
-    ``g`` may arrive as a broadcastable ``[Bi, 1, 1024]`` next to ``[Bi, Bj, 1024]``; the broadcast
-    is a view, so no ``[Bi, Bj, 1024]`` buffer is ever materialised by this function.
+    ``g_features`` is a 512-d block and ``r_s`` a 512-d block (the concatenation is the only 1024-d
+    tensor in this module).
     """
-    left = g_features.detach().float()
-    right = r_s.detach().float()
-    if left.dim() != right.dim():
-        left, right = torch.broadcast_tensors(left, right)
-    return torch.cat([left, right], dim=-1)
+    return torch.cat([g_features.detach().float(), r_s.detach().float()], dim=-1)
 
 
-class _EpsSafeNormalize(torch.autograd.Function):
-    """``x / max(||x||_2, eps)`` with a backward that survives a degenerate (all-off) input.
+def suffix_pair_gate_input(g_block: torch.Tensor, mS_block: torch.Tensor) -> torch.Tensor:
+    """The image x candidate-prefix pair tensor ``xU`` of the mask arm: ``[Bi, Bj, 1024]``.
 
-    The FORWARD value is exactly ``F.normalize(x, dim=-1, eps)``: dividing by the clamped norm
-    reproduces it bit for bit. The BACKWARD treats the clamped denominator as a constant, i.e. it is
-    the straight-through derivative ``g / max(||x||, eps)``. That matters only in the degenerate
-    regime: when the learned gate has closed every coordinate, ``x = g * mU`` is exactly zero,
-    ``F.normalize`` returns exactly zero AND an exactly zero gradient, and the gate could never be
-    trained back open. With this backward the straight-through slope of ``mU`` stays alive, which is
-    the behaviour the specification requires for an all-off gate (it must stay trainable and must not
-    trigger a fallback), while the forward value is unchanged and every non-degenerate case has the
-    same gradient as ``F.normalize``.
+    The two inputs are used through their OWN axes and are never element-wise multiplied with each
+    other: ``g_block * mS_block`` is only correct-looking when ``Bi == Bj`` and otherwise broadcasts
+    ``g_j * mS_j`` into the wrong image rows, so it is not written anywhere in this module.
+
+        g_det = g_block.detach()[:, None, :]        # [Bi, 1, 512]
+        m_det = mS_block.detach()[None, :, :]       # [1, Bj, 512]
+        rS    = g_det * m_det                       # [Bi, Bj, 512]
+        xU    = cat([g_det.expand(-1, Bj, -1), rS], dim=-1)     # [Bi, Bj, 1024]
+
+    ``g_det.expand`` is a view, so no ``[Bi, Bj, 512]`` buffer of the plain image block is
+    materialised and no chunk size is allowed to hide a broadcast of the wrong shape.
     """
-
-    @staticmethod
-    def forward(ctx, x: torch.Tensor, eps: float):
-        norm = x.norm(dim=-1, keepdim=True)
-        clamped = norm.clamp_min(eps)
-        ctx.save_for_backward(clamped)
-        return x / clamped
-
-    @staticmethod
-    def backward(ctx, grad_output: torch.Tensor):
-        clamped = ctx.saved_tensors[0]
-        return grad_output / clamped, None
-
-
-def _eps_safe_normalize(x: torch.Tensor, eps: float = NORM_EPS) -> torch.Tensor:
-    """``Norm(x)`` in fp32 with the eps-safe backward of :class:`_EpsSafeNormalize`."""
-    with torch.autocast(device_type=x.device.type, enabled=False):
-        return _EpsSafeNormalize.apply(x.float(), float(eps))
+    if g_block.dim() != 2 or mS_block.dim() != 2:
+        raise ValueError('the pair readout takes a 2-D image block [Bi, 512] and a 2-D candidate '
+                         'prefix-mask block [Bj, 512]; got %s and %s'
+                         % (tuple(g_block.shape), tuple(mS_block.shape)))
+    g_det = g_block.detach().float()[:, None, :]                # [Bi, 1, 512]
+    m_det = mS_block.detach().float()[None, :, :]               # [1, Bj, 512]
+    r_s = g_det * m_det                                         # [Bi, Bj, 512]
+    return suffix_gate_input(g_det.expand(-1, int(m_det.shape[1]), -1), r_s)
 
 
 def suffix_readout(u_gated: torch.Tensor, eps: float = NORM_EPS) -> torch.Tensor:
-    """``u = Norm(g_live * mU)``: the FULL live ``g``, never ``g * (1 - mS)`` and never re-normalised.
+    """``u = Norm(g_live * mU)``: the FULL live ``g``, never ``g * (1 - mS)``.
 
-    Uses the eps-safe normalisation, whose forward value is exactly ``F.normalize`` and whose
-    backward keeps a fully closed gate trainable (see :class:`_EpsSafeNormalize`).
+    Exactly :func:`normalize_features` -- the STANDARD ``F.normalize`` autograd, no custom backward,
+    no detached denominator and no straight-through on this path. An all-closed sample therefore
+    reads out as an exactly zero ``u`` (``F.normalize`` of a zero input), and that is the intended
+    value, not a case to be patched.
     """
-    return _eps_safe_normalize(u_gated, eps=eps)
+    return normalize_features(u_gated, eps=eps)
 
 
 # --------------------------------------------------------------------------- chunked scoring
@@ -643,9 +653,11 @@ def _chunk_ranges(total: int, chunk: int):
 
 
 def lse_margin(scores: torch.Tensor, positive_index: torch.Tensor) -> torch.Tensor:
-    """``positive - logsumexp(valid negatives only)``, the only definition of an LSE margin here.
+    """``positive - logsumexp(negatives among the columns given)``: the only LSE margin here.
 
-    ``logsumexp(all) - positive`` is the cross entropy and is never reported under this name.
+    The caller must pass candidate columns that are all valid (the suffix pool is the valid subset
+    ``J``), so the sum really is over valid negatives. ``logsumexp(all) - positive`` is the cross
+    entropy and is never reported under this name.
     """
     rows = scores.float()
     index = positive_index.reshape(-1, 1)
@@ -655,7 +667,11 @@ def lse_margin(scores: torch.Tensor, positive_index: torch.Tensor) -> torch.Tens
 
 
 def block_statistics(rows: torch.Tensor, targets: torch.Tensor) -> dict:
-    """Positive / strongest-negative / max-margin / LSE-margin for one block of score rows."""
+    """Positive / strongest-negative / max-margin / LSE-margin for one block of score rows.
+
+    Every column of ``rows`` must be a valid candidate (the valid subset ``J`` is the only pool this
+    module scores), so ``masked`` holds valid negatives only.
+    """
     rows = rows.float()
     index = targets.reshape(-1, 1)
     positive = rows.gather(1, index).squeeze(1)
@@ -666,189 +682,633 @@ def block_statistics(rows: torch.Tensor, targets: torch.Tensor) -> dict:
             'lse_margin': positive - torch.logsumexp(masked, dim=1)}
 
 
-class SuffixReadoutResult(tuple):
-    """The readout of one tile pass: a ``(scores, mU)`` pair that also answers to dict keys.
+# --------------------------------------------------------------------------- tile statistics
+_SUM_KEYS = ('positive_pairs', 'positive_keep_sum', 'positive_probability_sum', 'positive_norm_sum',
+             'positive_norm_ratio_sum', 'positive_near_zero', 'all_pairs', 'all_keep_sum',
+             'all_probability_sum', 'all_norm_sum', 'all_norm_ratio_sum', 'all_near_zero',
+             'anchor_count', 'candidate_count')
 
-    Two callers of the frozen entry point disagree about the container: the acceptance tests unpack
-    ``scores, mU = suffix_readout_scores(...)`` while the mechanism diagnostic reads
-    ``result['scores']``. This object is a real 2-tuple of ``(scores, mU)`` (so unpacking, indexing by
-    position and ``tuple(...)`` all behave) and additionally maps the documented names
-    ``'scores' / 'mU' / 'pU'`` to what the pass produced.
+
+def statistics_accumulator() -> dict:
+    """A FRESH accumulator of per-tile gate/readout statistics.
+
+    The heavy log must not re-run F over the whole ``V x V`` grid to obtain numbers the scoring tile
+    already had: every tile feeds this accumulator while it is scored, and :func:`finalize_statistics`
+    turns the sums into counts plus weighted means. Because the sums and their counts are carried
+    together, tiles of different sizes are weighted by their own element counts and unweighted means
+    of differently sized tiles are never averaged.
+
+    ``positive_pairs`` counts the (image, suffix) pairs that are genuine positives -- an image and
+    the suffix of its OWN row -- and is kept strictly separate from ``all_pairs``. ``margin_*`` fields
+    stay absent until :func:`full_grid_statistics` has really seen the score grid.
     """
-
-    __slots__ = ()
-
-    SCORE_KEYS = ('scores',)
-    MASK_KEYS = ('mU', 'mask_u')
-    PROBABILITY_KEYS = ('pU', 'probability')
-
-    @property
-    def scores(self) -> torch.Tensor:
-        return self[0]
-
-    @property
-    def mask_u(self):
-        return self[1]
-
-    @property
-    def mU(self):
-        return self[1]
-
-    def __getitem__(self, key):
-        if isinstance(key, str):
-            if key in self.SCORE_KEYS:
-                return self[0]
-            if key in self.MASK_KEYS:
-                return self[1]
-            if key in self.PROBABILITY_KEYS:
-                raise KeyError('a training pass does not carry gate probabilities: use '
-                               'suffix_readout_statistics(...) for the heavy-log probe fields')
-            raise KeyError(key)
-        return tuple.__getitem__(self, key)
-
-    def keys(self):
-        return self.SCORE_KEYS + self.MASK_KEYS
+    positive = dict((key, 0.0) for key in _SUM_KEYS)
+    everything = dict((key, 0.0) for key in _SUM_KEYS)
+    return {'positive_pair': positive, 'all_pair': everything, 'margin_positive': None,
+            'margin_strongest_negative': None, 'margin_max_margin': None,
+            'margin_lse_margin': None, 'margin_anchor_count': 0, 'margin_candidate_count': 0,
+            'extreme_units': 0, 'extreme_probability_min': None, 'extreme_probability_max': None,
+            'scope': {'positive_pair': 'image i with the suffix of its own row (P_i, R_i)',
+                      'all_pair': 'every (image i, valid suffix j) pair scored in this pass',
+                      'margin': 'not measured in this pass'}}
 
 
-def suffix_readout_scores(g_features: torch.Tensor, mask_s: torch.Tensor, t_r: torch.Tensor,
-                          mask: nn.Module, image_chunk: int = IMAGE_CHUNK_DEFAULT,
-                          text_chunk: int = TEXT_CHUNK_DEFAULT, eps: float = NORM_EPS,
-                          want_statistics: bool = False, positive_columns=None):
-    """``QU[i, j] = 100 * dot(u_i,j, tR_j)`` for local images x given suffix texts, tile by tile.
+def statistics_log_fields(statistics: dict) -> dict:
+    """The flat, ALWAYS-NUMERIC fields of a statistics dict, for a JSON log record.
 
-    The frozen argument order is ``(g, mS, tR, F)``: the live image features, the S0 masks of the
-    candidate prefixes, the suffix text features and the new gate network. The historical
-    ``(g, mS, F, tR)`` order is accepted as well, because the mechanism diagnostic uses it.
-
-    ``g_features`` are this rank's LIVE image features ``[Bi, 1024]``; ``mask_s`` the S0 masks of the
-    candidate prefixes ``[Bj, 1024]`` (accepted as ``[Bi, Bj, 1024]`` as well) and ``t_r`` the suffix
-    text features ``[Bj, 1024]``. Column ``j`` is the pair ``(P_j, R_j)``: image ``i`` is always
-    scored against ``R_j`` using the mask generated from ``P_j``, for positives and for negatives
-    alike. Only scalar score tiles ever exist: no ``[Bi, Bj, 1024]`` and no ``[Bi, Bj, 512]``
-    gradient buffer.
-
-    The per-pair reference computed here, tile by tile, is exactly
-
-        rS    = g_i.detach() * mS_j.detach()
-        mU    = hard_st(sigmoid(F(stop_grad(concat([g_i, rS])))))
-        QU_ij = 100 * sum(Norm(g_i * mU) * tR_j)
-
-    Returns :class:`SuffixReadoutResult`: unpackable as ``(scores, mU)`` and readable as
-    ``result['scores']``. ``mU`` is the gate of the LAST tile, or ``None`` when ``want_statistics``
-    is set (the probe pass then also returns the gate probabilities and the readout norm ratio).
-    ``positive_columns`` is accepted for caller compatibility and ignored: the candidate rule is per
-    (image, candidate) pair, never a shared column.
+    The nested statistics dict uses ``None`` for "not measured"; a JSON log line cannot, because a
+    reader must never see "not measured" dressed up as ``0 % kept``. This helper therefore names the
+    case explicitly instead of hiding it: ``gate_statistics_measured`` says whether any gate element
+    was scored at all, and the numeric fields are exactly the measured numbers (or a clearly labelled
+    default with ``measured = false``).
     """
-    del positive_columns
-    if not isinstance(mask, nn.Module) or not callable(getattr(mask, 'forward_logits', None)):
-        if isinstance(t_r, nn.Module) and callable(getattr(t_r, 'forward_logits', None)):
-            mask, t_r = t_r, mask                          # accept the (g, mS, F, tR) order too
+    sides = statistics.get('sides') or {}
+    all_pair = sides.get('all_pair') or {}
+    positive = sides.get('positive_pair') or {}
+    pairs = int(all_pair.get('pair_count') or 0)
+    measured = pairs > 0
+    return {
+        'gate_statistics_measured': bool(measured),
+        'gate_statistics_note': ('measured = the pass scored at least one (image, valid suffix) pair; '
+                                 'when false every gate/readout field below is a default and NOT a '
+                                 'measured zero'),
+        'readout_pair_count': pairs,
+        'positive_pair_count': int(positive.get('pair_count') or 0),
+        'mU_keep_ratio_all_valid_pairs': all_pair.get('keep_ratio'),
+        'mU_probability_mean': all_pair.get('probability_mean'),
+        'mU_probability_min': all_pair.get('probability_min'),
+        'mU_probability_max': all_pair.get('probability_max'),
+        'gated_readout_norm_mean': all_pair.get('readout_norm_mean'),
+        'gated_readout_norm_ratio_mean': all_pair.get('readout_norm_ratio_mean'),
+        'near_zero_readout_norm_count': int(all_pair.get('near_zero_readout_norm_count') or 0),
+        'mU_keep_ratio_positive_pair': positive.get('keep_ratio'),
+        'mU_probability_mean_positive_pair': positive.get('probability_mean'),
+        'gated_readout_norm_ratio_mean_positive_pair': positive.get('readout_norm_ratio_mean'),
+        'gate_statistics_scope': statistics.get('gates_scope') or statistics.get('native_grid_scope'),
+    }
+
+
+def _accumulate(acc: dict, key: str, value) -> None:
+    if value is None:
+        return
+    if torch.is_tensor(value):
+        acc[key] = acc[key] + value.detach().float()
+    else:
+        acc[key] = acc[key] + float(value)
+
+
+def _merge_into(target: dict, item: dict) -> dict:
+    """Add one accumulator or finalized statistics dict into ``target`` (in place, O(1) fields)."""
+    for side in ('positive_pair', 'all_pair'):
+        for key in _SUM_KEYS:
+            _accumulate(target[side], key, item[side][key])
+    for key in ('margin_anchor_count', 'margin_candidate_count'):
+        _accumulate(target, key, item.get(key, 0) or 0)
+    for key in ('margin_positive', 'margin_strongest_negative', 'margin_max_margin',
+                'margin_lse_margin', 'margin_positive_win_fraction', 'margin_top1'):
+        value = item.get(key)
+        if value is None:
+            continue
+        weight = int(item.get('margin_anchor_count') or 0)
+        total, count = target[key] if target[key] is not None else (0.0, 0)
+        target[key] = (total + float(value) * weight, count + weight)
+    scope = dict(item.get('scope') or {})
+    if scope.get('margin', 'not measured in this pass') != 'not measured in this pass':
+        target['scope']['margin'] = scope['margin']
+    return target
+
+
+def merge_statistics(statistics_list) -> dict:
+    """Merge several accumulators (or finalized dicts) by summing sides and counts.
+
+    Both input forms are accepted, so a caller may merge tile accumulators together, or merge a
+    finished statistics dict of one pass into another, without re-deriving which form it holds. The
+    merge is a pure sum of counts and sums, which is exactly what makes differently sized tiles carry
+    their own weight; a field that was never measured stays absent instead of becoming a zero.
+    """
+    merged = statistics_accumulator()
+    for item in statistics_list:
+        if item is not None:
+            _merge_into(merged, item)
+    return merged
+
+
+def finalize_statistics(accumulator: dict) -> dict:
+    """Add the count-weighted means to an accumulator (idempotent: a final dict is returned as is).
+
+    Every mean is a SUM divided by the count it was summed over, so a tile of 4 pairs and a tile of
+    128 pairs contribute in proportion to their pair counts and no unweighted mean of differently
+    sized tiles is ever averaged. ``pair_count == 0`` yields ``None`` -- "not measured" is never
+    reported as ``0`` (an all-closed gate at ``p=[0.9, 0.1, 0.1]`` has keep ratio ``1/3``, and a pass
+    with no positive pair at all has NO keep ratio, not a zero one).
+    """
+    if 'sides' in accumulator:
+        return accumulator
+    sides = {}
+    for side, pair_key in (('positive_pair', 'positive_pairs'), ('all_pair', 'all_pairs')):
+        raw = accumulator[side]
+        pairs = int(raw[pair_key])
+        prefix = 'positive' if side == 'positive_pair' else 'all'
+        sides[side] = {
+            'pair_count': pairs,
+            'probability_mean': (float(raw[prefix + '_probability_sum']) / pairs) if pairs else None,
+            'keep_ratio': (float(raw[prefix + '_keep_sum']) / pairs) if pairs else None,
+            'readout_norm_mean': (float(raw[prefix + '_norm_sum']) / pairs) if pairs else None,
+            'readout_norm_ratio_mean': (float(raw[prefix + '_norm_ratio_sum']) / pairs) if pairs
+            else None,
+            'near_zero_readout_norm_count': int(raw[prefix + '_near_zero']),
+        }
+    accumulator['sides'] = sides
+    accumulator['anchor_count'] = int(accumulator['all_pair']['anchor_count'])
+    accumulator['candidate_count'] = int(accumulator['all_pair']['candidate_count'])
+    margin_anchor_count = int(accumulator.get('margin_anchor_count') or 0)
+    for key, field in (('margin_positive', 'positive_mean'),
+                       ('margin_strongest_negative', 'strongest_negative_mean'),
+                       ('margin_max_margin', 'max_margin_mean'),
+                       ('margin_lse_margin', 'lse_margin_mean'),
+                       ('margin_positive_win_fraction', 'positive_win_fraction'),
+                       ('margin_top1', 'top1')):
+        value = accumulator.get(key)
+        if value is None:
+            accumulator[field] = None
+        elif isinstance(value, tuple):
+            total, count = value
+            accumulator[field] = (total / count) if count else None
         else:
-            raise TypeError('suffix_readout_scores expects the gate network F among its first four '
-                            'positional arguments as (g, mS, tR, F), got %s in the gate position: no '
-                            'gate would be applied and the conditional score would silently become '
-                            'the native one' % type(mask).__name__)
-    images = int(g_features.shape[0])
-    texts = int(t_r.shape[0])
-    device = g_features.device
-    block_masks = mask_s.dim() == 3
-    scores = torch.empty((images, texts), dtype=torch.float32, device=device)
-    probability = (torch.empty((images, texts), dtype=torch.float32, device=device)
-                   if want_statistics else None)
-    ratio = (torch.empty((images, texts), dtype=torch.float32, device=device)
-             if want_statistics else None)
-    last_mask_u = None
-    near_zero = 0
-    pairs = 0
-    text_step = max(int(text_chunk), 1)
-    for i0, i1 in _chunk_ranges(images, image_chunk):
-        keep = i1 - i0
-        for j0 in range(0, texts, text_step):
-            j1 = min(j0 + text_step, texts)
-            rows = j1 - j0
-            # rS depends on the candidate prefix alone and is built from DETACHED features, so no
-            # gradient can reach the visual trunk or the S0 mask through this path
-            mask_tile = (mask_s[i0:i1, j0:j1] if block_masks else mask_s[j0:j1])
-            r_s = suffix_masked_representation(g_features[i0:i1], mask_tile)
-            g_rep = g_features[i0:i1].unsqueeze(1).expand(keep, rows, -1)
-            x_u = suffix_gate_input(g_rep, r_s)
-            if want_statistics:
-                gate = SuffixMaskGate.gate_from_logits(mask.forward_logits(x_u))
-                probability[i0:i1, j0:j1] = gate['pU'].detach().float()
-            else:
-                gate = {'mU': SuffixMaskGate.gate_from_pU(mask(x_u))}
-            mask_u = gate['mU']
-            gated = g_features[i0:i1].unsqueeze(1) * mask_u      # the FULL live g
-            if want_statistics:
-                norm = gated.detach().float().norm(dim=-1)
-                ratio[i0:i1, j0:j1] = norm / math.sqrt(float(gated.shape[-1]))
-                near_zero += int((norm <= 1e-8).sum())
-                pairs += int(norm.numel())
-            else:
-                last_mask_u = mask_u.detach()
-            unit = suffix_readout(gated, eps=eps)
-            tile = torch.einsum('ijd,jd->ij', unit.float(), t_r[j0:j1].float())
-            scores[i0:i1, j0:j1] = SMARTCLIP_FIXED_SCALE * tile
-    return SuffixReadoutResult((scores, last_mask_u))
+            # a margin that was measured on the complete grid: keep the plain mean it already is
+            accumulator[field] = float(value) if margin_anchor_count else None
+    accumulator['definitions'] = {
+        'keep_ratio': '(pU >= 0.5) fraction of the GATE ELEMENTS, not of a mean over the 512 '
+                      'dimensions: p=[0.9,0.1,0.1] has keep ratio 1/3, never 0',
+        'probability_mean': 'pU summed over every gate element and divided by the element count '
+                            '(never a mean over the 512 dimensions first)',
+        'readout_norm_ratio': '||g_i * mU_ij|| / max(||g_i||, eps) on the 512-d pair vectors: never '
+                              'divided by sqrt(512) and never collapsed from [Bi, Bj] to [Bi]',
+        'lse_margin': 'positive - logsumexp(valid negatives only); logsumexp(all) - positive is CE '
+                      'and is never reported under this name',
+        'weighting': 'every mean is sum / pair count, so tiles of different sizes are weighted by '
+                     'their own element counts',
+        'positive_pair': 'image i with the suffix of its own row (P_i, R_i), separate from all_pair',
+    }
+    return accumulator
 
 
-def suffix_readout_statistics(g_features: torch.Tensor, mask_s: torch.Tensor, t_r: torch.Tensor,
-                              mask: nn.Module, image_chunk: int = IMAGE_CHUNK_DEFAULT,
-                              text_chunk: int = TEXT_CHUNK_DEFAULT,
-                              eps: float = NORM_EPS) -> dict:
-    """The heavy-log probe pass: the same readout, plus the gate and readout-norm diagnostics.
+def positive_pair_selection(image_anchors, text_anchors):
+    """The (row, column) positions of the genuine positive pairs of a score block.
 
-    Runs the identical tile arithmetic (so the logged numbers describe the forward that trained) and
-    additionally records ``pU``, the readout norm ratio and the near-zero-norm count. Call this on a
-    no-grad path, for example from a heavy-log step.
+    ``image_anchors[r]`` is the GLOBAL_FULL row of image block row ``r`` and ``text_anchors[c]`` the
+    GLOBAL_FULL row of candidate column ``c``: the pair is positive when the two global rows are the
+    SAME sample. Indexing by position instead would silently mislabel every pass whose anchors are
+    not a contiguous ``rank*B + arange(n_r)`` block, which is exactly the ``n_r = 0`` / unequal
+    ``n_r`` case this round has to get right.
     """
-    scores, _mask_u = suffix_readout_scores(g_features, mask_s, t_r, mask, image_chunk=image_chunk,
-                                            text_chunk=text_chunk, eps=eps)
-    images = int(g_features.shape[0])
-    texts = int(t_r.shape[0])
-    device = g_features.device
-    probability = torch.empty((images, texts), dtype=torch.float32, device=device)
-    ratio = torch.empty((images, texts), dtype=torch.float32, device=device)
-    near_zero = 0
-    pairs = 0
+    rows = torch.as_tensor(image_anchors, dtype=torch.long).reshape(-1)
+    columns = torch.as_tensor(text_anchors, dtype=torch.long).reshape(-1)
+    if not int(rows.numel()) or not int(columns.numel()):
+        return [], []
+    matches = (rows.reshape(-1, 1) == columns.reshape(1, -1)).nonzero(as_tuple=False)
+    return (matches[:, 0].tolist(), matches[:, 1].tolist())
+
+
+def tile_readout_statistics(probability, readout, g_block, mS_block, image_anchors, text_anchors,
+                            eps: float = NORM_EPS) -> dict:
+    """The statistics of ONE scored tile, taken from the quantities the tile already computed.
+
+    ``probability`` is the full ``[Bi, Bj, 512]`` gate probability grid of the tile (NOT reduced over
+    the 512 dimensions), ``readout`` the ``[Bi, Bj, 512]`` ``g_i * mU_ij`` product and ``g_block`` the
+    ``[Bi, 512]`` image block the tile was built from. Nothing is re-run here.
+    """
+    values = {'positive_pair': dict((key, 0.0) for key in _SUM_KEYS),
+              'all_pair': dict((key, 0.0) for key in _SUM_KEYS),
+              'margin_positive': None, 'margin_strongest_negative': None, 'margin_max_margin': None,
+              'margin_lse_margin': None, 'margin_anchor_count': 0, 'margin_candidate_count': 0,
+              'scope': {'positive_pair': 'image i with the suffix of its own row (P_i, R_i)',
+                        'all_pair': 'every (image i, valid suffix j) pair of this pass',
+                        'margin': 'not measured in this pass'}}
+    with torch.no_grad():
+        probability = probability.detach().float()
+        hard = (probability >= 0.5).float()
+        kept = hard.sum(dim=-1)
+        summed = probability.sum(dim=-1)
+        g_norm = g_block.detach().float().norm(dim=-1)                     # [Bi]
+        readout_norm = readout.detach().float().norm(dim=-1)               # [Bi, Bj]
+        ratio = readout_norm / g_norm.reshape(-1, 1).clamp_min(float(eps))
+        near_zero = (readout_norm <= 1e-8)
+        pairs = int(probability.shape[0]) * int(probability.shape[1])
+        all_pair = values['all_pair']
+        all_pair['all_pairs'] = float(pairs)
+        all_pair['all_keep_sum'] = float(kept.sum())
+        all_pair['all_probability_sum'] = float(summed.sum())
+        all_pair['all_norm_sum'] = float(readout_norm.sum())
+        all_pair['all_norm_ratio_sum'] = float(ratio.sum())
+        all_pair['all_near_zero'] = float(near_zero.sum())
+        all_pair['anchor_count'] = float(probability.shape[0])
+        all_pair['candidate_count'] = float(probability.shape[1])
+        rows, columns = positive_pair_selection(image_anchors, text_anchors)
+        if rows:
+            row_index = torch.as_tensor(rows, dtype=torch.long, device=probability.device)
+            column_index = torch.as_tensor(columns, dtype=torch.long, device=probability.device)
+            picked_keep = kept[row_index, column_index]
+            picked_sum = summed[row_index, column_index]
+            picked_norm = readout_norm[row_index, column_index]
+            picked_ratio = ratio[row_index, column_index]
+            positive = values['positive_pair']
+            positive['positive_pairs'] = float(len(rows))
+            positive['positive_keep_sum'] = float(picked_keep.sum())
+            positive['positive_probability_sum'] = float(picked_sum.sum())
+            positive['positive_norm_sum'] = float(picked_norm.sum())
+            positive['positive_norm_ratio_sum'] = float(picked_ratio.sum())
+            positive['positive_near_zero'] = float(near_zero[row_index, column_index].sum())
+    return values
+
+
+def full_grid_statistics(scores, targets, image_chunk: int = IMAGE_CHUNK_DEFAULT) -> dict:
+    """Positive / negative margin statistics of a COMPLETE score grid, tile by tile.
+
+    Only call this with the real grid (every column a valid candidate and every row an anchor a
+    target exists for); with a partial grid the fields stay ``None`` instead of reporting a margin
+    that was never measured. Both directions are reduced to per-anchor vectors here, so no
+    ``[V, V]`` intermediate beyond the grid itself is built.
+    """
+    grid = scores.detach().float()
+    anchors = int(grid.shape[0])
+    anchors_with_target = min(anchors, int(torch.as_tensor(targets).reshape(-1).numel()))
+    values = {'positive': [], 'strongest_negative': [], 'max_margin': [], 'lse_margin': []}
+    for start, stop in _chunk_ranges(anchors_with_target, image_chunk):
+        stats = block_statistics(grid[start:stop],
+                                 torch.as_tensor(targets).reshape(-1)[start:stop])
+        for key in values:
+            values[key].append(stats[key])
+    if not values['positive']:
+        return {'margin_positive': None, 'margin_strongest_negative': None,
+                'margin_max_margin': None, 'margin_lse_margin': None,
+                'margin_positive_win_fraction': None, 'margin_top1': None,
+                'margin_anchor_count': 0, 'margin_candidate_count': int(grid.shape[1]),
+                'scope': {'margin': 'no anchor with a valid target in this pass'}}
+    stacked = dict((key, torch.cat(parts)) for key, parts in values.items())
+    return {
+        'margin_positive': float(stacked['positive'].mean()),
+        'margin_strongest_negative': float(stacked['strongest_negative'].mean()),
+        'margin_max_margin': float(stacked['max_margin'].mean()),
+        'margin_lse_margin': float(stacked['lse_margin'].mean()),
+        'margin_lse_margin_min': float(stacked['lse_margin'].min()),
+        'margin_positive_win_fraction': float((stacked['max_margin'] > 0).float().mean()),
+        'margin_top1': float((grid.argmax(dim=1) == torch.as_tensor(targets).reshape(-1)
+                              ).float()[:anchors_with_target].mean()),
+        'margin_anchor_count': int(stacked['positive'].numel()),
+        'margin_candidate_count': int(grid.shape[1]),
+        'scope': {'margin': 'complete score grid: positive - logsumexp(valid negatives only), '
+                            'candidates = the valid suffix pool J (V columns)'},
+    }
+
+
+# --------------------------------------------------------------------------- index spaces
+def assert_global_full_index_space(t_r_global_full, mS_global_full, J, world_size: int,
+                                   local_size: int) -> None:
+    """Hard guard BEFORE any GPU gather: every tensor an index set is applied to is ``GLOBAL_FULL``.
+
+    The first smoke test died with ``indexSelectLargeIndex srcIndex < srcSelectDimSize`` because a
+    GLOBAL_FULL index set was applied to tensors of different spaces. The message names the space
+    that disagreed instead of leaving a CUDA assertion to be decoded later.
+    """
+    expected = int(world_size) * int(local_size)
+    rows = int(t_r_global_full.shape[0])
+    mask_rows = int(mS_global_full.shape[0])
+    if rows != expected or mask_rows != expected:
+        raise RuntimeError('index-space mismatch before the GPU gather: J lives in GLOBAL_FULL '
+                           '[0, %d) but tR_global_full has %d rows (%s) and mS_global_full has %d '
+                           'rows (%s); expected W*B = %d rows in BOTH. A LOCAL [B, 512] tensor '
+                           'must be gathered before J is applied, and an already filtered '
+                           '[V, 512] tensor must not be selected a second time.'
+                           % (expected, rows, 'LOCAL_FULL' if rows == int(local_size) else 'unknown',
+                              mask_rows,
+                              'LOCAL_FULL' if mask_rows == int(local_size) else 'unknown', expected))
+    index = torch.as_tensor(J).reshape(-1)
+    if int(index.numel()):
+        if int(index.min()) < 0 or int(index.max()) >= expected:
+            raise RuntimeError('index-space mismatch: J holds GLOBAL_FULL indices and must lie in '
+                               '[0, %d) (= W*B), got min %d max %d. Never repair this with J %% B '
+                               'or J // B: the fix is to gather the tensor into GLOBAL_FULL first.'
+                               % (expected, int(index.min()), int(index.max())))
+
+
+def valid_pool_mapping(valid_local, J, world_size: int, local_size: int, device=None) -> dict:
+    """The explicit map from LOCAL rows to ``GLOBAL_VALID`` (compressed-pool) labels.
+
+        global_to_valid = full([W*B], -1, long); global_to_valid[J] = arange(V)
+        local_rows      = nonzero(valid_local)          # local rows of THIS rank that are valid
+        anchor_global   = rank*B + local_rows           # their GLOBAL_FULL rows
+        anchor_valid    = global_to_valid[anchor_global]  # their GLOBAL_VALID labels
+
+    ``rank*B + arange(n_r)`` is NEVER used: it assumes the valid local rows are the first ``n_r``
+    rows and is not the label of a compressed pool. Worked counterexample (binding, pure CPU):
+    ``W=2, B=4, J=[1,3,4,7]`` gives rank 0 ``local_rows=[1,3]`` -> ``anchor_valid=[0,1]`` and rank 1
+    ``local_rows=[0,3]`` -> ``anchor_valid=[2,3]`` (``rank*B + arange(2)`` would have said ``[0,1]``
+    for rank 1, which is wrong).
+    """
+    world_size = int(world_size)
+    local_size = int(local_size)
+    flag = torch.as_tensor(valid_local).detach().reshape(-1).to(torch.bool)
+    if int(flag.numel()) != local_size:
+        raise ValueError('the local validity has %d entries but the local batch has %d rows'
+                         % (int(flag.numel()), local_size))
+    index = torch.as_tensor(J).detach().reshape(-1).to(torch.long)
+    total = world_size * local_size
+    if int(index.numel()):
+        if int(index.min()) < 0 or int(index.max()) >= total:
+            raise RuntimeError('J must hold GLOBAL_FULL indices in [0, %d), got min %d max %d'
+                               % (total, int(index.min()), int(index.max())))
+    anchor_device = device if device is not None else flag.device
+    global_to_valid = torch.full((total,), -1, dtype=torch.long, device=anchor_device)
+    if int(index.numel()):
+        global_to_valid[index.to(anchor_device)] = torch.arange(
+            int(index.numel()), dtype=torch.long, device=anchor_device)
+    local_rows = torch.nonzero(flag.to(anchor_device), as_tuple=False).reshape(-1).to(torch.long)
+    position = int(dist.get_rank()) if dist.is_initialized() else None
+    if position is None:
+        position = 0
+    anchor_global = (int(position) * local_size) + local_rows
+    anchor_valid = global_to_valid.index_select(0, anchor_global)
+    if int(anchor_valid.numel()) and int(anchor_valid.min()) < 0:
+        bad = global_to_valid.index_select(0, anchor_global).lt(0).nonzero(as_tuple=False)
+        raise RuntimeError('%d valid local row(s) map to no GLOBAL_VALID label: J and the local '
+                           'validity disagree about which rows are valid (rank %d rows %r). J is a '
+                           'GLOBAL_FULL index set, so rank r owns rows [r*B, (r+1)*B).'
+                           % (int(bad.numel()), int(position),
+                              [int(value) for value in local_rows[:8]]))
+    return {'global_to_valid': global_to_valid, 'local_rows': local_rows,
+            'anchor_global': anchor_global, 'anchor_valid': anchor_valid,
+            'rank': int(position), 'V': int(index.numel()),
+            'space_note': 'local_rows/anchor_global are LOCAL_FULL/GLOBAL_FULL; anchor_valid is '
+                          'GLOBAL_VALID (the compressed pool J)'}
+
+
+# --------------------------------------------------------------------------- differentiable gather
+class _DifferentiableAllGather(torch.autograd.Function):
+    """``all_gather`` in rank order with a backward that gives every rank its own slice of ``grad``.
+
+    The suffix objective needs the gathered rows to be differentiable: the I2T term of one rank is
+    scored against the candidate texts of every rank. The gradient path this introduces is
+    mathematically equal to the standard DDP path (for the T2I term the per-rank CE sum is
+    ``sum over this rank's own columns``, which is exact, and DDP's averaging divides by ``W``, which
+    the ``W / V`` loss scale already accounts for), so no extra collective is inserted here: the
+    module-wide DDP averaging remains the only reduction of record.
+    """
+
+    @staticmethod
+    def forward(ctx, tensor: torch.Tensor, world_size: int, group):
+        if not dist.is_initialized() or dist.get_world_size(group) == 1:
+            return (tensor,)
+        flat = [torch.zeros_like(tensor) for _ in range(int(world_size))]
+        dist.all_gather(flat, tensor.contiguous(), group=group)
+        return tuple(flat)
+
+    @staticmethod
+    def backward(ctx, *grad_outputs):
+        if not dist.is_initialized() or len(grad_outputs) == 1:
+            return grad_outputs[0], None, None
+        rank = dist.get_rank(ctx.group) if getattr(ctx, 'group', None) is not None \
+            else dist.get_rank()
+        rank = min(max(int(rank), 0), len(grad_outputs) - 1)
+        return grad_outputs[rank], None, None
+
+
+def differentiable_gather_rows(tensor: torch.Tensor, group=None) -> torch.Tensor:
+    """Gather the rows of every rank into ``GLOBAL_FULL`` order, keeping the autograd path.
+
+    Identity when the process group is absent or has a single member, so a single-process run and the
+    distributed run share this one code path.
+    """
+    if not dist.is_initialized() or dist.get_world_size(group) == 1:
+        return tensor
+    return torch.cat(list(_DifferentiableAllGather.apply(tensor, dist.get_world_size(group), group)),
+                     dim=0)
+
+
+def _mask_arm_scores(g_block: torch.Tensor, mS_block: torch.Tensor, tR_block: torch.Tensor,
+                     suffix_mask: nn.Module, image_chunk: int, text_chunk: int, eps: float,
+                     want_statistics: bool, image_anchors=None, text_anchors=None,
+                     return_gates: bool = False) -> dict:
+    """The mask arm tile loop: ``[Bi, V]`` of conditional scores and the statistics of the same pass.
+
+    Every tile is scored exactly once and the statistics are taken from that one execution, so the
+    heavy log never re-runs F over the whole ``V x V`` grid.
+    """
+    images = int(g_block.shape[0])
+    texts = int(tR_block.shape[0])
+    device = g_block.device
+    scores = torch.empty((images, texts), dtype=torch.float32, device=device)
+    accumulator = statistics_accumulator()
+    gates = (torch.empty((images, texts, int(mS_block.shape[-1])), dtype=torch.float32,
+                         device=device) if return_gates else None)
     text_step = max(int(text_chunk), 1)
-    block_masks = mask_s.dim() == 3
+    image_rows = None if image_anchors is None else torch.as_tensor(image_anchors).reshape(-1)
+    text_rows = None if text_anchors is None else torch.as_tensor(text_anchors).reshape(-1)
     for i0, i1 in _chunk_ranges(images, image_chunk):
-        keep = i1 - i0
         for j0 in range(0, texts, text_step):
             j1 = min(j0 + text_step, texts)
-            rows = j1 - j0
-            mask_tile = (mask_s[i0:i1, j0:j1] if block_masks else mask_s[j0:j1])
-            r_s = suffix_masked_representation(g_features[i0:i1], mask_tile)
-            g_rep = g_features[i0:i1].unsqueeze(1).expand(keep, rows, -1)
-            x_u = suffix_gate_input(g_rep, r_s)
-            gate = SuffixMaskGate.gate_from_logits(mask.forward_logits(x_u))
-            probability[i0:i1, j0:j1] = gate['pU'].detach().float().mean(dim=-1)
-            norm = (g_features[i0:i1].unsqueeze(1) * gate['mU']).detach().float().norm(dim=-1)
-            ratio[i0:i1, j0:j1] = norm.mean(dim=-1) / math.sqrt(float(g_features.shape[-1]))
-            near_zero += int((norm <= 1e-8).sum())
-            pairs += int(norm.numel())
-    return {'scores': scores, 'pU': probability, 'gated_norm_ratio': ratio,
-            'near_zero_readout_norm_count': near_zero, 'readout_pair_count': pairs}
+            x_u = suffix_pair_gate_input(g_block[i0:i1], mS_block[j0:j1])   # [Bi, Bj, 1024]
+            logits = suffix_mask.forward_logits(x_u)                        # [Bi, Bj, 512]
+            gate = SuffixMaskGate.gate_from_logits(logits)
+            mask_u = gate['mU']                                             # [Bi, Bj, 512]
+            gated = g_block[i0:i1][:, None, :] * mask_u                     # LIVE g, [Bi, Bj, 512]
+            unit = suffix_readout(gated, eps=eps)                           # fp32 F.normalize
+            scores[i0:i1, j0:j1] = (SMARTCLIP_FIXED_SCALE
+                                    * (unit * tR_block[j0:j1][None, :, :]).sum(-1)).float()
+            if want_statistics:
+                tile_anchors = None if image_rows is None else image_rows[i0:i1]
+                tile_columns = None if text_rows is None else text_rows[j0:j1]
+                _merge_into(accumulator, tile_readout_statistics(gate['pU'], gated, g_block[i0:i1],
+                                                                 mS_block[j0:j1], tile_anchors,
+                                                                 tile_columns, eps=eps))
+                if return_gates:
+                    gates[i0:i1, j0:j1] = gate['pU'].detach().float()
+    out = {'scores': scores, 'statistics': None}
+    if want_statistics:
+        accumulator['all_pair']['anchor_count'] = float(images)
+        accumulator['all_pair']['candidate_count'] = float(texts)
+        statistics = finalize_statistics(accumulator)
+        statistics['gates_scope'] = ('tile-local: the rows are the local image block and the columns '
+                                     'the valid suffix pool of this rank, so no full global gate '
+                                     'tensor is materialised or claimed')
+        statistics['full_global_gate_grid'] = False
+        if return_gates:
+            statistics['pU'] = gates
+        out['statistics'] = statistics
+    return out
+
+
+def suffix_readout_scores(g_block: torch.Tensor, mS_block: torch.Tensor, tR_block: torch.Tensor,
+                          suffix_mask: nn.Module, image_chunk: int = IMAGE_CHUNK_DEFAULT,
+                          text_chunk: int = TEXT_CHUNK_DEFAULT, eps: float = NORM_EPS,
+                          want_statistics: bool = False) -> dict:
+    """``QU[i, j] = 100 * dot(u_i,j, tR_j)`` for local images x given suffixes, tile by tile.
+
+    FROZEN PRODUCTION INTERFACE. ONE return type, always a dict::
+
+        {'scores': [Bi, Bj] fp32, 'statistics': dict or None}
+
+    There is no tuple form, no "guess which argument is which" and no automatic swap of ``tR_block``
+    and ``suffix_mask``: the order is always ``(g_block, mS_block, tR_block, suffix_mask)`` and a
+    missing gate network is an ERROR, because silently scoring without the gate would turn the
+    conditional readout into the native one.
+
+        g_block  : [Bi, 512] the LIVE final visual features (the gradient must reach the trunk)
+        mS_block : [Bj, 512] CANDIDATE prefix masks, TWO-DIMENSIONAL ONLY (a 3-D input is refused)
+        tR_block : [Bj, 512] LIVE suffix text features, one row per candidate column
+        eps      : the ``F.normalize`` epsilon, ``1e-6``
+
+    Column ``j`` is the pair ``(P_j, R_j)``: image ``i`` is scored against ``R_j`` with the mask
+    generated from ``P_j``, for positives and negatives alike. The per-pair expression, tile by tile,
+    is exactly
+
+        rS    = g_i.detach() * mS_j.detach()                    # [Bi, Bj, 512]
+        xU    = concat([g_i.detach(), rS])                      # [Bi, Bj, 1024]
+        pU    = sigmoid(F.forward_logits(xU))                   # [Bi, Bj, 512]
+        mU    = (pU >= 0.5) + (pU - pU.detach())
+        QU_ij = 100 * sum(Norm(g_i_live * mU_ij) * tR_j)
+
+    Gradient contract: ``g_block`` is LIVE in the final ``Norm(g * mU)``; ``tR_block`` is LIVE;
+    ``mS_block`` is detached on this path (the S0 mask gets no direct suffix gradient); the ``g`` and
+    ``rS`` inside ``xU`` are detached. ``statistics`` is ``None`` unless ``want_statistics`` is set,
+    and then it holds the counts and count-weighted means measured BY THIS PASS -- never a second
+    execution of F over the global grid.
+    """
+    if not isinstance(suffix_mask, nn.Module):
+        raise TypeError('suffix_readout_scores takes the gate network as its fourth argument '
+                        '(g_block, mS_block, tR_block, suffix_mask); got %s, which would score the '
+                        'suffixes with NO gate and silently return the native readout'
+                        % type(suffix_mask).__name__)
+    if not callable(getattr(suffix_mask, 'forward_logits', None)):
+        raise TypeError('the gate network of suffix_readout_scores must expose forward_logits(x) '
+                        'returning the PRE-sigmoid logits, so the training gate and any audit read '
+                        'the same quantity; got %s' % type(suffix_mask).__name__)
+    if g_block.dim() != 2 or mS_block.dim() != 2 or tR_block.dim() != 2:
+        raise ValueError('suffix_readout_scores takes THREE 2-D blocks -- g_block [Bi, 512], '
+                         'mS_block [Bj, 512] and tR_block [Bj, 512] -- and no 3-D input: got %s, '
+                         '%s, %s' % (tuple(g_block.shape), tuple(mS_block.shape),
+                                     tuple(tR_block.shape)))
+    if int(mS_block.shape[0]) != int(tR_block.shape[0]):
+        raise ValueError('the candidate prefix masks and the candidate suffix features must have the '
+                         'same number of columns (one (P_j, R_j) pair per column), got %d and %d'
+                         % (int(mS_block.shape[0]), int(tR_block.shape[0])))
+    return _mask_arm_scores(g_block, mS_block, tR_block, suffix_mask, image_chunk, text_chunk, eps,
+                            bool(want_statistics))
+
+
+def suffix_readout_statistics(g_block: torch.Tensor, mS_block: torch.Tensor, tR_block: torch.Tensor,
+                             suffix_mask: nn.Module, image_chunk: int = IMAGE_CHUNK_DEFAULT,
+                             text_chunk: int = TEXT_CHUNK_DEFAULT,
+                             eps: float = NORM_EPS) -> dict:
+    """The heavy-log statistics of one tile pass, REUSING the pass's own in-tile measurements.
+
+    A thin wrapper over :func:`suffix_readout_scores` with ``want_statistics=True``: the gate is
+    executed exactly once per (image, candidate) pair, and the returned dict carries the same counts
+    and count-weighted means the scoring tile produced. Nothing is re-run over a global grid and no
+    "last tile's mU" is ever returned as if it were every gate.
+    """
+    result = suffix_readout_scores(g_block, mS_block, tR_block, suffix_mask,
+                                   image_chunk=image_chunk, text_chunk=text_chunk, eps=eps,
+                                   want_statistics=True)
+    return result['statistics']
+
+
+def suffix_readout_scores_with_gates(g_block: torch.Tensor, mS_block: torch.Tensor,
+                                     tR_block: torch.Tensor, suffix_mask: nn.Module,
+                                     image_chunk: int = IMAGE_CHUNK_DEFAULT,
+                                     text_chunk: int = TEXT_CHUNK_DEFAULT, eps: float = NORM_EPS):
+    """The SAME production readout, additionally returning the tile's own gate probabilities.
+
+    This is the explicit small-test / debug entry point: the full ``[Bi, Bj, 512]`` gate tensor is
+    materialised only when a caller asks for it BY NAME, because a tensor that does not contribute to
+    the loss corrupts DDP's unused-parameter bookkeeping and because "the last tile's mU" must never
+    be handed back as if it were every gate. The production entry point returns no gate tensor at all.
+    """
+    result = _mask_arm_scores(g_block, mS_block, tR_block, suffix_mask, image_chunk, text_chunk, eps,
+                              True, return_gates=True)
+    return {'scores': result['scores'], 'pU': result['statistics']['pU'],
+            'statistics': result['statistics'],
+            'scope': 'small-test / debug only: one gate probability per (image, candidate, unit) '
+                     'element of THIS pass, never a global claim'}
+
+
+def suffix_cross_entropy_sum(block_scores: torch.Tensor, targets) -> torch.Tensor:
+    """``sum``-reduced CE of ONE score block, over the anchors the targets really label.
+
+    ``block_scores`` is ``[anchors, V]`` with one row per anchor of the block and ``targets`` the
+    anchor's own column inside ``V``: the reduction is ``reduction='sum'`` over exactly those rows,
+    never over a ``V``-row block carrying fewer targets. ``torch.nn.functional.cross_entropy`` with
+    ``reduction='sum'`` is the CE core and is computed in explicit fp32.
+    """
+    rows = int(block_scores.shape[0])
+    columns = int(block_scores.shape[1])
+    target = torch.as_tensor(targets, device=block_scores.device).reshape(-1).to(torch.long)
+    if int(target.numel()) != rows:
+        raise RuntimeError('the CE block has %d anchor rows but %d targets; a block of V rows must '
+                           'never be passed with only n_r targets -- slice the block to the anchors '
+                           'first' % (rows, int(target.numel())))
+    if not rows:
+        return block_scores.float().sum() * 0.0
+    if int(target.max()) >= columns or int(target.min()) < 0:
+        raise RuntimeError('a CE target %d is outside the %d candidate columns of the block: the '
+                           'targets must be GLOBAL_VALID columns of the V-candidate pool'
+                           % (int(target.max()), columns))
+    with torch.autocast(device_type=block_scores.device.type, enabled=False):
+        return F.cross_entropy(block_scores.float(), target, reduction='sum')
+
+
+def native_grid_statistics(scores_valid: torch.Tensor, world_size: int, V: int) -> dict:
+    """The statistics of the native arm, from the complete ``[V, V]`` valid grid it already has.
+
+    The native arm builds no gate at all, so there is nothing to reuse from a tile pass: the grid is
+    the score matrix itself and the margins are the real global ones. The gate fields stay at
+    ``count = 0, value = null`` because this arm measures no gate.
+    """
+    accumulator = statistics_accumulator()
+    accumulator['all_pair']['anchor_count'] = float(int(scores_valid.shape[0]))
+    accumulator['all_pair']['candidate_count'] = float(int(scores_valid.shape[1]))
+    statistics = finalize_statistics(accumulator)
+    statistics.update(full_grid_statistics(scores_valid,
+                                           torch.arange(int(scores_valid.shape[0]),
+                                                        device=scores_valid.device,
+                                                        dtype=torch.long)))
+    statistics['gates_scope'] = ('the native arm has no gate: pU/mU statistics are count = 0, '
+                                 'value = null, never a zero that looks measured')
+    statistics['full_global_gate_grid'] = False
+    statistics['native_grid_scope'] = ('the complete V x V valid grid of both directions (world_size '
+                                       '= %d, V = %d)' % (int(world_size), int(V)))
+    return statistics
 
 
 def suffix_cross_entropy(scores: torch.Tensor, image_targets: torch.Tensor, text_local_rows=None,
                         image_chunk: int = IMAGE_CHUNK_DEFAULT) -> dict:
-    """Both directions of the suffix CE and the row statistics, computed tile by tile.
+    """Both directions of the suffix CE and the row statistics of a COMPLETE valid grid.
 
-    ``image_targets`` is the GLOBAL candidate column of every local image row. ``text_local_rows``
-    lists the global columns whose texts are local to this rank (they are the T2I anchors), or
-    ``None`` to skip T2I. Both directions are SUMS over the anchors, never means: the caller applies
-    the ``world_size / V`` factor once.
+    Only valid for a score block whose ROWS and COLUMNS are the same global valid pool: every column
+    is then a valid candidate and ``image_targets`` labels one column of every row. The row count and
+    the target count must match -- a ``[V, V]`` block handed over with only ``n_r`` targets is refused
+    instead of letting the CE iterate rows that no target labels. The OBJECTIVE of this module does
+    not use this helper (it slices ``Q_i2t`` and ``Q_t2i`` itself); it is kept for the single-process
+    oracle, which really does hold the complete grid.
+
+    Both directions are SUMS over the anchors, never means: the caller applies the
+    ``world_size / V`` factor once.
     """
     images = int(scores.shape[0])
+    targets_all = torch.as_tensor(image_targets).reshape(-1)
+    if int(targets_all.numel()) != images:
+        raise RuntimeError('suffix_cross_entropy got a %d-row score block with %d targets: the '
+                           'targets must label EVERY row (slice the block to the anchors instead of '
+                           'passing V rows with n_r targets)' % (images, int(targets_all.numel())))
     loss_i2t = scores.new_zeros(())
     count = 0
     positive_parts, strongest_parts, margin_parts = [], [], []
     for i0, i1 in _chunk_ranges(images, image_chunk):
-        block = scores[i0:i1]
-        targets = image_targets[i0:i1]
-        loss_i2t = loss_i2t + F.cross_entropy(block, targets, reduction='sum')
+        block = scores[i0:i1].float()
+        targets = targets_all[i0:i1]
+        with torch.autocast(device_type=scores.device.type, enabled=False):
+            loss_i2t = loss_i2t + F.cross_entropy(block, targets.to(scores.device),
+                                                  reduction='sum')
         count += int(block.shape[0])
         stats = block_statistics(block, targets)
         positive_parts.append(stats['positive'])
@@ -866,7 +1326,7 @@ def suffix_cross_entropy(scores: torch.Tensor, image_targets: torch.Tensor, text
             'lse_margin_mean': float(margin.mean()),
             'lse_margin_min': float(margin.min()),
             'positive_win_fraction': float(((positive - strongest) > 0).float().mean()),
-            'top1': float((scores.argmax(dim=1) == image_targets).float().mean()),
+            'top1': float((scores.argmax(dim=1) == targets_all.to(scores.device)).float().mean()),
             'anchor_count': int(count), 'candidate_count': int(scores.shape[1]),
             'lse_margin_definition': 'positive - logsumexp(valid negatives only)',
             'fixed_scale': SMARTCLIP_FIXED_SCALE,
@@ -878,8 +1338,9 @@ def suffix_cross_entropy(scores: torch.Tensor, image_targets: torch.Tensor, text
                                   device=scores.device)
         transposed = scores.index_select(1, columns).t().contiguous()
         for i0, i1 in _chunk_ranges(int(transposed.shape[0]), image_chunk):
-            loss_t2i = loss_t2i + F.cross_entropy(transposed[i0:i1], columns[i0:i1],
-                                                  reduction='sum')
+            with torch.autocast(device_type=scores.device.type, enabled=False):
+                loss_t2i = loss_t2i + F.cross_entropy(transposed[i0:i1].float(),
+                                                      columns[i0:i1], reduction='sum')
             text_count += int(i1 - i0)
     return {'loss_i2t_sum': loss_i2t, 'loss_t2i_sum': loss_t2i, 'anchor_count': int(count),
             'text_anchor_count': int(text_count), 'statistics': statistics}
@@ -925,12 +1386,34 @@ def suffix_native_scores(g_features: torch.Tensor, t_r: torch.Tensor,
     return out
 
 
+def suffix_native_scores_local(g_block: torch.Tensor, tR_block: torch.Tensor,
+                               image_chunk: int = IMAGE_CHUNK_DEFAULT,
+                               text_chunk: int = TEXT_CHUNK_DEFAULT) -> torch.Tensor:
+    """The native arm's per-rank score block ``Q_local = 100 * g_local @ tR_valid.T``: ``[B, V]``.
+
+    ``g_block`` is the LIVE ``[B, 512]`` image block of this rank and ``tR_block`` the LIVE
+    ``[V, 512]`` valid suffix features; no global grid is ever built per rank.
+    """
+    images = int(g_block.shape[0])
+    texts = int(tR_block.shape[0])
+    out = torch.empty((images, texts), dtype=torch.float32, device=g_block.device)
+    text_step = max(int(text_chunk), 1)
+    for i0, i1 in _chunk_ranges(images, image_chunk):
+        for j0 in range(0, texts, text_step):
+            j1 = min(j0 + text_step, texts)
+            tile = (g_block[i0:i1].float() * tR_block[j0:j1].float()).sum(-1)
+            out[i0:i1, j0:j1] = SMARTCLIP_FIXED_SCALE * tile
+    return out
+
+
 # --------------------------------------------------------------------------- valid subset / DDP
 def gather_local_rows(tensor: torch.Tensor, group=None) -> torch.Tensor:
-    """Autograd-aware row gather in global rank order (identity when not distributed)."""
-    if not dist.is_initialized() or dist.get_world_size(group) == 1:
-        return tensor
-    return torch.cat(nn_dist.all_gather(tensor, group=group), dim=0)
+    """Autograd-aware row gather in global rank order (identity when not distributed).
+
+    Kept as the name the earlier callers used; it is :func:`differentiable_gather_rows` and nothing
+    else, so there is exactly ONE gather implementation behind both names.
+    """
+    return differentiable_gather_rows(tensor, group=group)
 
 
 def all_gather_flat(tensor: torch.Tensor, world_size: int, group=None) -> torch.Tensor:
@@ -1233,23 +1716,38 @@ class SaidPrefixSuffixObjective:
         return 1 if self.world_size is None else int(self.world_size)
 
     def encode_images(self, images: torch.Tensor) -> torch.Tensor:
-        """``g = Norm(clip.encode_image(I))``: encoded ONCE, live, and shared by both tasks."""
-        with torch.autocast(device_type=images.device.type, enabled=False):
-            return normalize_features(self.clip.encode_image(images), eps=self.norm_eps)
+        """``g = Norm(clip.encode_image(I))``: encoded ONCE, live, and shared by both tasks.
+
+        Precision: the visual trunk runs under the NORMAL ambient autocast policy of the run (bf16 in
+        this experiment, fp32 master weights untouched) and only the normalisation is forced to fp32.
+        Wrapping the whole trunk in ``autocast(enabled=False)`` would silently change the trunk's
+        arithmetic relative to the S0 recipe; computing ``g_raw`` under the ambient policy and then
+        normalising in fp32 keeps S0 bit-comparable while making the readout precision explicit.
+        """
+        g_raw = self.clip.encode_image(images)
+        return normalize_features(g_raw, eps=self.norm_eps)
 
     def encode_texts(self, text_ids: torch.Tensor, chunk: int = None):
         """One independent text forward: ``(t_raw, text_hidden)``.
 
         The prefix and the suffix each get their own call; encoding a full caption and slicing its
-        hidden states is never done.
+        hidden states is never done. The trunk itself keeps the run's ambient autocast policy (only
+        the downstream normalisation and the suffix scoring are explicitly fp32).
 
         Memory: the S0 recipe already spent one full text forward (256 x 248 tokens x 12 layers) and the
         suffix branch adds a second one, which overflowed an 80 GiB card in the first real-entry smoke
         test. Two allowances, neither of which changes the arithmetic: the module's own checkpointed
-        text encoder is used when it exists, and the rows are pushed through in chunks (attention and
-        LayerNorm act within a row, so chunking only reorders floating-point accumulation, exactly like
-        the existing image/text tile sizes). Both are chunking/checkpointing knobs, the only knobs this
-        experiment is allowed to tune.
+        text encoder is used when it exists, and the rows are pushed through in chunks. Chunking keeps
+        the token sequence and its ORDER unchanged (the rows are a contiguous slice of ``text_ids`` and
+        the outputs are concatenated back in the same order); attention and LayerNorm act within a row,
+        so a chunk boundary can only reorder floating-point accumulation, exactly like the existing
+        image/text tile sizes.
+
+        Activation checkpointing is NOT re-declared here: this method calls whatever encoder the
+        module provides (``encode_text_with_checkpoint``) and passes no checkpointing flag of its own,
+        so it can neither change a shared helper's default from reentrant to non-reentrant nor claim a
+        reentrancy the underlying helper does not use. A caller that needs the explicit non-reentrant
+        form calls the encoder itself with ``use_reentrant=False, preserve_rng_state=True``.
         """
         encoder = getattr(self.clip, 'encode_text_with_checkpoint', None)
         size = int(self.suffix_text_chunk if chunk is None else chunk)
@@ -1376,7 +1874,6 @@ class SaidPrefixSuffixObjective:
 
         # ---- the suffix task: a SEPARATE text forward for R -----------------------------------
         suffix_raw, suffix_hidden = self.encode_texts(text_ids['suffix'])
-        t_r_all = normalize_features(suffix_raw, eps=self.norm_eps)
         token_counts = content_token_counts(text_ids['suffix'])
         valid_list = suffix_validity(suffix_texts, token_counts)
         valid_flags = torch.tensor([bool(a) and bool(b)
@@ -1392,77 +1889,108 @@ class SaidPrefixSuffixObjective:
                           'global_valid_V': int(valid_flags.sum()), 'local_size': local_size,
                           'world_size': 1, 'global_size': local_size,
                           'column_offset_of_rank': [0]})
-        j_all = validity['global_valid_indices']
+        J = validity['global_valid_indices']                     # GLOBAL_FULL indices, [W*B)
         V = int(validity['global_valid_V'])
         local_v = int(validity['local_valid_count'])
         scale = suffix_scaling(world, V)
 
-        g_all = gather_local_rows(g_live)                       # live, autograd-aware, rank order
-        mask_s_all = gather_local_rows(mask_s.detach())
-        g_sub = g_all.index_select(0, j_all)
-        mask_s_sub = mask_s_all.index_select(0, j_all)
-        t_r_sub = t_r_all.index_select(0, j_all)
-        # the S0 mask of this image's OWN prefix, for the positive-pair keep rate (global scope)
-        mask_s_positive_pair = mask_s_all.narrow(0, self.rank * local_size, local_size)
-        image_targets = torch.arange(self.rank * local_size,
-                                     self.rank * local_size + local_v,
-                                     dtype=torch.long, device=device)
-        local_columns = list(range(self.rank * local_size,
-                                   self.rank * local_size + local_v))
+        # ---- ONE index-space discipline ------------------------------------------------------
+        # LOCAL_FULL    : this rank's B rows
+        # GLOBAL_FULL   : the W*B rows gathered in rank order (J lives HERE)
+        # GLOBAL_VALID  : the V rows left after the validity filter (anchor_valid lives HERE)
+        # The first smoke test crashed with `indexSelectLargeIndex srcIndex < srcSelectDimSize`
+        # because J was applied to tensors that were not all in GLOBAL_FULL. Every tensor J selects
+        # from is therefore created here, in GLOBAL_FULL, and checked BEFORE the GPU gather:
+        tR_local = normalize_features(suffix_raw, eps=self.norm_eps)      # LOCAL_FULL [B, 512]
+        tR_global_full = differentiable_gather_rows(tR_local)             # GLOBAL_FULL [W*B, 512]
+        mS_global_full = differentiable_gather_rows(mask_s.detach())      # GLOBAL_FULL [W*B, 512]
+        assert_global_full_index_space(tR_global_full, mS_global_full, J, world, local_size)
+        if int(tR_global_full.shape[0]) != world * local_size:
+            raise RuntimeError('the suffix candidate pool is not the whole global batch: '
+                               'tR_global_full has %d rows but the global batch is W*B = %d. The '
+                               'suffix texts must be encoded one row per GLOBAL_FULL row (an '
+                               'empty-string placeholder for an invalid suffix), otherwise a '
+                               'GLOBAL_FULL index set cannot address them.'
+                               % (int(tR_global_full.shape[0]), world * local_size))
+        tR_valid = tR_global_full.index_select(0, J)                      # GLOBAL_VALID [V, 512]
+        mS_valid = mS_global_full.index_select(0, J)                      # GLOBAL_VALID [V, 512]
+        # ---- the explicit GLOBAL_VALID labelling of THIS rank's valid rows --------------------
+        pool = valid_pool_mapping(valid_flags, J, world, local_size, device=device)
+        local_rows = pool['local_rows']                     # LOCAL_FULL rows of this rank
+        anchor_valid = pool['anchor_valid']                 # their GLOBAL_VALID labels in [0, V)
+        anchor_global = pool['anchor_global']               # their GLOBAL_FULL rows
+        # the S0 mask of this image's OWN prefix, for the positive-pair keep rate (GLOBAL_FULL)
+        mS_positive_pair_global = mS_global_full.narrow(0, self.rank * local_size, local_size)
 
-        # ---- both directions, tile by tile, over the global valid subset J --------------------
+        # ---- both directions, from the [B, V] block this rank really owns ---------------------
         statistics = {}
         if V >= 2:
             if self.arm == ARM_NATIVE:
-                scored = suffix_loss_native(g_sub, t_r_sub, image_targets, local_columns,
-                                            image_chunk=image_chunk, text_chunk=text_chunk)
-                readout = {'pU': None, 'gated_norm_ratio': None,
-                           'near_zero_readout_norm_count': 0, 'readout_pair_count': 0}
+                Q_local = suffix_native_scores_local(g_live, tR_valid,
+                                                     image_chunk=image_chunk,
+                                                     text_chunk=text_chunk)
+                readout_statistics = None
             else:
-                scores, _mask_u = suffix_readout_scores(
-                    g_sub, mask_s_sub, t_r_sub, self.suffix_mask, image_chunk=image_chunk,
-                    text_chunk=text_chunk, eps=self.norm_eps)
-                if want_statistics:
-                    with torch.no_grad():
-                        readout = suffix_readout_statistics(
-                            g_sub.detach(), mask_s_sub.detach(), t_r_sub.detach(),
-                            self.suffix_mask, image_chunk=image_chunk, text_chunk=text_chunk,
-                            eps=self.norm_eps)
-                    readout['scores'] = scores
-                else:
-                    readout = {'pU': None, 'gated_norm_ratio': None,
-                               'near_zero_readout_norm_count': 0, 'readout_pair_count': 0}
-                scored = suffix_cross_entropy(scores, image_targets, local_columns,
-                                              image_chunk=image_chunk)
-            loss_i2t_sum = scored['loss_i2t_sum']
-            loss_t2i_sum = scored['loss_t2i_sum']
+                read = suffix_readout_scores(g_live, mS_valid, tR_valid, self.suffix_mask,
+                                             image_chunk=image_chunk, text_chunk=text_chunk,
+                                             eps=self.norm_eps,
+                                             want_statistics=bool(want_statistics))
+                Q_local = read['scores']
+                readout_statistics = read['statistics']
+            Q_i2t = (Q_local.index_select(0, local_rows) if int(local_rows.numel())
+                     else Q_local[:0])
+            targets_i2t = anchor_valid
+            # GLOBAL_FULL rows of every rank's [B, V] block, then the V rows of the valid pool
+            Q_global_full = differentiable_gather_rows(Q_local)           # [W*B, V]
+            Q_valid = Q_global_full.index_select(0, J)                    # [V, V]
+            Q_t2i = (Q_valid.index_select(1, anchor_valid).t().contiguous()
+                     if int(anchor_valid.numel()) else Q_valid[:0, :].t().contiguous())
+            targets_t2i = anchor_valid
+            loss_i2t_sum = suffix_cross_entropy_sum(Q_i2t, targets_i2t)
+            loss_t2i_sum = suffix_cross_entropy_sum(Q_t2i, targets_t2i)
             loss_suffix_local_sum = loss_i2t_sum + loss_t2i_sum
-            # (world_size / V) * (local I2T CE sum + local T2I CE sum); plain DDP averaging then
-            # divides by world_size, which is exactly the global valid-anchor mean. No per-rank
-            # valid mean is ever averaged, and world_size is never applied a second time.
+            # (world_size / V) * (local I2T CE sum + local T2I CE sum), applied EXACTLY ONCE; plain
+            # DDP averaging then divides by world_size, which is exactly the global valid-anchor
+            # mean. No per-rank valid mean is ever averaged and world_size is never applied twice.
             loss_suffix = scale * loss_suffix_local_sum
-            statistics = dict(scored['statistics'])
+            statistics = (readout_statistics if readout_statistics is not None
+                          else native_grid_statistics(Q_valid, world, V))
             statistics['local_I2T_CE_sum'] = float(loss_i2t_sum.detach())
             statistics['local_T2I_CE_sum'] = float(loss_t2i_sum.detach())
             statistics['local_CE_sum'] = float(loss_suffix_local_sum.detach())
+            statistics['suffix_score_scope'] = (
+                'per rank: Q_local [B, V] (%s arm) -> I2T over this rank\'s valid rows -> '
+                'differentiable gather -> the V x V global valid grid, never a full grid per rank'
+                % self.mask_kind)
             # a rank with n_r = 0 (or a text set with no local row) contributes a differentiable
             # zero, so its gate still takes part in the DDP graph instead of being reported unused
-            if local_v == 0 or not local_columns:
-                loss_suffix = loss_suffix + differentiable_zero(g_sub, mask_s_sub, t_r_sub)
+            if local_v == 0 or not int(anchor_valid.numel()):
+                loss_suffix = loss_suffix + differentiable_zero(Q_local, tR_valid)
         else:
             # V < 2: the suffix loss is exactly zero for this step. No re-draw of K, no placeholder
             # candidate and no single-candidate CE pretending to train -- and the rank still joins
             # every collective and contributes a differentiable zero.
-            loss_i2t_sum = differentiable_zero(g_sub, mask_s_sub, t_r_sub)
-            loss_t2i_sum = differentiable_zero(g_sub, mask_s_sub, t_r_sub)
-            loss_suffix_local_sum = loss_i2t_sum
+            loss_i2t_sum = differentiable_zero(tR_global_full)
+            loss_t2i_sum = differentiable_zero(tR_global_full)
+            loss_suffix_local_sum = loss_i2t_sum + loss_t2i_sum
             loss_suffix = loss_suffix_local_sum
-            readout = {'pU': None, 'gated_norm_ratio': None,
-                       'near_zero_readout_norm_count': 0, 'readout_pair_count': 0}
+            statistics = statistics_accumulator()
+            statistics['all_pair']['candidate_count'] = float(V)
+            statistics = finalize_statistics(statistics)
+            statistics['local_I2T_CE_sum'] = 0.0
+            statistics['local_T2I_CE_sum'] = 0.0
+            statistics['local_CE_sum'] = 0.0
+            statistics['suffix_score_scope'] = ('V < 2: no suffix pair was scored this step, so '
+                                                'every statistic here is count = 0, value = null')
 
         loss_s0 = smart['loss_s0']
         loss_suffix_weighted = self.lambda_suffix * loss_suffix
         loss_total = loss_s0 + loss_suffix_weighted
+        # mS keep rates, DETACHED and reduced here: a live tensor or the F module itself is never put
+        # into this dict, because an output tensor that does not contribute to the loss corrupts
+        # DDP's unused-parameter bookkeeping and a stored Module keeps the gate alive in the graph.
+        mask_s_local_detached = mask_s.detach().float()
+        mask_s_positive_pair = mS_positive_pair_global.detach().float()
         out = dict(smart)
         out.update({
             'loss_s0': loss_s0,
@@ -1485,12 +2013,21 @@ class SaidPrefixSuffixObjective:
             'global_valid_V': V,
             'local_valid_count': local_v,
             'valid_counts_per_rank': validity['valid_counts_per_rank'],
-            'suffix_valid_flags': valid_flags,
+            'suffix_valid_flags': valid_flags.detach(),
             'suffix_valid_ratio_local': float(valid_flags.float().mean()),
             'suffix_valid_ratio_global': V / float(world * local_size),
             'empty_suffix_fraction_global': 1.0 - V / float(world * local_size),
-            'near_zero_readout_norm_count': readout['near_zero_readout_norm_count'],
-            'readout_pair_count': readout['readout_pair_count'],
+            'near_zero_readout_norm_count': int(
+                statistics['sides']['all_pair']['near_zero_readout_norm_count']),
+            'readout_pair_count': int(statistics['sides']['all_pair']['pair_count']),
+            'index_spaces': {
+                'LOCAL_FULL': 'this rank\'s B rows',
+                'GLOBAL_FULL': 'the W*B rows gathered in rank order; J lives here',
+                'GLOBAL_VALID': 'the V rows after the validity filter; anchor_valid lives here',
+                'J_max': int(J.max()) if int(J.numel()) else None,
+                'global_full_rows': int(tR_global_full.shape[0]),
+                'anchor_valid': [int(value) for value in anchor_valid[:8]],
+            },
             'prefix_content_tokens': content_token_counts(text_ids['prefix']),
             'suffix_content_tokens': token_counts,
             'prefix_effective_lengths': effective_token_length(prefix_hidden,
@@ -1500,47 +2037,56 @@ class SaidPrefixSuffixObjective:
             'suffix_context_length': self.context_length,
             'prefix_captions': None if split is None else split['prefix'],
             'suffix_texts': suffix_texts,
-            'g_live': g_live,
-            'mask_s': mask_s,
-            'mask_s_positive_pair_local': mask_s_positive_pair,
-            't_r_all': t_r_all,
-            'suffix_mask': self.suffix_mask,
+            'mask_s_keep_ratio_rank_local_all_candidates': float(
+                (mask_s_local_detached >= 0.5).float().mean()),
+            'mask_s_positive_pair_local': mask_s_positive_pair.detach(),
         })
         if want_statistics:
-            out['_readout'] = readout
-            out['_statistics'] = self.diagnostics(out, mask_s, readout, valid_flags,
+            out['_statistics'] = self.diagnostics(out, mask_s_local_detached, statistics,
+                                                  valid_flags.detach(),
                                                   mask_s_positive_pair=mask_s_positive_pair)
         return out
 
-    def diagnostics(self, out: dict, mask_s, readout, valid_flags,
+    def diagnostics(self, out: dict, mask_s_detached, statistics: dict, valid_flags,
                     mask_s_positive_pair: torch.Tensor = None) -> dict:
         """The diagnostics the trainer turns into log fields, from the forward that just ran.
 
-        Scopes are spelled out in the field names: ``*_rank_local_*`` is this rank's batch only,
-        ``*_global_*`` is the gathered batch or the gathered valid subset.
+        Scales follow the field names: ``*_rank_local_*`` is this rank's batch only,
+        ``*_positive_pair_*`` is the (image, own suffix) diagonal and ``*_all_pair_*`` is every scored
+        pair. Every gate/readout number comes from the tile statistics measured during the SAME
+        forward; nothing is re-run and no full gate tensor is claimed.
         """
         values = {}
         gate = out['suffix_statistics']
         for name in ('positive_mean', 'strongest_negative_mean', 'max_margin_mean',
                      'lse_margin_mean', 'lse_margin_min', 'positive_win_fraction', 'top1',
-                     'anchor_count', 'candidate_count', 'local_I2T_CE_sum', 'local_T2I_CE_sum',
+                     'anchor_count', 'candidate_count', 'margin_anchor_count',
+                     'margin_candidate_count', 'local_I2T_CE_sum', 'local_T2I_CE_sum',
                      'local_CE_sum'):
-            if name in gate:
+            if name in gate and gate[name] is not None:
                 values[name] = gate[name]
-        probability = readout.get('pU')
-        if probability is not None and int(probability.numel()):
-            kept = (probability.detach() >= 0.5).float()
-            values['mU_probability_mean'] = float(probability.mean())
-            values['mU_probability_min'] = float(probability.min())
-            values['mU_probability_max'] = float(probability.max())
-            values['mU_keep_ratio_global_valid_tiles'] = float(kept.mean())
-            local_valid = int(out['local_valid_count'])
-            values['mU_keep_ratio_local_rows_global_valid_columns'] = float(
-                kept[:local_valid].mean() if local_valid else 0.0)
-            values['near_zero_readout_norm_count'] = int(
-                readout.get('near_zero_readout_norm_count', 0))
-            values['readout_pair_count'] = int(readout.get('readout_pair_count', 0))
-        mask_diag = mask_s.detach().float()
+        sides = gate.get('sides') or {}
+        all_pair = sides.get('all_pair') or {}
+        pairs = int(all_pair.get('pair_count') or 0)
+        values['readout_pair_count'] = pairs
+        values['mU_keep_ratio_all_valid_pairs'] = all_pair.get('keep_ratio')
+        values['mU_probability_mean'] = all_pair.get('probability_mean')
+        values['gated_readout_norm_ratio_mean'] = all_pair.get('readout_norm_ratio_mean')
+        values['near_zero_readout_norm_count'] = int(
+            all_pair.get('near_zero_readout_norm_count') or 0)
+        # the trainer's earlier column names, now filled with the count-weighted global-valid numbers
+        values['mU_keep_ratio_global_valid_tiles'] = all_pair.get('keep_ratio')
+        values['mU_keep_ratio_local_rows_global_valid_columns'] = all_pair.get('keep_ratio')
+        values['mU_keep_ratio_note'] = (
+            'keep ratio = (pU >= 0.5) fraction of the GATE ELEMENTS of the scored tiles (p=[0.9,'
+            '0.1,0.1] is 1/3); the value is null, never 0, when no pair was scored')
+        positive = sides.get('positive_pair') or {}
+        values['mU_keep_ratio_positive_pair'] = positive.get('keep_ratio')
+        values['mU_probability_mean_positive_pair'] = positive.get('probability_mean')
+        values['gated_readout_norm_ratio_mean_positive_pair'] = positive.get(
+            'readout_norm_ratio_mean')
+        values['positive_pair_count'] = int(positive.get('pair_count') or 0)
+        mask_diag = mask_s_detached.detach().float()
         if int(mask_diag.numel()):
             values['mS_keep_ratio_rank_local_all_candidates'] = float(
                 (mask_diag >= 0.5).float().mean())

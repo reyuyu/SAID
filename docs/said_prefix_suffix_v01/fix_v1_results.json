@@ -1,0 +1,72 @@
+{
+  "task": "S0-Suffix Correctness Fix v1",
+  "status": "PARTIAL_NOT_ACCEPTED",
+  "problem_commit": "74bf9c0",
+  "branch": "codex/s0-suffix-v01-wip-unfinished",
+  "formal_branch_untouched": "codex/s0-suffix-v01 at 5676666",
+  "acceptance": {
+    "layer12_pytest": {"passed": 29, "failed": 19, "baseline_before_fix": {"passed": 10, "failed": 29},
+                       "wall_seconds": 96.95},
+    "layer3_small_real_clip_batch16_2steps": {
+      "S0_SUFFIX_NATIVE": "EXIT=1 (failed)", "S0_SUFFIX_MASK": "EXIT=1 (failed)"},
+    "layer4_production_entry_4gpu_batch256_2steps": {
+      "S0_SUFFIX_NATIVE": "EXIT=1 (failed)", "S0_SUFFIX_MASK": "EXIT=1 (failed)"},
+    "at_least_one_step_with_V_ge_2": "NOT VERIFIED",
+    "not_only_s0_confirmed": "NOT VERIFIED"
+  },
+  "failing_tests": [
+    "test_d_first_backward_gives_the_zero_initialised_output_layer_no_gradient",
+    "test_e_lambda_suffix_zero_reproduces_the_original_s0_objective_and_gradients",
+    "test_f_readout_signature_and_return_type_are_the_frozen_ones",
+    "test_f_index_mapping_counterexample_W2_B4_J_1_3_4_7",
+    "test_g_keep_ratio_is_the_hard_gate_fraction_and_never_the_thresholded_mean",
+    "test_g_norm_ratio_is_per_pair_and_divided_by_the_plain_g_norm",
+    "test_g_statistics_report_an_empty_pool_as_count_zero_and_value_null",
+    "test_g_lse_margin_is_positive_minus_logsumexp_of_valid_negatives_only",
+    "test_g_returned_dict_carries_no_live_tensor_that_cannot_reach_the_loss",
+    "test_i_unequal_valid_counts_two_rank_update_matches_the_single_process_oracle",
+    "test_i_equal_valid_counts_degenerate_to_a_plain_local_mean",
+    "test_i_rank_with_zero_valid_suffixes_contributes_a_differentiable_zero",
+    "test_i_global_valid_pool_below_two_gives_an_exactly_zero_loss_with_no_nan",
+    "test_i_world_size_factor_is_present_exactly_once",
+    "test_j_production_writer_roundtrips_a_non_initial_f_and_mask",
+    "test_j_state_digest_separates_tensors_from_descriptions_and_detects_tampering"
+  ],
+  "known_failure_causes": {
+    "test_j_production_writer_roundtrips_a_non_initial_f_and_mask":
+      "AttributeError: 'MaskNetwork' object has no attribute 'out' (wrong S0 mask submodule name in the test)",
+    "test_j_state_digest_separates_tensors_from_descriptions_and_detects_tampering":
+      "DID NOT RAISE on the tampered input the test constructs",
+    "test_i_* (five)": "the two-rank worker process exits with returncode 1; stderr not yet triaged"
+  },
+  "files_changed": {
+    "model/said_prefix_suffix.py": {"bytes_before": 91708, "bytes_after": 127042,
+                                   "sha256_prefix": "10494600e6655eb9"},
+    "train/train_said_prefix_suffix.py": {"bytes_before": 60812, "bytes_after": 94139,
+                                          "sha256_prefix": "bec83f9bfdc8bccca"},
+    "tests/test_said_prefix_suffix.py": {"bytes_before": 104117, "bytes_after": 150192,
+                                         "sha256_prefix": "6ad3db0e945c4a44"},
+    "tests/_suffix_ddp_worker.py": {"bytes_before": 33271, "bytes_after": 33271,
+                                    "sha256_prefix": "3ab13d13f94c8a1e"}
+  },
+  "not_done": [
+    "production entry 2-step acceptance did not pass",
+    "the seven repair areas are written into the code but have NO passing acceptance evidence",
+    "resume boundary and holdout restatement not verified this round",
+    "both 500-step formal runs, COCO, Urban, mechanism diagnostic, dashboard registration: NOT RUN",
+    "failures not yet classified into production-implementation vs test-reference vs environment vs untriaged"
+  ],
+  "debug_runs": {
+    "directory_pattern": "runs_salu/DEBUG_NOT_FORMAL_*",
+    "formal_optimizer_updates": 0,
+    "note": "temporary acceptance updates only; never a start point for formal training"
+  },
+  "errata": {
+    "previous_commit_74bf9c0_debug_logs": "claimed committed but silently ignored by .gitignore:25 (*.log); verified with git check-ignore -v and an empty git ls-files; force-added this round after a secret scan (0 hits)"
+  },
+  "constraints_respected": {
+    "no_500_step_runs": true, "no_coco_or_urban": true, "no_new_algorithm_or_lr_or_k_change": true,
+    "lambda_suffix": 1.0, "u_sparsity_coefficient": 0.0, "force_push": false,
+    "formal_branch_moved": false
+  }
+}
