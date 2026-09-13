@@ -38,7 +38,7 @@ The adapter must return the bare native student and implement native `encode_ima
 
 Base SHA: `11af80b344c623b27b93069f9be526970c9c950c` (SAID training branch snapshot; training worktree was not modified).
 
-At setup time the four benchmark roots were absent. Therefore no real manifest counts or image checks are claimed until the explicit download/parse commands complete. Status vocabulary is limited to `PREPARATION_NOT_STARTED`, `DOWNLOADED`, `PREPARED`, `BLOCKED_AUTH`, `BLOCKED_NETWORK`, `CPU_TESTED`, `MODEL_INFERENCE_NOT_RUN`, and `REAL_EVALUATION_NOT_RUN`.
+Current preparation is recorded in `status.json`: DOCCI test is `DATA_READY` (5,000 images/captions, PIL checked); Flickr Karpathy test1K is `DATA_READY` (1,000 images/5,000 captions, PIL checked); Long-DCI is `DATA_READY_RECONSTRUCTED` (7,602 rows from DCI `extra_caption`); DCI annotation rows are prepared while the two replacement image archives are being fetched. The prior DCI SHA discrepancy was a script typo: the local annotation archive SHA `d865c244...` matches the current official download script value. Flickr full remains blocked until a complete caption source is available. Status vocabulary distinguishes `DATA_READY`, `DATA_READY_RECONSTRUCTED`, `PREPARED_IMAGES_PENDING`, `BLOCKED_NETWORK`, `CPU_TESTED`, `MODEL_INFERENCE_NOT_RUN`, and `REAL_EVALUATION_NOT_RUN`.
 
 ## License and exclusions
 
