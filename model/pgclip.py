@@ -425,6 +425,20 @@ def energy_metrics(h: torch.Tensor, W: torch.Tensor, masks: torch.Tensor) -> dic
     }
 
 
+def _bounded_quantile_sample(values: torch.Tensor, limit: int = 1 << 22):
+    """``(flat_sample, stride)`` -- ``torch.quantile`` refuses very large inputs.
+
+    The gate probabilities of a whole evaluation split (e.g. 25000 captions x 768 coordinates) exceed
+    that limit, so a deterministic stride subsample is used and the stride is reported next to the
+    quantiles. With a small batch (the training log path) the stride is 1 and nothing changes.
+    """
+    flat = values.detach().float().flatten()
+    if flat.numel() <= limit:
+        return flat, 1
+    stride = int(math.ceil(flat.numel() / float(limit)))
+    return flat[::stride], stride
+
+
 def mask_statistics(masks: torch.Tensor, probabilities: torch.Tensor) -> dict:
     """Hard keep counts/rates, gate probabilities and their quantiles (rank-local batch)."""
     with torch.no_grad():
@@ -432,6 +446,7 @@ def mask_statistics(masks: torch.Tensor, probabilities: torch.Tensor) -> dict:
         per_caption = hard.float().sum(dim=1)
         quantiles = torch.tensor([0.05, 0.25, 0.5, 0.75, 0.95], device=probabilities.device)
         p = probabilities.detach().float()
+        quantile_sample, quantile_stride = _bounded_quantile_sample(p)
         return {
             'mask_kept_mean': float(per_caption.mean()),
             'mask_kept_min': float(per_caption.min()),
@@ -447,7 +462,8 @@ def mask_statistics(masks: torch.Tensor, probabilities: torch.Tensor) -> dict:
             'gate_probability_near_threshold_fraction': float(
                 ((p - 0.5).abs() < 0.05).float().mean()),
             'gate_probability_quantiles': [float(value) for value in
-                                           torch.quantile(p.flatten().float(), quantiles)],
+                                           torch.quantile(quantile_sample, quantiles)],
+            'gate_probability_quantile_stride': int(quantile_stride),
             'gate_coordinate_variation_across_captions':
                 float(p.std(dim=0).mean()) if p.shape[0] > 1 else None,
             'mask_empty_caption_count': int((per_caption == 0).sum()),

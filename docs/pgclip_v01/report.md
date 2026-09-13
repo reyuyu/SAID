@@ -108,6 +108,62 @@ L_total = 5*LG + 5*LP + 1*LS          # 双向相加，不乘 0.5，总 loss 外
 
 **归因限制**：本轮**没有**运行 native-only 或 native+post-projection 控制臂，因此即便出现提升也只能归因于“PG-CLIP 这一整套组合”，不能单独声称“投影前位置优于投影后”；反之，本轮的 FAIL 也不能单独归因到取点位置上。单 seed、单配置、500 步（余弦 horizon 为 3651 步，训练时远未走完调度）——这些都是结论的边界。
 
+## 6.1 同配置第二次运行（sibling run）与 run 间波动
+
+原 run 的 checkpoint 因为键冲突没有保存 gate 张量（见第 8 节），所以为了能评辅助分支，用**修复后的同一份代码、同一份配置、同一份共享初始化**又跑了 500 步（`runs_salu/pgclip_v01_rep500/step500`，实现 SHA `59e12d6`，训练/导出/两套评估四个阶段全部 exit 0）。它**不是逐位复现**：`final_state_digest` = `700db0fb…`（原 run `b532599d…`），gate digest `4572f35e…`（原 run `5b8c7383…`）；数据与 caption 流仍然与原 run 和 S0 逐位相同（`799f8efa…` / `39c9885c…`）。也就是说它是**同一配置的第二个样本**，而不是原 run 的恢复。
+
+| 指标 | 原 run @500 | sibling @500 | S0@500（冻结） | 原 run vs S0 | sibling vs S0 |
+|---|---|---|---|---|---|
+| COCO I2T R@1 | 0.6048 | 0.6056 | 0.6058 | −0.10 pp | −0.02 pp |
+| COCO T2I R@1 | 0.41256 | 0.41236 | 0.41236 | +0.02 pp | ±0.00 pp |
+| Urban I2T R@1 | 0.8700 | 0.8730 | 0.8700 | ±0.00 pp | +0.30 pp |
+| Urban T2I R@1 | 0.8330 | 0.8300 | 0.8420 | −0.90 pp | −1.20 pp |
+
+**这个对照很有价值**：同一配置两次运行的 R@1 波动为 0.02–0.30 pp（COCO 0.08 pp，Urban I2T 0.30 pp，Urban T2I 0.30 pp）。据此重新读原来的结论：
+- **COCO 的差异（−0.10 / +0.02 pp）落在 run 间波动之内**，不能读成“PG-CLIP 伤害了原生表示”；
+- **Urban T2I 两次都是负的（−0.90 / −1.20 pp），大于 run 间波动（0.30 pp）**，这是本轮唯一看起来稳定的变化，方向是**变差**（长 caption 的文本→图像检索）；
+- COCO / Urban 的 I2T 基本不变；sibling 的 COCO I2T 0.6056 距离冻结门下限 0.6058 只差 0.02 pp（5000 张里的 1 张），两个同配置 run 都 FAIL，说明 500 步的判定就贴在下限附近，对噪声很敏感。
+
+## 6.2 新增：辅助分支图文检索（diagnostic，不参与冻结门）
+
+按用户要求新增一种评估方式：**直接用辅助（投影前条件）分支做图文检索**。工具 `tools/diag/pgclip_aux_retrieval.py`（+ `tests/test_pgclip_aux_retrieval.py`，9 个 CPU 测试）在同一遍编码上同时算两条路径：
+
+```
+native     QG[i,j] = 100 · ⟨Norm(h_i @ W),             t̂_j⟩
+auxiliary  QP[i,j] = 100 · ⟨Norm((h_i * mask_j) @ W),  t̂_j⟩
+```
+
+- 候选规则与训练一致：I2T 每条候选文本用**它自己的** mask；T2I 固定文本用**同一个** mask（两个方向读同一张矩阵）。
+- 指标口径：COCO 采用历史的**多正例**约定（每张图的 5 条 caption 任一中即命中），T2I 正例为 `j//5`；Urban-1k 一对一；排名用仓库既有规则 `rank = 1 + #{s_j > max_pos} + #{j < min_pos : s_j == max_pos}`（并列时下标小的排前面）。池大小与冻结协议一致（COCO 5000×25000、Urban 1000×1000），输出里显式写入 `not_a_gate_candidate: true`、`new_optimizer_updates: 0` 与池大小，绝不冒充冻结评估。
+- 只读：不带梯度、不更新参数（前后 parameter digest 一致），只写 run 目录内一个小 JSON（9 KB）。运行耗时：COCO 76 s、Urban 11 s（单卡）。
+
+| 数据集 | 读出 | I2T R@1 / R@5 / R@10 | T2I R@1 / R@5 / R@10 | I2T / T2I MRR |
+|---|---|---|---|---|
+| COCO（5000×25000） | 原生 | **0.6066** / 0.8212 / 0.8920 | **0.41168** / 0.66960 / 0.76532 | 0.70262 / 0.53117 |
+| COCO | **辅助分支** | **0.5538（−5.28 pp）** / 0.7942（−2.70） / 0.8682（−2.38） | **0.39356（−1.81 pp）** / 0.65108（−1.85） / 0.74712（−1.82） | 0.66226（−4.04）/ 0.51324（−1.79） |
+| Urban-1k（1000×1000） | 原生 | **0.8710** / 0.9720 / 0.9910 | **0.8300** / 0.9650 / 0.9800 | 0.91720 / 0.88999 |
+| Urban-1k | **辅助分支** | **0.8020（−6.90 pp）** / 0.9540（−1.80） / 0.9820（−0.90） | **0.8190（−1.10 pp）** / 0.9410（−2.40） / 0.9700（−1.00） | 0.87058（−4.66）/ 0.87349（−1.65） |
+
+逐查询配对证据（辅助 vs 原生，同一批特征）：
+
+| 数据集 / 方向 | R@1 命中增加 | R@1 命中丢失 | 排名改善 / 不变 / 变差 | 最大变差 | 平均排名变化 |
+|---|---|---|---|---|---|
+| COCO I2T | 223 | **487** | 811 / 2855 / **1334** | 426 | **+1.11**（变差） |
+| COCO T2I | 756 | **1209** | 4902 / 12184 / **7914** | 1603 | **+2.12**（变差） |
+| Urban I2T | 20 | **89** | 43 / 825 / **132** | 30 | **+0.30** |
+| Urban T2I | 40 | **51** | 61 / 819 / **120** | 78 | **+0.46** |
+
+被测文本的 mask 状态（同一快照）：COCO 平均保留 **631.0/768**（范围 467–739，全开 0.000、全关 0.000，p 均值 0.630、最小 0.002）；Urban 平均保留 **575.2/768**（444–708，p 均值 0.584、最小 0.084）——辅助分支确实是**带条件掩码**的读出，没有退化成全开。
+
+**结论（明确，且与“辅助分支能带来提升”的直觉相反）**：**把辅助分支单独当作检索读出用，明显比原生路径差**——I2T R@1 低 5.3 pp（COCO）/ 6.9 pp（Urban），T2I 低 1.8 pp / 1.1 pp，MRR 与平均排名一致变差，且丢命中远多于得命中（COCO I2T 487 vs 223，COCO T2I 1209 vs 756）。这个 5–7 pp 的差距比同配置 run 间波动（0.02–0.30 pp）大一个数量级以上，因此不是噪声。
+
+必须一起读的三点：
+1. **这不改变冻结结论**：冻结门只用原生 CLS/EOS；辅助分支是训练时的辅助目标。本评估只回答“若把它当读出会怎样”，答案是更差。
+2. 一个自然的解释：mask 是在**训练目标**（1024 候选池内对比 + `mean|mask|` 稀疏）下学出来的，被优化成“让 QP 这个训练损失下降”，而不是“让 QP 成为更好的检索表示”；gate 学习率 1e-3 远高于主干 1e-6，500 步内 mask 已经关掉约 18%（COCO）/ 25%（Urban）的坐标，把投影后向量的一般性信息削掉了一部分（`preproj_retained_energy` 0.82、原生/条件输出余弦 0.94）。
+3. 本评估**没有**测试任何“两路融合 / 用辅助分数 rerank 原生候选 / 用原生与辅助的分数组合”，所以它不能说明融合的上限，也不能说明继续联合训练更久会怎样。
+
+原生列由本工具自己的编码路径算出（batch 128），与冻结 evaluator 的同 run 结果相差 ≤0.13 pp（COCO I2T 0.6066 vs 0.6056，T2I 0.41168 vs 0.41236）；辅助比较是**同一批特征内的配对比较**，这个 0.1 pp 量级的协议差异不影响 5–7 pp 的结论。
+
 ## 7. 真实退出码与 runner 记录
 
 | 阶段 | 退出码 |
@@ -144,13 +200,16 @@ L_total = 5*LG + 5*LP + 1*LS          # 双向相加，不乘 0.5，总 loss 外
 | 提交 | 内容 |
 |---|---|
 | **`7bafe2f`** | PG-CLIP v0.1 实现 + 验收测试 + spec（**正式训练使用的 SHA**，已 push 到 `codex/pgclip-v01`） |
-| 后续（本报告同一提交） | checkpoint schema v1.1、`gate_state` 键修复、runner 校验加强、`tools/diag/pgclip_mask_snapshot.py`、本报告与 `results.json` |
-| 前端（另一 worktree `codex/s0-trimask-hs-v02`） | `tools/dashboard_data.py`（`pgclip()` + 白名单）、`tools/serve_training_dashboard.py`（端点）、`web/training_dashboard/{app.js,index.html,style.css}`、`tests/test_training_dashboard.py`（+4 测试） |
+| `a4646fb` | checkpoint schema v1.1、`gate_state` 键修复、runner 校验加强、`pgclip_mask_snapshot.py`、第一版报告与 `results.json` |
+| `59e12d6` | 候选 mask 测试的顺序无关性修正 |
+| 后续（本次追加，同一分支） | `tools/diag/pgclip_aux_retrieval.py`（辅助分支检索诊断）+ 9 个 CPU 测试、`mask_statistics` 的分位数分块修复、本报告的 6.1/6.2 两节与 `results.json` 的对应字段 |
+| 前端（另一 worktree `codex/s0-trimask-hs-v02`） | `tools/dashboard_data.py`（`pgclip()` + 白名单 + `auxiliary_retrieval`）、`tools/serve_training_dashboard.py`、`web/training_dashboard/{app.js,index.html,style.css}`（区域 I 增加 B2 辅助分支检索块）、`tests/test_training_dashboard.py`（+5 测试） |
 
 交付文件：`model/model_longclip.py`（两个可选接口）、`model/pgclip.py`、`train/train_pgclip.py`、`tools/pgclip_runner.py`、`tools/diag/export_pgclip_student.py`、`tools/diag/pgclip_mask_snapshot.py`、`tests/test_pgclip.py`、`tests/_pgclip_ddp_worker.py`、`docs/pgclip_v01/{spec.md,report.md,results.json}`。**不提交 checkpoint、数据、caption 缓存或大型日志**（run 目录在 `runs_salu/`，已被 `.gitignore` 覆盖）。
 
 ## 11. 明确 NOT RUN / 不可宣称
 
-- **NOT RUN**：浏览器视觉验收；本 run 的逐坐标 768 维 mask 快照（原因见第 8 节）；native-only 与 native+post-projection 控制臂；任何参数搜索、额外 seed、更长训练、跑满 3 epoch；文本 mask、U/教师/decoder/重建、交叉注意力、软门、动态映射。
+- **NOT RUN**：浏览器视觉验收；本 run 的逐坐标 768 维 mask 快照（原因见第 8 节；sibling run 的 checkpoint 现在带 gate 张量，快照工具可直接用，但尚未跑）；native-only 与 native+post-projection 控制臂；两路融合 / rerank / 分数组合类实验；任何参数搜索、额外 seed、更长训练、跑满 3 epoch；文本 mask、U/教师/decoder/重建、交叉注意力、软门、动态映射。
+- **关于辅助分支检索**：本轮只测了“单独用辅助分支当读出”这一种用法，结果是比原生差 5.3–6.9 pp（I2T R@1）。**不能**由此推断“辅助分支没有用”——它在训练中参与共享主干；也不能推断“融合也没用”，因为融合没有被测。
 - **不可宣称**：辅助（条件）分支不损害原生能力——它参与训练共享主干与原生投影，本轮 COCO I2T 就低了 0.10pp；768 维天然比 512 维语义更纯；稀疏表示必然实现语义解耦；继承 SmartCLIP 的全部理论保证；单 seed 过门就等于稳定 SOTA（本轮连门都没过）。
 - 结论适用范围：**一个配置、500 次更新、单 seed、余弦 horizon 未走完**；FAIL 与“打平”都应读作“在这个预算内没有观察到相对 S0@500 的提升”，而不是“投影前条件选择这条路不可能有效”。
