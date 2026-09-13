@@ -1,0 +1,345 @@
+"""Minimal training entry for S0 Dual-Mask Suffix Clean v0.1.
+
+This is a thin production path, not a compatibility runner.  It accepts the formal 500-step
+configuration but does not start it by itself.  ``--resume`` is intentionally rejected in this
+round: loading a complete checkpoint for evaluation is supported by ``load_checkpoint`` below,
+while silently restarting a data stream from step zero would be unsafe.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import random
+import sys
+import time
+from pathlib import Path
+from typing import Dict, Iterable, List, Tuple
+
+import torch
+import torch.distributed as dist
+from torch.utils.data import DataLoader
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO not in sys.path:
+    sys.path.insert(0, REPO)
+TRAIN_DIR = os.path.dirname(os.path.abspath(__file__))
+if TRAIN_DIR not in sys.path:
+    sys.path.insert(0, TRAIN_DIR)
+
+from model import longclip  # noqa: E402
+from model.dual_mask_suffix import (  # noqa: E402
+    DualMaskSuffixTrainModule,
+    SUFFIX_LAMBDA,
+    split_caption_suffix,
+)
+from model.said_cls_cvssl import (  # noqa: E402
+    said_mask_from_hidden,
+)
+from scheduler import cosine_lr  # noqa: E402
+from said_cvssl_data import Share4VCvsslDataset, cvssl_collate, stateless_seed  # noqa: E402
+from train_said_cls_cvssl import load_init_state, state_digest  # noqa: E402
+
+
+FORMAL_INIT = "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt"
+FORMAL_CONFIG = {
+    "world_size": 4,
+    "batch_size_per_gpu": 256,
+    "max_steps": 500,
+    "seed": 0,
+    "accumulation": 1,
+    "clip_lr": 1e-6,
+    "mask_lr": 1e-3,
+    "suffix_lr": 1e-4,
+    "weight_decay": 1e-2,
+    "mask_weight_decay": 0.0,
+    "suffix_weight_decay": 0.0,
+    "warmup": 200,
+    "image_chunk": 16,
+    "text_chunk": 32,
+}
+
+
+def split_suffix_record(record: Dict, prefix_k: int, caption_said: str) -> Tuple[str, str, str]:
+    """Extract the original full caption and its valid suffix without drawing a new K."""
+    full = record["conversations"][1]["value"].replace("\n", " ")
+    prefix, suffix = split_caption_suffix(full, prefix_k, caption_said)
+    return full, prefix, suffix
+
+
+def _eot_token() -> int:
+    return int(longclip._tokenizer.encoder["<|endoftext|>"])
+
+
+def suffix_has_content(text: str) -> bool:
+    """Use the project's SOT/EOT positions, rather than token-id nonzero counting."""
+    tokens = longclip.tokenize([text], truncate=True)[0]
+    positions = (tokens == _eot_token()).nonzero(as_tuple=False)
+    eot_position = int(positions[0].item()) if positions.numel() else int(tokens.numel())
+    return eot_position > 1
+
+
+class DualMaskSuffixDataset(Share4VCvsslDataset):
+    """The base dataset plus full caption, suffix text and a token-valid flag."""
+
+    def __getitem__(self, index: int) -> Dict:
+        sample = super().__getitem__(index)
+        record = self.json_data[index]
+        full, prefix, suffix = split_suffix_record(record, sample["prefix_k"], sample["caption_said"])
+        if prefix != sample["caption_said"]:
+            raise AssertionError("base prefix stream changed while adding suffix")
+        sample.update({
+            "caption_full": full,
+            "suffix_text": suffix,
+            "suffix_valid": suffix_has_content(suffix),
+        })
+        return sample
+
+
+def dual_mask_suffix_collate(samples: List[Dict]) -> Dict:
+    """Collate only fields used by this experiment; preserve text as ragged Python lists."""
+    batch = cvssl_collate(samples)
+    batch.update({
+        "caption_full": [s["caption_full"] for s in samples],
+        "suffix_text": [s["suffix_text"] for s in samples],
+        "suffix_valid": torch.tensor([s["suffix_valid"] for s in samples], dtype=torch.bool),
+    })
+    return batch
+
+
+def build_optimizers(module: DualMaskSuffixTrainModule, args):
+    """Separate CLIP, original S0 mask and suffix gate parameter groups."""
+    mask_ids = {id(p) for p in module.clip.mask_net.parameters()}
+    clip_params, mask_params = [], []
+    for p in module.clip.parameters():
+        if not p.requires_grad:
+            continue
+        (mask_params if id(p) in mask_ids else clip_params).append(p)
+    clip_opt = torch.optim.AdamW(clip_params, lr=args.lr, weight_decay=args.weight_decay,
+                                 betas=(0.9, 0.999), eps=1e-8)
+    mask_opt = torch.optim.AdamW(mask_params, lr=args.mask_lr, weight_decay=0.0,
+                                 betas=(0.9, 0.999), eps=1e-8)
+    suffix_params = list(module.suffix_gate.parameters()) if module.suffix_gate is not None else []
+    suffix_opt = torch.optim.AdamW(suffix_params, lr=args.suffix_lr, weight_decay=0.0,
+                                   betas=(0.9, 0.999), eps=1e-8) if suffix_params else None
+    return clip_opt, mask_opt, suffix_opt
+
+
+def _seed_everything(seed: int) -> None:
+    random.seed(seed)
+    torch.manual_seed(seed)
+    try:
+        import numpy as np
+        np.random.seed(seed)
+    except ImportError:  # pragma: no cover - numpy is present in the base env
+        pass
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def _setup_ddp() -> Tuple[int, int, int]:
+    rank = int(os.environ.get("RANK", "0"))
+    world = int(os.environ.get("WORLD_SIZE", "1"))
+    local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+    if world > 1:
+        if not torch.cuda.is_available():
+            dist.init_process_group(backend="gloo", rank=rank, world_size=world)
+            return rank, local_rank, world
+        torch.cuda.set_device(local_rank)
+        dist.init_process_group(backend="nccl", rank=rank, world_size=world)
+    elif not dist.is_initialized():
+        # The unchanged S0 helper uses autograd-aware all_gather even for a one-process run.
+        # Give that path a real process group so single-GPU debug runs exercise the same graph.
+        init_file = "/tmp/said_dual_mask_suffix_clean_v01_pg_%d" % os.getpid()
+        try:
+            os.remove(init_file)
+        except FileNotFoundError:
+            pass
+        dist.init_process_group(backend="gloo", init_method="file://" + init_file,
+                                rank=0, world_size=1)
+    return rank, local_rank, world
+
+
+def _atomic_torch_save(payload: Dict, path: str) -> None:
+    temporary = path + ".tmp"
+    torch.save(payload, temporary)
+    os.replace(temporary, path)
+
+
+def load_checkpoint(path: str, module: DualMaskSuffixTrainModule, optimizers=None) -> Dict:
+    """Strictly load a production checkpoint; missing mode-specific state is an error."""
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if not isinstance(payload, dict):
+        raise TypeError("checkpoint must be a dict")
+    module.clip.load_state_dict(payload["clip_state"], strict=True)
+    gate_state = payload.get("suffix_gate_state")
+    if module.suffix_mode == "masked":
+        if not isinstance(gate_state, dict) or not gate_state:
+            raise RuntimeError("masked checkpoint is missing suffix_gate_state")
+        module.suffix_gate.load_state_dict(gate_state, strict=True)
+    elif gate_state is not None:
+        raise RuntimeError("native checkpoint must store suffix_gate_state=None")
+    if optimizers is not None:
+        for key, optimizer in zip(("clip", "mask", "suffix"), optimizers):
+            if optimizer is not None:
+                optimizer.load_state_dict(payload["optimizer_states"][key])
+    return payload
+
+
+def export_bare_student(checkpoint_path: str, output_path: str) -> str:
+    """Export only the CLIP student state for legacy S0 evaluation consumers."""
+    payload = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    if not isinstance(payload, dict) or not isinstance(payload.get("clip_state"), dict):
+        raise TypeError("checkpoint has no clip_state mapping")
+    _atomic_torch_save(payload["clip_state"], output_path)
+    return output_path
+
+
+def _args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="S0 Dual-Mask Suffix Clean v0.1")
+    parser.add_argument("--suffix-mode", choices=("native", "masked"), required=True)
+    parser.add_argument("--max-steps", type=int, default=500)
+    parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--base-model", default="B16")
+    parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--lr", type=float, default=1e-6)
+    parser.add_argument("--mask-lr", type=float, default=1e-3)
+    parser.add_argument("--suffix-lr", type=float, default=1e-4)
+    parser.add_argument("--weight-decay", type=float, default=1e-2)
+    parser.add_argument("--warmup", type=int, default=200)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--init-state", default=FORMAL_INIT)
+    parser.add_argument("--image-chunk", type=int, default=16)
+    parser.add_argument("--text-chunk", type=int, default=32)
+    parser.add_argument("--num-workers", type=int, default=8)
+    parser.add_argument("--total-len", type=int, default=1000)
+    parser.add_argument("--amp-dtype", choices=("bf16", "fp32"), default="bf16")
+    parser.add_argument("--save-every", type=int, default=0)
+    parser.add_argument("--resume", default=None)
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = _args()
+    if args.resume:
+        raise SystemExit("--resume is intentionally unsupported in Clean v0.1")
+    _seed_everything(args.seed)
+    rank, local_rank, world = _setup_ddp()
+    device = torch.device("cuda", local_rank) if torch.cuda.is_available() else torch.device("cpu")
+    base_name = {"B16": "ViT-B/16", "L14": "ViT-L/14"}.get(args.base_model, args.base_model)
+    model, _ = longclip.load_from_clip(base_name, device="cpu", args=args)
+    model.train()
+    load_init_state(model, args.init_state, rank)
+    module = DualMaskSuffixTrainModule(model, suffix_mode=args.suffix_mode, rank=rank,
+                                       image_chunk=args.image_chunk, text_chunk=args.text_chunk).to(device)
+    if world > 1:
+        module = torch.nn.parallel.DistributedDataParallel(
+            module, device_ids=[local_rank] if device.type == "cuda" else None,
+            find_unused_parameters=True, static_graph=False)
+    inner = getattr(module, "module", module)
+    clip_opt, mask_opt, suffix_opt = build_optimizers(inner, args)
+    dataset = DualMaskSuffixDataset(seed=args.seed, total_len=args.total_len)
+    sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True, seed=args.seed) \
+        if world > 1 else None
+    loader = DataLoader(dataset, batch_size=args.batch_size, sampler=sampler,
+                        shuffle=sampler is None, num_workers=args.num_workers, pin_memory=True,
+                        collate_fn=dual_mask_suffix_collate, drop_last=False)
+    horizon = args.epochs * len(loader)
+    clip_schedule = cosine_lr(clip_opt, args.lr, args.warmup, horizon)
+    mask_schedule = cosine_lr(mask_opt, args.mask_lr, 0, horizon)
+    os.makedirs(args.output_dir, exist_ok=True)
+    config = {
+        "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
+        "suffix_lambda": SUFFIX_LAMBDA, "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+        "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
+        "batch_size_per_gpu": args.batch_size, "world_size": world, "epochs": args.epochs,
+        "loader_batches": len(loader), "lr_horizon_steps": horizon, "max_steps": args.max_steps,
+        "seed": args.seed, "total_len": args.total_len, "image_chunk": args.image_chunk,
+        "text_chunk": args.text_chunk, "precision": "fp32 master + "+args.amp_dtype+" autocast",
+        "formal_optimizer_updates": 0, "init_state": args.init_state,
+    }
+    log_path = os.path.join(args.output_dir, "salu_log.jsonl")
+    if rank == 0:
+        with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as h:
+            json.dump(config, h, indent=2, sort_keys=True)
+    completed = 0
+    for epoch in range(args.epochs):
+        if sampler is not None:
+            sampler.set_epoch(epoch)
+        for step_in_epoch, batch in enumerate(loader):
+            if completed >= args.max_steps:
+                break
+            clip_schedule(completed); mask_schedule(completed)
+            if suffix_opt is not None:
+                for group in suffix_opt.param_groups:
+                    group["lr"] = args.suffix_lr
+            image_a = batch["image_a"].to(device, non_blocking=True)
+            prefix = longclip.tokenize(batch["caption_said"], truncate=True).to(device)
+            suffix = longclip.tokenize(batch["suffix_text"], truncate=True).to(device)
+            valid = batch["suffix_valid"].to(device)
+            ids = batch["image_id"].to(device)
+            clip_opt.zero_grad(set_to_none=True); mask_opt.zero_grad(set_to_none=True)
+            if suffix_opt is not None:
+                suffix_opt.zero_grad(set_to_none=True)
+            amp_enabled = args.amp_dtype == "bf16" and device.type == "cuda"
+            with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=amp_enabled):
+                out = module(image_a, prefix, suffix, valid, ids)
+            out["loss_total"].backward()
+            clip_opt.step(); mask_opt.step()
+            if suffix_opt is not None:
+                suffix_opt.step()
+            completed += 1
+            if rank == 0:
+                record = {"completed_steps": completed, "epoch": epoch, "step_in_epoch": step_in_epoch,
+                          "suffix_mode": args.suffix_mode, "lr": clip_opt.param_groups[0]["lr"],
+                          "mask_lr": mask_opt.param_groups[0]["lr"],
+                          "suffix_lr": suffix_opt.param_groups[0]["lr"] if suffix_opt else None,
+                          "formal_optimizer_updates": 0}
+                for key, value in out.items():
+                    if torch.is_tensor(value) and value.numel() == 1:
+                        record[key] = float(value.detach().cpu())
+                with open(log_path, "a", encoding="utf-8") as h:
+                    h.write(json.dumps(record, sort_keys=True) + "\n")
+                if args.save_every and completed % args.save_every == 0:
+                    _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir,
+                                     completed, epoch, step_in_epoch)
+        if completed >= args.max_steps:
+            break
+    if rank == 0:
+        _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir,
+                         completed, epoch, step_in_epoch)
+    if dist.is_available() and dist.is_initialized():
+        dist.barrier(); dist.destroy_process_group()
+    return 0
+
+
+def _save_checkpoint(module: DualMaskSuffixTrainModule, optimizers, config: Dict,
+                     output_dir: str, completed: int, epoch: int, step_in_epoch: int) -> str:
+    path = os.path.join(output_dir, "s0_dual_mask_suffix_%s_step%06d.pt" %
+                        (module.suffix_mode, completed))
+    payload = {
+        "clip_state": module.clip.state_dict(),
+        "suffix_gate_state": None if module.suffix_gate is None else module.suffix_gate.state_dict(),
+        "optimizer_states": {"clip": optimizers[0].state_dict(), "mask": optimizers[1].state_dict(),
+                              "suffix": None if optimizers[2] is None else optimizers[2].state_dict()},
+        "completed_steps": int(completed), "epoch": int(epoch), "step_in_epoch": int(step_in_epoch),
+        "config": dict(config), "provenance": {"git_head": _git_head(), "state_digest": state_digest(module.clip.state_dict())},
+    }
+    _atomic_torch_save(payload, path)
+    return path
+
+
+def _git_head() -> str:
+    import subprocess
+    try:
+        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, check=True,
+                              capture_output=True, text=True).stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
