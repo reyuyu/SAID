@@ -338,6 +338,7 @@ def main() -> int:
     resume_payload = None
     resume_epoch = 0
     resume_step_in_epoch = -1
+    resume_completed_steps = None
     resume_checks = None
     if args.resume:
         resume_payload = load_checkpoint(args.resume, inner, (clip_opt, mask_opt, suffix_opt))
@@ -356,15 +357,27 @@ def main() -> int:
         loaded_digest = state_digest(inner.clip.state_dict())
         if provenance_digest and provenance_digest != loaded_digest:
             problems.append('loaded clip state digest does not match the checkpoint provenance')
+        position_problem = resume_position_problem(
+            previous.get('epoch', resume_payload.get('epoch')),
+            previous.get('step_in_epoch', resume_payload.get('step_in_epoch')),
+            len(loader), resume_payload.get('completed_steps'))
+        if position_problem:
+            problems.append(position_problem)
         if problems:
             raise SystemExit('resume checks failed: ' + '; '.join(problems))
         completed = int(resume_payload.get('completed_steps', 0))
         resume_epoch = int(resume_payload.get('epoch', 0))
         resume_step_in_epoch = int(resume_payload.get('step_in_epoch', -1))
+        resume_completed_steps = completed
         config['resumed_from'] = os.path.abspath(args.resume)
         config['resume_completed_steps'] = completed
         config['resume_epoch'] = resume_epoch
         config['resume_step_in_epoch'] = resume_step_in_epoch
+        config['resume_stream_batch_index'] = stream_batch_index(resume_epoch, resume_step_in_epoch,
+                                                                 len(loader))
+        config['resume_skip_rule'] = ('skip the first completed_steps batches of the concatenated '
+                                      'epoch stream; the recorded step_in_epoch is checked for '
+                                      'consistency instead of being used directly')
         config['resumed_from_training_sha'] = previous.get('training_sha')
         config['resumed_from_objective'] = previous.get('total_objective')
         config['formal_optimizer_updates'] = completed if args.run_type == 'formal' else 0
@@ -382,6 +395,9 @@ def main() -> int:
             'resume_completed_steps': completed,
             'resume_epoch': resume_epoch,
             'resume_step_in_epoch': resume_step_in_epoch,
+            'resume_stream_batch_index': stream_batch_index(resume_epoch, resume_step_in_epoch,
+                                                            len(loader)),
+            'batches_skipped_expected': completed,
             'optimizer_steps_restored': {
                 name: sorted({int(entry.get('step', -1))
                               for entry in (optimizer.state_dict()['state'] or {}).values()})
@@ -411,8 +427,8 @@ def main() -> int:
         for step_in_epoch, batch in enumerate(loader):
             if completed >= args.max_steps:
                 break
-            if resume_skip(epoch, step_in_epoch, resume_epoch if resume_payload is not None else None,
-                           resume_step_in_epoch if resume_payload is not None else None):
+            if resume_skip(epoch, step_in_epoch, len(loader),
+                           None if resume_payload is None else resume_completed_steps):
                 skipped_batches += 1
                 continue
             step_started = time.perf_counter()
@@ -549,18 +565,36 @@ def batch_stream_payload(batch: Dict) -> bytes:
     return json.dumps(record, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
 
 
-def resume_skip(epoch: int, step_in_epoch: int, resume_epoch, resume_step_in_epoch) -> bool:
-    """Whether ``(epoch, step_in_epoch)`` was already consumed before the continuation started.
+def stream_batch_index(epoch: int, step_in_epoch: int, batches_per_epoch: int) -> int:
+    """Global index of a batch in the concatenated epoch stream (the training loop never reorders)."""
+    return int(epoch) * int(batches_per_epoch) + int(step_in_epoch)
 
-    The original run consumed exactly the first ``resume_step_in_epoch + 1`` batches of
-    ``resume_epoch`` (and every batch of the earlier epochs), so skipping exactly that prefix
-    continues the stream without a gap and without repeating a batch.
+
+def resume_skip(epoch: int, step_in_epoch: int, batches_per_epoch: int, resume_completed_steps) -> bool:
+    """Whether this batch was already consumed before the continuation started.
+
+    The loop consumes the epoch stream strictly in order, so a run with ``completed`` updates has
+    consumed exactly the first ``completed`` batch positions. Deriving the position from the update
+    count is unambiguous, because a checkpoint written *inside* the loop records ``step_in_epoch`` as
+    the batch it just processed (global index ``completed - 1``) while a checkpoint written *after*
+    the loop records the batch it was about to process (global index ``completed``). Using the
+    recorded ``step_in_epoch`` directly would therefore skip one batch too many for the second
+    convention -- an off-by-one that silently drops one batch of the original stream.
     """
-    if resume_epoch is None or resume_step_in_epoch is None:
+    if resume_completed_steps is None:
         return False
-    if epoch < int(resume_epoch):
-        return True
-    return epoch == int(resume_epoch) and step_in_epoch <= int(resume_step_in_epoch)
+    return stream_batch_index(epoch, step_in_epoch, batches_per_epoch) < int(resume_completed_steps)
+
+
+def resume_position_problem(epoch, step_in_epoch, batches_per_epoch, completed) -> str:
+    """Return a problem string when the recorded stream position contradicts the update count."""
+    if epoch is None or step_in_epoch is None or completed is None:
+        return None
+    index = stream_batch_index(epoch, step_in_epoch, batches_per_epoch)
+    if index in (int(completed) - 1, int(completed)):
+        return None
+    return ('stream position epoch=%s step_in_epoch=%s (global index %d) is inconsistent with '
+            'completed_steps=%s' % (epoch, step_in_epoch, index, completed))
 
 
 def validate_resume(previous_config: Dict, previous_arguments: Dict, expected: Dict,

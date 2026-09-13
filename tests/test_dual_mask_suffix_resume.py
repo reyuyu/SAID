@@ -45,7 +45,9 @@ from train_dual_mask_suffix import (  # noqa: E402
     build_optimizers,
     file_sha256,
     load_checkpoint,
+    resume_position_problem,
     resume_skip,
+    stream_batch_index,
     validate_resume,
     _save_checkpoint,
 )
@@ -189,7 +191,7 @@ def test_resume_refuses_every_disagreement_and_demands_a_code_pin():
 
 def test_skip_rule_reproduces_the_tail_of_the_stream_without_gaps_or_repeats():
     batches, epochs = 1217, 3
-    completed, resume_epoch, resume_step = 500, 0, 499
+    completed = 500
 
     original = [(epoch, step) for epoch in range(epochs) for step in range(batches)][:3651]
     assert len(original) == 3651
@@ -198,33 +200,51 @@ def test_skip_rule_reproduces_the_tail_of_the_stream_without_gaps_or_repeats():
 
     replayed, skipped = [], 0
     for epoch, step in [(e, s) for e in range(epochs) for s in range(batches)]:
-        if resume_skip(epoch, step, resume_epoch, resume_step):
+        if resume_skip(epoch, step, batches, completed):
             skipped += 1
             continue
         replayed.append((epoch, step))
         if len(consumed) + len(replayed) >= 3651:
             break
+    # exactly the batches the original run consumed are skipped: no gap, no repeat
     assert skipped == 500
     assert len(replayed) == 3651 - 500
-    # the continuation consumes exactly what the original run had left, in the same order
     assert replayed == original[500:3651]
     assert replayed[0] == (0, 500) and replayed[-1] == (2, 1216)
-    # nothing is skipped in the epochs after the resume epoch
-    assert not any(resume_skip(1, s, resume_epoch, resume_step) for s in range(batches))
-    assert not any(resume_skip(2, s, resume_epoch, resume_step) for s in range(batches))
-    # a non-continuation run skips nothing
-    assert not any(resume_skip(e, s, None, None) for e in range(epochs) for s in range(batches))
+    # nothing is skipped beyond the first residual epoch, and a fresh run skips nothing
+    assert not any(resume_skip(1, s, batches, completed) for s in range(batches))
+    assert not any(resume_skip(2, s, batches, completed) for s in range(batches))
+    assert not any(resume_skip(e, s, batches, None) for e in range(epochs) for s in range(batches))
+
+
+def test_skip_rule_is_independent_of_the_two_checkpoint_position_conventions():
+    """A checkpoint written inside the loop records step_in_epoch=499, one written after the loop
+    records 500; both describe 500 consumed batches, and the update count alone must decide."""
+    batches, completed = 1217, 500
+    # in-loop convention: the recorded index is the batch that was just processed
+    assert stream_batch_index(0, 499, batches) == completed - 1
+    # after-loop convention: the recorded index is the batch that was about to be processed
+    assert stream_batch_index(0, 500, batches) == completed
+    for epoch, step in ((0, 499), (0, 500)):
+        assert resume_position_problem(epoch, step, batches, completed) is None
+        # the decided skip is the same for both conventions: 500 batches, hence 501 is the first
+        # batch that trains
+        assert resume_skip(0, 499, batches, completed) is True
+        assert resume_skip(0, 500, batches, completed) is False
+    # an inconsistent record is refused
+    assert resume_position_problem(0, 700, batches, completed)
+    assert resume_position_problem(1, 0, batches, completed)
+    assert resume_position_problem(None, None, batches, completed) is None
 
 
 def test_resume_skip_boundary_is_exactly_the_first_unconsumed_batch():
-    # step_in_epoch is inclusive on the skip side: the original run consumed 0..499
-    assert resume_skip(0, 499, 0, 499) is True
-    assert resume_skip(0, 500, 0, 499) is False
-    assert resume_skip(0, 0, 0, -1) is False          # resuming from a step-0 checkpoint
-    assert resume_skip(0, 0, 1, 200) is True          # whole earlier epochs are skipped
-    assert resume_skip(1, 0, 1, 200) is True
-    assert resume_skip(1, 200, 1, 200) is True
-    assert resume_skip(1, 201, 1, 200) is False
+    batches = 10
+    assert resume_skip(0, 0, batches, None) is False        # not a continuation
+    assert resume_skip(0, 0, batches, 0) is False           # nothing consumed yet
+    assert resume_skip(0, 9, batches, 10) is True
+    assert resume_skip(1, 0, batches, 10) is False          # first batch of the second epoch trains
+    assert resume_skip(1, 9, batches, 20) is True
+    assert resume_skip(2, 0, batches, 20) is False
 
 
 def test_batch_stream_payload_is_deterministic_and_matches_the_logged_digest():
