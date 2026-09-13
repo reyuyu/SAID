@@ -231,6 +231,30 @@ def export_bare_student(checkpoint_path: str, output_path: str) -> str:
     return output_path
 
 
+def resume_position(payload: Dict, config: Dict) -> Tuple[int, int]:
+    """Recover the next batch from completed updates, including legacy final checkpoints.
+
+    The legacy loop fetched the next batch before its stop check, so its final saved
+    step_in_epoch could be one ahead of the last update. completed_steps is authoritative.
+    """
+    previous = payload['config']
+    fixed = ('suffix_mode', 'suffix_lambda', 'batch_size_per_gpu', 'world_size', 'epochs',
+             'loader_batches', 'lr_horizon_steps', 'seed', 'total_len', 'image_chunk',
+             'text_chunk', 'precision', 'run_type', 'init_state', 'accumulation', 'u_sparsity')
+    for key in fixed:
+        if previous.get(key) != config.get(key):
+            raise RuntimeError(f'resume configuration mismatch: {key}')
+    for key in ('base_model', 'lr', 'mask_lr', 'suffix_lr', 'weight_decay', 'warmup', 'num_workers'):
+        if previous['arguments'].get(key) != config['arguments'].get(key):
+            raise RuntimeError(f'resume argument mismatch: {key}')
+    completed = int(payload['completed_steps'])
+    if not 0 < completed < config['max_steps'] <= config['lr_horizon_steps']:
+        raise RuntimeError('resume must continue positive updates within the original horizon')
+    if previous.get('formal_optimizer_updates') != completed:
+        raise RuntimeError('resume formal update count mismatch')
+    return divmod(completed, config['loader_batches'])
+
+
 def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="S0 Dual-Mask Suffix Clean v0.1")
     parser.add_argument("--suffix-mode", choices=("native", "masked"), required=True)
@@ -317,8 +341,8 @@ def main() -> int:
     resume_step_in_epoch = -1
     if resume_payload is not None:
         completed = int(resume_payload.get('completed_steps', 0))
-        resume_epoch = int(resume_payload.get('epoch', 0))
-        resume_step_in_epoch = int(resume_payload.get('step_in_epoch', -1))
+        resume_epoch, resume_next_batch = resume_position(resume_payload, config)
+        resume_step_in_epoch = resume_next_batch - 1
         previous_config = resume_payload.get('config', {})
         previous_sha = previous_config.get('training_sha')
         # The only accepted predecessor is the immediately previous clean training SHA;
@@ -334,9 +358,17 @@ def main() -> int:
         config['resume_completed_steps'] = completed
         config['resume_epoch'] = resume_epoch
         config['resume_step_in_epoch'] = resume_step_in_epoch
+        config['resume_next_batch'] = resume_next_batch
+        config['parent_training_sha'] = previous_sha
+        config['parent_checkpoint_cursor'] = {k: resume_payload[k] for k in ('epoch', 'step_in_epoch')}
         config['formal_optimizer_updates'] = completed if args.run_type == 'formal' else 0
         config['debug_optimizer_updates'] = completed if args.run_type == 'debug' else 0
     log_path = os.path.join(args.output_dir, "salu_log.jsonl")
+    if resume_payload is not None:
+        with open(log_path, encoding='utf-8') as handle:
+            previous_rows = [json.loads(line)['completed_steps'] for line in handle if line.strip()]
+        if previous_rows != list(range(1, completed + 1)):
+            raise RuntimeError('resume log is not exactly the inherited completed-update history')
     if rank == 0:
         with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as h:
             json.dump(config, h, indent=2, sort_keys=True)
@@ -346,17 +378,15 @@ def main() -> int:
         dist.barrier()
     stream_digest = hashlib.sha256()
     consumed_samples = 0
+    resume_completed = completed
+    last_update_epoch, last_update_batch = divmod(completed - 1, len(loader)) if completed else (0, -1)
     training_started = time.perf_counter()
     for epoch in range(args.epochs):
-        if resume_payload is not None and epoch < resume_epoch:
-            continue
         if sampler is not None:
             sampler.set_epoch(epoch)
         for step_in_epoch, batch in enumerate(loader):
             if completed >= args.max_steps:
                 break
-            if resume_payload is not None and epoch == resume_epoch and step_in_epoch <= resume_step_in_epoch:
-                continue
             step_started = time.perf_counter()
             if device.type == "cuda":
                 torch.cuda.reset_peak_memory_stats(device)
@@ -365,6 +395,17 @@ def main() -> int:
                 'prefix': batch['caption_said'], 'suffix': batch['suffix_text']}
             stream_digest.update(json.dumps(stream_record, ensure_ascii=False, separators=(',', ':')).encode('utf-8'))
             consumed_samples += len(batch['sample_id'])
+            replay_index = epoch * len(loader) + step_in_epoch
+            if replay_index < resume_completed:
+                if replay_index + 1 == resume_completed:
+                    expected_stream = resume_payload['config']['stream_summary'][rank]
+                    replay_ok = (consumed_samples == expected_stream['consumed_samples'] and
+                                 stream_digest.hexdigest() == expected_stream['stream_sha256'])
+                    if not _all_ranks_finite(torch.tensor(0.0 if replay_ok else float('nan'), device=device), world):
+                        raise RuntimeError('resume data replay differs from checkpoint sample/prefix/suffix stream')
+                    print(f'RESUME_REPLAY_VERIFIED rank={rank} completed={completed} next_epoch={resume_epoch} '
+                          f'next_batch={resume_next_batch} consumed_samples={consumed_samples}', flush=True)
+                continue
             clip_schedule(completed); mask_schedule(completed)
             if suffix_schedule is not None:
                 suffix_schedule(completed)
@@ -388,6 +429,7 @@ def main() -> int:
             if suffix_opt is not None:
                 suffix_opt.step()
             completed += 1
+            last_update_epoch, last_update_batch = epoch, step_in_epoch
             if device.type == 'cuda':
                 torch.cuda.synchronize(device)
             health = {'rank': rank, 'valid': int(valid.sum().item()),
@@ -433,7 +475,7 @@ def main() -> int:
     if rank == 0:
         config['training_seconds'] = time.perf_counter() - training_started
         _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir,
-                         completed, epoch, step_in_epoch)
+                         completed, last_update_epoch, last_update_batch)
         with open(os.path.join(args.output_dir, 'config.json'), 'w', encoding='utf-8') as handle:
             json.dump(config, handle, indent=2, sort_keys=True)
     if dist.is_available() and dist.is_initialized():
