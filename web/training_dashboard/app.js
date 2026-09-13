@@ -1587,6 +1587,70 @@ function renderPgMaskGrid(container, payload) {
   container.appendChild(grid);
 }
 
+/* ---------------------------------------------- I.2: auxiliary-branch retrieval (diagnostic)
+ *
+ * The frozen promotion protocol never uses the gate. This block shows the second, explicitly
+ * diagnostic protocol: retrieval scored with the pre-projection conditional path
+ *   QP[i,j] = 100 * <Norm((h_i * mask_j) @ W), t_j>
+ * where every candidate caption brings its own gate mask. The numbers come from a small read-only
+ * JSON written by tools/diag/pgclip_aux_retrieval.py next to the run; the page never runs a forward
+ * pass and never treats these numbers as a gate candidate.
+ */
+
+const PG_AUX_METRICS = ['i2t_r1', 'i2t_r5', 'i2t_r10', 't2i_r1', 't2i_r5', 't2i_r10'];
+
+function pgAuxDeltaPoints(value, reference) {
+  return (typeof value === 'number' && typeof reference === 'number')
+    ? ((value - reference) * 100).toFixed(2) + ' pp' : '暂无';
+}
+
+function renderPgAuxiliary(payload, containerId, noteId) {
+  const container = qs(containerId);
+  const block = payload.auxiliary_retrieval || {};
+  if (!block.available) {
+    pgTable(container, ['辅助分支图文检索（诊断，不参与冻结门）', '状态'],
+            [['未运行', block.not_run || '没有 pgclip_aux_retrieval.json']]);
+    setText(qs(noteId), block.not_run || '');
+    return;
+  }
+  const protocol = block.protocol || {};
+  const rows = [];
+  Object.keys(block.results || {}).forEach(name => {
+    const entry = block.results[name] || {};
+    const native = entry.native || {};
+    const auxiliary = entry.auxiliary || {};
+    rows.push([name + '：池 ' + entry.images + ' 图 × ' + entry.texts + ' 文本', '原生', '辅助',
+               '差值', '']);
+    PG_AUX_METRICS.forEach(metric => {
+      rows.push(['　' + metric.toUpperCase().replace('_', ' '), fmt(native[metric], 4),
+                 fmt(auxiliary[metric], 4),
+                 pgAuxDeltaPoints(auxiliary[metric], native[metric]), '']);
+    });
+    const paired = ((entry.paired_native_vs_auxiliary) || {}).I2T || {};
+    rows.push(['　I2T 配对：命中 +' + pgValue(paired.hits_gained_r1) + ' / −'
+               + pgValue(paired.hits_lost_r1) + '，排名改善 ' + pgValue(paired.rank_improved)
+               + ' / 不变 ' + pgValue(paired.rank_unchanged) + ' / 变差 '
+               + pgValue(paired.rank_worsened), '', '', '',
+               '最大变差 ' + pgValue(paired.max_rank_worsening)]);
+    const stats = entry.mask_statistics_over_evaluated_texts || {};
+    rows.push(['　被测文本的 mask 平均保留坐标数（/768）', fmt(stats.mask_kept_mean, 1), '', '',
+               '全开比例 ' + fmt(stats.mask_all_on_fraction, 4)]);
+  });
+  pgTable(container, ['辅助分支图文检索（诊断，不参与冻结门）', '原生（CLS/EOS）',
+                      '辅助（投影前条件）', '差值', '备注'], rows);
+  setText(qs(noteId),
+    '口径：' + pgValue(protocol.native) + '　vs　' + pgValue(protocol.auxiliary)
+    + '；mask 来源 ' + pgValue(protocol.mask_source)
+    + '；判定规则 ' + pgValue(protocol.tie_rule)
+    + '；精度 ' + pgValue(protocol.precision)
+    + (protocol.subset ? '；**本轮用的是诊断子集（limit_images=' + pgValue(protocol.limit_images)
+      + '），不是冻结协议的全池**' : '；池与冻结协议一致')
+    + '。checkpoint ' + String(block.checkpoint_sha256 || '').slice(0, 12)
+    + '（第 ' + pgValue(block.completed_steps) + ' 步，新增 optimizer update = '
+    + pgValue(block.new_optimizer_updates) + '）。'
+    + '这两个数只是"把辅助分支当读出用"的检索效果，**不是**晋级门指标，也不代表两路融合的上限。');
+}
+
 function renderPgClip(payload) {
   state.pgclip = payload;
   const ids = ['pg-scope', 'pg-paths', 'pg-curves', 'pg-curve-note', 'pg-mask-stats',
@@ -1596,6 +1660,7 @@ function renderPgClip(payload) {
       + '）。只有 objective = clip_native_preproj_mask 的 run 才会在这里显示两路损失。');
     setText(qs('pg-reminders'), '本区域不显示推测值：objective 不匹配时只显示"未运行"。');
     ids.forEach(id => { qs(id).textContent = ''; });
+    ['pg-aux', 'pg-aux-note'].forEach(id => { qs(id).textContent = ''; });
     setText(qs('pg-conclusion'), '');
     return;
   }
@@ -1709,6 +1774,8 @@ function renderPgClip(payload) {
       ? 'run 目录内的 pgclip_mask_snapshot.json' : '未运行'))
     + (mask.available ? '；新增 optimizer update = ' + pgValue(mask.new_optimizer_updates)
       + '；checkpoint SHA ' + String(mask.checkpoint_sha256 || '').slice(0, 12) : ''));
+
+  renderPgAuxiliary(payload, 'pg-aux', 'pg-aux-note');
 
   const energy = mask.energy || {};
   pgTable(qs('pg-energy'), ['两个能量指标（不要混为一谈）', '数值'], [

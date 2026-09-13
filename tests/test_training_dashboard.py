@@ -1334,6 +1334,58 @@ def test_pgclip_reads_only_whitelisted_files_and_writes_nothing(tmp_path, monkey
         assert os.path.basename(os.path.dirname(real)) == 'evaluation', path
 
 
+def test_pgclip_endpoint_reports_the_auxiliary_retrieval_diagnostic(tmp_path):
+    """The auxiliary-branch retrieval block is served separately and never as a gate candidate."""
+    run_dir = build_run(tmp_path)
+    write_pgclip(run_dir)
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/pgclip')
+    assert status == 200
+    assert payload['auxiliary_retrieval']['available'] is False
+    assert payload['auxiliary_retrieval']['not_run']          # explicit reason, never a fake table
+    (run_dir / 'pgclip_aux_retrieval.json').write_text(json.dumps({
+        'probe': 'pgclip_aux_retrieval', 'read_only': True, 'new_optimizer_updates': 0,
+        'not_a_gate_candidate': True, 'note': 'diagnostic only',
+        'completed_steps': 500, 'checkpoint_sha256': 'd' * 64,
+        'protocol': {'native': 'QG', 'auxiliary': 'QP', 'mask_source': 'the candidate gate',
+                     'precision': 'bf16 trunk + fp32 core', 'tie_rule': 'rank = 1 + ...',
+                     'pool': {'urban1k': {'images': 1000, 'texts': 1000}}, 'subset': False,
+                     'limit_images': None,
+                     'canonical_reference_protocol': {'coco': '5000 x 25000',
+                                                      'urban1k': '1000 x 1000'}},
+        'results': {'urban1k': {
+            'dataset': 'urban1k', 'images': 1000, 'texts': 1000,
+            'native': {'n': 1000, 'i2t_r1': 0.87, 'i2t_r5': 0.97, 'i2t_r10': 0.99,
+                       't2i_r1': 0.833, 't2i_r5': 0.962, 't2i_r10': 0.982},
+            'auxiliary': {'n': 1000, 'i2t_r1': 0.41, 'i2t_r5': 0.66, 'i2t_r10': 0.75,
+                          't2i_r1': 0.38, 't2i_r5': 0.63, 't2i_r10': 0.72},
+            'delta': {'i2t_r1': -0.46, 't2i_r1': -0.453},
+            'paired_native_vs_auxiliary': {'I2T': {'hits_gained_r1': 12, 'hits_lost_r1': 472,
+                                                   'rank_improved': 100, 'rank_unchanged': 200,
+                                                   'rank_worsened': 700, 'max_rank_worsening': 480},
+                                           'T2I': {'hits_gained_r1': 9, 'hits_lost_r1': 462}},
+            'mask_statistics_over_evaluated_texts': {'mask_kept_mean': 611.2,
+                                                     'mask_all_on_fraction': 0.0},
+        }},
+        'not_run': ['any training or optimizer update'],
+    }), encoding='utf-8')
+    with Server(registry_for(run_dir), free_port()) as server:
+        status, payload = server.get('/api/run/hs_test/pgclip')
+    assert status == 200
+    block = payload['auxiliary_retrieval']
+    assert block['available'] is True
+    assert block['not_a_gate_candidate'] is True
+    assert block['new_optimizer_updates'] == 0
+    assert block['results']['urban1k']['auxiliary']['i2t_r1'] == 0.41
+    assert block['results']['urban1k']['native']['i2t_r1'] == 0.87
+    assert block['results']['urban1k']['paired_native_vs_auxiliary']['I2T'][
+        'hits_lost_r1'] == 472
+    assert block['protocol']['tie_rule'].startswith('rank = 1 +')
+    # the frozen evaluation block is untouched by the diagnostic
+    assert payload['evaluation']['coco']['i2t_r1'] == 0.601
+    assert payload['evaluation']['verdict'] == 'FAIL'
+
+
 def pgclip_served_names():
     from dashboard_data import PGCLIP_FILES
     return list(PGCLIP_FILES.values())

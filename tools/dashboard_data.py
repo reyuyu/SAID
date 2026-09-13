@@ -77,6 +77,8 @@ PGCLIP_FILES = {
     # deliberately NOT "mask_snapshot.json": that name belongs to the older S0/TriMask runs, and a
     # PG-CLIP page must never render another experiment's mask snapshot as its own 768-d grid
     'mask_snapshot': 'pgclip_mask_snapshot.json',
+    # the auxiliary-branch retrieval diagnostic (its own file; a diagnostic, never a gate candidate)
+    'aux_retrieval': 'pgclip_aux_retrieval.json',
 }
 PGCLIP_OBJECTIVE = 'clip_native_preproj_mask'
 # the scalar fields the two-path page plots; a missing field is reported as 暂无, never as 0
@@ -97,7 +99,8 @@ PGCLIP_SERIES = (
     'mask_coordinate_mean', 'gate_coordinate_variation_across_captions',
 )
 PGCLIP_REMINDERS = [
-    '投影前条件路径只在训练时使用：主评估只用原生 encode_image/encode_text 的 CLS/EOS 表示。',
+    '投影前条件路径只在训练时使用：冻结晋级门的主评估只用原生 encode_image/encode_text 的 CLS/EOS 表示。',
+    '辅助分支检索（辅助评估）是诊断：它用候选文本自己的 mask 给检索打分，不参与冻结晋级门，也不能当作主指标。',
     'projected_output_energy_ratio 可以大于 1（删掉坐标可能减少投影内的相互抵消），它不是语义保留率，也从不被截断。',
     '768 维网格只代表维度索引，不代表图像空间位置。',
     '本轮没有运行 native-only 或 native+post-projection 控制臂，因此提升（若有）只能归因于 PG-CLIP 这一整套组合。',
@@ -769,7 +772,8 @@ class DashboardData:
             'series_fields': list(PGCLIP_SERIES),
         }
         if not is_pgclip:
-            for key in ('config', 'series', 'latest', 'mask', 'evaluation', 'summary', 'progress'):
+            for key in ('config', 'series', 'latest', 'mask', 'evaluation', 'summary', 'progress',
+                        'auxiliary_retrieval'):
                 result[key] = None
             result['log_error'] = log_error
             return result
@@ -823,6 +827,24 @@ class DashboardData:
             mask_view = {'available': False, 'error': snapshot_error,
                          'not_run': '逐坐标 mask 快照未运行：本 run 的日志只记录聚合统计，'
                                     '页面不会把聚合值伪装成 768 维网格。'}
+        auxiliary, auxiliary_error = read_json(self.registry.pgclip_path(run_id, 'aux_retrieval'))
+        if auxiliary:
+            auxiliary_view = {
+                'available': True, 'error': auxiliary_error,
+                'not_a_gate_candidate': auxiliary.get('not_a_gate_candidate'),
+                'note': auxiliary.get('note'), 'protocol': auxiliary.get('protocol'),
+                'completed_steps': auxiliary.get('completed_steps'),
+                'checkpoint_sha256': auxiliary.get('checkpoint_sha256'),
+                'new_optimizer_updates': auxiliary.get('new_optimizer_updates'),
+                'results': auxiliary.get('results'), 'not_run': auxiliary.get('not_run'),
+            }
+        else:
+            auxiliary_view = {
+                'available': False, 'error': auxiliary_error,
+                'not_run': '辅助分支检索未运行：它需要一份带 gate 张量的 checkpoint，由 '
+                           'tools/diag/pgclip_aux_retrieval.py 只读运行后写入 '
+                           'pgclip_aux_retrieval.json；页面不会用初始化 gate 伪造结果'
+                           '（初始化时 mask≡1，辅助分数在数学上必然等于原生分数）。'}
         result.update({
             'config': {key: config.get(key) for key in (
                 'objective', 'arm', 'phase', 'gate_mode', 'gate_width', 'gate_out', 'gate_heads',
@@ -839,6 +861,7 @@ class DashboardData:
             'steps': steps, 'series': series, 'latest': records[-1] if records else None,
             'log_error': log_error, 'record_count': len(records),
             'mask': mask_view, 'progress': progress,
+            'auxiliary_retrieval': auxiliary_view,
             'evaluation': {
                 'coco': coco, 'urban1k': urban,
                 'baseline_s0_500': {'coco': baseline.get('coco'), 'urban1k': baseline.get('urban1k'),
