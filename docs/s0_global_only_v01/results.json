@@ -1,0 +1,166 @@
+{
+  "run_id": "s0_global_only_v01",
+  "arm": "S0_GLOBAL_ONLY",
+  "objective": "global_alignment_only",
+  "phase": "s0-global-only-v0.1",
+  "branch": "codex/s0-global-only-v01",
+  "worktree": "/root/SAID-globalonly-v01",
+  "implementation_sha": "01db2225fd38514b4509c24046f8e6996f481926",
+  "status": "complete",
+  "what_changed_vs_s0": [
+    "the mask head and every mask tensor are removed: no mask_net forward, no mask in the score, no replacement by an all-ones mask",
+    "the sparsity term lambda_sparse * mean(|m_s|) (2.0 in S0) is removed",
+    "the score becomes 100 * <normalize(clip_image), normalize(clip_text)> instead of 100 * cos(normalize(v_i * m_j), t_j)"
+  ],
+  "what_is_unchanged_vs_s0": {
+    "init_file_sha256": "c1a4a2be1b212f38677f729a4f03160d788a6d6db79ca5021a43022af0f5cba8",
+    "init_state_digest": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "dataset_manifest_records": 1245901,
+    "total_len_offset": 1000,
+    "caption_prefix_rule": "caption.replace('\\n',' ').split('. '), K ~ randint(1, len(sentences))",
+    "view": "repo reference openai-clip _transform(224), single view, no view_b",
+    "optimizer": "AdamW lr 1e-6, wd 1e-2, betas (0.9, 0.999), eps 1e-8",
+    "warmup_steps": 200,
+    "cosine_horizon_steps": 3651,
+    "epochs": 3,
+    "seed": 0,
+    "precision": "fp32 master weights + bf16 autocast encoders, fp32 normalisation and both cross entropies",
+    "lambda_align": 10.0,
+    "bidirectional_combination": "sum (no 0.5)",
+    "fixed_score_scale": 100.0,
+    "logit_scale_used": false,
+    "distributed": "autograd-aware nn_dist.all_gather, local anchors, global targets rank*B+i, standard DDP mean"
+  },
+  "training": {
+    "world_size": 4,
+    "batch_size_per_gpu": 256,
+    "global_batch": 1024,
+    "grad_accumulation": 1,
+    "optimizer_updates": 500,
+    "updates_expected": 500,
+    "save_steps": [0, 100, 250, 500],
+    "evaluated_step": 500,
+    "steps_per_epoch": 1217,
+    "synchronized_pair_presentations": 512000,
+    "expected_pair_presentations_at_500": 512000,
+    "wall_seconds": 425.87105441093445,
+    "mean_sec_per_step": 0.7182585587501525,
+    "peak_memory_gb": 39.29107856750488,
+    "memory_unit": "GiB (1024^3 bytes)",
+    "final_state_digest": "620ca693e2f1f8f6bad3ec8224851a7f383b87d132794f8fb0f6283f62f35762",
+    "final_step_loss": 2.904449701309204,
+    "final_step_loss_i2t": 0.12163197994232178,
+    "final_step_loss_t2i": 0.16881300508975983,
+    "final_step_train_top1_i2t": 0.94921875,
+    "final_step_train_top1_t2i": 0.94140625,
+    "frozen_parameters": ["mask_net", "logit_scale"],
+    "mask_net_forwarded": false,
+    "mask_tensors_in_loss": 0,
+    "mask_net_grad_tensors": 0
+  },
+  "artifacts": {
+    "checkpoint": "runs_salu/s0_global_only_v01/S0_GLOBAL_ONLY_step000500.pt",
+    "checkpoint_sha256": "f389f25c0ef14896d08125a111c3f26ac0d153e57f30f5d674b299761c940eb2",
+    "student": "runs_salu/s0_global_only_v01/student_export/s0_global_only_student.pt",
+    "student_sha256": "49eb7629732f00a513b2417ad7ef1c4d2bd645cf14118076561d57504c3447fe",
+    "student_tensors": 317,
+    "student_steps": 500,
+    "log": "runs_salu/s0_global_only_v01/salu_log.jsonl",
+    "log_records": 51,
+    "coco_json": "runs_salu/s0_global_only_v01/evaluation/S0_GLOBAL_ONLY_step000500_canonical.json",
+    "urban_json": "runs_salu/s0_global_only_v01/evaluation/S0_GLOBAL_ONLY_step000500_urban1k.json",
+    "run_status": "runs_salu/s0_global_only_v01/run_status.json"
+  },
+  "metrics": {
+    "coco_val2017": {
+      "protocol": "phase30a-1d-fixed-cohort, 5000 images x 25000 texts",
+      "image_representation": "legacy_cls",
+      "image2text_R1": 0.5992,
+      "image2text_R5": 0.817,
+      "image2text_R10": 0.8856,
+      "text2image_R1": 0.40884,
+      "text2image_R5": 0.66736,
+      "text2image_R10": 0.76268,
+      "image2text_R1_hits_out_of_5000": 2996,
+      "text2image_R1_hits_out_of_25000": 10221
+    },
+    "urban1k": {
+      "protocol": "urban1k-native-cls-v1, 1000 x 1000, diagonal positives",
+      "image2text_R1": 0.8700000643730164,
+      "image2text_R5": 0.971000075340271,
+      "image2text_R10": 0.9880000352859497,
+      "text2image_R1": 0.8290000557899475,
+      "text2image_R5": 0.9590000510215759,
+      "text2image_R10": 0.9820000529289246
+    }
+  },
+  "comparison_with_frozen_s0_at_500": {
+    "note": "S0@500 is the frozen reference run and was NOT retrained; its numbers are reused as recorded",
+    "s0_reference": {
+      "coco_image2text_R1": 0.6058,
+      "coco_text2image_R1": 0.41236,
+      "urban_image2text_R1": 0.87,
+      "urban_text2image_R1": 0.842
+    },
+    "deltas": {
+      "coco_image2text_R1_pp": -0.66,
+      "coco_image2text_R1_queries": -33,
+      "coco_text2image_R1_pp": -0.352,
+      "coco_text2image_R1_queries": -88,
+      "urban_image2text_R1_pp": 0.0,
+      "urban_image2text_R1_queries": 0,
+      "urban_text2image_R1_pp": -1.3,
+      "urban_text2image_R1_queries": -13
+    },
+    "queries_per_pp": {"coco_image2text": 50, "coco_text2image": 250, "urban1k": 10}
+  },
+  "stream_verification": {
+    "scope": "rank0 only (every arm logs rank0 rows; statistics_scope = rank0_local_batch)",
+    "per_step_digests_vs_pgclip_v01_step500": "51/51 identical (batch_image_id_sha256, batch_caption_sha256); PG logs no prefix_k/sample_id field and no cumulative digest, so those are NOT COMPARABLE",
+    "per_step_digests_vs_pgclip_v01_rep500_step500": "51/51 identical (same two fields)",
+    "per_step_digests_vs_cgclip_v01_step500": "51/51 identical (batch_image_id_sha256, batch_caption_sha256, epoch/step_in_epoch)",
+    "cumulative_streams_vs_cgclip_v01_step500": "all four streams identical at 51/51 steps (caption, image_id, prefix_k, sample); key names differ and are mapped explicitly",
+    "independent_rebuild": "manifest + DistributedSampler(seed=0), epoch 0, rank 0, no image decoding: image_id 51/51 and sample_id 51/51 identical under the trainer's float32 digest convention; 0/51 under raw int64 bytes, which is reported as the convention dependence it is",
+    "not_comparable": {
+      "s0_continue_1000_and_pgclip_cont1000": "steps 510..1000, zero overlap with this run",
+      "s0_trimask_v01_step500": "22/22 lines unparseable, 0 parseable rows",
+      "s0_trimask_hs_v02_step500": "51/51 lines unparseable, 0 parseable rows",
+      "s0_trimask_hs_v02_bal500": "51/51 lines unparseable, 0 parseable rows",
+      "s0_trimask_hs_v02_cont1000": "50/50 lines unparseable, 0 parseable rows"
+    },
+    "tools": [
+      "tools/diag/compare_arm_streams.py",
+      "tools/diag/rebuild_stream_digests.py"
+    ]
+  },
+  "tests": {
+    "file": "tests/test_global_only.py",
+    "ddp_worker": "tests/_global_only_ddp_worker.py",
+    "count": 8,
+    "passed": 8,
+    "covers": [
+      "bidirectional loss and all gradients equal an independently written reference",
+      "the score uses the fixed 100 scale and is unaffected by perturbing logit_scale",
+      "mask_net and logit_scale stay frozen while the backbone really updates",
+      "the real training step reports zero mask-head gradient tensors",
+      "two-rank DDP gradient equals the mean of the two local gradients (and differs from each, so the test is not vacuous)",
+      "the single-process loss equals the local anchor definition",
+      "checkpoint and bare student load with strict=True and their digests recompute",
+      "partition_parameters refuses a model that lacks the compatibility keys"
+    ]
+  },
+  "exit_codes": {"train": 0, "verify": 0, "export": 0, "coco": 0, "urban": 0, "report": 0},
+  "timings_seconds": {"train_stage": 461.73131823539734, "train_loop": 425.87105441093445, "export": 16.25252652168274, "coco_eval": 491.7881028652191, "urban_eval": 92.69316554069519},
+  "corrections": {
+    "export_probe_labels": "the export tool originally labelled the trained-vs-untrained probe as 'lossless_probe'. The metadata now separates probe_after_two_independent_loads_max_abs_diff (0.0 / 0.0, the real losslessness test) from probe_trained_vs_untrained_max_abs_diff (1.3013 / 0.3430, expected to be non-zero). No weight and no metric changed.",
+    "stream_comparison_wording": "an earlier internal statement called the cross-arm stream comparison '51/51 identical on all digests'. The honest scope is: the two per-step fields PG logs and the four cumulative streams CG logs; PG has no prefix_k or cumulative field at all, and the S0 / HS logs are either non-overlapping or unparseable."
+  },
+  "not_run": [
+    "control arms (mask only, sparsity only, other sparsity weights, longer budgets)",
+    "hyper-parameter search, extra seeds, continuation beyond 500 steps",
+    "multi-path fusion, reranking, score blending",
+    "per-rank stream comparison (only rank0 is logged)",
+    "prefix-stream comparison against PG-CLIP (PG does not log the field)",
+    "comparison with the original S0 500-step log (not on this machine; available S0 logs do not overlap in step number)"
+  ]
+}
