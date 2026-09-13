@@ -1,9 +1,8 @@
 """Minimal training entry for S0 Dual-Mask Suffix Clean v0.1.
 
-This is a thin production path, not a compatibility runner.  It accepts the formal 500-step
-configuration but does not start it by itself.  ``--resume`` is intentionally rejected in this
-round: loading a complete checkpoint for evaluation is supported by ``load_checkpoint`` below,
-while silently restarting a data stream from step zero would be unsafe.
+This is a thin production path, not a compatibility runner.  It supports strict continuation
+from a complete checkpoint, preserving optimizer, scheduler position, and the distributed data
+stream position.
 """
 
 from __future__ import annotations
@@ -260,10 +259,11 @@ def _args() -> argparse.Namespace:
 
 def main() -> int:
     args = _args()
-    if args.resume:
-        raise SystemExit("--resume is intentionally unsupported in Clean v0.1")
-    if os.path.exists(os.path.join(args.output_dir, 'salu_log.jsonl')):
+    existing_log = os.path.join(args.output_dir, 'salu_log.jsonl')
+    if not args.resume and os.path.exists(existing_log):
         raise SystemExit('output directory already contains a run; refusing to mix update counts')
+    if args.resume and not os.path.isfile(args.resume):
+        raise SystemExit(f'resume checkpoint does not exist: {args.resume}')
     _seed_everything(args.seed)
     rank, local_rank, world = _setup_ddp()
     device = torch.device("cuda", local_rank) if torch.cuda.is_available() else torch.device("cpu")
@@ -290,6 +290,11 @@ def main() -> int:
     mask_schedule = cosine_lr(mask_opt, args.mask_lr, 0, horizon)
     suffix_schedule = cosine_lr(suffix_opt, args.suffix_lr, 0, horizon) if suffix_opt is not None else None
     os.makedirs(args.output_dir, exist_ok=True)
+    resume_payload = None
+    if args.resume:
+        resume_payload = load_checkpoint(args.resume, inner, (clip_opt, mask_opt, suffix_opt))
+        if resume_payload.get('config', {}).get('suffix_mode') != args.suffix_mode:
+            raise RuntimeError('resume suffix_mode does not match requested suffix_mode')
     config = {
         "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
         "suffix_lambda": SUFFIX_LAMBDA, "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
@@ -307,23 +312,43 @@ def main() -> int:
         "communication_env": {k: os.environ.get(k) for k in
             ('NCCL_SOCKET_IFNAME', 'NCCL_IB_DISABLE', 'NCCL_P2P_DISABLE', 'GLOO_SOCKET_IFNAME', 'CUDA_VISIBLE_DEVICES')},
     }
+    completed = 0
+    resume_epoch = 0
+    resume_step_in_epoch = -1
+    if resume_payload is not None:
+        completed = int(resume_payload.get('completed_steps', 0))
+        resume_epoch = int(resume_payload.get('epoch', 0))
+        resume_step_in_epoch = int(resume_payload.get('step_in_epoch', -1))
+        previous_config = resume_payload.get('config', {})
+        if previous_config.get('training_sha') and previous_config['training_sha'] != config['training_sha']:
+            raise RuntimeError('resume training SHA does not match current code')
+        config['resumed_from'] = os.path.abspath(args.resume)
+        config['resume_completed_steps'] = completed
+        config['resume_epoch'] = resume_epoch
+        config['resume_step_in_epoch'] = resume_step_in_epoch
+        config['formal_optimizer_updates'] = completed if args.run_type == 'formal' else 0
+        config['debug_optimizer_updates'] = completed if args.run_type == 'debug' else 0
     log_path = os.path.join(args.output_dir, "salu_log.jsonl")
     if rank == 0:
         with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as h:
             json.dump(config, h, indent=2, sort_keys=True)
-        _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir, 0, 0, -1)
+        if resume_payload is None:
+            _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir, 0, 0, -1)
     if world > 1:
         dist.barrier()
-    completed = 0
     stream_digest = hashlib.sha256()
     consumed_samples = 0
     training_started = time.perf_counter()
     for epoch in range(args.epochs):
+        if resume_payload is not None and epoch < resume_epoch:
+            continue
         if sampler is not None:
             sampler.set_epoch(epoch)
         for step_in_epoch, batch in enumerate(loader):
             if completed >= args.max_steps:
                 break
+            if resume_payload is not None and epoch == resume_epoch and step_in_epoch <= resume_step_in_epoch:
+                continue
             step_started = time.perf_counter()
             if device.type == "cuda":
                 torch.cuda.reset_peak_memory_stats(device)
