@@ -1,0 +1,39 @@
+{
+  "measured_code_sha": "455013f47d3363c6d1725cc6f6d918d98091b699",
+  "base_sha": "74c5bf388779f2af3a75e35773b2dbe1a0229317",
+  "unit_tests": {"command": "python -m pytest -q tests/test_dual_mask_suffix.py", "result": "9 passed"},
+  "ddp_global_reference": {
+    "backend": "gloo",
+    "world_size": 2,
+    "case_valid_counts": [1, 3],
+    "loss_abs_error": 0.0,
+    "gradient_max_abs_or_relative_error": 56.67951202392578,
+    "update_max_abs_error": 0.0020000040531158447,
+    "status": "measured; not within requested threshold",
+    "note": "The evidence is retained without relaxing tolerance. Existing production gather/reduction semantics were not changed in this evidence-only round."
+  },
+  "real_clip_short": {
+    "init": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+    "native": {
+      "world_size": 4, "batch_per_gpu": 256, "global_batch": 1024, "steps": 3,
+      "global_valid": [737, 765, 782],
+      "per_rank_valid": [[179,195,186,177],[188,195,192,190],[193,201,191,197]],
+      "loss_suffix": [3.6177778244,3.5297157764,3.1516942978],
+      "peak_allocated_mb": 63767.62, "peak_reserved_mb": 66496.0,
+      "exit_code": 0
+    },
+    "masked": {
+      "world_size": 4, "batch_per_gpu": 256, "global_batch": 1024, "steps": 3,
+      "global_valid": [737, 765, 782],
+      "per_rank_valid": [[179,195,186,177],[188,195,192,190],[193,201,191,197]],
+      "loss_suffix": [3.6177778244,3.5242235661,3.1510965824],
+      "gate_keep_ratio": [1.0,1.0,1.0],
+      "gate_probability_mean": [0.8888860345,0.8888920546,0.8888895512],
+      "peak_allocated_mb": 67419.62, "peak_reserved_mb": 69810.0,
+      "exit_code": 0
+    }
+  },
+  "checkpoint_roundtrip": {"native": "ROUNDTRIP_OK", "masked": "ROUNDTRIP_OK"},
+  "formal_optimizer_updates": 0,
+  "full_evaluation": "NOT RUN"
+}

@@ -54,3 +54,14 @@ To create that evaluation artifact from a checkpoint:
 ```bash
 python -c "from train.train_dual_mask_suffix import export_bare_student; export_bare_student('CHECKPOINT.pt', 'bare_student.pt')"
 ```
+
+## Acceptance evidence
+
+Evidence for code SHA `455013f47d3363c6d1725cc6f6d918d98091b699` is recorded in
+`acceptance_evidence.json`. The nine focused tests pass, and native/masked real-CLIP runs both
+completed three steps at 4 GPUs × 256 (global batch 1024), with `formal_optimizer_updates=0`.
+The DDP global-reference probe reports equal scalar loss but exposes a visual/text gradient scaling
+difference (maximum absolute/relative error `56.679512`, one-step parameter error `0.002000004`);
+the result is preserved as evidence and no tolerance was relaxed or production reduction changed.
+The first NCCL launch failed before forward; the retry with loopback NCCL settings succeeded for
+both modes. Full 500-step training and COCO/Urban evaluation remain unrun.
