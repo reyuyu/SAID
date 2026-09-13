@@ -21,12 +21,27 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from model import longclip  # noqa: E402
-from model.said_trimask import (ARM, ARM_HS, HARD_GATE, OBJECTIVE, OBJECTIVE_HS,  # noqa: E402
-                                SOFT_GATE, TEXT_GATE_MODES, student_state_from_checkpoint)
+from model.said_trimask import (ARM, HARD_GATE, LOSS_PROFILES, LOSS_PROFILE_DEFAULT,  # noqa: E402
+                                OBJECTIVE, SOFT_GATE, TEXT_GATE_MODES, all_profile_names,
+                                profile_names, student_state_from_checkpoint)
 
 TOKENS = 248
-EXPECTED_MODES = {ARM: SOFT_GATE, ARM_HS: HARD_GATE}
-ALLOWED_OBJECTIVES = (OBJECTIVE, OBJECTIVE_HS)
+# built from the profile table instead of a hand-written list: every (profile, gate mode) pair the
+# trainers can produce is accepted, and nothing else is. A new arm therefore cannot be rejected by
+# this tool merely for being new -- but a checkpoint whose arm/objective pair is unknown still is.
+EXPECTED_MODES = {}
+ALLOWED_OBJECTIVES = []
+_OBJECTIVE_TO_ARM = {}
+for _gate_mode in TEXT_GATE_MODES:
+    for _profile in LOSS_PROFILES:
+        try:
+            _arm, _objective, _phase = profile_names(_profile, _gate_mode)
+        except ValueError:                    # a profile that is not defined for this mode
+            continue
+        EXPECTED_MODES[_arm] = _gate_mode
+        ALLOWED_OBJECTIVES.append(_objective)
+        _OBJECTIVE_TO_ARM[_objective] = _arm
+ALLOWED_OBJECTIVES = tuple(sorted(set(ALLOWED_OBJECTIVES)))
 
 
 def file_sha256(path):
@@ -56,6 +71,9 @@ def main():
     parser.add_argument('--expect-steps', type=int, default=500)
     parser.add_argument('--expect-gate-mode', default=None, choices=list(TEXT_GATE_MODES),
                         help='fail unless the checkpoint records this text-gate mode')
+    parser.add_argument('--expect-loss-profile', dest='expect_loss_profile',
+                        default=None, choices=list(LOSS_PROFILES),
+                        help='fail unless the checkpoint records this loss-weight profile')
     parser.add_argument('--base_model', default='ViT-B/16')
     parsed = parser.parse_args()
 
@@ -72,13 +90,20 @@ def main():
         if objective != OBJECTIVE:
             raise SystemExit('objective %r must record text_gate_mode' % (objective,))
         gate_mode = SOFT_GATE
-    recorded_arm = payload.get('arm') or (ARM if objective == OBJECTIVE else None)
+    recorded_arm = payload.get('arm') or _OBJECTIVE_TO_ARM.get(objective)
     if recorded_arm is None:
         raise SystemExit('the checkpoint records neither arm nor a decidable objective')
     if EXPECTED_MODES.get(recorded_arm) not in (None, gate_mode):
         raise SystemExit('arm %r disagrees with text_gate_mode %r' % (recorded_arm, gate_mode))
     if parsed.expect_gate_mode is not None and gate_mode != parsed.expect_gate_mode:
         raise SystemExit('text_gate_mode %r != expected %r' % (gate_mode, parsed.expect_gate_mode))
+    loss_profile = payload.get('loss_profile') or LOSS_PROFILE_DEFAULT
+    if loss_profile not in LOSS_PROFILES:
+        raise SystemExit('unknown loss_profile %r' % (loss_profile,))
+    if (parsed.expect_loss_profile is not None
+            and loss_profile != parsed.expect_loss_profile):
+        raise SystemExit('loss_profile %r != expected %r'
+                         % (loss_profile, parsed.expect_loss_profile))
     got = int(payload.get('completed_steps', payload.get('step', -1)))
     if parsed.expect_steps is not None and got != parsed.expect_steps:
         raise SystemExit('completed_steps %d != %d' % (got, parsed.expect_steps))
@@ -118,6 +143,7 @@ def main():
                 'objective': objective,
                 'arm': recorded_arm,
                 'text_gate_mode': gate_mode,
+                'loss_profile': loss_profile,
                 'lambda_sparse_t': payload.get('lambda_sparse_t'),
                 'config': payload.get('config'),
                 'git_head': payload.get('git_head'),
@@ -125,6 +151,7 @@ def main():
                parsed.out)
     print('EXPORTED %s' % parsed.out)
     print('GATE_MODE %s' % gate_mode)
+    print('LOSS_PROFILE %s' % loss_profile)
     print('SOURCE_CHECKPOINT_SHA256 %s' % file_sha256(parsed.checkpoint))
     print('EXPORT_SHA256 %s' % file_sha256(parsed.out))
     print('STUDENT_TENSORS %d' % len(state))

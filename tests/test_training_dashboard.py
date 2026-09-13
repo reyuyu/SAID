@@ -583,6 +583,42 @@ def test_metrics_csv_and_active_run_agreement(tmp_path):
 
 
 # ---------------------------------------------------------------- F: offline diagnostics
+def test_frontend_assets_parse_and_are_served(tmp_path):
+    """A syntax error in app.js breaks every dynamic part of the page while the HTML still loads.
+
+    That is exactly what happened once: ``obj.R@1_mean`` is not valid JavaScript (``@`` cannot appear
+    in an identifier), the whole script failed to parse, and the page silently showed no run list and
+    no curves even though every endpoint returned 200. Hence two checks here -- a node-free scan for
+    the invalid property pattern, and a real ``node --check`` whenever node is available.
+    """
+    import re
+    import shutil
+
+    node = shutil.which('node')
+    checked = []
+    for name in ('app.js', 'index.html', 'style.css'):
+        path = os.path.join(WEB_DIR, name)
+        assert os.path.isfile(path), path
+        source = open(path, encoding='utf-8').read()
+        if name.endswith('.js'):
+            # '@' is legal inside a string but never inside an identifier; this pattern is precisely
+            # the bug that shipped: (x).R@1_mean / paired.delta_R@1
+            bad = re.findall(r'\.[A-Za-z_][A-Za-z0-9_]*@[A-Za-z0-9_]', source)
+            assert not bad, 'invalid JS property access in %s: %r' % (name, bad[:5])
+            assert source.count('{') == source.count('}'), 'unbalanced braces in %s' % name
+            assert source.count('(') == source.count(')'), 'unbalanced parentheses in %s' % name
+        if node and name.endswith('.js'):
+            result = subprocess.run([node, '--check', path], capture_output=True, text=True)
+            assert result.returncode == 0, result.stderr
+            checked.append(name)
+    with Server(registry_for(build_run(tmp_path)), free_port()) as server:
+        for name in ('app.js', 'index.html', 'style.css'):
+            status, body = server.get('/static/' + name, expect_json=False)
+            assert status == 200 and len(body) > 200, name
+        status, index = server.get('/', expect_json=False)
+        assert status == 200 and '离线诊断' in index
+
+
 def test_diagnostics_endpoint_reports_未诊断_without_fabricating_zeros(tmp_path):
     run_dir = build_run(tmp_path)
     with Server(registry_for(run_dir), free_port()) as server:

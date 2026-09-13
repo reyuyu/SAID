@@ -74,6 +74,64 @@ LAMBDA_ADV = 0.0
 TEXT_GATE_EPS = 0.1
 TEXT_GATE_INIT_BIAS = math.log(8.0)
 NORM_EPS = 1e-6
+
+# ----------------------------------------------------------------------------------- loss profiles
+# The v0.1/v0.2 weighting (10/1/1 alignment, 2 image-sparsity, 0.2 text-sparsity) is the frozen
+# default and must never change meaning. A profile owns BOTH the five coefficients and the
+# arm/objective/phase names, so a checkpoint trained under one profile can never be read as another:
+# the names are part of the checkpoint identity and are re-checked on resume.
+LOSS_PROFILE_DEFAULT = 'default'
+LOSS_PROFILE_BALANCED = 'balanced'
+LOSS_PROFILES = (LOSS_PROFILE_DEFAULT, LOSS_PROFILE_BALANCED)
+# the 'balanced' request: all three alignment terms at the image-path value (10) and both sparsity
+# terms at the image-sparsity value (2)
+LAMBDA_BALANCED_ALIGN = 10.0
+LAMBDA_BALANCED_SPARSE = 2.0
+_PROFILE_NAMES = {
+    (LOSS_PROFILE_BALANCED, HARD_GATE):
+        (ARM_HS + '_BAL', OBJECTIVE_HS + '_bal', 's0-trimask-hs-bal-v0.3'),
+}
+
+
+def profile_names(profile=LOSS_PROFILE_DEFAULT, gate_mode=HARD_GATE):
+    """``(arm, objective, phase)`` for a (loss profile, gate mode) pair.
+
+    The default profile returns exactly the v0.1/v0.2 names, so nothing about an existing run or
+    checkpoint changes; only an explicitly requested non-default profile gets a distinct identity.
+    """
+    if profile == LOSS_PROFILE_DEFAULT:
+        return (GATE_MODE_TO_ARM[gate_mode], GATE_MODE_TO_OBJECTIVE[gate_mode],
+                GATE_MODE_TO_PHASE[gate_mode])
+    if profile not in LOSS_PROFILES:
+        raise ValueError('unknown loss profile %r' % (profile,))
+    if (profile, gate_mode) not in _PROFILE_NAMES:
+        raise ValueError('loss profile %r is not defined for the %r gate mode'
+                         % (profile, gate_mode))
+    return _PROFILE_NAMES[(profile, gate_mode)]
+
+
+def profile_lambdas(profile=LOSS_PROFILE_DEFAULT, gate_mode=HARD_GATE):
+    """The five loss coefficients of a profile, as the trainer's resolved values."""
+    if profile == LOSS_PROFILE_DEFAULT:
+        return {'lambda_1': LAMBDA_1, 'lambda_2': LAMBDA_2, 'lambda_3': LAMBDA_3,
+                'lambda_sparse_i': LAMBDA_SPARSE_I,
+                'lambda_sparse_t': (LAMBDA_SPARSE_T_HS if gate_mode == HARD_GATE
+                                    else LAMBDA_SPARSE_T)}
+    if profile == LOSS_PROFILE_BALANCED:
+        if gate_mode != HARD_GATE:
+            raise ValueError('the %r profile is defined for the %r gate mode only'
+                             % (profile, HARD_GATE))
+        return {'lambda_1': LAMBDA_BALANCED_ALIGN, 'lambda_2': LAMBDA_BALANCED_ALIGN,
+                'lambda_3': LAMBDA_BALANCED_ALIGN, 'lambda_sparse_i': LAMBDA_BALANCED_SPARSE,
+                'lambda_sparse_t': LAMBDA_BALANCED_SPARSE}
+    raise ValueError('unknown loss profile %r' % (profile,))
+
+
+def all_profile_names():
+    """Every ``(arm, objective, phase)`` any profile can produce, for argument validation."""
+    names = [profile_names(LOSS_PROFILE_DEFAULT, mode) for mode in TEXT_GATE_MODES]
+    names += list(_PROFILE_NAMES.values())
+    return names
 ADV_TOLERANCE = 1e-6
 SATURATION_LO = 0.01
 SATURATION_HI = 0.99

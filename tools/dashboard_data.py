@@ -353,7 +353,16 @@ class DashboardData:
             'arm': (config or {}).get('arm') or record['arm'] or (status or {}).get('arm'),
             'git_head': (config or {}).get('git_head') or (summary or {}).get('git_head'),
             'text_gate_mode': ((config or {}).get('text_gate_mode')
-                              or (status or {}).get('text_gate_mode')),
+                               or (status or {}).get('text_gate_mode')),
+            # the loss weighting is part of a run's identity: two runs of the same gate mode can
+            # differ only here, so the panel must be able to show it
+            'loss_profile': ((config or {}).get('loss_profile')
+                             or (status or {}).get('loss_profile') or 'default'),
+            'lambda_1': (config or {}).get('lambda_1', (status or {}).get('lambda_1')),
+            'lambda_2': (config or {}).get('lambda_2', (status or {}).get('lambda_2')),
+            'lambda_3': (config or {}).get('lambda_3', (status or {}).get('lambda_3')),
+            'lambda_sparse_i': (config or {}).get('lambda_sparse_i',
+                                                  (status or {}).get('lambda_sparse_i')),
             'lambda_sparse_t': (config or {}).get('lambda_sparse_t'),
             'completed_steps': completed, 'max_steps': total,
             'progress': (completed / total) if total else None,

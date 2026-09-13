@@ -1,0 +1,850 @@
+{
+ "arms": [
+  {
+   "arm": "S0_smartclip@500 (gate baseline)",
+   "canonical_json": "/root/SAID-gap-completion/outputs/cvssl_screening/S0_canonical.json",
+   "canonical_label": "S0_step500",
+   "canonical_sha256": "7268994c508c35be1582abe36dea8193daa42c3b17de265ea0f90688690f092c",
+   "coco": {
+    "image2text_R1": 0.6058,
+    "image2text_R10": 0.8906,
+    "image2text_R5": 0.822,
+    "text2image_R1": 0.41236,
+    "text2image_R10": 0.7662,
+    "text2image_R5": 0.67092
+   },
+   "gate": {
+    "i2t_at_or_above": true,
+    "i2t_delta_points": 0.0,
+    "reference_row": true,
+    "rule": "COCO I2T R@1 >= 0.6058 and COCO T2I R@1 >= 0.41236, at least one strictly higher (raw full precision)",
+    "strictly_higher_count": 0,
+    "t2i_at_or_above": true,
+    "t2i_delta_points": 0.0,
+    "verdict": "the frozen baseline that defines the gate; the challenger clause cannot apply to the reference itself"
+   },
+   "noise_scale": {
+    "coco_binomial_se_i2t_r1": 0.006910953045709397,
+    "coco_binomial_se_t2i_r1": 0.006961597954492919,
+    "note": "standard error of an independent binomial R@1 estimate; the honest test is paired over the same queries, which the query-hit tool provides"
+   },
+   "run_dir": null,
+   "urban": {
+    "i2t_r1": 0.8700000643730164,
+    "i2t_r10": 0.9880000352859497,
+    "i2t_r5": 0.971000075340271,
+    "t2i_r1": 0.8420000672340393,
+    "t2i_r10": 0.9810000658035278,
+    "t2i_r5": 0.9670000672340393
+   },
+   "urban_json": "/root/SAID-gap-completion/outputs/cvssl_screening/baseline_urban1k/S0_step500_urban1k.json",
+   "urban_sha256": "effe0163e75d3b5d1a724bff0846be757c75768c177bf26466f0cc01bf95c0eb",
+   "weights": "10 / 1 / 1 + 2 / 0.0 (reference objective)"
+  },
+  {
+   "arm": "S0_TriMask_HS@500 (frozen v0.2)",
+   "canonical_json": "/root/SAID-s0-trimask-hs-v02/runs_salu/said_s0_trimask_hs_v02/step500/evaluation/S0_TriMask_HS_step000500_canonical.json",
+   "canonical_label": "S0_TriMask_HS@500",
+   "canonical_sha256": "e366b86c83fca248c16904981c91060b061ca6f939ba40bbdb7c620b88c3c58a",
+   "coco": {
+    "image2text_R1": 0.6006,
+    "image2text_R10": 0.887,
+    "image2text_R5": 0.824,
+    "text2image_R1": 0.41208,
+    "text2image_R10": 0.76604,
+    "text2image_R5": 0.671
+   },
+   "gate": {
+    "i2t_at_or_above": false,
+    "i2t_delta_points": -0.5199999999999982,
+    "reference_row": false,
+    "rule": "COCO I2T R@1 >= 0.6058 and COCO T2I R@1 >= 0.41236, at least one strictly higher (raw full precision)",
+    "strictly_higher_count": 0,
+    "t2i_at_or_above": false,
+    "t2i_delta_points": -0.028000000000000247,
+    "verdict": "did not pass the frozen 500-step promotion gate"
+   },
+   "noise_scale": {
+    "coco_binomial_se_i2t_r1": 0.0069264657654535475,
+    "coco_binomial_se_t2i_r1": 0.0069608918049341925,
+    "note": "standard error of an independent binomial R@1 estimate; the honest test is paired over the same queries, which the query-hit tool provides"
+   },
+   "run_dir": "/root/SAID-s0-trimask-hs-v02/runs_salu/said_s0_trimask_hs_v02/step500",
+   "run_status": {
+    "arm": "S0_TriMask_HS",
+    "attempt": 1,
+    "completed_steps": 500,
+    "conclusion": {
+     "coco_i2t_r1": 0.6006,
+     "coco_t2i_r1": 0.41208,
+     "gate": "COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher",
+     "verdict": "FAIL"
+    },
+    "exit_codes": {
+     "coco": 0,
+     "urban": 0
+    },
+    "failure_reason": null,
+    "lambda_1": null,
+    "lambda_2": null,
+    "lambda_3": null,
+    "lambda_sparse_i": null,
+    "lambda_sparse_t": 0.2,
+    "loss_profile": null,
+    "objective": "smartclip_trimask_hs",
+    "phase": "complete",
+    "wall_seconds": 184.07685804367065
+   },
+   "run_summary": {
+    "caption_stream_sha256": "799f8efae42541759ac92239643d2150dc8aa23d1da984676f029063c21c0fd4",
+    "completed_steps": 500,
+    "lambda_1": 10.0,
+    "lambda_2": 1.0,
+    "lambda_3": 1.0,
+    "lambda_sparse_i": 2.0,
+    "lambda_sparse_t": 0.2,
+    "loss_profile": null,
+    "lr_horizon_steps": 3651,
+    "mean_sec_per_step": 0.9085287232398986,
+    "peak_memory_gb": 24.481351852416992,
+    "sample_stream_sha256": "39c9885c41aaf11cd79a05b7828cf07b1cfa6af2d4ad507c978e870f3a422856",
+    "wall_sec": 520.556631565094
+   },
+   "urban": {
+    "i2t_r1": 0.8740000128746033,
+    "i2t_r10": 0.9890000224113464,
+    "i2t_r5": 0.9750000238418579,
+    "t2i_r1": 0.8370000123977661,
+    "t2i_r10": 0.9820000529289246,
+    "t2i_r5": 0.9630000591278076
+   },
+   "urban_json": "/root/SAID-s0-trimask-hs-v02/runs_salu/said_s0_trimask_hs_v02/step500/evaluation/S0_TriMask_HS_step000500_urban1k.json",
+   "urban_sha256": "834b7cd5ff949f3cdb85c753fcfb2117dbbdf3d20f0eb66b0f07de59e85fea2c",
+   "weights": "10 / 1 / 1 + 2 / 0.2"
+  },
+  {
+   "arm": "S0_TriMask_HS_BAL@500 (balanced)",
+   "canonical_json": "/root/SAID-s0-trimask-hs-v02/runs_salu/said_s0_trimask_hs_v02/bal500/evaluation/S0_TriMask_HS_BAL_step000500_canonical.json",
+   "canonical_label": "S0_TriMask_HS_BAL@500",
+   "canonical_sha256": "af51fd52f2b8abd4b192af843b306a3c9b518740ba7e7952abf3bfc9e25219f4",
+   "coco": {
+    "image2text_R1": 0.5892,
+    "image2text_R10": 0.8812,
+    "image2text_R5": 0.8184,
+    "text2image_R1": 0.40828,
+    "text2image_R10": 0.76536,
+    "text2image_R5": 0.66916
+   },
+   "gate": {
+    "i2t_at_or_above": false,
+    "i2t_delta_points": -1.660000000000006,
+    "reference_row": false,
+    "rule": "COCO I2T R@1 >= 0.6058 and COCO T2I R@1 >= 0.41236, at least one strictly higher (raw full precision)",
+    "strictly_higher_count": 0,
+    "t2i_at_or_above": false,
+    "t2i_delta_points": -0.4080000000000028,
+    "verdict": "did not pass the frozen 500-step promotion gate"
+   },
+   "noise_scale": {
+    "coco_binomial_se_i2t_r1": 0.006957634080634019,
+    "coco_binomial_se_t2i_r1": 0.006951078212766707,
+    "note": "standard error of an independent binomial R@1 estimate; the honest test is paired over the same queries, which the query-hit tool provides"
+   },
+   "run_dir": "/root/SAID-s0-trimask-hs-v02/runs_salu/said_s0_trimask_hs_v02/bal500",
+   "run_status": {
+    "arm": "S0_TriMask_HS_BAL",
+    "attempt": 2,
+    "completed_steps": 500,
+    "conclusion": {
+     "coco_i2t_r1": 0.5892,
+     "coco_t2i_r1": 0.40828,
+     "gate": "COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher",
+     "verdict": "FAIL"
+    },
+    "exit_codes": {
+     "coco": 0,
+     "export": 0,
+     "urban": 0
+    },
+    "failure_reason": null,
+    "lambda_1": 10.0,
+    "lambda_2": 10.0,
+    "lambda_3": 10.0,
+    "lambda_sparse_i": 2.0,
+    "lambda_sparse_t": 2.0,
+    "loss_profile": "balanced",
+    "objective": "smartclip_trimask_hs_bal",
+    "phase": "complete",
+    "wall_seconds": 190.26670360565186
+   },
+   "run_summary": {
+    "caption_stream_sha256": "799f8efae42541759ac92239643d2150dc8aa23d1da984676f029063c21c0fd4",
+    "completed_steps": 500,
+    "lambda_1": 10.0,
+    "lambda_2": 10.0,
+    "lambda_3": 10.0,
+    "lambda_sparse_i": 2.0,
+    "lambda_sparse_t": 2.0,
+    "loss_profile": null,
+    "lr_horizon_steps": 3651,
+    "mean_sec_per_step": 0.9054923434257507,
+    "peak_memory_gb": 24.481351852416992,
+    "sample_stream_sha256": "39c9885c41aaf11cd79a05b7828cf07b1cfa6af2d4ad507c978e870f3a422856",
+    "wall_sec": 516.7761118412018
+   },
+   "urban": {
+    "i2t_r1": 0.8650000691413879,
+    "i2t_r10": 0.9860000610351562,
+    "i2t_r5": 0.9720000624656677,
+    "t2i_r1": 0.8280000686645508,
+    "t2i_r10": 0.9800000190734863,
+    "t2i_r5": 0.9620000720024109
+   },
+   "urban_json": "/root/SAID-s0-trimask-hs-v02/runs_salu/said_s0_trimask_hs_v02/bal500/evaluation/S0_TriMask_HS_BAL_step000500_urban1k.json",
+   "urban_sha256": "caa834325fe0e48d308d7a40c715d4c702be9d5fcd87e24dea68ae549d10d7d3",
+   "weights": "10 / 10 / 10 + 2 / 2"
+  }
+ ],
+ "comparisons": {
+  "BAL_minus_HS_default": {
+   "coco": {
+    "image2text_R1": {
+     "delta": -0.011400000000000077,
+     "delta_pp": -1.1400000000000077,
+     "left": 0.5892,
+     "right": 0.6006
+    },
+    "image2text_R10": {
+     "delta": -0.005800000000000027,
+     "delta_pp": -0.5800000000000027,
+     "left": 0.8812,
+     "right": 0.887
+    },
+    "image2text_R5": {
+     "delta": -0.005599999999999938,
+     "delta_pp": -0.5599999999999938,
+     "left": 0.8184,
+     "right": 0.824
+    },
+    "text2image_R1": {
+     "delta": -0.0038000000000000256,
+     "delta_pp": -0.38000000000000256,
+     "left": 0.40828,
+     "right": 0.41208
+    },
+    "text2image_R10": {
+     "delta": -0.0006800000000000139,
+     "delta_pp": -0.06800000000000139,
+     "left": 0.76536,
+     "right": 0.76604
+    },
+    "text2image_R5": {
+     "delta": -0.0018400000000000638,
+     "delta_pp": -0.18400000000000638,
+     "left": 0.66916,
+     "right": 0.671
+    }
+   },
+   "urban": {
+    "i2t_r1": {
+     "delta": -0.008999943733215332,
+     "delta_pp": -0.8999943733215332,
+     "left": 0.8650000691413879,
+     "right": 0.8740000128746033
+    },
+    "i2t_r10": {
+     "delta": -0.0029999613761901855,
+     "delta_pp": -0.29999613761901855,
+     "left": 0.9860000610351562,
+     "right": 0.9890000224113464
+    },
+    "i2t_r5": {
+     "delta": -0.0029999613761901855,
+     "delta_pp": -0.29999613761901855,
+     "left": 0.9720000624656677,
+     "right": 0.9750000238418579
+    },
+    "t2i_r1": {
+     "delta": -0.008999943733215332,
+     "delta_pp": -0.8999943733215332,
+     "left": 0.8280000686645508,
+     "right": 0.8370000123977661
+    },
+    "t2i_r10": {
+     "delta": -0.0020000338554382324,
+     "delta_pp": -0.20000338554382324,
+     "left": 0.9800000190734863,
+     "right": 0.9820000529289246
+    },
+    "t2i_r5": {
+     "delta": -0.0009999871253967285,
+     "delta_pp": -0.09999871253967285,
+     "left": 0.9620000720024109,
+     "right": 0.9630000591278076
+    }
+   }
+  },
+  "S0_TriMask_HS_BAL_minus_S0@500": {
+   "coco": {
+    "image2text_R1": {
+     "delta": -0.01660000000000006,
+     "delta_pp": -1.660000000000006,
+     "left": 0.5892,
+     "right": 0.6058
+    },
+    "image2text_R10": {
+     "delta": -0.009399999999999964,
+     "delta_pp": -0.9399999999999964,
+     "left": 0.8812,
+     "right": 0.8906
+    },
+    "image2text_R5": {
+     "delta": -0.0035999999999999366,
+     "delta_pp": -0.35999999999999366,
+     "left": 0.8184,
+     "right": 0.822
+    },
+    "text2image_R1": {
+     "delta": -0.004080000000000028,
+     "delta_pp": -0.4080000000000028,
+     "left": 0.40828,
+     "right": 0.41236
+    },
+    "text2image_R10": {
+     "delta": -0.0008399999999999519,
+     "delta_pp": -0.08399999999999519,
+     "left": 0.76536,
+     "right": 0.7662
+    },
+    "text2image_R5": {
+     "delta": -0.0017599999999999838,
+     "delta_pp": -0.17599999999999838,
+     "left": 0.66916,
+     "right": 0.67092
+    }
+   },
+   "urban": {
+    "i2t_r1": {
+     "delta": -0.004999995231628418,
+     "delta_pp": -0.4999995231628418,
+     "left": 0.8650000691413879,
+     "right": 0.8700000643730164
+    },
+    "i2t_r10": {
+     "delta": -0.001999974250793457,
+     "delta_pp": -0.1999974250793457,
+     "left": 0.9860000610351562,
+     "right": 0.9880000352859497
+    },
+    "i2t_r5": {
+     "delta": 0.0009999871253967285,
+     "delta_pp": 0.09999871253967285,
+     "left": 0.9720000624656677,
+     "right": 0.971000075340271
+    },
+    "t2i_r1": {
+     "delta": -0.013999998569488525,
+     "delta_pp": -1.3999998569488525,
+     "left": 0.8280000686645508,
+     "right": 0.8420000672340393
+    },
+    "t2i_r10": {
+     "delta": -0.001000046730041504,
+     "delta_pp": -0.10000467300415039,
+     "left": 0.9800000190734863,
+     "right": 0.9810000658035278
+    },
+    "t2i_r5": {
+     "delta": -0.004999995231628418,
+     "delta_pp": -0.4999995231628418,
+     "left": 0.9620000720024109,
+     "right": 0.9670000672340393
+    }
+   }
+  },
+  "S0_TriMask_HS_minus_S0@500": {
+   "coco": {
+    "image2text_R1": {
+     "delta": -0.005199999999999982,
+     "delta_pp": -0.5199999999999982,
+     "left": 0.6006,
+     "right": 0.6058
+    },
+    "image2text_R10": {
+     "delta": -0.0035999999999999366,
+     "delta_pp": -0.35999999999999366,
+     "left": 0.887,
+     "right": 0.8906
+    },
+    "image2text_R5": {
+     "delta": 0.0020000000000000018,
+     "delta_pp": 0.20000000000000018,
+     "left": 0.824,
+     "right": 0.822
+    },
+    "text2image_R1": {
+     "delta": -0.00028000000000000247,
+     "delta_pp": -0.028000000000000247,
+     "left": 0.41208,
+     "right": 0.41236
+    },
+    "text2image_R10": {
+     "delta": -0.00015999999999993797,
+     "delta_pp": -0.015999999999993797,
+     "left": 0.76604,
+     "right": 0.7662
+    },
+    "text2image_R5": {
+     "delta": 8.000000000008001e-05,
+     "delta_pp": 0.008000000000008,
+     "left": 0.671,
+     "right": 0.67092
+    }
+   },
+   "urban": {
+    "i2t_r1": {
+     "delta": 0.003999948501586914,
+     "delta_pp": 0.3999948501586914,
+     "left": 0.8740000128746033,
+     "right": 0.8700000643730164
+    },
+    "i2t_r10": {
+     "delta": 0.0009999871253967285,
+     "delta_pp": 0.09999871253967285,
+     "left": 0.9890000224113464,
+     "right": 0.9880000352859497
+    },
+    "i2t_r5": {
+     "delta": 0.003999948501586914,
+     "delta_pp": 0.3999948501586914,
+     "left": 0.9750000238418579,
+     "right": 0.971000075340271
+    },
+    "t2i_r1": {
+     "delta": -0.005000054836273193,
+     "delta_pp": -0.5000054836273193,
+     "left": 0.8370000123977661,
+     "right": 0.8420000672340393
+    },
+    "t2i_r10": {
+     "delta": 0.0009999871253967285,
+     "delta_pp": 0.09999871253967285,
+     "left": 0.9820000529289246,
+     "right": 0.9810000658035278
+    },
+    "t2i_r5": {
+     "delta": -0.0040000081062316895,
+     "delta_pp": -0.40000081062316895,
+     "left": 0.9630000591278076,
+     "right": 0.9670000672340393
+    }
+   }
+  }
+ },
+ "gate": {
+  "coco_i2t_r1": 0.6058,
+  "coco_t2i_r1": 0.41236,
+  "rule": "COCO I2T R@1 >= 0.6058 and COCO T2I R@1 >= 0.41236, at least one strictly higher (raw full precision)"
+ },
+ "notes": [
+  "every metric is copied from the standard evaluators; nothing is recomputed here",
+  "the gate is applied to both @500 challengers; the S0 row is the reference it is defined against and is therefore not judged by the challenger clause",
+  "the binomial standard error is quoted only as a scale: at 5000 COCO queries a 0.5 pp difference is inside one standard error, so paired per-query evidence decides"
+ ],
+ "paired": {
+  "comparisons": [
+   {
+    "caption_order_sha256": "f0f4945c4fd33a2af04f1e10b345cc071a7361b3fa03166fd815f272542870c3",
+    "directions": {
+     "image2text": {
+      "R@1": {
+       "delta": -0.011400000000000077,
+       "left": 0.5892,
+       "mcnemar": {
+        "discordant": 235,
+        "n01_right_only": 146,
+        "n10_left_only": 89,
+        "p_value_exact_two_sided": 0.00024315374854476837
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 5000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.003055055143494628,
+        "ci_high": -0.005599999999999938,
+        "ci_low": -0.01739999999999997,
+        "confidence": 0.95,
+        "delta": -0.011400000000000077,
+        "excludes_zero": true,
+        "positive_fraction": 0.0001,
+        "query_count": 5000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.6006
+      },
+      "R@10": {
+       "delta": -0.005800000000000027,
+       "left": 0.8812,
+       "mcnemar": {
+        "discordant": 95,
+        "n01_right_only": 62,
+        "n10_left_only": 33,
+        "p_value_exact_two_sided": 0.00383287238487556
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 5000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.001944550719356534,
+        "ci_high": -0.0020000000000000018,
+        "ci_low": -0.009600000000000053,
+        "confidence": 0.95,
+        "delta": -0.005800000000000027,
+        "excludes_zero": true,
+        "positive_fraction": 0.0013,
+        "query_count": 5000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.887
+      },
+      "R@5": {
+       "delta": -0.005599999999999938,
+       "left": 0.8184,
+       "mcnemar": {
+        "discordant": 136,
+        "n01_right_only": 82,
+        "n10_left_only": 54,
+        "p_value_exact_two_sided": 0.02026001125424599
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 5000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.002331453495984939,
+        "ci_high": -0.0010000000000000009,
+        "ci_low": -0.010199999999999987,
+        "confidence": 0.95,
+        "delta": -0.005599999999999938,
+        "excludes_zero": true,
+        "positive_fraction": 0.0076,
+        "query_count": 5000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.824
+      }
+     },
+     "text2image": {
+      "R@1": {
+       "delta": -0.0038000000000000256,
+       "left": 0.40828,
+       "mcnemar": {
+        "discordant": 583,
+        "n01_right_only": 339,
+        "n10_left_only": 244,
+        "p_value_exact_two_sided": 9.578249156357118e-05
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 25000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0009759219343093929,
+        "ci_high": -0.0018799999999999928,
+        "ci_low": -0.005720000000000003,
+        "confidence": 0.95,
+        "delta": -0.0038000000000000256,
+        "excludes_zero": true,
+        "positive_fraction": 0.0002,
+        "query_count": 25000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.41208
+      },
+      "R@10": {
+       "delta": -0.0006800000000000139,
+       "left": 0.76536,
+       "mcnemar": {
+        "discordant": 389,
+        "n01_right_only": 203,
+        "n10_left_only": 186,
+        "p_value_exact_two_sided": 0.41726681760644757
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 25000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0007906232666567419,
+        "ci_high": 0.0008400000000000629,
+        "ci_low": -0.0022400000000000198,
+        "confidence": 0.95,
+        "delta": -0.0006800000000000139,
+        "excludes_zero": false,
+        "positive_fraction": 0.1877,
+        "query_count": 25000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.76604
+      },
+      "R@5": {
+       "delta": -0.0018400000000000638,
+       "left": 0.66916,
+       "mcnemar": {
+        "discordant": 508,
+        "n01_right_only": 277,
+        "n10_left_only": 231,
+        "p_value_exact_two_sided": 0.04576738426411412
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 25000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0009139661719212275,
+        "ci_high": -4.0000000000040004e-05,
+        "ci_low": -0.0036800000000000166,
+        "confidence": 0.95,
+        "delta": -0.0018400000000000638,
+        "excludes_zero": true,
+        "positive_fraction": 0.0195,
+        "query_count": 25000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.671
+      }
+     }
+    },
+    "image_order_sha256": "7e607ec455921747348bf7476fe4bf3a9c4129348b351c64014e755c1ac8c12e",
+    "left": "S0_TriMask_HS_BAL@500",
+    "left_checkpoint_sha256": "6d23dde353e1ab18c3de1e43793525c3139464f6fec44741441e6d802b186f17",
+    "right": "S0_TriMask_HS@500",
+    "right_checkpoint_sha256": "c9ad482c3df3a2628eeb2985f259e09ec2efec065bd9b75ab050fca9ace40987"
+   },
+   {
+    "caption_order_sha256": "f0f4945c4fd33a2af04f1e10b345cc071a7361b3fa03166fd815f272542870c3",
+    "directions": {
+     "image2text": {
+      "R@1": {
+       "delta": -0.01660000000000006,
+       "left": 0.5892,
+       "mcnemar": {
+        "discordant": 355,
+        "n01_right_only": 219,
+        "n10_left_only": 136,
+        "p_value_exact_two_sided": 1.2379218276048482e-05
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 5000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0037552792770504917,
+        "ci_high": -0.009200000000000097,
+        "ci_low": -0.02399999999999991,
+        "confidence": 0.95,
+        "delta": -0.01660000000000006,
+        "excludes_zero": true,
+        "positive_fraction": 0.0,
+        "query_count": 5000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.6058
+      },
+      "R@10": {
+       "delta": -0.009399999999999964,
+       "left": 0.8812,
+       "mcnemar": {
+        "discordant": 135,
+        "n01_right_only": 91,
+        "n10_left_only": 44,
+        "p_value_exact_two_sided": 6.42838069688823e-05
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 5000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0023459912305644685,
+        "ci_high": -0.0048000000000000265,
+        "ci_low": -0.014000000000000012,
+        "confidence": 0.95,
+        "delta": -0.009399999999999964,
+        "excludes_zero": true,
+        "positive_fraction": 0.0,
+        "query_count": 5000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.8906
+      },
+      "R@5": {
+       "delta": -0.0035999999999999366,
+       "left": 0.8184,
+       "mcnemar": {
+        "discordant": 206,
+        "n01_right_only": 112,
+        "n10_left_only": 94,
+        "p_value_exact_two_sided": 0.23616110894941497
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 5000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0028568529959562246,
+        "ci_high": 0.0020000000000000018,
+        "ci_low": -0.009199999999999986,
+        "confidence": 0.95,
+        "delta": -0.0035999999999999366,
+        "excludes_zero": false,
+        "positive_fraction": 0.0967,
+        "query_count": 5000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.822
+      }
+     },
+     "text2image": {
+      "R@1": {
+       "delta": -0.004080000000000028,
+       "left": 0.40828,
+       "mcnemar": {
+        "discordant": 698,
+        "n01_right_only": 400,
+        "n10_left_only": 298,
+        "p_value_exact_two_sided": 0.00012857740325593738
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 25000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0010714754519392457,
+        "ci_high": -0.0019600000000000173,
+        "ci_low": -0.006199999999999983,
+        "confidence": 0.95,
+        "delta": -0.004080000000000028,
+        "excludes_zero": true,
+        "positive_fraction": 0.0,
+        "query_count": 25000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.41236
+      },
+      "R@10": {
+       "delta": -0.0008399999999999519,
+       "left": 0.76536,
+       "mcnemar": {
+        "discordant": 483,
+        "n01_right_only": 252,
+        "n10_left_only": 231,
+        "p_value_exact_two_sided": 0.36282035663898005
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 25000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0008854000294427453,
+        "ci_high": 0.0008799999999999919,
+        "ci_low": -0.002560999999999996,
+        "confidence": 0.95,
+        "delta": -0.0008399999999999519,
+        "excludes_zero": false,
+        "positive_fraction": 0.1684,
+        "query_count": 25000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.7662
+      },
+      "R@5": {
+       "delta": -0.0017599999999999838,
+       "left": 0.66916,
+       "mcnemar": {
+        "discordant": 600,
+        "n01_right_only": 322,
+        "n10_left_only": 278,
+        "p_value_exact_two_sided": 0.07909255750205936
+       },
+       "mcnemar_fallback_reason": null,
+       "n_queries": 25000,
+       "paired_bootstrap": {
+        "bootstrap_se": 0.0009855477071417215,
+        "ci_high": 0.000160000000000049,
+        "ci_low": -0.0037199999999999456,
+        "confidence": 0.95,
+        "delta": -0.0017599999999999838,
+        "excludes_zero": false,
+        "positive_fraction": 0.0344,
+        "query_count": 25000,
+        "replicates": 10000,
+        "seed": 20260911
+       },
+       "right": 0.67092
+      }
+     }
+    },
+    "image_order_sha256": "7e607ec455921747348bf7476fe4bf3a9c4129348b351c64014e755c1ac8c12e",
+    "left": "S0_TriMask_HS_BAL@500",
+    "left_checkpoint_sha256": "6d23dde353e1ab18c3de1e43793525c3139464f6fec44741441e6d802b186f17",
+    "right": "S0_smartclip@500",
+    "right_checkpoint_sha256": "758dcdd2a9112d54ccb8784e211d329297209c5d7be26cd7a89e68185867c743"
+   }
+  ],
+  "delta_convention": "delta = left - right, positive means the left arm is better",
+  "hit_files": {
+   "S0_TriMask_HS@500": {
+    "checkpoint_sha256": "c9ad482c3df3a2628eeb2985f259e09ec2efec065bd9b75ab050fca9ace40987",
+    "completed_steps": 500,
+    "path": "/root/SAID-s0-continue-v01/runs_salu/said_cls_cvssl/s0_continue_1000/evaluation/query_hits_S0_TriMask_HS_step000500.json",
+    "sha256": "9fe44439908f20d09f561ca49b7159cb07cef5a6b962e4470190d0c72851c07a"
+   },
+   "S0_TriMask_HS_BAL@500": {
+    "checkpoint_sha256": "6d23dde353e1ab18c3de1e43793525c3139464f6fec44741441e6d802b186f17",
+    "completed_steps": 500,
+    "path": "/root/SAID-s0-continue-v01/runs_salu/said_cls_cvssl/s0_continue_1000/evaluation/query_hits_S0_TriMask_HS_BAL_step000500.json",
+    "sha256": "42186bf936b5906a785e603d9d32a09be57cea3b889e15f00007673bb5408dcb"
+   },
+   "S0_smartclip@500": {
+    "checkpoint_sha256": "758dcdd2a9112d54ccb8784e211d329297209c5d7be26cd7a89e68185867c743",
+    "completed_steps": 500,
+    "path": "/root/SAID-s0-continue-v01/runs_salu/said_cls_cvssl/s0_continue_1000/evaluation/query_hits_S0_smartclip_step000500.json",
+    "sha256": "95fcb20a5629ea1753430ea500195ca718d5a8a4636ba489a990659d65d975c1"
+   }
+  },
+  "mcnemar_fallback_verification": [
+   {
+    "agree": true,
+    "fallback": 0.0022214337732293066,
+    "library": 0.0022214337732293643,
+    "n01": 10,
+    "n10": 30
+   },
+   {
+    "agree": true,
+    "fallback": 0.045114087864840634,
+    "library": 0.04511408786484073,
+    "n01": 90,
+    "n10": 120
+   },
+   {
+    "agree": true,
+    "fallback": 0.5439172374912933,
+    "library": 0.5439172374909197,
+    "n01": 480,
+    "n10": 500
+   },
+   {
+    "agree": true,
+    "fallback": 0.015625000000000003,
+    "library": 0.015625,
+    "n01": 7,
+    "n10": 0
+   }
+  ],
+  "paired_statistics_library": {
+   "path": "/root/SAID-s0-continue-v01/eval/paired_statistics.py",
+   "sha256": "418bd786ee3968e1dc9af5b7d69df6032a847a12672252c0dc3a02068f7fb609"
+  },
+  "protocol": "coco-val2017-5caption-legacy-cls-paired",
+  "replicates": 10000,
+  "seed": 20260911
+ },
+ "protocol": "s0-trimask-hs-loss-weight-comparison-at-500-updates",
+ "weights_compared": {
+  "S0_TriMask_HS (v0.2)": "lambda_1 = 10, lambda_2 = 1, lambda_3 = 1, lambda_sparse_i = 2, lambda_sparse_t = 0.2",
+  "S0_TriMask_HS_BAL": "lambda_1 = lambda_2 = lambda_3 = 10, lambda_sparse_i = lambda_sparse_t = 2"
+ },
+ "worktree_head": "a6e992ae065c19d07368dacba412d947d7c9a630"
+}

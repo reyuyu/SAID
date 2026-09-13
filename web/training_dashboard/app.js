@@ -169,6 +169,11 @@ function renderOverview(status) {
     ['arm', status.arm],
     ['文本门模式', status.text_gate_mode === 'hard_st' ? 'hard_st（硬前向 + 直通梯度）'
       : (status.text_gate_mode || '暂无')],
+    ['损失 profile', status.loss_profile === 'balanced' ? 'balanced（均衡权重）' : 'default（冻结权重）'],
+    ['对齐权重 λ1/λ2/λ3', [status.lambda_1, status.lambda_2, status.lambda_3].join(' / ')],
+    ['稀疏权重 λS_I / λS_T', (status.lambda_sparse_i === null || status.lambda_sparse_i === undefined
+      ? '暂无' : status.lambda_sparse_i) + ' / ' + (status.lambda_sparse_t === null
+      || status.lambda_sparse_t === undefined ? '暂无' : status.lambda_sparse_t)],
     ['λ_sparse_T', status.lambda_sparse_t],
     ['git SHA', status.git_head],
     ['已完成更新', status.completed_steps + ' / ' + status.max_steps],
@@ -740,7 +745,7 @@ function renderDiagnostics(payload) {
     'L3·I2T 的 4 个 SHUFFLED：CE 均值 ' + fmt((shuffledAggregate.L3_I2T || {}).ce_mean, 4)
     + '（范围 ' + fmt((shuffledAggregate.L3_I2T || {}).ce_min, 4) + ' ~ '
     + fmt((shuffledAggregate.L3_I2T || {}).ce_max, 4) + '），R@1 均值 '
-    + fmt((shuffledAggregate.L3_I2T || {}).R@1_mean, 4)
+    + fmt((shuffledAggregate.L3_I2T || {})['R@1_mean'], 4)
     + '。实现核对：全 1 时 Q3−Q1 = ' + fmt(identityChecks.ones_q3_equals_normal_q1_max_abs_diff, 8)
     + '，Q2−原生全局余弦 = ' + fmt(identityChecks.ones_q2_equals_raw_global_cosine_max_abs_diff, 8)
     + '。L1 与 loss_total 不参与比较：L1 不随文本门变化。';
@@ -753,7 +758,7 @@ function renderDiagnostics(payload) {
     const qcap = (geometry.qcap_metrics || {})[direction] || {};
     const paired = (geometry.qcap_vs_q3_paired || {})[direction] || {};
     return [direction, fmt(q3.ce, 4), fmt(qcap.ce, 4), fmtSigned(paired.delta_ce_mean, 4),
-            fmt(q3['R@1'], 4), fmt(qcap['R@1'], 4), fmtSigned(paired.delta_R@1, 4),
+            fmt(q3['R@1'], 4), fmt(qcap['R@1'], 4), fmtSigned(paired['delta_R@1'], 4),
             fmt(q3.mrr, 4), fmt(qcap.mrr, 4), paired.changed_rank_queries,
             paired.rank_worsened, paired.rank_improved,
             fmtSigned(paired.delta_s_pos_mean, 4), fmtSigned(paired.delta_s_max_negative_mean, 4)];

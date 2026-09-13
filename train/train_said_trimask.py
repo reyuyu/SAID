@@ -47,8 +47,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import longclip  # noqa: E402
 from model.said_trimask import (GATE_MODE_TO_ARM, GATE_MODE_TO_OBJECTIVE,  # noqa: E402
                                 GATE_MODE_TO_PHASE, HARD_GATE, LAMBDA_1, LAMBDA_2, LAMBDA_3,
-                                LAMBDA_SPARSE_I, LAMBDA_SPARSE_T_HS, SOFT_GATE,
-                                TEXT_GATE_MODES, TriMaskTrainModule)
+                                LAMBDA_SPARSE_I, LAMBDA_SPARSE_T_HS, LOSS_PROFILE_DEFAULT,
+                                LOSS_PROFILES, SOFT_GATE, TEXT_GATE_MODES, TriMaskTrainModule,
+                                all_profile_names, profile_lambdas, profile_names)
 from said_cvssl_data import Share4VCvsslDataset, cvssl_collate  # noqa: E402
 from scheduler import cosine_lr  # noqa: E402
 from train_said_cls_cvssl import (git_head, load_init_state, seed_everything,  # noqa: E402
@@ -91,13 +92,20 @@ def inspected_module(model):
     return getattr(model, 'module', model)
 
 
-def check_checkpoint_compatibility(payload, arm, objective, text_gate_mode, lambda_sparse_t):
+def check_checkpoint_compatibility(payload, arm, objective, text_gate_mode, lambda_sparse_t,
+                                   loss_profile=LOSS_PROFILE_DEFAULT, lambdas=None):
     """Refuse to resume a checkpoint in a different experiment.
 
     The gate mode is part of the experiment identity: a v0.1 payload carries no ``text_gate_mode``
     at all and may only be resumed by the soft mode, and a v0.2 payload may never be continued as
     the soft one. ``lambda_sparse_t`` is checked for the same reason -- the text sparsity term
     changes the objective, so continuing across a different coefficient is a different experiment.
+
+    The *loss profile* is checked the same way, and a checkpoint that predates profiles (no
+    ``loss_profile`` key) is read as the default profile, which is exactly what it was trained with.
+    When the caller passes the full ``lambdas`` mapping, all five coefficients are compared against
+    the values recorded in the checkpoint's own config, so a run can never continue across a
+    re-weighted objective even if the profile names happened to match.
     """
     if payload.get('objective') != objective or payload.get('arm') != arm:
         raise ValueError('resume objective/arm mismatch: checkpoint is %r/%r, this run is %r/%r'
@@ -112,6 +120,47 @@ def check_checkpoint_compatibility(payload, arm, objective, text_gate_mode, lamb
     if float(payload.get('lambda_sparse_t', 0.0)) != float(lambda_sparse_t):
         raise ValueError('resume lambda_sparse_t mismatch: %r vs %r'
                          % (payload.get('lambda_sparse_t'), lambda_sparse_t))
+    checkpoint_profile = payload.get('loss_profile') or LOSS_PROFILE_DEFAULT
+    if checkpoint_profile != loss_profile:
+        raise ValueError('resume loss profile mismatch: checkpoint is %r, this run is %r'
+                         % (checkpoint_profile, loss_profile))
+    if lambdas:
+        recorded = payload.get('config') or {}
+        for name, value in sorted(lambdas.items()):
+            if name not in recorded:
+                continue
+            if float(recorded[name]) != float(value):
+                raise ValueError('resume %s mismatch: checkpoint config says %r, this run is %r'
+                                 % (name, recorded[name], value))
+
+
+def resolve_experiment(args):
+    """``(arm, objective, phase, lambdas)`` for the requested gate mode and loss profile.
+
+    An explicit ``--arm``/``--objective``/``--lambda_*`` that contradicts the resolved experiment is
+    an error, never a silently reinterpreted run: the profile is an experiment identity, not a hint.
+    """
+    if args.loss_profile not in LOSS_PROFILES:
+        raise SystemExit('unknown --loss_profile %r (choose from %s)'
+                         % (args.loss_profile, ', '.join(LOSS_PROFILES)))
+    arm, objective, phase = profile_names(args.loss_profile, args.text_gate_mode)
+    if args.arm is not None and args.arm != arm:
+        raise SystemExit('--arm %s contradicts --text_gate_mode %s with --loss_profile %s '
+                         '(expected %s)' % (args.arm, args.text_gate_mode, args.loss_profile, arm))
+    if args.objective is not None and args.objective != objective:
+        raise SystemExit('--objective %s contradicts --text_gate_mode %s with --loss_profile %s '
+                         '(expected %s)'
+                         % (args.objective, args.text_gate_mode, args.loss_profile, objective))
+    lambdas = profile_lambdas(args.loss_profile, args.text_gate_mode)
+    for name, value in sorted(lambdas.items()):
+        given = getattr(args, name, None)
+        if given is not None and float(given) != float(value):
+            raise SystemExit('--%s %r contradicts --loss_profile %s (that profile fixes it at %r); '
+                             'a profile is a fixed experiment identity'
+                             % (name, given, args.loss_profile, value))
+    if args.text_gate_mode == SOFT_GATE and float(lambdas['lambda_sparse_t']) != 0.0:
+        raise SystemExit('the soft (v0.1) mode must keep lambda_sparse_t = 0')
+    return arm, objective, phase, lambdas
 
 
 def _json_scalar(value):
@@ -301,6 +350,7 @@ def checkpoint_payload(clip_model, train_module, optimizer, mask_optimizer, args
         'arm': config['arm'],
         'objective': config['objective'],
         'text_gate_mode': config['text_gate_mode'],
+        'loss_profile': config.get('loss_profile', LOSS_PROFILE_DEFAULT),
         'lambda_sparse_t': config['lambda_sparse_t'],
         'config': config,
         'precision': 'fp32 master + %s autocast' % args.amp_dtype,
@@ -316,13 +366,18 @@ def main():
     parser.add_argument('--text_gate_mode', default=SOFT_GATE, choices=list(TEXT_GATE_MODES),
                         help='soft = v0.1 graded gate (default, unchanged); '
                              'hard_st = v0.2 hard forward with the straight-through gradient')
-    parser.add_argument('--arm', default=None, choices=list(GATE_MODE_TO_ARM.values()))
+    parser.add_argument('--arm', default=None,
+                        choices=sorted({name[0] for name in all_profile_names()}))
     parser.add_argument('--objective', default=None,
-                        choices=list(GATE_MODE_TO_OBJECTIVE.values()))
-    parser.add_argument('--lambda_1', type=float, default=LAMBDA_1)
-    parser.add_argument('--lambda_2', type=float, default=LAMBDA_2)
-    parser.add_argument('--lambda_3', type=float, default=LAMBDA_3)
-    parser.add_argument('--lambda_sparse_i', type=float, default=LAMBDA_SPARSE_I)
+                        choices=sorted({name[1] for name in all_profile_names()}))
+    parser.add_argument('--loss_profile', default=LOSS_PROFILE_DEFAULT, choices=list(LOSS_PROFILES),
+                        help='default = the frozen v0.1/v0.2 weighting (10/1/1 + 2/0.2); '
+                             'balanced = every alignment term at 10 and both sparsity terms at 2, '
+                             'under its own arm/objective/phase names')
+    parser.add_argument('--lambda_1', type=float, default=None)
+    parser.add_argument('--lambda_2', type=float, default=None)
+    parser.add_argument('--lambda_3', type=float, default=None)
+    parser.add_argument('--lambda_sparse_i', type=float, default=None)
     parser.add_argument('--lambda_sparse_t', type=float, default=None,
                         help='default: 0.0 for the soft mode (v0.1 behaviour) and %.2f for hard_st'
                              % LAMBDA_SPARSE_T_HS)
@@ -358,25 +413,15 @@ def main():
         args.base_model = 'ViT-B/16'
     elif args.base_model == 'L14':
         args.base_model = 'ViT-L/14'
-    # the mode owns the names: an explicit conflicting --arm/--objective is an error, never a
-    # silently reinterpreted checkpoint
-    arm = GATE_MODE_TO_ARM[args.text_gate_mode]
-    objective = GATE_MODE_TO_OBJECTIVE[args.text_gate_mode]
-    phase = GATE_MODE_TO_PHASE[args.text_gate_mode]
-    if args.arm is not None and args.arm != arm:
-        raise SystemExit('--arm %s contradicts --text_gate_mode %s (expected %s)'
-                         % (args.arm, args.text_gate_mode, arm))
-    if args.objective is not None and args.objective != objective:
-        raise SystemExit('--objective %s contradicts --text_gate_mode %s (expected %s)'
-                         % (args.objective, args.text_gate_mode, objective))
+    # the mode and the loss profile together own the names: an explicit conflicting --arm/--objective
+    # (or a contradictory --lambda_*) is an error, never a silently reinterpreted checkpoint
+    arm, objective, phase, lambdas = resolve_experiment(args)
     args.arm, args.objective = arm, objective
-    if args.lambda_sparse_t is None:
-        args.lambda_sparse_t = (LAMBDA_SPARSE_T_HS if args.text_gate_mode == HARD_GATE else 0.0)
+    for name, value in sorted(lambdas.items()):
+        setattr(args, name, float(value))
     for name in ('lambda_1', 'lambda_2', 'lambda_3', 'lambda_sparse_i', 'lambda_sparse_t'):
         if getattr(args, name) < 0.0:
             raise SystemExit('%s must be non-negative' % name)
-    if args.text_gate_mode == SOFT_GATE and args.lambda_sparse_t != 0.0:
-        raise SystemExit('the soft (v0.1) mode must keep lambda_sparse_t = 0')
 
     seed_everything(args.seed)
     rank, local_rank, world = setup_distributed()
@@ -458,6 +503,7 @@ def main():
         'arm': arm,
         'phase': phase,
         'text_gate_mode': args.text_gate_mode,
+        'loss_profile': args.loss_profile,
         'paths': {
             'path1': 'MASK image - native text: 100*dot(Norm(v_i*mI_j), Norm(t_raw_j))',
             'path2': 'native image - MASK text: 100*dot(Norm(v_i), Norm(t_raw_j*mT_j))',
@@ -533,7 +579,8 @@ def main():
     if args.resume:
         payload = torch.load(args.resume, map_location='cpu', weights_only=False)
         check_checkpoint_compatibility(payload, arm, objective, args.text_gate_mode,
-                                       args.lambda_sparse_t)
+                                       args.lambda_sparse_t, loss_profile=args.loss_profile,
+                                       lambdas=lambdas)
         clip_model.load_state_dict(payload['model'])
         text_mask_net.load_state_dict(payload['text_mask_net'])
         optimizer.load_state_dict(payload['optimizer'])

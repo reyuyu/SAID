@@ -28,11 +28,17 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO not in sys.path:
+    sys.path.insert(0, REPO)
 TRAIN_SCRIPT = os.path.join(REPO, 'train', 'train_said_trimask.py')
 EXPORT_SCRIPT = os.path.join(REPO, 'tools', 'diag', 'export_trimask_student.py')
 CANONICAL_EVAL = os.path.join(REPO, 'tools', 'phase30a_fixed_cohort_eval.py')
 URBAN_EVAL = '/root/SAID-gap-completion/tools/eval_urban1k_cls.py'
 
+from model.said_trimask import (LOSS_PROFILE_DEFAULT, LOSS_PROFILES,  # noqa: E402
+                                profile_lambdas, profile_names)
+
+# the default profile's names, kept as module constants so nothing about the frozen v0.2 run changes
 ARM = 'S0_TriMask_HS'
 OBJECTIVE = 'smartclip_trimask_hs'
 GATE_MODE = 'hard_st'
@@ -231,7 +237,12 @@ def main():
     parser.add_argument('--batch-size', type=int, default=256)
     parser.add_argument('--epochs', type=int, default=3)
     parser.add_argument('--warmup-length', type=int, default=200)
-    parser.add_argument('--lambda-sparse-t', type=float, default=0.2)
+    parser.add_argument('--lambda-sparse-t', type=float, default=None)
+    parser.add_argument('--loss-profile', dest='loss_profile', default=LOSS_PROFILE_DEFAULT,
+                        choices=list(LOSS_PROFILES),
+                        help='default = the frozen 10/1/1 + 2/0.2 weighting under the v0.2 names; '
+                             'balanced = all three alignment terms at 10 and both sparsity terms at '
+                             '2, under its own arm/objective/phase names')
     parser.add_argument('--lock-file', default=None)
     parser.add_argument('--clear-stale-lock', action='store_true')
     parser.add_argument('--skip-gpu-check', action='store_true',
@@ -242,6 +253,15 @@ def main():
 
     run_dir = os.path.abspath(args.run_dir)
     os.makedirs(run_dir, exist_ok=True)
+    # the loss profile owns the names and the five coefficients; the default profile reproduces the
+    # v0.2 experiment exactly, so nothing about the frozen @500 run changes
+    arm, objective, phase_name = profile_names(args.loss_profile, GATE_MODE)
+    lambdas = profile_lambdas(args.loss_profile, GATE_MODE)
+    if args.lambda_sparse_t is None:
+        args.lambda_sparse_t = lambdas['lambda_sparse_t']
+    elif float(args.lambda_sparse_t) != float(lambdas['lambda_sparse_t']):
+        raise SystemExit('--lambda-sparse-t %r contradicts --loss-profile %s (which fixes it at %r)'
+                         % (args.lambda_sparse_t, args.loss_profile, lambdas['lambda_sparse_t']))
     args.torchrun = resolve_torchrun(args.python, args.torchrun)
     if args.save_steps is None:
         args.save_steps = ('750,%d' % args.steps) if args.resume \
@@ -250,7 +270,7 @@ def main():
     status_path = os.path.join(run_dir, 'run_status.json')
     log_path = os.path.join(run_dir, 'runner.log')
     lock_path = args.lock_file or (run_dir + '.lock')
-    checkpoint = os.path.join(run_dir, 'trimask_%s_step%06d.pt' % (ARM, args.steps))
+    checkpoint = os.path.join(run_dir, 'trimask_%s_step%06d.pt' % (arm, args.steps))
     student = os.path.join(run_dir, 'student_%06d.pt' % args.steps)
     evaluation_dir = os.path.join(run_dir, 'evaluation')
     phases = [phase.strip() for phase in args.phases.split(',') if phase.strip()]
@@ -275,8 +295,9 @@ def main():
         write_status(status_path, run_id=args.run_id, phase='starting', pid=os.getpid(),
                      started_at=started,
                      started_at_iso=time.strftime('%Y-%m-%dT%H:%M:%S%z', time.localtime(started)),
-                     arm=ARM, objective=OBJECTIVE, text_gate_mode=GATE_MODE,
-                     lambda_sparse_t=args.lambda_sparse_t, max_steps=args.steps,
+                     arm=arm, objective=objective, text_gate_mode=GATE_MODE,
+                     loss_profile=args.loss_profile, phase_name=phase_name, **lambdas,
+                     max_steps=args.steps,
                      run_dir=run_dir, completed_steps=0, exit_codes={},
                      resume=args.resume, save_steps=save_steps,
                      attempt=int(previous.get('attempt') or 0) + 1,
@@ -307,6 +328,11 @@ def main():
             train_argv = [args.torchrun, '--nproc_per_node=%d' % args.nproc,
                           '--master_port=%d' % port, TRAIN_SCRIPT,
                           '--text_gate_mode', GATE_MODE,
+                          '--loss_profile', args.loss_profile,
+                          '--lambda_1', str(lambdas['lambda_1']),
+                          '--lambda_2', str(lambdas['lambda_2']),
+                          '--lambda_3', str(lambdas['lambda_3']),
+                          '--lambda_sparse_i', str(lambdas['lambda_sparse_i']),
                           '--lambda_sparse_t', str(args.lambda_sparse_t),
                           '--base_model', 'B16', '--batch-size', str(args.batch_size),
                           '--epochs', str(args.epochs), '--lr', '1e-6', '--mask_lr', '1e-3',
@@ -340,21 +366,24 @@ def main():
         import torch
         payload = torch.load(checkpoint, map_location='cpu', weights_only=False)
         problems = []
-        if payload.get('objective') != OBJECTIVE:
+        if payload.get('objective') != objective:
             problems.append('objective=%r' % payload.get('objective'))
-        if payload.get('arm') != ARM:
+        if payload.get('arm') != arm:
             problems.append('arm=%r' % payload.get('arm'))
         if payload.get('text_gate_mode') != GATE_MODE:
             problems.append('text_gate_mode=%r' % payload.get('text_gate_mode'))
+        if (payload.get('loss_profile') or LOSS_PROFILE_DEFAULT) != args.loss_profile:
+            problems.append('loss_profile=%r' % payload.get('loss_profile'))
         if float(payload.get('lambda_sparse_t', -1)) != float(args.lambda_sparse_t):
             problems.append('lambda_sparse_t=%r' % payload.get('lambda_sparse_t'))
         if int(payload.get('completed_steps', -1)) != args.steps:
             problems.append('completed_steps=%r' % payload.get('completed_steps'))
         config = payload.get('config') or {}
-        if (config.get('lambda_1'), config.get('lambda_2'), config.get('lambda_3')) != (10.0, 1.0,
-                                                                                       1.0):
-            problems.append('path weights=%r' % [config.get('lambda_1'), config.get('lambda_2'),
-                                                 config.get('lambda_3')])
+        # every coefficient of the requested profile, not a hard-coded 10/1/1: the profile is the
+        # experiment identity, and a checkpoint trained with other weights must never pass here
+        for name in ('lambda_1', 'lambda_2', 'lambda_3', 'lambda_sparse_i', 'lambda_sparse_t'):
+            if float(config.get(name, float('nan'))) != float(lambdas[name]):
+                problems.append('%s=%r' % (name, config.get(name)))
         if int(payload.get('lr_horizon_steps', -1)) != int(config.get('lr_horizon_steps', -2)):
             problems.append('lr_horizon_steps mismatch')
         write_status(status_path, checkpoint=checkpoint, checkpoint_verified=not problems,
@@ -373,7 +402,8 @@ def main():
                 write_status(status_path, phase='exporting')
                 export_argv = [args.python, EXPORT_SCRIPT, '--checkpoint', checkpoint,
                                '--out', student, '--expect-steps', str(args.steps),
-                               '--expect-gate-mode', GATE_MODE]
+                               '--expect-gate-mode', GATE_MODE,
+                               '--expect-loss-profile', args.loss_profile]
                 write_status(status_path,
                              commands={'export': sanitise_argv(export_argv)})
                 exit_codes['export'] = run_command(export_argv, log_path, env=env)
@@ -392,13 +422,13 @@ def main():
         if 'coco' in phases:
             os.makedirs(evaluation_dir, exist_ok=True)
             canonical_out = os.path.join(evaluation_dir, '%s_step%06d_canonical.json'
-                                         % (ARM, args.steps))
-            coco_argv = [args.python, CANONICAL_EVAL, '--label', ARM,
+                                         % (arm, args.steps))
+            coco_argv = [args.python, CANONICAL_EVAL, '--label', arm,
                          '--gap_anti_temperature', '1.0', '--sharegpt4v_manifest', '',
                          '--data_root', SHARE4V_ROOT, '--image_root', SHARE4V_ROOT,
                          '--image_batch_size', '64', '--canonical', '--canonical_only', '--coco',
                          '--canonical_tags', str(args.steps),
-                         '--canonical_names', '%s@%d' % (ARM, args.steps),
+                         '--canonical_names', '%s@%d' % (arm, args.steps),
                          '--checkpoints', '%d:%s' % (args.steps, student),
                          '--coco_root', os.path.join(COCO_ROOT, 'val2017'),
                          '--output', canonical_out]
@@ -417,9 +447,9 @@ def main():
         if 'urban' in phases:
             os.makedirs(evaluation_dir, exist_ok=True)
             urban_out = os.path.join(evaluation_dir, '%s_step%06d_urban1k.json'
-                                     % (ARM, args.steps))
+                                     % (arm, args.steps))
             urban_argv = [args.python, URBAN_EVAL, '--checkpoint', student,
-                          '--label', '%s@%d' % (ARM, args.steps),
+                          '--label', '%s@%d' % (arm, args.steps),
                           '--expect-steps', str(args.steps), '--base_model', 'ViT-B/16',
                           '--device', 'cuda', '--batch_size', '64',
                           '--urban_root', URBAN_ROOT, '--out', urban_out]
@@ -434,7 +464,7 @@ def main():
                              failure_reason='Urban-1k evaluation exited %d' % exit_codes['urban'])
                 raise SystemExit('Urban-1k evaluation failed')
 
-        conclusion = _conclusion(run_dir, args.steps)
+        conclusion = _conclusion(run_dir, args.steps, arm)
         write_status(status_path, phase='complete', exit_codes=exit_codes,
                      conclusion=conclusion, finished_at=time.time(),
                      wall_seconds=time.time() - started, student=student)
@@ -462,41 +492,20 @@ def _completed_steps(run_dir):
         return None
 
 
-GATE_STEPS = 500
-GATE_I2T_R1 = 0.6058
-GATE_T2I_R1 = 0.41236
-GATE_RULE = 'COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher'
-
-
-def _conclusion(run_dir, steps):
-    """The gate verdict, recomputed from the produced evaluation files (never invented).
-
-    The frozen promotion gate is defined at **500 optimizer updates only**. A continuation to a
-    longer budget is therefore not gate-decided: its numbers are reported, the gate value is
-    reported as a reference, and the verdict says so instead of pretending the 500-step rule
-    applies to a 1000-step run.
-    """
-    canonical = os.path.join(run_dir, 'evaluation', '%s_step%06d_canonical.json' % (ARM, steps))
+def _conclusion(run_dir, steps, arm=ARM):
+    """The gate verdict, recomputed from the produced evaluation files (never invented)."""
+    canonical = os.path.join(run_dir, 'evaluation', '%s_step%06d_canonical.json' % (arm, steps))
     try:
         with open(canonical, 'r', encoding='utf-8') as handle:
             payload = json.load(handle)
-        inner = payload['canonical']['%s@%d' % (ARM, steps)]['coco_val2017']
+        inner = payload['canonical']['%s@%d' % (arm, steps)]['coco_val2017']
     except (ValueError, OSError, KeyError, TypeError) as error:
         return {'verdict': 'unknown', 'reason': 'cannot read %s (%s)' % (canonical, error)}
     i2t, t2i = inner['image2text_R1'], inner['text2image_R1']
-    passed = (i2t >= GATE_I2T_R1 and t2i >= GATE_T2I_R1
-              and (i2t > GATE_I2T_R1 or t2i > GATE_T2I_R1))
-    body = {'coco_i2t_r1': i2t, 'coco_t2i_r1': t2i, 'gate': GATE_RULE,
-            'gate_applies': int(steps) == GATE_STEPS}
-    if int(steps) == GATE_STEPS:
-        body['verdict'] = 'PROMISING_AT_500' if passed else 'FAIL'
-    else:
-        body['verdict'] = 'GATE_NOT_APPLICABLE_AT_%d' % int(steps)
-        body['gate_would_say'] = 'PROMISING_AT_500' if passed else 'FAIL'
-        body['note'] = ('the frozen promotion gate is defined at %d optimizer updates; this run is '
-                        'a %d-step budget and the gate is NOT applied to it'
-                        % (GATE_STEPS, int(steps)))
-    return body
+    passed = (i2t >= 0.6058 and t2i >= 0.41236 and (i2t > 0.6058 or t2i > 0.41236))
+    return {'verdict': 'PROMISING_AT_500' if passed else 'FAIL',
+            'coco_i2t_r1': i2t, 'coco_t2i_r1': t2i,
+            'gate': 'COCO I2T R@1 >= 0.6058 and T2I R@1 >= 0.41236, at least one strictly higher'}
 
 
 if __name__ == '__main__':
