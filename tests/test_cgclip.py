@@ -821,7 +821,13 @@ def test_k_two_rank_update_matches_the_single_process_reference(tmp_path):
                '--master_port=%s' % port, os.path.join('tests', '_cgclip_ddp_worker.py'),
                '--output_dir', str(tmp_path), '--local_batch', str(local_batch),
                '--image_chunk', str(image_chunk), '--text_chunk', str(text_chunk)]
-    result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, timeout=1800)
+    # the container has no usable non-loopback interface, and every other DDP entry point in this
+    # project (the runner's training_environment, the PG-CLIP acceptance test) pins NCCL/GLOO to
+    # loopback for exactly that reason; the test must do the same or it fails for an environmental
+    # reason instead of a modelling one
+    env = dict(os.environ, NCCL_SOCKET_IFNAME='lo', GLOO_SOCKET_IFNAME='lo')
+    result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, timeout=1800,
+                            env=env)
     assert result.returncode == 0, (result.stdout[-4000:], result.stderr[-4000:])
     ddp_grads = torch.load(os.path.join(str(tmp_path), 'ddp_grads.pt'), map_location='cpu')
     ddp_info = torch.load(os.path.join(str(tmp_path), 'ddp_info.pt'), map_location='cpu')
