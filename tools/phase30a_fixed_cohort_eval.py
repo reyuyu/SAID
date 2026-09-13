@@ -682,7 +682,11 @@ def main():
         'gap_anti_temperature': args.gap_anti_temperature,
         'usr_protocol': USR_PROTOCOL,
         'usr_manifest': args.usr_manifest,
-        'usr_manifest_sha256': file_sha256(args.usr_manifest),
+        # the USR manifest belongs to the ShareGPT4V cohort; a --canonical_only COCO run never loads
+        # it, so its absence must be recorded as None instead of aborting the evaluation. The
+        # canonical block further below has always used exactly this rule; this line did not.
+        'usr_manifest_sha256': file_sha256(args.usr_manifest)
+        if os.path.exists(args.usr_manifest) else None,
         'cohort_sha256': cohort_sha,
         'cohort_query_count': len(samples),
         'cohort_candidate_pool': int(manifest['candidate_count']) if manifest else None,
