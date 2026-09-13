@@ -83,7 +83,14 @@ def differentiable_gather(local: torch.Tensor) -> torch.Tensor:
     """Gather dim-0 with gradients to the local slice in every rank."""
     if not dist.is_available() or not dist.is_initialized() or dist.get_world_size() == 1:
         return local
-    return torch.cat(tuple(dist_nn.all_gather(local.contiguous())), dim=0)
+    # Gloo's all_gather backward can receive transposed, non-contiguous score
+    # gradients. Communicate a flat contiguous tensor and restore row order;
+    # the reshape remains differentiable and introduces no gradient scaling.
+    world = dist.get_world_size()
+    shape = tuple(local.shape)
+    flat = local.contiguous().reshape(-1)
+    pieces = dist_nn.all_gather(flat)
+    return torch.cat(tuple(pieces), dim=0).reshape(world * shape[0], *shape[1:])
 
 
 def detached_gather(local: torch.Tensor) -> torch.Tensor:

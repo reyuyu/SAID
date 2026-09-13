@@ -93,11 +93,12 @@ def test_gate_initialization_is_all_open_and_restores_rng():
     assert torch.allclose(gate[2].bias, torch.full_like(gate[2].bias, torch.log(torch.tensor(8.0))))
 
 
-def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients():
+@pytest.mark.parametrize('rows,candidates', [(2, 3), (3, 5)])
+def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients(rows, candidates):
     torch.manual_seed(3)
-    g = torch.randn(2, 4, requires_grad=True)
-    m = torch.rand(3, 4)
-    t = torch.randn(3, 4, requires_grad=True)
+    g = torch.randn(rows, 4, requires_grad=True)
+    m = torch.rand(candidates, 4, requires_grad=True)
+    t = torch.randn(candidates, 4, requires_grad=True)
     gate = build_suffix_gate(seed=4, input_dim=8, hidden_dim=6, output_dim=4)
     with torch.no_grad():
         gate[2].weight.normal_(0, 0.2)
@@ -110,9 +111,9 @@ def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients()
     g_norm = F.normalize(g_ref.float(), dim=-1, eps=1e-6)
     t_norm = F.normalize(t_ref.float(), dim=-1, eps=1e-6)
     expected = []
-    for i in range(2):
+    for i in range(rows):
         row = []
-        for j in range(3):
+        for j in range(candidates):
             x = torch.cat((g_norm[i].detach(), (g_norm[i].detach() * m[j].detach())))
             p = torch.sigmoid(gate_ref(x))
             hard = (p >= 0.5).float() + (p - p.detach())
@@ -127,6 +128,7 @@ def test_pairwise_masked_scores_matches_independent_pair_formula_and_gradients()
     for actual, reference in zip(gate.parameters(), gate_ref.parameters()):
         assert actual.grad is not None and reference.grad is not None
         assert torch.allclose(actual.grad, reference.grad, atol=2e-6, rtol=2e-5)
+    assert m.grad is None
 
 
 def test_all_open_masked_scores_equal_native_scores():
@@ -240,12 +242,9 @@ def test_real_two_process_ddp_dynamic_valid_sets(tmp_path):
     assert completed.returncode == 0, completed.stdout + "\n" + completed.stderr
     report = json.loads(open(output, encoding="utf-8").read())
     results = report["cases"]
-    assert [row["global_valid"] for row in results] == [4, 0, 1, 1, 4]
-    assert results[1]["loss_suffix"] == 0.0
-    gradient = report["gradient_reference"]
-    assert abs(gradient["loss_global"] - gradient["reference_loss"]) < 1e-5
-    # Keep the measured error in the report; the test fails only if the comparison
-    # becomes non-finite. This evidence run is used to surface any reduction-scale
-    # discrepancy without hiding it behind a relaxed tolerance.
-    assert torch.isfinite(torch.tensor(gradient["max_abs_or_rel"]))
-    assert torch.isfinite(torch.tensor(gradient["update_max_abs"]))
+    assert [row["global_valid"] for row in results] == [4, 3, 0, 1, 4]
+    assert results[0]['valid_per_rank'] == [1, 3]
+    assert results[1]['valid_per_rank'] == [0, 3]
+    assert report['status'] == 'passed'
+    # The worker enforces elementwise fixed atol/rtol on every gradient and update.
+    assert all(row['status'] == 'within_fixed_tolerance' for row in results)

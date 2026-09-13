@@ -1,21 +1,26 @@
-"""Two-process CPU DDP worker used by the clean suffix acceptance test."""
-
+"""Production DDP total objective versus an independent full-batch reference."""
 import argparse
 import copy
 import json
 import os
 import sys
-
 import torch
 import torch.distributed as dist
 import torch.nn as nn
+import torch.nn.functional as F
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+for path in (ROOT, os.path.join(ROOT, 'train')):
+    if path not in sys.path:
+        sys.path.insert(0, path)
 from model.dual_mask_suffix import DualMaskSuffixTrainModule
-from model.dual_mask_suffix import pairwise_masked_scores
 from model.said_cls_cvssl import said_mask_from_hidden
+from train_dual_mask_suffix import build_optimizers
+
+# Fixed before running these probes; absolute and relative errors stay separate.
+GRAD_ATOL, GRAD_RTOL = 2e-4, 2e-5
+VALUE_ATOL, VALUE_RTOL = 2e-4, 2e-5
+UPDATE_ATOL, UPDATE_RTOL = 2e-6, 2e-5
 
 
 class ToyClip(nn.Module):
@@ -23,8 +28,8 @@ class ToyClip(nn.Module):
 
     def __init__(self):
         super().__init__()
-        torch.manual_seed(123)
         self.image = nn.Linear(6, 4)
+        self.tokens = nn.Embedding(32, 4)
         self.text = nn.Linear(4, 4)
         self.mask_net = ToyMaskNet()
 
@@ -32,104 +37,167 @@ class ToyClip(nn.Module):
         return self.image(images.flatten(1))
 
     def encode_text(self, tokens, return_full=False):
-        pooled = tokens.float().mean(dim=1, keepdim=True).repeat(1, 4)
-        hidden = pooled[:, None, :].repeat(1, 5, 1)
-        value = self.text(hidden[:, 0, :])
-        return (value, hidden) if return_full else value
+        hidden = self.tokens(tokens)
+        pooled = self.text(hidden.mean(dim=1))
+        return (pooled, hidden) if return_full else pooled
 
 
 class ToyMaskNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.linear = nn.Linear(4, 4)
+        with torch.no_grad():
+            self.linear.bias.copy_(torch.tensor([2.0, 0.1, -0.2, 0.3]))
+            self.linear.weight[0].zero_()
 
     def forward(self, hidden):
         return self.linear(hidden.mean(dim=1))
 
 
+def independent_global_objective(module, images, prefix, suffix, valid):
+    """No collectives: the complete global batch already lives in this graph."""
+    g = module.clip.encode_image(images)
+    p, hidden = module.clip.encode_text(prefix, return_full=True)
+    m_s, _, _ = said_mask_from_hidden(module.clip.mask_net, hidden)
+    p = p / p.norm(dim=-1, keepdim=True)
+    masked = g[:, None, :] * m_s[None, :, :]
+    masked = masked / masked.norm(dim=-1, keepdim=True)
+    s0_scores = 100 * (masked * p[None, :, :]).sum(-1)
+    labels = torch.arange(len(g), device=g.device)
+    s0 = 10 * (F.cross_entropy(s0_scores, labels) + F.cross_entropy(s0_scores.T, labels)) + 2 * m_s.abs().mean()
+    if int(valid.sum()) < 2:
+        zero = g.sum() * 0.0
+        return s0 + zero, zero, zero, zero
+    t = F.normalize(module.clip.encode_text(suffix).float(), dim=-1, eps=1e-6)
+    g_norm = F.normalize(g.float(), dim=-1, eps=1e-6)
+    rows = []
+    for i in range(len(g)):
+        cells = []
+        for j in range(len(t)):
+            x = torch.cat((g_norm[i].detach(), g_norm[i].detach() * m_s[j].detach()))
+            probability = torch.sigmoid(module.suffix_gate(x))
+            mask = (probability >= .5).to(probability.dtype) + (probability - probability.detach())
+            u = F.normalize(g_norm[i] * mask, dim=-1, eps=1e-6)
+            cells.append(100 * (u * t[j]).sum())
+        rows.append(torch.stack(cells))
+    q = torch.stack(rows)
+    selected = q[valid][:, valid]
+    valid_labels = torch.arange(int(valid.sum()), device=g.device)
+    i2t, t2i = F.cross_entropy(selected, valid_labels), F.cross_entropy(selected.T, valid_labels)
+    return s0 + i2t + t2i, i2t + t2i, i2t, t2i
+
+
+def error_metrics(actual, reference):
+    denominator = float(reference.detach().abs().max())
+    maximum = float((actual.detach() - reference.detach()).abs().max())
+    return {'max_abs_error': maximum, 'relative_error': maximum / max(denominator, 1e-12),
+            'relative_denominator': denominator}
+
+
+def parameter_group(name):
+    if name.startswith('suffix_gate.'):
+        return 'suffix_gate'
+    if name.startswith('clip.mask_net.'):
+        return 's0_mask'
+    return 'visual' if name.startswith('clip.image.') else 'text'
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", required=True)
+    parser.add_argument('--out', required=True)
+    parser.add_argument('--backend', choices=('gloo', 'nccl'), default='gloo')
     args = parser.parse_args()
-    rank = int(os.environ["RANK"])
-    world = int(os.environ["WORLD_SIZE"])
-    dist.init_process_group("gloo", init_method="env://", rank=rank, world_size=world)
-    ddp = torch.nn.parallel.DistributedDataParallel(
-        DualMaskSuffixTrainModule(ToyClip(), "masked", rank=rank, feature_dim=4,
-                                   image_chunk=2, text_chunk=3), find_unused_parameters=True)
-    optimizer = torch.optim.AdamW(ddp.parameters(), lr=1e-3)
-    # One non-degenerate 1-vs-3 case against an explicit full-batch reference.
-    torch.manual_seed(777)
-    all_images = torch.randn(8, 1, 6)
-    all_prefix = torch.randint(1, 9, (8, 5))
-    all_suffix = torch.randint(1, 9, (8, 5))
-    all_valid = torch.tensor([True, False, False, False, True, True, True, False])
-    sl = slice(rank * 4, (rank + 1) * 4)
-    optimizer.zero_grad(set_to_none=True)
-    check = ddp(all_images[sl], all_prefix[sl], all_suffix[sl], all_valid[sl],
-                torch.arange(4) + rank * 4)
-    check["loss_suffix"].backward()
-    prod_grads = [ddp.module.clip.image.weight.grad.detach().clone(),
-                  ddp.module.clip.text.weight.grad.detach().clone(),
-                  ddp.module.suffix_gate[0].weight.grad.detach().clone()]
-    ref_clip = ToyClip(); ref_clip.load_state_dict(ddp.module.clip.state_dict())
-    ref_gate = copy.deepcopy(ddp.module.suffix_gate)
-    g = ref_clip.encode_image(all_images)
-    p_raw, p_hidden = ref_clip.encode_text(all_prefix, return_full=True)
-    m_s, _, _ = said_mask_from_hidden(ref_clip.mask_net, p_hidden)
-    t = ref_clip.encode_text(all_suffix)
-    q, _ = pairwise_masked_scores(g, m_s, t, ref_gate, image_chunk=3, text_chunk=4)
-    valid_idx = all_valid.nonzero(as_tuple=False).flatten()
-    ref_loss = (nn.functional.cross_entropy(q[valid_idx][:, valid_idx], torch.arange(valid_idx.numel()), reduction='sum') +
-                nn.functional.cross_entropy(q.t()[valid_idx][:, valid_idx], torch.arange(valid_idx.numel()), reduction='sum')) / valid_idx.numel()
-    ref_loss.backward()
-    ref_grads = [ref_clip.image.weight.grad, ref_clip.text.weight.grad, ref_gate[0].weight.grad]
-    errors = [max(float((a - b).abs().max()), float((a - b).abs().max() / b.abs().max().clamp_min(1e-12)))
-              for a, b in zip(prod_grads, ref_grads)]
-    norms = [[float(a.norm()), float(b.norm())] for a, b in zip(prod_grads, ref_grads)]
-    optimizer.step()
-    ref_opt = torch.optim.AdamW(list(ref_clip.parameters()) + list(ref_gate.parameters()), lr=1e-3)
-    ref_opt.step()
-    update_error = float((ddp.module.clip.image.weight - ref_clip.image.weight).abs().max())
-    if rank == 0:
-        gradient_report = {"max_abs_or_rel": max(errors), "per_tensor_max_abs_or_rel": errors,
-                           "norms_production_reference": norms,
-                           "loss_global": float(check["loss_suffix_global"]),
-                           "reference_loss": float(ref_loss.detach()), "update_max_abs": update_error}
-    else:
-        gradient_report = None
-    dist.barrier()
-    cases = [
-        torch.tensor([False, False, False, False]) if rank == 0 else torch.tensor([True, True, True, True]),
-        torch.tensor([False, False, False, False]),
-        torch.tensor([True, False, False, False]) if rank == 0 else torch.tensor([False, False, False, False]),
-        torch.tensor([True, False, False, False]) if rank == 0 else torch.tensor([False, False, False, False]),
-        torch.tensor([True, False, True, False]) if rank == 0 else torch.tensor([False, True, False, True]),
-    ]
+    rank, world = int(os.environ['RANK']), int(os.environ['WORLD_SIZE'])
+    device = torch.device('cuda', int(os.environ['LOCAL_RANK'])) if args.backend == 'nccl' else torch.device('cpu')
+    if device.type == 'cuda':
+        torch.cuda.set_device(device)
+        torch.backends.cuda.matmul.allow_tf32 = False
+    dist.init_process_group(args.backend)
+    torch.manual_seed(123)
+    model = DualMaskSuffixTrainModule(ToyClip(), 'masked', rank=rank, feature_dim=4,
+                                      image_chunk=2, text_chunk=3).to(device)
+    # Test-only non-open gate. Production initialization is not changed.
+    with torch.no_grad():
+        model.suffix_gate[2].weight.normal_(0, .12)
+        model.suffix_gate[2].weight[0].zero_()
+        model.suffix_gate[2].bias.copy_(torch.tensor([1.0, -.25, .1, -.1], device=device))
+    reference = copy.deepcopy(model)
+    ddp = torch.nn.parallel.DistributedDataParallel(model, find_unused_parameters=True,
+             static_graph=False, device_ids=[device.index] if device.type == 'cuda' else None)
+    opt_args = argparse.Namespace(lr=1e-6, mask_lr=1e-3, suffix_lr=1e-4, weight_decay=1e-2)
+    optimizers, ref_optimizers = build_optimizers(model, opt_args), build_optimizers(reference, opt_args)
+    cases = [[1,0,0,0,1,1,1,0], [0,0,0,0,1,0,1,1], [0]*8,
+             [1,0,0,0,0,0,0,0], [1,0,1,0,0,1,0,1]]
     results = []
-    for index, valid in enumerate(cases):
-        torch.manual_seed(400 + rank * 11 + index)
-        images = torch.randn(4, 1, 6)
-        prefix = torch.randint(1, 9, (4, 5))
-        suffix = torch.randint(1, 9, (4, 5))
-        ids = torch.arange(4, dtype=torch.long) + rank * 4
-        optimizer.zero_grad(set_to_none=True)
-        out = ddp(images, prefix, suffix, valid, ids)
-        assert torch.isfinite(out["loss_total"]).item()
-        out["loss_total"].backward()
-        optimizer.step()
-        global_valid = [None for _ in range(world)]
-        dist.all_gather_object(global_valid, int(valid.sum()))
-        results.append({"case": index, "global_valid": sum(global_valid),
-                        "loss_suffix": float(out["loss_suffix"].detach()),
-                        "loss_total": float(out["loss_total"].detach())})
+    for index, valid_values in enumerate(cases):
+        torch.manual_seed(777 + index)
+        images = torch.randn(8, 1, 6, device=device)
+        prefix = torch.randint(1, 31, (8, 5), device=device)
+        suffix = torch.randint(1, 31, (8, 5), device=device)
+        valid = torch.tensor(valid_values, dtype=torch.bool, device=device)
+        sl = slice(rank * 4, (rank + 1) * 4)
+        for optimizer in (*optimizers, *ref_optimizers):
+            optimizer.zero_grad(set_to_none=True)
+        out = ddp(images[sl], prefix[sl], suffix[sl], valid[sl], torch.arange(4, device=device) + rank * 4)
+        ref_total, ref_suffix, ref_i2t, ref_t2i = independent_global_objective(reference, images, prefix, suffix, valid)
+        total = out['loss_total'].detach().clone()
+        dist.all_reduce(total); total /= world
+        torch.testing.assert_close(total, ref_total.detach(), atol=VALUE_ATOL, rtol=VALUE_RTOL)
+        torch.testing.assert_close(out['loss_suffix_global'], ref_suffix.detach(), atol=VALUE_ATOL, rtol=VALUE_RTOL)
+        directions = torch.stack((out['loss_suffix_i2t_sum'], out['loss_suffix_t2i_sum']))
+        dist.all_reduce(directions); directions /= max(int(valid.sum()), 1)
+        torch.testing.assert_close(directions, torch.stack((ref_i2t, ref_t2i)).detach(), atol=VALUE_ATOL, rtol=VALUE_RTOL)
+        out['loss_total'].backward()
+        ref_total.backward()
+        gradients, updates, groups = {}, {}, {}
+        for (name, parameter), (ref_name, ref_parameter) in zip(model.named_parameters(), reference.named_parameters()):
+            assert name == ref_name
+            assert (parameter.grad is None) == (ref_parameter.grad is None), name
+            if parameter.grad is None:
+                gradients[name] = {'grad_state': 'None'}
+                continue
+            torch.testing.assert_close(parameter.grad, ref_parameter.grad, atol=GRAD_ATOL, rtol=GRAD_RTOL,
+                                       msg=lambda msg: name + '\n' + msg)
+            gradients[name] = error_metrics(parameter.grad, ref_parameter.grad)
+            group = groups.setdefault(parameter_group(name), {'max_abs_error': 0., 'reference_max_abs': 0.})
+            group['max_abs_error'] = max(group['max_abs_error'], gradients[name]['max_abs_error'])
+            group['reference_max_abs'] = max(group['reference_max_abs'], gradients[name]['relative_denominator'])
+        for group in groups.values():
+            group['relative_error'] = group['max_abs_error'] / max(group['reference_max_abs'], 1e-12)
+        if int(valid.sum()) >= 2:
+            assert model.suffix_gate[0].weight.grad.abs().max() > 0
+        for optimizer in (*optimizers, *ref_optimizers):
+            optimizer.step()
+        for (name, parameter), (_, ref_parameter) in zip(model.named_parameters(), reference.named_parameters()):
+            torch.testing.assert_close(parameter, ref_parameter, atol=UPDATE_ATOL, rtol=UPDATE_RTOL,
+                                       msg=lambda msg: name + '\n' + msg)
+            updates[name] = error_metrics(parameter, ref_parameter)
+        vector = torch.cat([p.detach().flatten() for p in model.parameters()])
+        root_vector = vector.clone()
+        dist.broadcast(root_vector, src=0)
+        torch.testing.assert_close(vector, root_vector, atol=UPDATE_ATOL, rtol=UPDATE_RTOL)
+        results.append({'case': index, 'global_valid': int(valid.sum()),
+            'valid_per_rank': [sum(valid_values[:4]), sum(valid_values[4:])],
+            'loss_total_global': float(total), 'loss_suffix_global': float(out['loss_suffix_global']),
+            'loss_total_error': error_metrics(total, ref_total),
+            'suffix_direction_errors': error_metrics(directions, torch.stack((ref_i2t, ref_t2i))),
+            'gradients': gradients, 'parameter_groups': groups, 'updates': updates,
+            'rank_parameter_error': error_metrics(vector, root_vector), 'status': 'within_fixed_tolerance'})
     if rank == 0:
-        with open(args.out, "w", encoding="utf-8") as handle:
-            json.dump({"cases": results, "gradient_reference": gradient_report}, handle,
-                      indent=2, sort_keys=True)
+        report = {'torch_version': torch.__version__, 'backend': args.backend, 'world_size': world,
+            'communication': 'suffix_flat_contiguous_all_gather',
+            'relative_definition': 'max_abs(actual-reference) / max(max_abs(reference), 1e-12)',
+            'tolerances': {'gradient_atol': GRAD_ATOL, 'gradient_rtol': GRAD_RTOL,
+                           'value_atol': VALUE_ATOL, 'value_rtol': VALUE_RTOL,
+                           'update_atol': UPDATE_ATOL, 'update_rtol': UPDATE_RTOL},
+            'score_shape': [4, 8], 'transposed_score_stride': [1, 8],
+            'cases': results, 'status': 'passed'}
+        os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+        with open(args.out, 'w', encoding='utf-8') as handle:
+            json.dump(report, handle, indent=2, sort_keys=True)
     dist.barrier()
     dist.destroy_process_group()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

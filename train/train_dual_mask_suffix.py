@@ -180,6 +180,23 @@ def _check_gradients_finite(module: torch.nn.Module, world: int, device: torch.d
         raise FloatingPointError("non-finite loss or gradient on at least one rank")
 
 
+def _gradient_health(module):
+    groups = {}
+    for name, parameter in module.named_parameters():
+        if name.startswith('suffix_gate.'):
+            group = '.'.join(name.split('.')[:2])
+        elif name.startswith('clip.visual.'):
+            group = 'visual'
+        elif name.startswith('clip.mask_net.'):
+            group = 's0_mask'
+        else:
+            group = 'text'
+        if parameter.grad is not None:
+            value = parameter.grad.detach().float().square().sum()
+            groups[group] = groups.get(group, 0.0) + value
+    return {key: float(value.sqrt()) for key, value in groups.items()}
+
+
 def _atomic_torch_save(payload: Dict, path: str) -> None:
     temporary = path + ".tmp"
     torch.save(payload, temporary)
@@ -245,6 +262,8 @@ def main() -> int:
     args = _args()
     if args.resume:
         raise SystemExit("--resume is intentionally unsupported in Clean v0.1")
+    if os.path.exists(os.path.join(args.output_dir, 'salu_log.jsonl')):
+        raise SystemExit('output directory already contains a run; refusing to mix update counts')
     _seed_everything(args.seed)
     rank, local_rank, world = _setup_ddp()
     device = torch.device("cuda", local_rank) if torch.cuda.is_available() else torch.device("cpu")
@@ -280,15 +299,25 @@ def main() -> int:
         "seed": args.seed, "total_len": args.total_len, "image_chunk": args.image_chunk,
         "text_chunk": args.text_chunk, "precision": "fp32 master + "+args.amp_dtype+" autocast",
         "run_type": args.run_type,
-        "formal_optimizer_updates": 0 if args.run_type == "debug" else args.max_steps,
-        "debug_optimizer_updates": args.max_steps if args.run_type == "debug" else 0,
+        "formal_optimizer_updates": 0,
+        "debug_optimizer_updates": 0,
         "init_state": args.init_state,
+        "training_sha": _git_head(), "arguments": vars(args),
+        "accumulation": 1, "u_sparsity": 0.0,
+        "communication_env": {k: os.environ.get(k) for k in
+            ('NCCL_SOCKET_IFNAME', 'NCCL_IB_DISABLE', 'NCCL_P2P_DISABLE', 'GLOO_SOCKET_IFNAME', 'CUDA_VISIBLE_DEVICES')},
     }
     log_path = os.path.join(args.output_dir, "salu_log.jsonl")
     if rank == 0:
         with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as h:
             json.dump(config, h, indent=2, sort_keys=True)
+        _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir, 0, 0, -1)
+    if world > 1:
+        dist.barrier()
     completed = 0
+    stream_digest = hashlib.sha256()
+    consumed_samples = 0
+    training_started = time.perf_counter()
     for epoch in range(args.epochs):
         if sampler is not None:
             sampler.set_epoch(epoch)
@@ -298,6 +327,11 @@ def main() -> int:
             step_started = time.perf_counter()
             if device.type == "cuda":
                 torch.cuda.reset_peak_memory_stats(device)
+            stream_record = {'sample_id': batch['sample_id'].tolist(),
+                'image_id': batch['image_id'].tolist(), 'prefix_k': batch['prefix_k'].tolist(),
+                'prefix': batch['caption_said'], 'suffix': batch['suffix_text']}
+            stream_digest.update(json.dumps(stream_record, ensure_ascii=False, separators=(',', ':')).encode('utf-8'))
+            consumed_samples += len(batch['sample_id'])
             clip_schedule(completed); mask_schedule(completed)
             if suffix_schedule is not None:
                 suffix_schedule(completed)
@@ -316,14 +350,26 @@ def main() -> int:
                 raise FloatingPointError("non-finite loss on at least one rank")
             out["loss_total"].backward()
             _check_gradients_finite(inner, world, device)
+            gradient_health = _gradient_health(inner) if completed < 3 or (completed + 1) % 100 == 0 else None
             clip_opt.step(); mask_opt.step()
             if suffix_opt is not None:
                 suffix_opt.step()
             completed += 1
-            per_rank_valid = [int(valid.sum().item())]
+            if device.type == 'cuda':
+                torch.cuda.synchronize(device)
+            health = {'rank': rank, 'valid': int(valid.sum().item()),
+                'gradient_norms_before_update': gradient_health,
+                'step_seconds': time.perf_counter() - step_started,
+                'peak_allocated_mb': torch.cuda.max_memory_allocated(device) / (1024**2) if device.type == 'cuda' else None,
+                'peak_reserved_mb': torch.cuda.max_memory_reserved(device) / (1024**2) if device.type == 'cuda' else None,
+                'consumed_samples': consumed_samples, 'stream_sha256': stream_digest.hexdigest()}
+            rank_health = [health]
             if world > 1:
-                per_rank_valid = [None for _ in range(world)]
-                dist.all_gather_object(per_rank_valid, int(valid.sum().item()))
+                rank_health = [None for _ in range(world)]
+                dist.all_gather_object(rank_health, health)
+            config['formal_optimizer_updates'] = completed if args.run_type == 'formal' else 0
+            config['debug_optimizer_updates'] = completed if args.run_type == 'debug' else 0
+            config['stream_summary'] = [{k: h[k] for k in ('rank', 'consumed_samples', 'stream_sha256')} for h in rank_health]
             if rank == 0:
                 record = {"completed_steps": completed, "epoch": epoch, "step_in_epoch": step_in_epoch,
                           "suffix_mode": args.suffix_mode, "lr": clip_opt.param_groups[0]["lr"],
@@ -332,7 +378,9 @@ def main() -> int:
                           "run_type": args.run_type,
                           "formal_optimizer_updates": completed if args.run_type == "formal" else 0,
                           "debug_optimizer_updates": completed if args.run_type == "debug" else 0}
-                record["per_rank_valid"] = per_rank_valid
+                record["per_rank_valid"] = [h['valid'] for h in rank_health]
+                record['rank_health'] = rank_health
+                record['synchronized_step_seconds'] = max(h['step_seconds'] for h in rank_health)
                 record["step_seconds"] = time.perf_counter() - step_started
                 if device.type == "cuda":
                     record["peak_allocated_mb"] = torch.cuda.max_memory_allocated(device) / (1024 ** 2)
@@ -350,8 +398,11 @@ def main() -> int:
         if completed >= args.max_steps:
             break
     if rank == 0:
+        config['training_seconds'] = time.perf_counter() - training_started
         _save_checkpoint(inner, (clip_opt, mask_opt, suffix_opt), config, args.output_dir,
                          completed, epoch, step_in_epoch)
+        with open(os.path.join(args.output_dir, 'config.json'), 'w', encoding='utf-8') as handle:
+            json.dump(config, handle, indent=2, sort_keys=True)
     if dist.is_available() and dist.is_initialized():
         dist.barrier(); dist.destroy_process_group()
     return 0
