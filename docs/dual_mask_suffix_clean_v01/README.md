@@ -15,7 +15,7 @@ difference; candidate-column and same-image counterexamples now do.
 uses `mS` from the unchanged S0 helper and a new `Linear(1024,512) -> GELU -> Linear(512,512)`
 gate. Its first layer is Xavier initialized with seed 0, the final weight is zero and final bias is
 `log(8)`, so the initial hard mask is all open. Gate inputs are exactly
-`concat(stop_grad(g), stop_grad(g * mS))`; suffix tokens never enter the gate.
+`concat(stop_grad(g_i), stop_grad(g_i) * stop_grad(mS_j))`; suffix tokens never enter the gate.
 
 For each local image row, masked scores are computed in image/text blocks and then gathered by row.
 Invalid suffix candidates are filled with `-inf` only after selecting valid queries, while labels
@@ -31,23 +31,28 @@ CPU unit tests:
 python -m pytest -q tests/test_dual_mask_suffix.py
 ```
 
-The real formal entry is prepared but is not launched in this round:
+The completed formal experiment used masked mode only, with loopback NCCL settings:
 
 ```bash
-torchrun --nproc_per_node=4 train/train_dual_mask_suffix.py --suffix-mode masked \
-  --batch-size 256 --epochs 3 --max-steps 500 \
+NCCL_SOCKET_IFNAME=lo NCCL_IB_DISABLE=1 NCCL_P2P_DISABLE=1 GLOO_SOCKET_IFNAME=lo \
+torchrun --nproc_per_node=4 --master_addr=127.0.0.1 --master_port=29610 \
+  train/train_dual_mask_suffix.py --suffix-mode masked --run-type formal \
+  --batch-size 256 --epochs 3 --max-steps 500 --seed 0 --num-workers 8 --save-every 100 \
   --init-state /root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt \
-  --output-dir /root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_v01
+  --output-dir /root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_formal500_flatgather_v01
 ```
 
-Use `--suffix-mode native` for the native comparison. A short acceptance run must use a
-`DEBUG_NOT_FORMAL` output directory and is reported separately; it is never a formal 500-step
-starting point. The saved checkpoint contains `clip_state`, `suffix_gate_state` (`None` for
+No native comparison arm was formally trained. Earlier short acceptance runs use
+`DEBUG_NOT_FORMAL` directories and are not initialization checkpoints for the formal experiment.
+The saved checkpoint contains `clip_state`, `suffix_gate_state` (`None` for
 native), optimizer states, `completed_steps`, `config` and `provenance`, and is atomically replaced.
 
-The complete COCO/Urban evaluations are deliberately not run here. Future calls should use the
-base repository's `tools/phase30a_fixed_cohort_eval.py` and `tools/eval_urban1k_cls.py` against the
-bare student exported from `clip_state`; the suffix gate is not part of that bare student.
+The frozen COCO canonical (5000 images / 25000 captions) and Urban-1k (1000 / 1000)
+evaluations are complete using only normalized native student image/text embeddings.
+The suffix gate is not part of the exported bare student or either retrieval scorer.
+Full results are in [masked_formal500_report.md](masked_formal500_report.md), with
+configuration, hashes, per-rank streams, memory and exit codes in
+[masked_formal500_report.json](masked_formal500_report.json).
 
 To create that evaluation artifact from a checkpoint:
 
@@ -57,11 +62,15 @@ python -c "from train.train_dual_mask_suffix import export_bare_student; export_
 
 ## Acceptance evidence
 
-Evidence for code SHA `455013f47d3363c6d1725cc6f6d918d98091b699` is recorded in
-`acceptance_evidence.json`. The nine focused tests pass, and native/masked real-CLIP runs both
-completed three steps at 4 GPUs × 256 (global batch 1024), with `formal_optimizer_updates=0`.
-The DDP global-reference probe reports equal scalar loss but exposes a visual/text gradient scaling
-difference (maximum absolute/relative error `56.679512`, one-step parameter error `0.002000004`);
-the result is preserved as evidence and no tolerance was relaxed or production reduction changed.
-The first NCCL launch failed before forward; the retry with loopback NCCL settings succeeded for
-both modes. Full 500-step training and COCO/Urban evaluation remain unrun.
+Historical evidence at `455013f`/`bb2d259` is preserved in `acceptance_evidence.json`.
+Its finite-only assertions did not establish DDP gradient equivalence; the old combined
+absolute/relative error field was ambiguous. Those checks are superseded by the fixed,
+elementwise full-total-objective assertions and separate error reports in
+`ddp_total_gloo.json` and `ddp_total_nccl.json`.
+
+The suffix-only communication layout fix is explained in [gather_layout_fix.md](gather_layout_fix.md).
+It passes 10 focused tests and the Gloo/NCCL production DDP comparisons with non-open test gates,
+unequal/zero valid counts, complete parameter gradients, and AdamW updates.
+The formal training SHA is `ff5ad1d4b918d56c6bfa48a2870dc5223e757237`.
+The unique masked formal trajectory completed exactly 500 updates, followed by strict export
+and both native retrieval evaluations; all four exit codes are zero. No update 501 was executed.
