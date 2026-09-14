@@ -6,7 +6,8 @@
     "preserve": [
       0,
       500,
-      1000
+      1000,
+      3651
     ],
     "save_every_updates": 100,
     "target_final": 3651
@@ -16,13 +17,14 @@
     "text": 32
   },
   "current_status": {
-    "full_run": "RUNNING",
-    "logged_updates": 1479,
+    "full_run": "COMPLETED",
+    "logged_updates": 3651,
     "step1000_evaluation_exitcodes": {
       "coco": 0,
       "export": 0,
       "urban": 0
-    }
+    },
+    "final_evidence": "../evidence/step3651"
   },
   "data": {
     "exclude_final_caption_sentence": true,
@@ -46,16 +48,16 @@
       0.9,
       0.999
     ],
-    "clip": 1e-06,
-    "eps": 1e-08,
+    "clip": 0.000001,
+    "eps": 1e-8,
     "mask": 0.001,
     "suffix_gate": 0.0001,
     "warmup_clip_updates": 200,
     "warmup_mask_updates": 0,
     "warmup_suffix_updates": 0,
     "weight_decay_clip": 0.01,
-    "weight_decay_mask": 0.0,
-    "weight_decay_suffix_gate": 0.0
+    "weight_decay_mask": 0,
+    "weight_decay_suffix_gate": 0
   },
   "mode": "masked",
   "name": "s0_dualmask_masked_500_to_1000_to_3651",

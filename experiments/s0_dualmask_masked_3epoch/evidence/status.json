@@ -1,9 +1,34 @@
 {
-  "captured_utc": "2026-09-13T22:07:40.013057+00:00",
-  "final_metrics": null,
+  "captured_utc": "2026-09-14T05:26:16+00:00",
+  "full_run_status": "COMPLETED",
+  "last_logged_update_at_capture": 3651,
   "final_target": 3651,
-  "full_run_status": "RUNNING",
-  "last_logged_update_at_capture": 1479,
-  "snapshot_note": "Step 1000 evidence is complete. Full 3-epoch results are not yet available.",
-  "training_sha": "11af80b344c623b27b93069f9be526970c9c950c"
+  "training_sha": "11af80b344c623b27b93069f9be526970c9c950c",
+  "final_metrics": {
+    "coco": {
+      "image2text_R1": 0.6134,
+      "image2text_R10": 0.8948,
+      "image2text_R5": 0.8334,
+      "text2image_R1": 0.42272,
+      "text2image_R10": 0.7738,
+      "text2image_R5": 0.67764
+    },
+    "urban": {
+      "I2T": {
+        "R1": 0.9140000343322754,
+        "R10": 0.9940000176429749,
+        "R5": 0.984000027179718
+      },
+      "T2I": {
+        "R1": 0.8950000405311584,
+        "R10": 0.9890000224113464,
+        "R5": 0.9780000448226929
+      }
+    }
+  },
+  "snapshot_note": "Final run configuration records 3651 optimizer updates; strict export and native retrieval JSONs are saved in step3651. Original intermediate capture remains in Git history.",
+  "source_config": "step3651/config.json",
+  "source_export": "step3651/export_report_step3651.json",
+  "resume1000_to3651_exit_code": 0,
+  "continuation_sequence_exit_code": 0
 }

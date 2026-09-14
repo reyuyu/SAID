@@ -1,0 +1,305 @@
+{
+  "experiment": "S0-DualMask-Full v0.1",
+  "branch": "codex/s0-dualmask-full-v01",
+  "completed_optimizer_updates": 2000,
+  "training_sha": "873b43a5bc000528311e22aac01e92045ac898e0",
+  "loss": "10*L_S + 2*S_S + 10*L_U + 2*S_U",
+  "suffix_lambda": 10,
+  "u_sparsity_lambda": 2,
+  "checkpoint": {
+    "local_path": "D:\\yuyuu\\s0_trimask\\dualmask_weights\\eval_2000\\bare_student_step2000.pt",
+    "sha256": "54f5c8b601c237e883a79cb82cb85865e3e0ff27e7399a189eb95c21361faf15",
+    "bytes": 612071238,
+    "source_full_checkpoint_sha256": "bfaeeb4a54c1c76702831472e351aab3ab2b0ae9e231d87bd5fea7544d20b5da",
+    "urban_adapter_sha256": "9225a1b912f2ac51fddb74a4f5e7bce5eac2a323d68cbb842c583003db1e9c29"
+  },
+  "strict_load": {
+    "loaded_tensors": 317,
+    "missing_keys": [],
+    "unexpected_keys": []
+  },
+  "all_parameters_finite": true,
+  "score_definition": "normalized native encode_image / encode_text, full candidate pool inner products",
+  "context_length": 248,
+  "truncate": true,
+  "new_evaluation": {
+    "started_at": "2026-09-14T13:19:03+08:00",
+    "finished_at": "2026-09-14T13:26:16+08:00",
+    "wall_seconds": 433,
+    "hardware": "4 idle NVIDIA A800-SXM4-80GB; one independent protocol per GPU",
+    "distributed": false,
+    "batch_size": 64,
+    "torch": "2.5.1+cu124",
+    "cuda": "12.4",
+    "exit_code": 0,
+    "launcher_exit_code": 0,
+    "evaluator_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+    "transport_note": "SSH stdout wait timed out after dispatch. Verified that the original detached job was running; no restart or repeated evaluation. All four evaluator exit codes and launcher exit code were 0."
+  },
+  "metric_units": "fractions in JSON; percentages in README",
+  "comparison": "Full v0.1 step2000 vs existing Full v0.1 step3651 (3 epoch); delta = step2000 minus step3651 in percentage points",
+  "results": [
+    {
+      "key": "coco",
+      "name": "COCO canonical",
+      "n_images": 5000,
+      "n_captions": 25000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.5956,
+          "T2I": 0.40392
+        },
+        "R@5": {
+          "I2T": 0.815,
+          "T2I": 0.6566
+        },
+        "R@10": {
+          "I2T": 0.8874,
+          "T2I": 0.75428
+        }
+      },
+      "baseline": {
+        "R@1": {
+          "I2T": 0.5942,
+          "T2I": 0.40296
+        },
+        "R@5": {
+          "I2T": 0.8152,
+          "T2I": 0.65576
+        },
+        "R@10": {
+          "I2T": 0.8874,
+          "T2I": 0.75296
+        }
+      },
+      "evidence_type": "verified_existing_record",
+      "source": "evidence/S0_DUALMASK_FULL_V01_step002000_canonical.json",
+      "r1_delta_pp": {
+        "I2T": 0.14000000000000679,
+        "T2I": 0.09600000000000164
+      }
+    },
+    {
+      "key": "urban",
+      "name": "Urban-1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.9190000295639038,
+          "T2I": 0.906000018119812
+        },
+        "R@5": {
+          "I2T": 0.9850000739097595,
+          "T2I": 0.9820000529289246
+        },
+        "R@10": {
+          "I2T": 0.9930000305175781,
+          "T2I": 0.9910000562667847
+        }
+      },
+      "baseline": {
+        "R@1": {
+          "I2T": 0.9180000424385071,
+          "T2I": 0.9070000648498535
+        },
+        "R@5": {
+          "I2T": 0.9860000610351562,
+          "T2I": 0.9830000400543213
+        },
+        "R@10": {
+          "I2T": 0.9920000433921814,
+          "T2I": 0.9910000562667847
+        }
+      },
+      "evidence_type": "verified_existing_record",
+      "source": "evidence/S0_DUALMASK_FULL_V01_step002000_urban1k.json",
+      "r1_delta_pp": {
+        "I2T": 0.09999871253967285,
+        "T2I": -0.10000467300415039
+      }
+    },
+    {
+      "key": "flickr_test1k",
+      "name": "Flickr30k test1K",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.87,
+          "T2I": 0.7004
+        },
+        "R@5": {
+          "I2T": 0.979,
+          "T2I": 0.9054
+        },
+        "R@10": {
+          "I2T": 0.992,
+          "T2I": 0.9464
+        }
+      },
+      "baseline": {
+        "R@1": {
+          "I2T": 0.869,
+          "T2I": 0.702
+        },
+        "R@5": {
+          "I2T": 0.981,
+          "T2I": 0.9062
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.9472
+        }
+      },
+      "evidence_type": "new_evaluation_2026-09-14",
+      "source": "evidence/new_evaluations/flickr_test1k/flickr_test1k.json",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "exit_code": 0,
+      "process_wall_seconds": 23,
+      "evaluation_seconds": 16.383552312850952,
+      "r1_delta_pp": {
+        "I2T": 0.10000000000000009,
+        "T2I": -0.15999999999999348
+      }
+    },
+    {
+      "key": "docci",
+      "name": "DOCCI test5K",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.7748,
+          "T2I": 0.7832
+        },
+        "R@5": {
+          "I2T": 0.9542,
+          "T2I": 0.9532
+        },
+        "R@10": {
+          "I2T": 0.9818,
+          "T2I": 0.98
+        }
+      },
+      "baseline": {
+        "R@1": {
+          "I2T": 0.7766,
+          "T2I": 0.7844
+        },
+        "R@5": {
+          "I2T": 0.9554,
+          "T2I": 0.9534
+        },
+        "R@10": {
+          "I2T": 0.981,
+          "T2I": 0.98
+        }
+      },
+      "evidence_type": "new_evaluation_2026-09-14",
+      "source": "evidence/new_evaluations/docci/docci.json",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "exit_code": 0,
+      "process_wall_seconds": 248,
+      "evaluation_seconds": 240.65276837348938,
+      "r1_delta_pp": {
+        "I2T": -0.17999999999999128,
+        "T2I": -0.11999999999999789
+      }
+    },
+    {
+      "key": "dci",
+      "name": "DCI full",
+      "n_images": 7805,
+      "n_captions": 7805,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.49199231262011534,
+          "T2I": 0.4931454196028187
+        },
+        "R@5": {
+          "I2T": 0.7039077514413837,
+          "T2I": 0.698398462524023
+        },
+        "R@10": {
+          "I2T": 0.7752722613709161,
+          "T2I": 0.7678411274823831
+        }
+      },
+      "baseline": {
+        "R@1": {
+          "I2T": 0.4926329276105061,
+          "T2I": 0.4926329276105061
+        },
+        "R@5": {
+          "I2T": 0.7045483664317745,
+          "T2I": 0.7009609224855862
+        },
+        "R@10": {
+          "I2T": 0.7773222293401666,
+          "T2I": 0.7678411274823831
+        }
+      },
+      "evidence_type": "new_evaluation_2026-09-14",
+      "source": "evidence/new_evaluations/dci/dci.json",
+      "manifest_sha256": "14530fb8bf3c7b4a75bb451412d4562c548f9ca1bdbe1fdbf39d6ee30fb4de24",
+      "exit_code": 0,
+      "process_wall_seconds": 425,
+      "evaluation_seconds": 418.1887421607971,
+      "r1_delta_pp": {
+        "I2T": -0.06406149903907532,
+        "T2I": 0.05124919923126248
+      }
+    },
+    {
+      "key": "long_dci",
+      "name": "Long-DCI（重建版）",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.5772165219679032,
+          "T2I": 0.5987897921599579
+        },
+        "R@5": {
+          "I2T": 0.7670349907918969,
+          "T2I": 0.778479347540121
+        },
+        "R@10": {
+          "I2T": 0.8274138384635622,
+          "T2I": 0.8304393580636674
+        }
+      },
+      "baseline": {
+        "R@1": {
+          "I2T": 0.5772165219679032,
+          "T2I": 0.6011575901078664
+        },
+        "R@5": {
+          "I2T": 0.7688766114180479,
+          "T2I": 0.7820310444619837
+        },
+        "R@10": {
+          "I2T": 0.8267561168113654,
+          "T2I": 0.833201789002894
+        }
+      },
+      "evidence_type": "new_evaluation_2026-09-14",
+      "source": "evidence/new_evaluations/long_dci/long_dci.json",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "exit_code": 0,
+      "process_wall_seconds": 420,
+      "evaluation_seconds": 413.07954835891724,
+      "r1_delta_pp": {
+        "I2T": 0,
+        "T2I": -0.23677979479085343
+      }
+    }
+  ],
+  "limitations": [
+    "COCO and Urban reuse verified existing records; no new inference for those two protocols this turn, and their original process exit codes were not independently retrieved this turn.",
+    "Long-DCI uses the same reconstructed manifest as prior results; it is not asserted to be the official Long-DCI CSV.",
+    "Single training trajectory and seed; small differences do not establish statistical significance.",
+    "No training updates or checkpoint changes were performed."
+  ]
+}

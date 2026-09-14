@@ -1,6 +1,8 @@
-# SAID extended retrieval setup v0.1
+# SAID extended retrieval
 
-This branch prepares benchmark metadata and a model-free evaluator.  It does not load a checkpoint, import a model, initialise CUDA, extract features, or report real R@ metrics.  All preparation commands run with `CUDA_VISIBLE_DEVICES=""`.
+This directory preserves the v0.1 data preparation protocol and evaluator. Preparation commands remain model-free and run with `CUDA_VISIBLE_DEVICES=""`. Subsequent authorised native-student evaluations are complete for Clean v0.1 step3651, Full v0.1 step3651, and Full v0.1 step2000.
+
+See the [results table](../../experiments/RESULTS.md) for all six protocols, actual R@1/5/10 and per-run evidence. The [status.json](status.json) is the historical preparation snapshot; its `MODEL_INFERENCE_NOT_RUN` fields describe that preparation task, not the later experiments.
 
 ## Protocols and sources
 
@@ -21,7 +23,7 @@ python tools/prepare_retrieval_benchmarks.py --dataset docci --input /root/datas
 pytest -q tests/test_extended_retrieval.py
 ```
 
-Future model evaluation is explicit and must be run by a human after reviewing data and licensing:
+An evaluation command requires an explicit model factory; replace the placeholder with a compatible native student loader:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python tools/eval_extended_retrieval.py \
@@ -34,12 +36,12 @@ CUDA_VISIBLE_DEVICES=0 python tools/eval_extended_retrieval.py \
 
 The adapter must return the bare native student and implement native `encode_image`/`encode_text` with FP32 normalisation. No masks, gates, U, decoder, fusion, reranking or training are part of this evaluator. Cache identities include checkpoint, manifest/text SHA, tokenizer/context length, preprocessing and dtype.
 
-## Current preparation record
+## Preparation snapshot and completed evaluations
 
 Base SHA: `11af80b344c623b27b93069f9be526970c9c950c` (SAID training branch snapshot; training worktree was not modified).
 
-Current preparation is recorded in `status.json`: DOCCI test is `DATA_READY` (5,000 images/captions, PIL checked); Flickr Karpathy test1K is `DATA_READY` (1,000 images/5,000 captions, PIL checked); Long-DCI is `DATA_READY_RECONSTRUCTED` (7,602 rows from DCI `extra_caption`); DCI annotation rows are prepared while the two replacement image archives are being fetched. The prior DCI SHA discrepancy was a script typo: the local annotation archive SHA `d865c244...` matches the current official download script value. Flickr full remains blocked until a complete caption source is available. Status vocabulary distinguishes `DATA_READY`, `DATA_READY_RECONSTRUCTED`, `PREPARED_IMAGES_PENDING`, `BLOCKED_NETWORK`, `CPU_TESTED`, `MODEL_INFERENCE_NOT_RUN`, and `REAL_EVALUATION_NOT_RUN`.
+DOCCI test (5,000 pairs), Flickr Karpathy test1K (1,000 images / 5,000 captions), and DCI full (7,805 pairs) are ready and have been evaluated. Long-DCI uses 7,602 rows reconstructed from DCI `extra_caption`; it is explicitly labelled reconstructed and is not the unavailable official CSV. Dataset identities are in [ASSETS.md](../../experiments/ASSETS.md). Flickr full remains unavailable; this does not make the standard test1K evaluation incomplete.
 
 ## License and exclusions
 
-Read each upstream license before downloading. Do not commit images, archives, full captions, checkpoints or feature caches. This branch contains only preparation code, tests and this README.
+Read each upstream license before downloading. Do not commit images, archives, full captions, checkpoints or feature caches. This directory contains preparation code documentation and historical status; small evaluation results are stored under `experiments/`.

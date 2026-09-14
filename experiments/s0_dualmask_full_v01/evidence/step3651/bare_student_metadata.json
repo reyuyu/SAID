@@ -1,0 +1,48 @@
+{
+  "arm": "S0_DUALMASK_FULL_V01",
+  "bare_student_vs_full_model_native_max_abs_diff": {
+    "image": 0.0,
+    "text": 0.0
+  },
+  "bare_student_vs_full_model_native_note": "encode_image / encode_text of a fresh CLIP loaded strictly from the bare student against the same interfaces of the full trained model",
+  "checkpoint_config": {
+    "batch_size_per_gpu": 256,
+    "loader_batches": 1217,
+    "lr_horizon_steps": 3651,
+    "objective": "s0_dual_mask_suffix_clean_v01",
+    "seed": 0,
+    "suffix_lambda": 10.0,
+    "suffix_mode": "masked",
+    "total_objective": "10*L_S + 2*S_S + 10*L_U + 2*S_U",
+    "training_sha": "873b43a5bc000528311e22aac01e92045ac898e0",
+    "u_sparsity": 2.0,
+    "u_sparsity_lambda": 2.0,
+    "world_size": 4
+  },
+  "clip_tensor_count": 317,
+  "completed_steps": 3651,
+  "gate_still_in_checkpoint_only": true,
+  "objective": "s0_dual_mask_suffix_clean_v01",
+  "probe_after_two_independent_loads_max_abs_diff": {
+    "image": 0.0,
+    "loss_total": 0.0,
+    "suffix": 0.0,
+    "text": 0.0,
+    "u_sparse_global": 0.0
+  },
+  "probe_after_two_independent_loads_note": "the same trained state loaded into two independent models; this is the real losslessness check and must be exactly zero",
+  "probe_trained_vs_initialization_max_abs_diff": {
+    "image": 1.5443520545959473,
+    "loss_total": 3.562591552734375,
+    "suffix": 0.7304205894470215,
+    "text": 0.6749019622802734,
+    "u_sparse_global": 0.0
+  },
+  "probe_trained_vs_initialization_note": "expected to be clearly non-zero: it shows the exported weights are the trained ones",
+  "source_checkpoint": "/root/SAID-s0-dualmask-full-v01/runs_salu/dualmask_full_masked_3epoch_v01/s0_dual_mask_suffix_masked_step003651.pt",
+  "source_checkpoint_sha256": "448dd0b94b8b1a26ffcfa4b3e7f8f44ecd069d886977ce79454f4844dcd41773",
+  "student_file": "/root/SAID-s0-dualmask-full-v01/runs_salu/dualmask_full_masked_3epoch_v01/student_export_step003651/bare_student_step3651.pt",
+  "student_key": "clip_state_only",
+  "student_sha256": "682b89f6efa2c59d4ecbfa7d4f44c8ac6ed926476355d17a40a56a76fd15ad19",
+  "suffix_gate_tensor_count": 4
+}

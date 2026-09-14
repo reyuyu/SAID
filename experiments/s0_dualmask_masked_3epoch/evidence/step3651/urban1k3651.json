@@ -1,0 +1,50 @@
+{
+  "checkpoint": "/root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_from500_continuation_v02/bare_student_step3651.pt",
+  "checkpoint_sha256": "aa8aab9ef7184fb050cd2596811424e99752005b1651e00f998620cbbdc9f62a",
+  "completed_steps": null,
+  "git_head": null,
+  "image_representation": "legacy_cls",
+  "label": "masked_dualmask_step3651",
+  "loaded_tensors": 317,
+  "missing_keys": [],
+  "objective": null,
+  "preprocessing": "repo reference openai-clip _transform(224) (tensor-identical to LongCLIP)",
+  "tokenizer": "longclip.tokenize(context_length=248, truncate=True)",
+  "unexpected_keys": [],
+  "urban1k": {
+    "added_here": [
+      "R@5",
+      "R@10"
+    ],
+    "checkpoint_sha256": null,
+    "global_pool": "n/a",
+    "image2text": {
+      "R1": 0.9140000343322754,
+      "R10": 0.9940000176429749,
+      "R5": 0.984000027179718
+    },
+    "image_representation": "legacy_cls",
+    "n_captions": 1000,
+    "n_images": 1000,
+    "positive": "diagonal",
+    "protocol": "urban1k-native-cls-v1",
+    "root": "/root/datasets/Urban1k/Urban1k",
+    "similarity": "normalized features, plain inner product, full 1000-item pool",
+    "text2image": {
+      "R1": 0.8950000405311584,
+      "R10": 0.9890000224113464,
+      "R5": 0.9780000448226929
+    },
+    "upstream_metrics_reproduced": [
+      "T2I R@1",
+      "I2T R@1"
+    ],
+    "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+  },
+  "urban1k_dataset": {
+    "n_pairs": 1000,
+    "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c",
+    "revision": null,
+    "root": "/root/datasets/Urban1k/Urban1k"
+  }
+}

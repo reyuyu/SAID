@@ -5,7 +5,7 @@
 ## 1. 获取说明和两份固定代码
 
 ```bash
-git clone --branch codex/s0-dualmask-clean-v01 https://github.com/reyuyu/SAID.git SAID-docs
+git clone https://github.com/reyuyu/SAID.git SAID-docs
 cd SAID-docs
 git worktree add --detach ../SAID-base500 ff5ad1d4b918d56c6bfa48a2870dc5223e757237
 git worktree add --detach ../SAID-train 11af80b344c623b27b93069f9be526970c9c950c

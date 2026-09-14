@@ -1,5 +1,7 @@
 # Dual-Mask-Full v0.1 实现说明
 
+完整实验已完成3651步，并补齐step2000评测：[实验入口](../../experiments/s0_dualmask_full_v01/README.md) · [六项检索总表](../../experiments/RESULTS.md)。下文保留原实现说明。
+
 **arm**：`S0_DUALMASK_FULL_V01`　**基于**：`ff5ad1d4b918d56c6bfa48a2870dc5223e757237`（已验证的 clean 双MASK masked@500 实现）
 
 ## 1. 唯一的目标函数改动

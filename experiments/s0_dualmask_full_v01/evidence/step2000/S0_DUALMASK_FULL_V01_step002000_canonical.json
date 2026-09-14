@@ -1,0 +1,87 @@
+{
+  "arm_label": "S0_DUALMASK_FULL_V01",
+  "c_u_is_evaluation_target_only": true,
+  "canonical": {
+    "S0_DUALMASK_FULL_V01@2000": {
+      "absent_exgap_keys": [
+        "exgap.query",
+        "exgap.w_key.bias",
+        "exgap.w_key.weight",
+        "exgap.w_query.bias",
+        "exgap.w_query.weight"
+      ],
+      "absent_said_router_keys": [
+        "said_router.k_proj.bias",
+        "said_router.k_proj.weight",
+        "said_router.q_proj.bias",
+        "said_router.q_proj.weight"
+      ],
+      "checkpoint": "/root/SAID-s0-dualmask-full-v01/runs_salu/dualmask_full_masked_3epoch_v01/student_export_step002000/bare_student_step2000.pt",
+      "checkpoint_exgap_config": null,
+      "checkpoint_global_pool": null,
+      "checkpoint_objective_mode": null,
+      "checkpoint_said_feature_source": null,
+      "checkpoint_said_loss_mode": null,
+      "checkpoint_sha256": "54f5c8b601c237e883a79cb82cb85865e3e0ff27e7399a189eb95c21361faf15",
+      "checkpoint_step": null,
+      "checkpoint_tau_said": null,
+      "coco_val2017": {
+        "image2text_R1": 0.5956,
+        "image2text_R10": 0.8874,
+        "image2text_R5": 0.815,
+        "text2image_R1": 0.40392,
+        "text2image_R10": 0.75428,
+        "text2image_R5": 0.6566
+      },
+      "coco_val2017_by_representation": {
+        "legacy_cls": {
+          "image2text_R1": 0.5956,
+          "image2text_R10": 0.8874,
+          "image2text_R5": 0.815,
+          "text2image_R1": 0.40392,
+          "text2image_R10": 0.75428,
+          "text2image_R5": 0.6566
+        },
+        "patch_global": {
+          "image2text_R1": 0.0684,
+          "image2text_R10": 0.2522,
+          "image2text_R5": 0.175,
+          "text2image_R1": 0.178,
+          "text2image_R10": 0.48296,
+          "text2image_R5": 0.37488
+        }
+      },
+      "dataset_manifest_sha256": null,
+      "git_head": "2a248e1c2018c40a7adb017d1cbfba9f5763cdba",
+      "global_pool": "mean",
+      "image_representation": "legacy_cls",
+      "loaded_tensors": 317,
+      "missing_keys": [
+        "said_router.q_proj.weight",
+        "said_router.q_proj.bias",
+        "said_router.k_proj.weight",
+        "said_router.k_proj.bias",
+        "exgap.query",
+        "exgap.w_query.weight",
+        "exgap.w_query.bias",
+        "exgap.w_key.weight",
+        "exgap.w_key.bias"
+      ],
+      "skipped_keys": [],
+      "unexpected_exgap_keys": [],
+      "unexpected_keys": [],
+      "usr_manifest_sha256": "ba2298ad836be0d95e952633b8a2a747f08509dba843b41b4ab6e37d6a703b19"
+    }
+  },
+  "checkpoints": {},
+  "cohort_candidate_pool": null,
+  "cohort_query_count": 0,
+  "cohort_sha256": null,
+  "cohort_skipped": true,
+  "gap_anti_temperature": 1.0,
+  "notes": "z_U and the complete feature are built from (I, C_S) before any candidate exists; score matrices are plain inner products over the full pool. C_U never enters A_U, z_U, g or any feature construction. No optimizer step is taken during evaluation.",
+  "protocol": "phase30a-1d-fixed-cohort",
+  "usr_manifest": "/root/SAID/outputs/validation/sharegpt4v1k_usr_manifest.json",
+  "usr_manifest_sha256": "ba2298ad836be0d95e952633b8a2a747f08509dba843b41b4ab6e37d6a703b19",
+  "usr_protocol": "sharegpt4v1k-usr-v1"
+}

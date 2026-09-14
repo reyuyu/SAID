@@ -1,5 +1,7 @@
 # S0 Dual-Mask Suffix — Clean v0.1
 
+完整实验已完成3651步：[中文实验入口与最终结果](../../experiments/s0_dualmask_masked_3epoch/README.md)。下文保留原实现与验收说明；在 main 复现历史 Clean 轨迹时请使用入口文档中的固定 Clean SHA。
+
 This clean implementation starts from base commit `5676666` on branch
 `codex/s0-dualmask-clean-v01`. It keeps the base S0 mask and SmartCLIP terms and adds one suffix
 task. The original caption is split as `P = '. '.join(parts[:K])` and
