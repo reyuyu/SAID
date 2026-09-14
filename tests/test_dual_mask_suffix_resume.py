@@ -41,6 +41,8 @@ def one_process_group():
     yield
 
 from train_dual_mask_suffix import (  # noqa: E402
+    DualMaskSuffixDataset,
+    ResumePositionSampler,
     batch_stream_payload,
     build_optimizers,
     file_sha256,
@@ -272,3 +274,132 @@ def test_objective_code_hash_pins_the_real_model_file():
     assert validate_resume(config, config["arguments"], EXPECTED, digest, None) == []
     assert validate_resume(_config(objective_code_sha256=digest), config["arguments"], EXPECTED,
                            "0" * 64, None)
+
+
+# --------------------------------------------------------------------------------------------
+# dry skip: same caption stream, no image decode
+# --------------------------------------------------------------------------------------------
+
+def test_dry_item_matches_the_real_item_and_the_rng_state_on_real_data():
+    """The dry item must draw the same prefix and produce the same metadata as the real one.
+
+    This runs on the real dataset (a few indices only) and compares the fields as well as the
+    process-wide RNG state after each draw, which is what makes the dry skip stream-exact.
+    """
+    import random
+    dataset = DualMaskSuffixDataset(seed=0, total_len=1000)
+    indices = [0, 1, 2, 17, 100, 1234, 5000]
+
+    random.seed(20260914)
+    real = [dataset[i] for i in indices]
+    real_state = random.getstate()
+
+    random.seed(20260914)
+    dry = [dataset._dry_sample(i) for i in indices]
+    dry_state = random.getstate()
+    assert dry_state == real_state, "the dry path consumed a different amount of randomness"
+
+    for index, (r, d) in zip(indices, zip(real, dry)):
+        assert d["prefix_k"] == r["prefix_k"], index
+        assert d["caption_said"] == r["caption_said"], index
+        assert d["suffix_text"] == r["suffix_text"], index
+        assert d["caption_full"] == r["caption_full"], index
+        assert d["suffix_valid"] == r["suffix_valid"], index
+        assert d["image_id"] == r["image_id"], index
+        assert d["sample_id"] == r["sample_id"] == index + 1000
+        assert tuple(d["image_a"].shape) == (3, 8, 8)      # placeholder, never trained on
+        assert d["dry_item"] is True
+
+    # the tuple form is what the resume sampler emits
+    random.seed(7)
+    a = dataset[(indices[3], True)]
+    random.seed(7)
+    b = dataset._dry_sample(indices[3])
+    assert a["prefix_k"] == b["prefix_k"] and a["caption_said"] == b["caption_said"]
+
+
+def test_dry_placeholder_is_collate_compatible():
+    from train_dual_mask_suffix import dual_mask_suffix_collate
+    dataset = DualMaskSuffixDataset(seed=0, total_len=1000)
+    samples = [dataset[(i, True)] for i in range(4)]
+    batch = dual_mask_suffix_collate(samples)
+    assert tuple(batch["image_a"].shape) == (4, 3, 8, 8)
+    assert len(batch["suffix_text"]) == 4 and batch["prefix_k"].tolist() == [s["prefix_k"] for s in samples]
+
+
+def test_resume_position_sampler_marks_exactly_the_consumed_batches():
+    inner = list(range(20))
+    sampler = ResumePositionSampler(inner, batches_per_epoch=4, batch_size=5, completed_steps=3)
+    marks = list(sampler)
+    # the wrapped order is untouched
+    assert [index for index, _ in marks] == inner
+    # three consumed batches of five items are marked dry, the fourth is not
+    assert [dry for _, dry in marks] == [True] * 15 + [False] * 5
+    assert len(sampler) == len(inner)
+    # a later epoch is entirely beyond the consumed prefix
+    sampler.set_epoch(1)
+    assert all(not dry for _, dry in sampler)
+    # nothing is marked without a continuation
+    assert all(not dry for _, dry in ResumePositionSampler(inner, 4, 5, 0))
+
+
+def test_resume_position_sampler_forwards_set_epoch_to_the_wrapped_sampler():
+    class Stub:
+        def __init__(self):
+            self.epochs = []
+            self.values = list(range(6))
+
+        def set_epoch(self, epoch):
+            self.epochs.append(epoch)
+
+        def __iter__(self):
+            return iter(self.values)
+
+        def __len__(self):
+            return len(self.values)
+
+    stub = Stub()
+    sampler = ResumePositionSampler(stub, batches_per_epoch=2, batch_size=3, completed_steps=1)
+    sampler.set_epoch(2)
+    assert stub.epochs == [2] and sampler.epoch == 2
+
+
+# --------------------------------------------------------------------------------------------
+# schedule extension: a longer cosine horizon raises the LR at the seam, and that is recorded
+# --------------------------------------------------------------------------------------------
+
+def test_schedule_extension_needs_an_explicit_flag_and_only_goes_upwards():
+    longer = dict(EXPECTED)
+    longer['epochs'] = 4
+    shorter = dict(EXPECTED)
+    shorter['epochs'] = 2
+    config, arguments = _config(), _config()['arguments']
+
+    # no flag: refused, because the horizon change moves the learning rate
+    problems = validate_resume(config, arguments, longer, "a" * 64, None)
+    assert any('epochs' in problem for problem in problems)
+    # with the flag: allowed
+    assert validate_resume(config, arguments, longer, "a" * 64, None,
+                           allow_schedule_extension=True) == []
+    # even with the flag, shortening the horizon is refused
+    assert any('shorten' in problem for problem in
+               validate_resume(config, arguments, shorter, "a" * 64, None,
+                               allow_schedule_extension=True))
+    # identical epochs stay fine in both modes
+    assert validate_resume(config, arguments, EXPECTED, "a" * 64, None) == []
+
+
+def test_cosine_value_reproduces_the_schedule_and_the_seam_jump():
+    from train_dual_mask_suffix import cosine_value
+    horizon3, horizon4, warmup, base, step = 3651, 4868, 200, 1e-6, 3651
+    before = cosine_value(base, warmup, horizon3, step - 1)   # the LR the checkpoint last used
+    after = cosine_value(base, warmup, horizon4, step)        # the LR the extension starts with
+    assert before < 1e-12, before                             # exhausted 3-epoch schedule
+    assert 1.5e-7 < after < 1.7e-7, after                     # 4-epoch schedule at the same step
+    assert after / before > 1e5
+    # the closed form matches scheduler.cosine_lr for a plain point
+    import numpy as np
+    assert abs(cosine_value(base, warmup, horizon4, 2000)
+               - 0.5 * (1 + np.cos(np.pi * (2000 - warmup) / (horizon4 - warmup))) * base) < 1e-18
+    # warmup branch
+    assert abs(cosine_value(base, warmup, horizon4, 0) - base / warmup) < 1e-18

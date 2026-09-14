@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import random
 import sys
@@ -45,7 +46,8 @@ from model.said_cls_cvssl import (  # noqa: E402
     said_mask_from_hidden,
 )
 from scheduler import cosine_lr  # noqa: E402
-from said_cvssl_data import Share4VCvsslDataset, cvssl_collate, stateless_seed  # noqa: E402
+from said_cvssl_data import (Share4VCvsslDataset, cvssl_collate, image_id_from_path,
+                             stateless_seed)  # noqa: E402
 from train_said_cls_cvssl import load_init_state, state_digest  # noqa: E402
 
 
@@ -88,10 +90,21 @@ def suffix_has_content(text: str) -> bool:
 
 
 class DualMaskSuffixDataset(Share4VCvsslDataset):
-    """The base dataset plus full caption, suffix text and a token-valid flag."""
+    """The base dataset plus full caption, suffix text and a token-valid flag.
 
-    def __getitem__(self, index: int) -> Dict:
-        sample = super().__getitem__(index)
+    An item may arrive as ``(index, True)``: the single process-wide RNG draw and every metadata
+    field are produced exactly as in the real path (the caption draw happens at the same point in
+    the stream), but the image is a tiny placeholder instead of a decoded picture. That lets a
+    continuation consume the batches an earlier run already saw without paying the decode cost while
+    keeping the caption stream bit-identical -- the batches are thrown away anyway, only the RNG
+    position matters.
+    """
+
+    def __getitem__(self, item: Dict) -> Dict:
+        index, dry = item if isinstance(item, tuple) else (item, False)
+        if dry:
+            return self._dry_sample(int(index))
+        sample = super().__getitem__(int(index))
         record = self.json_data[index]
         full, prefix, suffix = split_suffix_record(record, sample["prefix_k"], sample["caption_said"])
         if prefix != sample["caption_said"]:
@@ -102,6 +115,63 @@ class DualMaskSuffixDataset(Share4VCvsslDataset):
             "suffix_valid": suffix_has_content(suffix),
         })
         return sample
+
+    def _dry_sample(self, index: int) -> Dict:
+        """Same fields and the same one ``random.randint`` draw as the real item, no image decode."""
+        record = self.json_data[index]
+        caption = record["conversations"][1]["value"].replace("\n", " ")
+        num_sentences = len(caption.split(". "))
+        # this is the only process-wide RNG draw the real path performs, in the same order
+        prefix_k = random.randint(1, num_sentences)
+        caption_said = ". ".join(caption.split(". ")[:prefix_k])
+        full, prefix, suffix = split_suffix_record(record, prefix_k, caption_said)
+        if prefix != caption_said:
+            raise AssertionError("dry item built a different prefix than the real path")
+        placeholder = torch.zeros(3, 8, 8)
+        return {
+            "image_a": placeholder,
+            "image_b": placeholder.clone(),
+            "caption_said": caption_said,
+            "image_id": image_id_from_path(record["image"]),
+            "sample_id": int(index) + self.total_len,
+            "prefix_k": int(prefix_k),
+            "num_sentences": int(num_sentences),
+            "view_b_resample_size": 224,
+            "view_b_blur_sigma": 0.0,
+            "caption_full": full,
+            "suffix_text": suffix,
+            "suffix_valid": suffix_has_content(suffix),
+            "dry_item": True,
+        }
+
+
+class ResumePositionSampler(torch.utils.data.Sampler):
+    """Wrap a sampler and mark the batch positions an earlier run already consumed.
+
+    The wrapped sampler keeps its exact order, so the continuation sees the same stream; the marks
+    only tell the dataset to skip the image decode for batches that will be discarded anyway. The
+    caption RNG draw still happens for them, which is what keeps the stream identical.
+    """
+
+    def __init__(self, inner, batches_per_epoch: int, batch_size: int, completed_steps: int):
+        self.inner = inner
+        self.batches_per_epoch = int(batches_per_epoch)
+        self.batch_size = int(batch_size)
+        self.completed_steps = int(completed_steps)
+        self.epoch = 0
+
+    def set_epoch(self, epoch: int) -> None:
+        self.epoch = int(epoch)
+        if hasattr(self.inner, "set_epoch"):
+            self.inner.set_epoch(epoch)
+
+    def __iter__(self):
+        for position, index in enumerate(self.inner):
+            batch = self.epoch * self.batches_per_epoch + position // self.batch_size
+            yield (index, batch < self.completed_steps)
+
+    def __len__(self) -> int:
+        return len(self.inner)
 
 
 def dual_mask_suffix_collate(samples: List[Dict]) -> Dict:
@@ -272,6 +342,14 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--expect-model-sha", default=None,
                         help="optional sha256 of model/dual_mask_suffix.py; when given, the "
                              "continuation refuses to run if the objective code changed")
+    parser.add_argument("--dry-skip-consumed", action="store_true",
+                        help="while consuming the batches an earlier run already saw, skip the "
+                             "image decode but keep the caption RNG draw, so the stream stays exact "
+                             "and the skip costs seconds instead of one data pass")
+    parser.add_argument("--allow-schedule-extension", action="store_true",
+                        help="allow --epochs to be larger than the checkpoint's, which extends the "
+                             "cosine horizon and raises the learning rate at the seam; the change "
+                             "and the resulting LR are recorded in the config and the log")
     parser.add_argument("--run-type", choices=("debug", "formal"), default="debug")
     return parser.parse_args()
 
@@ -300,41 +378,14 @@ def main() -> int:
     inner = getattr(module, "module", module)
     clip_opt, mask_opt, suffix_opt = build_optimizers(inner, args)
     dataset = DualMaskSuffixDataset(seed=args.seed, total_len=args.total_len)
-    sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True, seed=args.seed) \
+    inner_sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True,
+                                                                    seed=args.seed) \
         if world > 1 else None
-    loader = DataLoader(dataset, batch_size=args.batch_size, sampler=sampler,
-                        shuffle=sampler is None, num_workers=args.num_workers, pin_memory=True,
-                        collate_fn=dual_mask_suffix_collate, drop_last=False)
-    horizon = args.epochs * len(loader)
-    clip_schedule = cosine_lr(clip_opt, args.lr, args.warmup, horizon)
-    mask_schedule = cosine_lr(mask_opt, args.mask_lr, 0, horizon)
-    suffix_schedule = cosine_lr(suffix_opt, args.suffix_lr, 0, horizon) if suffix_opt is not None else None
+    per_rank_samples = -(-len(dataset) // max(1, world))
+    batches_per_epoch = -(-per_rank_samples // args.batch_size)
     os.makedirs(args.output_dir, exist_ok=True)
     model_file = os.path.join(REPO, 'model', 'dual_mask_suffix.py')
     model_file_sha256 = file_sha256(model_file)
-    config = {
-        "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
-        "suffix_lambda": args.lambda_suffix,
-        "u_sparsity_lambda": args.lambda_u_sparse,
-        "total_objective": "10*L_S + 2*S_S + %g*L_U + %g*S_U"
-                           % (args.lambda_suffix, args.lambda_u_sparse),
-        "objective_code_sha256": model_file_sha256,
-        "objective_code_file": "model/dual_mask_suffix.py",
-        "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
-        "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
-        "batch_size_per_gpu": args.batch_size, "world_size": world, "epochs": args.epochs,
-        "loader_batches": len(loader), "lr_horizon_steps": horizon, "max_steps": args.max_steps,
-        "seed": args.seed, "total_len": args.total_len, "image_chunk": args.image_chunk,
-        "text_chunk": args.text_chunk, "precision": "fp32 master + "+args.amp_dtype+" autocast",
-        "run_type": args.run_type,
-        "formal_optimizer_updates": 0,
-        "debug_optimizer_updates": 0,
-        "init_state": args.init_state,
-        "training_sha": _git_head(), "arguments": vars(args),
-        "accumulation": 1, "u_sparsity": args.lambda_u_sparse,
-        "communication_env": {k: os.environ.get(k) for k in
-            ('NCCL_SOCKET_IFNAME', 'NCCL_IB_DISABLE', 'NCCL_P2P_DISABLE', 'GLOO_SOCKET_IFNAME', 'CUDA_VISIBLE_DEVICES')},
-    }
     resume_payload = None
     resume_epoch = 0
     resume_step_in_epoch = -1
@@ -352,7 +403,7 @@ def main() -> int:
              'weight_decay': args.weight_decay, 'warmup': args.warmup,
              'image_chunk': args.image_chunk, 'text_chunk': args.text_chunk,
              'amp_dtype': args.amp_dtype},
-            model_file_sha256, args.expect_model_sha)
+            model_file_sha256, args.expect_model_sha, args.allow_schedule_extension)
         provenance_digest = (resume_payload.get('provenance') or {}).get('state_digest')
         loaded_digest = state_digest(inner.clip.state_dict())
         if provenance_digest and provenance_digest != loaded_digest:
@@ -360,7 +411,7 @@ def main() -> int:
         position_problem = resume_position_problem(
             previous.get('epoch', resume_payload.get('epoch')),
             previous.get('step_in_epoch', resume_payload.get('step_in_epoch')),
-            len(loader), resume_payload.get('completed_steps'))
+            batches_per_epoch, resume_payload.get('completed_steps'))
         if position_problem:
             problems.append(position_problem)
         if problems:
@@ -369,19 +420,61 @@ def main() -> int:
         resume_epoch = int(resume_payload.get('epoch', 0))
         resume_step_in_epoch = int(resume_payload.get('step_in_epoch', -1))
         resume_completed_steps = completed
+    # mark the already consumed batch positions so their image decode can be skipped: the batches
+    # are discarded, but their caption RNG draw still happens, which is what keeps the stream exact
+    sampler = inner_sampler
+    if (inner_sampler is not None and resume_completed_steps is not None
+            and args.dry_skip_consumed):
+        sampler = ResumePositionSampler(inner_sampler, batches_per_epoch, args.batch_size,
+                                        resume_completed_steps)
+    loader = DataLoader(dataset, batch_size=args.batch_size, sampler=sampler,
+                        shuffle=sampler is None, num_workers=args.num_workers, pin_memory=True,
+                        collate_fn=dual_mask_suffix_collate, drop_last=False)
+    if len(loader) != batches_per_epoch:
+        raise SystemExit('loader has %d batches per epoch, expected %d'
+                         % (len(loader), batches_per_epoch))
+    horizon = args.epochs * len(loader)
+    clip_schedule = cosine_lr(clip_opt, args.lr, args.warmup, horizon)
+    mask_schedule = cosine_lr(mask_opt, args.mask_lr, 0, horizon)
+    suffix_schedule = cosine_lr(suffix_opt, args.suffix_lr, 0, horizon) if suffix_opt is not None else None
+    config = {
+        "objective": "s0_dual_mask_suffix_clean_v01", "suffix_mode": args.suffix_mode,
+        "suffix_lambda": args.lambda_suffix,
+        "u_sparsity_lambda": args.lambda_u_sparse,
+        "total_objective": "10*L_S + 2*S_S + %g*L_U + %g*S_U"
+                           % (args.lambda_suffix, args.lambda_u_sparse),
+        "objective_code_sha256": model_file_sha256,
+        "objective_code_file": "model/dual_mask_suffix.py",
+        "dry_skip_consumed": bool(args.dry_skip_consumed),
+        "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+        "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
+        "batch_size_per_gpu": args.batch_size, "world_size": world, "epochs": args.epochs,
+        "loader_batches": len(loader), "lr_horizon_steps": horizon, "max_steps": args.max_steps,
+        "seed": args.seed, "total_len": args.total_len, "image_chunk": args.image_chunk,
+        "text_chunk": args.text_chunk, "precision": "fp32 master + "+args.amp_dtype+" autocast",
+        "run_type": args.run_type,
+        "formal_optimizer_updates": 0,
+        "debug_optimizer_updates": 0,
+        "init_state": args.init_state,
+        "training_sha": _git_head(), "arguments": vars(args),
+        "accumulation": 1, "u_sparsity": args.lambda_u_sparse,
+        "communication_env": {k: os.environ.get(k) for k in
+            ('NCCL_SOCKET_IFNAME', 'NCCL_IB_DISABLE', 'NCCL_P2P_DISABLE', 'GLOO_SOCKET_IFNAME', 'CUDA_VISIBLE_DEVICES')},
+    }
+    if resume_payload is not None:
         config['resumed_from'] = os.path.abspath(args.resume)
-        config['resume_completed_steps'] = completed
+        config['resume_completed_steps'] = resume_completed_steps
         config['resume_epoch'] = resume_epoch
         config['resume_step_in_epoch'] = resume_step_in_epoch
         config['resume_stream_batch_index'] = stream_batch_index(resume_epoch, resume_step_in_epoch,
-                                                                 len(loader))
+                                                                len(loader))
         config['resume_skip_rule'] = ('skip the first completed_steps batches of the concatenated '
                                       'epoch stream; the recorded step_in_epoch is checked for '
                                       'consistency instead of being used directly')
         config['resumed_from_training_sha'] = previous.get('training_sha')
         config['resumed_from_objective'] = previous.get('total_objective')
-        config['formal_optimizer_updates'] = completed if args.run_type == 'formal' else 0
-        config['debug_optimizer_updates'] = completed if args.run_type == 'debug' else 0
+        config['formal_optimizer_updates'] = resume_completed_steps if args.run_type == 'formal' else 0
+        config['debug_optimizer_updates'] = resume_completed_steps if args.run_type == 'debug' else 0
         resume_checks = {
             'loaded_clip_state_digest': loaded_digest,
             'checkpoint_provenance_state_digest': provenance_digest,
@@ -392,20 +485,46 @@ def main() -> int:
                                       else 'expect-model-sha'),
             'resumed_from_training_sha': previous.get('training_sha'),
             'resumed_from_objective': previous.get('total_objective'),
-            'resume_completed_steps': completed,
+            'resume_completed_steps': resume_completed_steps,
             'resume_epoch': resume_epoch,
             'resume_step_in_epoch': resume_step_in_epoch,
             'resume_stream_batch_index': stream_batch_index(resume_epoch, resume_step_in_epoch,
                                                             len(loader)),
-            'batches_skipped_expected': completed,
+            'batches_skipped_expected': resume_completed_steps,
+            'dry_skip_consumed': bool(args.dry_skip_consumed),
             'optimizer_steps_restored': {
                 name: sorted({int(entry.get('step', -1))
                               for entry in (optimizer.state_dict()['state'] or {}).values()})
                 for name, optimizer in (('clip', clip_opt), ('mask', mask_opt), ('suffix', suffix_opt))
                 if optimizer is not None},
         }
+        previous_horizon = previous.get('lr_horizon_steps')
+        if previous_horizon is not None and int(previous_horizon) != int(horizon):
+            previous_lr = None
+            try:
+                previous_lr = float(
+                    resume_payload['optimizer_states']['clip']['param_groups'][0]['lr'])
+            except (KeyError, IndexError, TypeError):
+                previous_lr = None
+            new_lr = cosine_value(args.lr, args.warmup, horizon, resume_completed_steps)
+            extension = {
+                'previous_lr_horizon_steps': int(previous_horizon),
+                'new_lr_horizon_steps': int(horizon),
+                'previous_epochs': previous.get('epochs'),
+                'new_epochs': args.epochs,
+                'lr_before_extension_at_resume_step': previous_lr,
+                'lr_after_extension_at_resume_step': new_lr,
+                'lr_jump_factor': (new_lr / previous_lr) if previous_lr else None,
+                'note': ('the checkpoint was trained under a shorter cosine horizon, so resuming '
+                         'with a longer one raises the learning rate at the seam. The change is '
+                         'recorded rather than smoothed away: the extra epoch is not a pure '
+                         'continuation of the earlier learning-rate schedule.'),
+            }
+            config['schedule_extension'] = extension
+            resume_checks['schedule_extension'] = extension
+            print('SCHEDULE_EXTENDED previous_horizon=%d new_horizon=%d lr_before=%s lr_after=%.6e'
+                  % (int(previous_horizon), int(horizon), previous_lr, new_lr), flush=True)
         config['resume_checks'] = resume_checks
-    log_path = os.path.join(args.output_dir, "salu_log.jsonl")
     if rank == 0:
         with open(os.path.join(args.output_dir, "config.json"), "w", encoding="utf-8") as h:
             json.dump(config, h, indent=2, sort_keys=True)
@@ -482,6 +601,7 @@ def main() -> int:
                           "mask_lr": mask_opt.param_groups[0]["lr"],
                           "suffix_lr": suffix_opt.param_groups[0]["lr"] if suffix_opt else None,
                           "run_type": args.run_type,
+                          "lr_horizon_steps": horizon,
                           "batch_stream_sha256": batch_stream_sha256,
                           "batch_stream_definition": ("sha256 of the compact UTF-8 JSON of "
                                                       "sample_id, image_id, prefix_k, prefix, suffix "
@@ -586,6 +706,14 @@ def resume_skip(epoch: int, step_in_epoch: int, batches_per_epoch: int, resume_c
     return stream_batch_index(epoch, step_in_epoch, batches_per_epoch) < int(resume_completed_steps)
 
 
+def cosine_value(base_lr: float, warmup: int, horizon: int, step: int) -> float:
+    """The learning rate ``scheduler.cosine_lr`` assigns for a 0-based step counter."""
+    if step < int(warmup):
+        return base_lr * (step + 1) / max(1, int(warmup))
+    return 0.5 * (1 + math.cos(math.pi * (step - int(warmup))
+                               / max(1, int(horizon) - int(warmup)))) * base_lr
+
+
 def resume_position_problem(epoch, step_in_epoch, batches_per_epoch, completed) -> str:
     """Return a problem string when the recorded stream position contradicts the update count."""
     if epoch is None or step_in_epoch is None or completed is None:
@@ -598,23 +726,36 @@ def resume_position_problem(epoch, step_in_epoch, batches_per_epoch, completed) 
 
 
 def validate_resume(previous_config: Dict, previous_arguments: Dict, expected: Dict,
-                    model_file_sha256: str, expect_model_sha: str) -> list:
+                    model_file_sha256: str, expect_model_sha: str,
+                    allow_schedule_extension: bool = False) -> list:
     """Return the list of reasons a continuation must be refused (empty list means it may run).
 
     The recorded ``training_sha`` can never match when the trainer itself gains the resume path, so
     the objective is pinned by the hash of ``model/dual_mask_suffix.py`` (recorded in the checkpoint,
     or supplied as ``--expect-model-sha`` for older checkpoints) plus every objective
     hyper-parameter, rather than by the repository commit.
+
+    ``epochs`` (and therefore the cosine horizon) may only differ when the caller explicitly asks for
+    a schedule extension, and only upwards: the change is recorded in the config instead of being
+    silently smoothed over.
     """
     problems = []
     if previous_config.get('suffix_mode') != expected['suffix_mode']:
         problems.append('suffix_mode %r != %r'
                         % (previous_config.get('suffix_mode'), expected['suffix_mode']))
-    for key in ('suffix_lambda', 'u_sparsity_lambda', 'batch_size_per_gpu', 'seed', 'epochs',
+    for key in ('suffix_lambda', 'u_sparsity_lambda', 'batch_size_per_gpu', 'seed',
                 'total_len'):
         recorded = previous_config.get(key)
         if recorded is not None and float(recorded) != float(expected[key]):
             problems.append('%s %r != %r' % (key, recorded, expected[key]))
+    previous_epochs = previous_config.get('epochs')
+    if previous_epochs is not None and float(previous_epochs) != float(expected['epochs']):
+        if not allow_schedule_extension:
+            problems.append('epochs %r != %r (pass --allow-schedule-extension to extend the cosine '
+                            'horizon)' % (previous_epochs, expected['epochs']))
+        elif float(expected['epochs']) < float(previous_epochs):
+            problems.append('a schedule extension must not shorten the horizon: epochs %r -> %r'
+                            % (previous_epochs, expected['epochs']))
     for key in ('lr', 'mask_lr', 'suffix_lr', 'weight_decay', 'warmup', 'image_chunk',
                 'text_chunk', 'amp_dtype'):
         recorded = (previous_arguments or {}).get(key)
