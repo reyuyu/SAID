@@ -134,7 +134,7 @@ def main():
     trained_vs_init = {key: float((before[key] - after[key]).abs().max()) for key in after}
 
     os.makedirs(args.output_dir, exist_ok=True)
-    student_path = os.path.join(args.output_dir, 'bare_student_step500.pt')
+    student_path = os.path.join(args.output_dir, 'bare_student_step%d.pt' % steps)
     if os.path.isfile(student_path):
         raise SystemExit('refusing to overwrite %s' % student_path)
     torch.save(state, student_path)
