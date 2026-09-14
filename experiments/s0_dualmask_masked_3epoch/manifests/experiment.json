@@ -1,0 +1,87 @@
+{
+  "accumulation": 1,
+  "batch_size_per_gpu": 256,
+  "branch": "codex/s0-dualmask-clean-v01",
+  "checkpoints": {
+    "preserve": [
+      0,
+      500,
+      1000
+    ],
+    "save_every_updates": 100,
+    "target_final": 3651
+  },
+  "chunks": {
+    "image": 16,
+    "text": 32
+  },
+  "current_status": {
+    "full_run": "RUNNING",
+    "logged_updates": 1479,
+    "step1000_evaluation_exitcodes": {
+      "coco": 0,
+      "export": 0,
+      "urban": 0
+    }
+  },
+  "data": {
+    "exclude_final_caption_sentence": true,
+    "json": "share-captioner_coco_lcs_sam_1246k_1107.json",
+    "sampler": "DistributedSampler shuffle=True seed=0 drop_last=False",
+    "skip_first_rows": 1000,
+    "training_rows": 1245901,
+    "view_b_epoch_field": 0,
+    "workers_per_rank": 8
+  },
+  "epochs": 3,
+  "evaluation": {
+    "coco": "5000 images x 25000 captions, native legacy CLS, similarity_chunk=512",
+    "urban": "1000 images x 1000 captions, native legacy CLS, full pool"
+  },
+  "global_batch_nominal": 1024,
+  "horizon_updates": 3651,
+  "loader_batches_per_epoch": 1217,
+  "lrs": {
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "clip": 1e-06,
+    "eps": 1e-08,
+    "mask": 0.001,
+    "suffix_gate": 0.0001,
+    "warmup_clip_updates": 200,
+    "warmup_mask_updates": 0,
+    "warmup_suffix_updates": 0,
+    "weight_decay_clip": 0.01,
+    "weight_decay_mask": 0.0,
+    "weight_decay_suffix_gate": 0.0
+  },
+  "mode": "masked",
+  "name": "s0_dualmask_masked_500_to_1000_to_3651",
+  "objective": "L_total = L_S0 + 1.0 * L_suffix; new U sparsity coefficient = 0",
+  "precision": "fp32 master + bf16 autocast",
+  "predecessor_training_sha": "ff5ad1d4b918d56c6bfa48a2870dc5223e757237",
+  "repository": "reyuyu/SAID",
+  "secrets_policy": "No credentials, tokens, private keys, model weights or datasets are included.",
+  "seed": 0,
+  "stages": [
+    {
+      "code_sha256": "ff5ad1d4b918d56c6bfa48a2870dc5223e757237",
+      "from": "shared_init",
+      "to": 500
+    },
+    {
+      "code_sha256": "11af80b344c623b27b93069f9be526970c9c950c",
+      "from": 500,
+      "to": 1000
+    },
+    {
+      "code_sha256": "11af80b344c623b27b93069f9be526970c9c950c",
+      "from": 1000,
+      "to": 3651
+    }
+  ],
+  "training_sha": "11af80b344c623b27b93069f9be526970c9c950c",
+  "world_size": 4
+}

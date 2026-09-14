@@ -1,0 +1,88 @@
+{
+  "accumulation": 1,
+  "arguments": {
+    "amp_dtype": "bf16",
+    "base_model": "B16",
+    "batch_size": 256,
+    "epochs": 3,
+    "image_chunk": 16,
+    "init_state": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "max_steps": 1000,
+    "num_workers": 8,
+    "output_dir": "/root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_from500_continuation_v02",
+    "resume": "/root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_from500_continuation_v02/s0_dual_mask_suffix_masked_step000500.pt",
+    "run_type": "formal",
+    "save_every": 100,
+    "seed": 0,
+    "suffix_lr": 0.0001,
+    "suffix_mode": "masked",
+    "text_chunk": 32,
+    "total_len": 1000,
+    "warmup": 200,
+    "weight_decay": 0.01
+  },
+  "batch_size_per_gpu": 256,
+  "communication_env": {
+    "CUDA_VISIBLE_DEVICES": "0,1,2,3",
+    "GLOO_SOCKET_IFNAME": "lo",
+    "NCCL_IB_DISABLE": "1",
+    "NCCL_P2P_DISABLE": "1",
+    "NCCL_SOCKET_IFNAME": "lo"
+  },
+  "debug_optimizer_updates": 0,
+  "epochs": 3,
+  "formal_optimizer_updates": 1000,
+  "image_chunk": 16,
+  "init_state": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+  "loader_batches": 1217,
+  "lr_horizon_steps": 3651,
+  "max_steps": 1000,
+  "objective": "s0_dual_mask_suffix_clean_v01",
+  "parent_checkpoint_cursor": {
+    "epoch": 0,
+    "step_in_epoch": 500
+  },
+  "parent_training_sha": "ff5ad1d4b918d56c6bfa48a2870dc5223e757237",
+  "precision": "fp32 master + bf16 autocast",
+  "resume_completed_steps": 500,
+  "resume_epoch": 0,
+  "resume_next_batch": 500,
+  "resume_step_in_epoch": 499,
+  "resumed_from": "/root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_from500_continuation_v02/s0_dual_mask_suffix_masked_step000500.pt",
+  "run_type": "formal",
+  "seed": 0,
+  "stream_summary": [
+    {
+      "consumed_samples": 256000,
+      "rank": 0,
+      "stream_sha256": "9d97d594397f9558a261b0cf1d191a61e18432a73a128d769f8ea494510362c5"
+    },
+    {
+      "consumed_samples": 256000,
+      "rank": 1,
+      "stream_sha256": "18d2ff9fb8002ef95dbf0223cc60e3c38f1dda0f82d7693f67a037fc977536b5"
+    },
+    {
+      "consumed_samples": 256000,
+      "rank": 2,
+      "stream_sha256": "0e99c511fb333e5335e10fe632488d34297afa2f4dfd389340911f3fb906134c"
+    },
+    {
+      "consumed_samples": 256000,
+      "rank": 3,
+      "stream_sha256": "291f4b274dfafea1b7a82e9a139f64bb1393fd572ce725b9f50080b956250a5d"
+    }
+  ],
+  "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+  "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
+  "suffix_lambda": 1.0,
+  "suffix_mode": "masked",
+  "text_chunk": 32,
+  "total_len": 1000,
+  "training_seconds": 1259.7851518392563,
+  "training_sha": "11af80b344c623b27b93069f9be526970c9c950c",
+  "u_sparsity": 0.0,
+  "world_size": 4
+}

@@ -1,0 +1,78 @@
+{
+  "accumulation": 1,
+  "arguments": {
+    "amp_dtype": "bf16",
+    "base_model": "B16",
+    "batch_size": 256,
+    "epochs": 3,
+    "image_chunk": 16,
+    "init_state": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "max_steps": 500,
+    "num_workers": 8,
+    "output_dir": "/root/SAID-s0-dualmask-clean-v01/runs_salu/dual_mask_suffix_masked_formal500_flatgather_v01",
+    "resume": null,
+    "run_type": "formal",
+    "save_every": 100,
+    "seed": 0,
+    "suffix_lr": 0.0001,
+    "suffix_mode": "masked",
+    "text_chunk": 32,
+    "total_len": 1000,
+    "warmup": 200,
+    "weight_decay": 0.01
+  },
+  "batch_size_per_gpu": 256,
+  "communication_env": {
+    "CUDA_VISIBLE_DEVICES": "0,1,2,3",
+    "GLOO_SOCKET_IFNAME": "lo",
+    "NCCL_IB_DISABLE": "1",
+    "NCCL_P2P_DISABLE": "1",
+    "NCCL_SOCKET_IFNAME": "lo"
+  },
+  "debug_optimizer_updates": 0,
+  "epochs": 3,
+  "formal_optimizer_updates": 500,
+  "image_chunk": 16,
+  "init_state": "/root/SAID-gap-completion/runs_salu/said_cls_cvssl/shared_init/cvssl_initial.pt",
+  "loader_batches": 1217,
+  "lr_horizon_steps": 3651,
+  "max_steps": 500,
+  "objective": "s0_dual_mask_suffix_clean_v01",
+  "precision": "fp32 master + bf16 autocast",
+  "run_type": "formal",
+  "seed": 0,
+  "stream_summary": [
+    {
+      "consumed_samples": 128000,
+      "rank": 0,
+      "stream_sha256": "4e2bed21ef7fd72955dbac090313242b2baeec696d2b39b9ac2e9389dce1f5b7"
+    },
+    {
+      "consumed_samples": 128000,
+      "rank": 1,
+      "stream_sha256": "7cbaee046c2c9ca94d557a05d79263a19e98513704f3823614fbfdbd0b6fa432"
+    },
+    {
+      "consumed_samples": 128000,
+      "rank": 2,
+      "stream_sha256": "170da4bce08614458c034360b3144a2d3869748280bff27674b8e4f309b4e47e"
+    },
+    {
+      "consumed_samples": 128000,
+      "rank": 3,
+      "stream_sha256": "ca8d6f6ef2792d1f8c3f4a77e2a03619d7522382ca4d72b10b7174ce128646ed"
+    }
+  ],
+  "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+  "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
+  "suffix_lambda": 1.0,
+  "suffix_mode": "masked",
+  "text_chunk": 32,
+  "total_len": 1000,
+  "training_seconds": 899.371125087142,
+  "training_sha": "ff5ad1d4b918d56c6bfa48a2870dc5223e757237",
+  "u_sparsity": 0.0,
+  "world_size": 4
+}
