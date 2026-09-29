@@ -1,0 +1,889 @@
+{
+  "model": "A3-RandomK",
+  "evaluated_step": 2000,
+  "new_training": false,
+  "preflight": {
+    "passed": true,
+    "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/A3-RandomK/step002000.pt",
+    "checkpoint_sha256": "2a18ee898764bf533c59632f6bcc7c0387fa15f4247da38860d051ec66e59ffe",
+    "completed_steps": 2000,
+    "optimizer_steps": [
+      2000
+    ],
+    "horizon": 3651,
+    "training_code": "885b4bb081f3892e8385fa1c28754c5e750cb940",
+    "evaluation_source_sha256": {
+      "tools/nest_clip.py": "dec0ff4a6aed19d4d9030119db4f3b20412ff91ef56c568a2c99f30c30d6722d",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "eval/retrieval/coco_retrieval.py": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+      "tools/urban1k_retrieval.py": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "0f85eb499e4f839f3cf8335ee583e5b843197fd46d0531d58cad4d6b942a9e59",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+    },
+    "protocols": [
+      "coco",
+      "urban",
+      "flickr_test1k",
+      "docci"
+    ],
+    "excluded": [
+      "dci",
+      "long_dci"
+    ],
+    "new_training": false
+  },
+  "export_check": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      2000
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "2a18ee898764bf533c59632f6bcc7c0387fa15f4247da38860d051ec66e59ffe",
+    "bare_sha256": "b0f94ad305dd780113cce3c765085b4f3140d3c16a2ea5c8e7fd30567a8ea803"
+  },
+  "executions": {
+    "export2000": {
+      "name": "export2000",
+      "command": [
+        "bash",
+        "experiments/nest_clip_v1/randomk2000/run.sh",
+        "export"
+      ],
+      "cwd": "/root/lk_projects/SAID",
+      "started_utc": "2026-09-29T13:04:21.892686+00:00",
+      "git_head": "0ae0d02667c0c6bace340824d1a25befbc4f95fc",
+      "exit_code": 0,
+      "wall_seconds": 9.838448792696,
+      "finished_utc": "2026-09-29T13:04:31.734381+00:00"
+    },
+    "verify-export2000": {
+      "name": "verify-export2000",
+      "command": [
+        "bash",
+        "experiments/nest_clip_v1/randomk2000/run.sh",
+        "verify-export"
+      ],
+      "cwd": "/root/lk_projects/SAID",
+      "started_utc": "2026-09-29T13:05:01.666123+00:00",
+      "git_head": "0ae0d02667c0c6bace340824d1a25befbc4f95fc",
+      "exit_code": 0,
+      "wall_seconds": 16.227028764784336,
+      "finished_utc": "2026-09-29T13:05:17.896656+00:00"
+    },
+    "coco": {
+      "name": "coco",
+      "command": [
+        "bash",
+        "experiments/nest_clip_v1/randomk2000/run.sh",
+        "coco"
+      ],
+      "cwd": "/root/lk_projects/SAID",
+      "started_utc": "2026-09-29T13:07:08.170754+00:00",
+      "git_head": "0ae0d02667c0c6bace340824d1a25befbc4f95fc",
+      "exit_code": 0,
+      "wall_seconds": 120.86314748227596,
+      "finished_utc": "2026-09-29T13:09:09.035622+00:00"
+    },
+    "urban": {
+      "name": "urban",
+      "command": [
+        "bash",
+        "experiments/nest_clip_v1/randomk2000/run.sh",
+        "urban"
+      ],
+      "cwd": "/root/lk_projects/SAID",
+      "started_utc": "2026-09-29T13:09:59.085100+00:00",
+      "git_head": "0ae0d02667c0c6bace340824d1a25befbc4f95fc",
+      "exit_code": 0,
+      "wall_seconds": 20.94605791568756,
+      "finished_utc": "2026-09-29T13:10:20.034495+00:00"
+    },
+    "flickr_test1k": {
+      "name": "flickr_test1k",
+      "command": [
+        "bash",
+        "experiments/nest_clip_v1/randomk2000/run.sh",
+        "flickr_test1k"
+      ],
+      "cwd": "/root/lk_projects/SAID",
+      "started_utc": "2026-09-29T13:10:49.639775+00:00",
+      "git_head": "0ae0d02667c0c6bace340824d1a25befbc4f95fc",
+      "exit_code": 0,
+      "wall_seconds": 25.776698283851147,
+      "finished_utc": "2026-09-29T13:11:15.419896+00:00"
+    },
+    "docci": {
+      "name": "docci",
+      "command": [
+        "bash",
+        "experiments/nest_clip_v1/randomk2000/run.sh",
+        "docci"
+      ],
+      "cwd": "/root/lk_projects/SAID",
+      "started_utc": "2026-09-29T13:11:56.929489+00:00",
+      "git_head": "0ae0d02667c0c6bace340824d1a25befbc4f95fc",
+      "exit_code": 0,
+      "wall_seconds": 270.5973863527179,
+      "finished_utc": "2026-09-29T13:16:27.530376+00:00"
+    }
+  },
+  "raw_evaluations": {
+    "500": {
+      "coco": {
+        "image2text_R1": 0.5886,
+        "image2text_R5": 0.817,
+        "image2text_R10": 0.8864,
+        "text2image_R1": 0.40532,
+        "text2image_R5": 0.66196,
+        "text2image_R10": 0.759,
+        "checkpoint_sha256": "6581a09c2bc72d93861d382d2673ee4d166f699d7e80a1ada106b53eef1e8f0b",
+        "native_only": true
+      },
+      "urban": {
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "n_images": 1000,
+        "n_captions": 1000,
+        "image_representation": "legacy_cls",
+        "global_pool": "n/a",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "positive": "diagonal",
+        "image2text": {
+          "R1": 0.8970000147819519,
+          "R5": 0.9780000448226929,
+          "R10": 0.9910000562667847
+        },
+        "text2image": {
+          "R1": 0.8670000433921814,
+          "R5": 0.9790000319480896,
+          "R10": 0.9880000352859497
+        },
+        "checkpoint_sha256": "6581a09c2bc72d93861d382d2673ee4d166f699d7e80a1ada106b53eef1e8f0b",
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "native_only": true
+      },
+      "flickr_test1k": {
+        "protocol": "flickr_test1k",
+        "n_images": 1000,
+        "n_captions": 5000,
+        "metrics": {
+          "R@1": {
+            "I2T": 0.855,
+            "T2I": 0.6992
+          },
+          "R@5": {
+            "I2T": 0.973,
+            "T2I": 0.902
+          },
+          "R@10": {
+            "I2T": 0.989,
+            "T2I": 0.9434
+          }
+        },
+        "checkpoint_sha256": "6581a09c2bc72d93861d382d2673ee4d166f699d7e80a1ada106b53eef1e8f0b",
+        "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+        "elapsed_seconds": 17.447401762008667,
+        "device": "cuda:0",
+        "native_student_only": true
+      },
+      "docci": {
+        "protocol": "docci",
+        "n_images": 5000,
+        "n_captions": 5000,
+        "metrics": {
+          "R@1": {
+            "I2T": 0.76,
+            "T2I": 0.7586
+          },
+          "R@5": {
+            "I2T": 0.9458,
+            "T2I": 0.944
+          },
+          "R@10": {
+            "I2T": 0.9738,
+            "T2I": 0.9726
+          }
+        },
+        "checkpoint_sha256": "6581a09c2bc72d93861d382d2673ee4d166f699d7e80a1ada106b53eef1e8f0b",
+        "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+        "elapsed_seconds": 262.35191917419434,
+        "device": "cuda:0",
+        "native_student_only": true
+      }
+    },
+    "2000": {
+      "coco": {
+        "image2text_R1": 0.6136,
+        "image2text_R5": 0.8304,
+        "image2text_R10": 0.8998,
+        "text2image_R1": 0.41568,
+        "text2image_R5": 0.67244,
+        "text2image_R10": 0.76932,
+        "checkpoint_sha256": "b0f94ad305dd780113cce3c765085b4f3140d3c16a2ea5c8e7fd30567a8ea803",
+        "native_only": true
+      },
+      "urban": {
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "n_images": 1000,
+        "n_captions": 1000,
+        "image_representation": "legacy_cls",
+        "global_pool": "n/a",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "positive": "diagonal",
+        "image2text": {
+          "R1": 0.9160000681877136,
+          "R5": 0.9810000658035278,
+          "R10": 0.9920000433921814
+        },
+        "text2image": {
+          "R1": 0.893000066280365,
+          "R5": 0.9810000658035278,
+          "R10": 0.9890000224113464
+        },
+        "checkpoint_sha256": "b0f94ad305dd780113cce3c765085b4f3140d3c16a2ea5c8e7fd30567a8ea803",
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "native_only": true
+      },
+      "flickr_test1k": {
+        "protocol": "flickr_test1k",
+        "n_images": 1000,
+        "n_captions": 5000,
+        "metrics": {
+          "R@1": {
+            "I2T": 0.881,
+            "T2I": 0.71
+          },
+          "R@5": {
+            "I2T": 0.978,
+            "T2I": 0.9092
+          },
+          "R@10": {
+            "I2T": 0.994,
+            "T2I": 0.949
+          }
+        },
+        "checkpoint_sha256": "b0f94ad305dd780113cce3c765085b4f3140d3c16a2ea5c8e7fd30567a8ea803",
+        "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+        "elapsed_seconds": 17.55727767944336,
+        "device": "cuda:0",
+        "native_student_only": true
+      },
+      "docci": {
+        "protocol": "docci",
+        "n_images": 5000,
+        "n_captions": 5000,
+        "metrics": {
+          "R@1": {
+            "I2T": 0.7806,
+            "T2I": 0.7856
+          },
+          "R@5": {
+            "I2T": 0.953,
+            "T2I": 0.9536
+          },
+          "R@10": {
+            "I2T": 0.9808,
+            "T2I": 0.9778
+          }
+        },
+        "checkpoint_sha256": "b0f94ad305dd780113cce3c765085b4f3140d3c16a2ea5c8e7fd30567a8ea803",
+        "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+        "elapsed_seconds": 262.3511743545532,
+        "device": "cuda:0",
+        "native_student_only": true
+      }
+    },
+    "3651": {
+      "coco": {
+        "image2text_R1": 0.6148,
+        "image2text_R5": 0.8348,
+        "image2text_R10": 0.9002,
+        "text2image_R1": 0.41804,
+        "text2image_R5": 0.67456,
+        "text2image_R10": 0.772,
+        "checkpoint_sha256": "baa021c6461daaab7f02f82cc4d7e4810b1359b18f3603cf209c7e8edff48a07",
+        "native_only": true
+      },
+      "urban": {
+        "protocol": "urban1k-native-cls-v1",
+        "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "n_images": 1000,
+        "n_captions": 1000,
+        "image_representation": "legacy_cls",
+        "global_pool": "n/a",
+        "similarity": "normalized features, plain inner product, full 1000-item pool",
+        "positive": "diagonal",
+        "image2text": {
+          "R1": 0.9130000472068787,
+          "R5": 0.9820000529289246,
+          "R10": 0.9920000433921814
+        },
+        "text2image": {
+          "R1": 0.8950000405311584,
+          "R5": 0.9800000190734863,
+          "R10": 0.9890000224113464
+        },
+        "checkpoint_sha256": "baa021c6461daaab7f02f82cc4d7e4810b1359b18f3603cf209c7e8edff48a07",
+        "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+        "upstream_metrics_reproduced": [
+          "T2I R@1",
+          "I2T R@1"
+        ],
+        "added_here": [
+          "R@5",
+          "R@10"
+        ],
+        "native_only": true
+      },
+      "flickr_test1k": {
+        "protocol": "flickr_test1k",
+        "n_images": 1000,
+        "n_captions": 5000,
+        "metrics": {
+          "R@1": {
+            "I2T": 0.881,
+            "T2I": 0.7162
+          },
+          "R@5": {
+            "I2T": 0.98,
+            "T2I": 0.9118
+          },
+          "R@10": {
+            "I2T": 0.995,
+            "T2I": 0.9508
+          }
+        },
+        "checkpoint_sha256": "baa021c6461daaab7f02f82cc4d7e4810b1359b18f3603cf209c7e8edff48a07",
+        "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+        "elapsed_seconds": 17.559495449066162,
+        "device": "cuda:0",
+        "native_student_only": true
+      },
+      "docci": {
+        "protocol": "docci",
+        "n_images": 5000,
+        "n_captions": 5000,
+        "metrics": {
+          "R@1": {
+            "I2T": 0.7812,
+            "T2I": 0.7934
+          },
+          "R@5": {
+            "I2T": 0.9548,
+            "T2I": 0.956
+          },
+          "R@10": {
+            "I2T": 0.9818,
+            "T2I": 0.9808
+          }
+        },
+        "checkpoint_sha256": "baa021c6461daaab7f02f82cc4d7e4810b1359b18f3603cf209c7e8edff48a07",
+        "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+        "elapsed_seconds": 260.455157995224,
+        "device": "cuda:0",
+        "native_student_only": true
+      }
+    }
+  },
+  "sources": {
+    "500": {
+      "coco": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk500/A3-RandomK/coco_native.json",
+        "sha256": "6b6784e6c318be82127cae69fd03d857f963f5475c395903433726e50cc2e192"
+      },
+      "urban": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk500/A3-RandomK/urban_native.json",
+        "sha256": "ef699f00879eeaf86f562f846082ccd0bb3323625c44c909e50b06b6c49db861"
+      },
+      "flickr_test1k": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/evaluation/step500/flickr_test1k/flickr_test1k.json",
+        "sha256": "953a2544c77c9c4dcc301a5a292e229c78f2415a5fe1d85609b1688aafcab9f4"
+      },
+      "docci": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/evaluation/step500/docci/docci.json",
+        "sha256": "390358d95525fb20f85a5b26f767dcca8cb3700c0f289713edf71e83426e31dc"
+      }
+    },
+    "2000": {
+      "coco": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk2000/evaluation/coco_native.json",
+        "sha256": "ab5e8c09a82444edc0f457e6dafdf21aaa6479986dec84d4ed81fdeafed17574"
+      },
+      "urban": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk2000/evaluation/urban_native.json",
+        "sha256": "4622e9a3fb6105e17cc8619f86b93a0fbfcfaa91a35d2951ceb71b9b2b243e1c"
+      },
+      "flickr_test1k": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk2000/evaluation/flickr_test1k/flickr_test1k.json",
+        "sha256": "24bf2308cca884383d2408a380963336c9d4eb7dc5d073bc595b694047914d49"
+      },
+      "docci": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk2000/evaluation/docci/docci.json",
+        "sha256": "38be686ff42024e32ee17183fa12ad9224dcde47d7d816d1e14f7c2029409449"
+      }
+    },
+    "3651": {
+      "coco": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/evaluation/step3651/coco_native.json",
+        "sha256": "73140aa74bce18ad479931b9ae760a30d625085b6f852b0fdfce97cf653a666b"
+      },
+      "urban": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/evaluation/step3651/urban_native.json",
+        "sha256": "b74bbb880f2b85e10dc0740245223abbba5e4dfb8a1678873623a54c1f8417fb"
+      },
+      "flickr_test1k": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/evaluation/step3651/flickr_test1k/flickr_test1k.json",
+        "sha256": "d105382db65f3a8bb343dced24c72e98058e88c6529c085883c56495def69431"
+      },
+      "docci": {
+        "path": "/root/lk_projects/SAID-nest-clip-v1/randomk3epoch/evaluation/step3651/docci/docci.json",
+        "sha256": "b2c98f82d7c44f1eaafd75699128e95194ce1b972991d84a1394ce08cb0132e4"
+      }
+    }
+  },
+  "comparison": [
+    {
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.5886,
+        "2000": 0.6136,
+        "3651": 0.6148
+      },
+      "percent": {
+        "500": 58.86,
+        "2000": 61.36000000000001,
+        "3651": 61.480000000000004
+      },
+      "delta_2000_vs500_pp": 2.500000000000002,
+      "delta_2000_vs3651_pp": -0.11999999999999789
+    },
+    {
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.817,
+        "2000": 0.8304,
+        "3651": 0.8348
+      },
+      "percent": {
+        "500": 81.69999999999999,
+        "2000": 83.04,
+        "3651": 83.48
+      },
+      "delta_2000_vs500_pp": 1.3400000000000079,
+      "delta_2000_vs3651_pp": -0.43999999999999595
+    },
+    {
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.8864,
+        "2000": 0.8998,
+        "3651": 0.9002
+      },
+      "percent": {
+        "500": 88.64,
+        "2000": 89.98,
+        "3651": 90.02
+      },
+      "delta_2000_vs500_pp": 1.3400000000000079,
+      "delta_2000_vs3651_pp": -0.039999999999995595
+    },
+    {
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.40532,
+        "2000": 0.41568,
+        "3651": 0.41804
+      },
+      "percent": {
+        "500": 40.532000000000004,
+        "2000": 41.568,
+        "3651": 41.804
+      },
+      "delta_2000_vs500_pp": 1.035999999999998,
+      "delta_2000_vs3651_pp": -0.23600000000000287
+    },
+    {
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.66196,
+        "2000": 0.67244,
+        "3651": 0.67456
+      },
+      "percent": {
+        "500": 66.196,
+        "2000": 67.244,
+        "3651": 67.456
+      },
+      "delta_2000_vs500_pp": 1.0480000000000045,
+      "delta_2000_vs3651_pp": -0.21200000000000108
+    },
+    {
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.759,
+        "2000": 0.76932,
+        "3651": 0.772
+      },
+      "percent": {
+        "500": 75.9,
+        "2000": 76.932,
+        "3651": 77.2
+      },
+      "delta_2000_vs500_pp": 1.0319999999999996,
+      "delta_2000_vs3651_pp": -0.26800000000000157
+    },
+    {
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.8970000147819519,
+        "2000": 0.9160000681877136,
+        "3651": 0.9130000472068787
+      },
+      "percent": {
+        "500": 89.70000147819519,
+        "2000": 91.60000681877136,
+        "3651": 91.30000472068787
+      },
+      "delta_2000_vs500_pp": 1.9000053405761719,
+      "delta_2000_vs3651_pp": 0.3000020980834961
+    },
+    {
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.9780000448226929,
+        "2000": 0.9810000658035278,
+        "3651": 0.9820000529289246
+      },
+      "percent": {
+        "500": 97.80000448226929,
+        "2000": 98.10000658035278,
+        "3651": 98.20000529289246
+      },
+      "delta_2000_vs500_pp": 0.3000020980834961,
+      "delta_2000_vs3651_pp": -0.09999871253967285
+    },
+    {
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.9910000562667847,
+        "2000": 0.9920000433921814,
+        "3651": 0.9920000433921814
+      },
+      "percent": {
+        "500": 99.10000562667847,
+        "2000": 99.20000433921814,
+        "3651": 99.20000433921814
+      },
+      "delta_2000_vs500_pp": 0.09999871253967285,
+      "delta_2000_vs3651_pp": 0.0
+    },
+    {
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.8670000433921814,
+        "2000": 0.893000066280365,
+        "3651": 0.8950000405311584
+      },
+      "percent": {
+        "500": 86.70000433921814,
+        "2000": 89.3000066280365,
+        "3651": 89.50000405311584
+      },
+      "delta_2000_vs500_pp": 2.6000022888183594,
+      "delta_2000_vs3651_pp": -0.1999974250793457
+    },
+    {
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.9790000319480896,
+        "2000": 0.9810000658035278,
+        "3651": 0.9800000190734863
+      },
+      "percent": {
+        "500": 97.90000319480896,
+        "2000": 98.10000658035278,
+        "3651": 98.00000190734863
+      },
+      "delta_2000_vs500_pp": 0.20000338554382324,
+      "delta_2000_vs3651_pp": 0.10000467300415039
+    },
+    {
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.9880000352859497,
+        "2000": 0.9890000224113464,
+        "3651": 0.9890000224113464
+      },
+      "percent": {
+        "500": 98.80000352859497,
+        "2000": 98.90000224113464,
+        "3651": 98.90000224113464
+      },
+      "delta_2000_vs500_pp": 0.09999871253967285,
+      "delta_2000_vs3651_pp": 0.0
+    },
+    {
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.855,
+        "2000": 0.881,
+        "3651": 0.881
+      },
+      "percent": {
+        "500": 85.5,
+        "2000": 88.1,
+        "3651": 88.1
+      },
+      "delta_2000_vs500_pp": 2.6000000000000023,
+      "delta_2000_vs3651_pp": 0.0
+    },
+    {
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.973,
+        "2000": 0.978,
+        "3651": 0.98
+      },
+      "percent": {
+        "500": 97.3,
+        "2000": 97.8,
+        "3651": 98.0
+      },
+      "delta_2000_vs500_pp": 0.5000000000000004,
+      "delta_2000_vs3651_pp": -0.20000000000000018
+    },
+    {
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.989,
+        "2000": 0.994,
+        "3651": 0.995
+      },
+      "percent": {
+        "500": 98.9,
+        "2000": 99.4,
+        "3651": 99.5
+      },
+      "delta_2000_vs500_pp": 0.5000000000000004,
+      "delta_2000_vs3651_pp": -0.10000000000000009
+    },
+    {
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.6992,
+        "2000": 0.71,
+        "3651": 0.7162
+      },
+      "percent": {
+        "500": 69.92,
+        "2000": 71.0,
+        "3651": 71.61999999999999
+      },
+      "delta_2000_vs500_pp": 1.079999999999992,
+      "delta_2000_vs3651_pp": -0.6199999999999983
+    },
+    {
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.902,
+        "2000": 0.9092,
+        "3651": 0.9118
+      },
+      "percent": {
+        "500": 90.2,
+        "2000": 90.92,
+        "3651": 91.18
+      },
+      "delta_2000_vs500_pp": 0.7199999999999984,
+      "delta_2000_vs3651_pp": -0.26000000000000467
+    },
+    {
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.9434,
+        "2000": 0.949,
+        "3651": 0.9508
+      },
+      "percent": {
+        "500": 94.34,
+        "2000": 94.89999999999999,
+        "3651": 95.08
+      },
+      "delta_2000_vs500_pp": 0.5599999999999938,
+      "delta_2000_vs3651_pp": -0.18000000000000238
+    },
+    {
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.76,
+        "2000": 0.7806,
+        "3651": 0.7812
+      },
+      "percent": {
+        "500": 76.0,
+        "2000": 78.06,
+        "3651": 78.12
+      },
+      "delta_2000_vs500_pp": 2.059999999999995,
+      "delta_2000_vs3651_pp": -0.060000000000004494
+    },
+    {
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.9458,
+        "2000": 0.953,
+        "3651": 0.9548
+      },
+      "percent": {
+        "500": 94.58,
+        "2000": 95.3,
+        "3651": 95.48
+      },
+      "delta_2000_vs500_pp": 0.7199999999999984,
+      "delta_2000_vs3651_pp": -0.18000000000000238
+    },
+    {
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.9738,
+        "2000": 0.9808,
+        "3651": 0.9818
+      },
+      "percent": {
+        "500": 97.38,
+        "2000": 98.08,
+        "3651": 98.18
+      },
+      "delta_2000_vs500_pp": 0.7000000000000006,
+      "delta_2000_vs3651_pp": -0.10000000000000009
+    },
+    {
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "raw": {
+        "500": 0.7586,
+        "2000": 0.7856,
+        "3651": 0.7934
+      },
+      "percent": {
+        "500": 75.86,
+        "2000": 78.56,
+        "3651": 79.34
+      },
+      "delta_2000_vs500_pp": 2.6999999999999913,
+      "delta_2000_vs3651_pp": -0.7800000000000029
+    },
+    {
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "raw": {
+        "500": 0.944,
+        "2000": 0.9536,
+        "3651": 0.956
+      },
+      "percent": {
+        "500": 94.39999999999999,
+        "2000": 95.36,
+        "3651": 95.6
+      },
+      "delta_2000_vs500_pp": 0.9600000000000053,
+      "delta_2000_vs3651_pp": -0.23999999999999577
+    },
+    {
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "raw": {
+        "500": 0.9726,
+        "2000": 0.9778,
+        "3651": 0.9808
+      },
+      "percent": {
+        "500": 97.26,
+        "2000": 97.78,
+        "3651": 98.08
+      },
+      "delta_2000_vs500_pp": 0.5199999999999982,
+      "delta_2000_vs3651_pp": -0.30000000000000027
+    }
+  ],
+  "protocols": [
+    "coco",
+    "urban",
+    "flickr_test1k",
+    "docci"
+  ],
+  "excluded_protocols": [
+    "dci",
+    "long_dci"
+  ],
+  "policy": "Do not run DCI/Long-DCI in this and future tasks unless the user changes scope",
+  "limitations": [
+    "Same seed=0 trajectory, different checkpoint budgets",
+    "User-requested post-hoc checkpoint inspection; no statistical significance claim"
+  ]
+}

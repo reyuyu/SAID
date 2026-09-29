@@ -1,5 +1,7 @@
 # A3-RandomK step2000评测
 
+已完成严格导出和四项评测：[完整对照报告](REPORT.md) · [结果JSON](results.json)。相对step500，24项指标均提高；相对step3651，2项高、19项低、3项持平。
+
 对同一A3-RandomK三epoch训练轨迹的step2000检查点做原生评测，不重新训练。按[最新评测范围](../EVALUATION_POLICY.md)，只运行COCO、Urban、Flickr30k test1k和DOCCI，跳过DCI及Long-DCI。
 
 ```bash
