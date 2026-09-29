@@ -1,0 +1,31 @@
+{
+  "historical_results": "/root/lk_projects/SAID/experiments/results.json",
+  "historical_results_sha256": "a03b0abddceeb7027d355c3b4aca5e235388f31783c33c57c0eaa6577afd0c4c",
+  "extended_evaluator_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+  "native_entry_sha256": "5dfeed501f9ab5da8f0fe0e274e508c9d0e288443f31e55d12151180d7db6765",
+  "model_hashes": {
+    "clean3651": "0e8bfcf7fa036822b334982c11f74dcc830ba0ebd0a47d1a0a9dbaa26fef7f5c",
+    "full3651": "798fe17f2d417ae863fd8298dae8185f51202737bd1e62d695c4b70a7a6910c7",
+    "full2000": "6232ee4f0745d20b37bd2ccd7bf76e53f3ef5e9428654b7d88091d39c8b27cb7"
+  },
+  "torch": "2.5.1+cu124",
+  "device_policy": "one evaluation process per GPU",
+  "precision": "FP32 native student; no autocast",
+  "batch_size": 64,
+  "COCO_similarity_chunk": 512,
+  "Urban_text_batch": 1000,
+  "frozen_evaluator_manifest": {
+    "eval/retrieval/coco_retrieval.py": {
+      "same_as_training_checkout": true,
+      "sha256": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086"
+    },
+    "tools/eval_urban1k_cls.py": {
+      "same_as_training_checkout": true,
+      "sha256": "42cc728f587b3b2bd83bde8d205900f7aa8ff4387491a3c3a0f95ffbac0475c7"
+    },
+    "tools/urban1k_retrieval.py": {
+      "same_as_training_checkout": true,
+      "sha256": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2"
+    }
+  }
+}

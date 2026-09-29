@@ -1,5 +1,7 @@
 # A3-RandomK：完整3 epoch与扩展检索
 
+已完成累计3651步训练及六项原生检索，36项R@1/5/10均高于同一模型的step500结果。[完整报告](REPORT.md) · [机器可读结果](results.json)。相同3651更新预算下与Clean/Full互有胜负；报告保留全部指标、来源和限制。
+
 从已完成的A3-RandomK step500完整检查点继续到 **累计3651更新**，新增3151更新。原本scheduler horizon就是3651，因此这次只延后停止点，不延长日程、不重启warmup。保持模型、RandomK采样、包含项最高权重1、优化器及精度配置。
 
 父检查点：`/root/lk_projects/SAID-nest-clip-v1/randomk500/A3-RandomK/step000500.pt`，SHA256 `1fb8f630b181a4b93c4b303f5844e43bcf8fd6aff3b0a73d872bbc0c42ed4d40`。父trainer SHA256为 `66da82ca76945eb3b7803767996c0216bc354974d204361740aee85c22cabc31`，由续训命令显式固定。仅允许已知trainer迁移，模型/目标/数据源码哈希及方法配置必须一致。
