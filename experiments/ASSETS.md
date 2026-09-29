@@ -15,6 +15,9 @@ GitHub 同步代码、说明和小型证据；训练数据、模型和缓存独�
 | Full 完整 checkpoint | 2000 | `bfaeeb4a54c1c76702831472e351aab3ab2b0ae9e231d87bd5fea7544d20b5da` |
 | Full bare student | 2000 | `54f5c8b601c237e883a79cb82cb85865e3e0ff27e7399a189eb95c21361faf15` |
 | Full Urban 适配导出 | 2000 | `9225a1b912f2ac51fddb74a4f5e7bce5eac2a323d68cbb842c583003db1e9c29` |
+| 3/0 完整 checkpoint | 500 | `4e905bf1160f640da70de6045729cf27bf6f8ca67834198f2e029e030ec5ed21` |
+| 3/0 bare student | 500 | `04a1a677016be8f26121f3b3cf2de635362eae8540c387ce7bbed0d7cfe05e4d` |
+| 本机重建共同初态（历史张量摘要相同，非原容器） | 0 | `6e9cb606eec915b5b8613b7c81dccbd73dcb6e928a3ded49ac21c0505c454483` |
 
 裸学生约612 MB，完整含优化器检查点约1.84 GB；不同导出容器有不同文件哈希。原始 metadata 和检索结果均保留各自实际文件身份。
 
@@ -38,3 +41,7 @@ GitHub 同步代码、说明和小型证据；训练数据、模型和缓存独�
 维护者已在科大云盘 `CCCLIP` 保存部分代码包、两个版本最终权重及 Clean step1000、部分评测资产。该目录是私人备份，不是公开下载端点；未发布可下载权重附件时，外部读者需先向维护者取得对应文件。
 
 2026-09-14 的上传记录仍显示完整 ShareGPT4V 训练数据、扩展检索全量数据与全部中间检查点**尚未全部同步**；旧的约1.66 GB/3000文件训练子集不能充当正式训练集。GitHub 本次同步不改变这个备份状态。
+
+## 3/0 @500 补充资产
+
+3/0的完整身份见 [assets.json](s0_dualmask_suffix3_500/manifests/assets.json)。本次Git同步仅包含代码、文档、小型证据；3/0权重目前保留在复现服务器，未发布公共下载附件，也未据此更新旧云盘备份状态。重建初态的参数摘要与历史CAF摘要一致，但文件SHA与原始 `cvssl_initial.pt` 不同，详见[复现步骤](s0_dualmask_suffix3_500/REPRODUCE.md)。

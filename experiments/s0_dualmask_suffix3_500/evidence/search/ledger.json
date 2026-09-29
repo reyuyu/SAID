@@ -1,0 +1,630 @@
+{
+  "s0": {
+    "name": "s0",
+    "spec": {
+      "name": "s0",
+      "s0": true,
+      "lambda_suffix": 0,
+      "lambda_u_sparse": 0,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/s0/cvssl_S0_smartclip_step000500.pt",
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/s0/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/s0/bare_student_step500.pt",
+    "bare_sha256": "3c4b638b25d01f7be562488a3cbf14010f860b92a4e52f259dd81fb2d2dab28d",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6018,
+          "T2I": 0.4124
+        },
+        "R@5": {
+          "I2T": 0.826,
+          "T2I": 0.67084
+        },
+        "R@10": {
+          "I2T": 0.8892,
+          "T2I": 0.76648
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8670000433921814,
+          "T2I": 0.8360000252723694
+        },
+        "R@5": {
+          "I2T": 0.9730000495910645,
+          "T2I": 0.9620000720024109
+        },
+        "R@10": {
+          "I2T": 0.987000048160553,
+          "T2I": 0.9820000529289246
+        }
+      }
+    },
+    "coco_mean_R1": 50.71,
+    "urban_mean_R1": 85.15000343322754,
+    "dev_score": 67.93000171661377,
+    "constraint_margins_pp": {
+      "coco_I2T": -0.20000000000000034,
+      "coco_T2I": 0.2,
+      "urban_I2T": -1.1999985694885253,
+      "urban_T2I": -1.9000014781951904
+    },
+    "feasible": false,
+    "delta_score_vs_clean": -1.0710000119209298,
+    "pareto": false
+  },
+  "clean": {
+    "name": "clean",
+    "spec": {
+      "name": "clean",
+      "lambda_suffix": 1,
+      "lambda_u_sparse": 0,
+      "checkpoint": "/root/lk_projects/SAID-reproduction/runs/clean_replica01/s0_dual_mask_suffix_masked_step000500.pt",
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/clean/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/clean/bare_student_step500.pt",
+    "bare_sha256": "a98d7678f6498d86f85d1978b26e6af24ca41089dab6eb7c76fea9d56546eea0",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6054,
+          "T2I": 0.41464
+        },
+        "R@5": {
+          "I2T": 0.8248,
+          "T2I": 0.66672
+        },
+        "R@10": {
+          "I2T": 0.8918,
+          "T2I": 0.76552
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8820000290870667,
+          "T2I": 0.8580000400543213
+        },
+        "R@5": {
+          "I2T": 0.9750000238418579,
+          "T2I": 0.9750000238418579
+        },
+        "R@10": {
+          "I2T": 0.9920000433921814,
+          "T2I": 0.9910000562667847
+        }
+      }
+    },
+    "coco_mean_R1": 51.002,
+    "urban_mean_R1": 87.0000034570694,
+    "dev_score": 69.0010017285347,
+    "constraint_margins_pp": {
+      "coco_I2T": 0.16000000000000442,
+      "coco_T2I": 0.424000000000002,
+      "urban_I2T": 0.3,
+      "urban_T2I": 0.3
+    },
+    "feasible": true,
+    "delta_score_vs_clean": 0.0,
+    "pareto": false
+  },
+  "full": {
+    "name": "full",
+    "spec": {
+      "name": "full",
+      "lambda_suffix": 10,
+      "lambda_u_sparse": 2,
+      "checkpoint": "/root/lk_projects/SAID-reproduction/runs/full_replica01_500/s0_dual_mask_suffix_masked_step000500.pt",
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/full/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/full/bare_student_step500.pt",
+    "bare_sha256": "e9ccd26182ecba44e70ae384f02c8032f2af4f23d4536e613acd3b096b1f56b5",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.5878,
+          "T2I": 0.40216
+        },
+        "R@5": {
+          "I2T": 0.8154,
+          "T2I": 0.65764
+        },
+        "R@10": {
+          "I2T": 0.885,
+          "T2I": 0.7562
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8840000629425049,
+          "T2I": 0.878000020980835
+        },
+        "R@5": {
+          "I2T": 0.9790000319480896,
+          "T2I": 0.9800000190734863
+        },
+        "R@10": {
+          "I2T": 0.9930000305175781,
+          "T2I": 0.9910000562667847
+        }
+      }
+    },
+    "coco_mean_R1": 49.498,
+    "urban_mean_R1": 88.10000419616699,
+    "dev_score": 68.79900209808349,
+    "constraint_margins_pp": {
+      "coco_I2T": -1.6000000000000016,
+      "coco_T2I": -0.8239999999999972,
+      "urban_I2T": 0.5000033855438233,
+      "urban_T2I": 2.299998092651367
+    },
+    "feasible": false,
+    "delta_score_vs_clean": -0.20199963045121194,
+    "pareto": false
+  },
+  "suffix1_sparse2": {
+    "name": "suffix1_sparse2",
+    "spec": {
+      "name": "suffix1_sparse2",
+      "lambda_suffix": 1,
+      "lambda_u_sparse": 2,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix1_sparse2/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/suffix1_sparse2/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/suffix1_sparse2/bare_student_step500.pt",
+    "bare_sha256": "350d2bbad03ac9c96614ea5d5b2c6ce8766e2283f31d7132a398610156a71b0e",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6062,
+          "T2I": 0.4142
+        },
+        "R@5": {
+          "I2T": 0.825,
+          "T2I": 0.66756
+        },
+        "R@10": {
+          "I2T": 0.8912,
+          "T2I": 0.76716
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8800000548362732,
+          "T2I": 0.862000048160553
+        },
+        "R@5": {
+          "I2T": 0.9750000238418579,
+          "T2I": 0.9740000367164612
+        },
+        "R@10": {
+          "I2T": 0.9910000562667847,
+          "T2I": 0.9900000691413879
+        }
+      }
+    },
+    "coco_mean_R1": 51.019999999999996,
+    "urban_mean_R1": 87.10000514984131,
+    "dev_score": 69.06000257492065,
+    "constraint_margins_pp": {
+      "coco_I2T": 0.2399999999999956,
+      "coco_T2I": 0.3800000000000024,
+      "urban_I2T": 0.10000257492065429,
+      "urban_T2I": 0.700000810623169
+    },
+    "feasible": true,
+    "delta_score_vs_clean": 0.05900084638594194,
+    "pareto": true
+  },
+  "suffix10_sparse0": {
+    "name": "suffix10_sparse0",
+    "spec": {
+      "name": "suffix10_sparse0",
+      "lambda_suffix": 10,
+      "lambda_u_sparse": 0,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix10_sparse0/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/suffix10_sparse0/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/suffix10_sparse0/bare_student_step500.pt",
+    "bare_sha256": "879cdf998233b8161652980c304212804cc5eb4dd0941c28970f86636bad3fa0",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.5882,
+          "T2I": 0.40164
+        },
+        "R@5": {
+          "I2T": 0.8146,
+          "T2I": 0.65712
+        },
+        "R@10": {
+          "I2T": 0.885,
+          "T2I": 0.755
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8860000371932983,
+          "T2I": 0.8740000128746033
+        },
+        "R@5": {
+          "I2T": 0.9790000319480896,
+          "T2I": 0.9830000400543213
+        },
+        "R@10": {
+          "I2T": 0.9930000305175781,
+          "T2I": 0.9930000305175781
+        }
+      }
+    },
+    "coco_mean_R1": 49.492,
+    "urban_mean_R1": 88.00000250339508,
+    "dev_score": 68.74600125169754,
+    "constraint_margins_pp": {
+      "coco_I2T": -1.560000000000006,
+      "coco_T2I": -0.8759999999999992,
+      "urban_I2T": 0.700000810623169,
+      "urban_T2I": 1.8999972820281983
+    },
+    "feasible": false,
+    "delta_score_vs_clean": -0.25500047683716787,
+    "pareto": false
+  },
+  "suffix3_sparse0": {
+    "name": "suffix3_sparse0",
+    "spec": {
+      "name": "suffix3_sparse0",
+      "lambda_suffix": 3,
+      "lambda_u_sparse": 0,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse0/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/suffix3_sparse0/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/suffix3_sparse0/bare_student_step500.pt",
+    "bare_sha256": "04a1a677016be8f26121f3b3cf2de635362eae8540c387ce7bbed0d7cfe05e4d",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.5994,
+          "T2I": 0.4114
+        },
+        "R@5": {
+          "I2T": 0.821,
+          "T2I": 0.66392
+        },
+        "R@10": {
+          "I2T": 0.8904,
+          "T2I": 0.76296
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8890000581741333,
+          "T2I": 0.8740000128746033
+        },
+        "R@5": {
+          "I2T": 0.9780000448226929,
+          "T2I": 0.9800000190734863
+        },
+        "R@10": {
+          "I2T": 0.9940000176429749,
+          "T2I": 0.9920000433921814
+        }
+      }
+    },
+    "coco_mean_R1": 50.540000000000006,
+    "urban_mean_R1": 88.15000355243683,
+    "dev_score": 69.34500177621842,
+    "constraint_margins_pp": {
+      "coco_I2T": -0.4399999999999961,
+      "coco_T2I": 0.09999999999999992,
+      "urban_I2T": 1.000002908706665,
+      "urban_T2I": 1.8999972820281983
+    },
+    "feasible": false,
+    "delta_score_vs_clean": 0.3440000476837213,
+    "pareto": true
+  },
+  "suffix3_sparse2": {
+    "name": "suffix3_sparse2",
+    "spec": {
+      "name": "suffix3_sparse2",
+      "lambda_suffix": 3,
+      "lambda_u_sparse": 2,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse2/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/suffix3_sparse2/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/suffix3_sparse2/bare_student_step500.pt",
+    "bare_sha256": "321ed6fd3c118cb2f4f8f855dc0cdf739a6c917f5ffbeb616ede40105e73857e",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6006,
+          "T2I": 0.41108
+        },
+        "R@5": {
+          "I2T": 0.8232,
+          "T2I": 0.6648
+        },
+        "R@10": {
+          "I2T": 0.8918,
+          "T2I": 0.76392
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8870000243186951,
+          "T2I": 0.8710000514984131
+        },
+        "R@5": {
+          "I2T": 0.9790000319480896,
+          "T2I": 0.9800000190734863
+        },
+        "R@10": {
+          "I2T": 0.9910000562667847,
+          "T2I": 0.9910000562667847
+        }
+      }
+    },
+    "coco_mean_R1": 50.584,
+    "urban_mean_R1": 87.90000379085541,
+    "dev_score": 69.2420018954277,
+    "constraint_margins_pp": {
+      "coco_I2T": -0.31999999999999823,
+      "coco_T2I": 0.06800000000000123,
+      "urban_I2T": 0.7999995231628418,
+      "urban_T2I": 1.6000011444091797
+    },
+    "feasible": false,
+    "delta_score_vs_clean": 0.2410001668930022,
+    "pareto": true
+  },
+  "suffix3_sparse05": {
+    "name": "suffix3_sparse05",
+    "spec": {
+      "name": "suffix3_sparse05",
+      "lambda_suffix": 3,
+      "lambda_u_sparse": 0.5,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse05/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/suffix3_sparse05/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/suffix3_sparse05/bare_student_step500.pt",
+    "bare_sha256": "adefa1de52c28edab5a57b80f5f08d29b40c3d63936e46c3f8fe12c642ba5b50",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6004,
+          "T2I": 0.41028
+        },
+        "R@5": {
+          "I2T": 0.82,
+          "T2I": 0.6626
+        },
+        "R@10": {
+          "I2T": 0.8894,
+          "T2I": 0.76388
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8860000371932983,
+          "T2I": 0.8730000257492065
+        },
+        "R@5": {
+          "I2T": 0.9780000448226929,
+          "T2I": 0.9790000319480896
+        },
+        "R@10": {
+          "I2T": 0.9940000176429749,
+          "T2I": 0.9920000433921814
+        }
+      }
+    },
+    "coco_mean_R1": 50.534,
+    "urban_mean_R1": 87.95000314712524,
+    "dev_score": 69.24200157356262,
+    "constraint_margins_pp": {
+      "coco_I2T": -0.339999999999996,
+      "coco_T2I": -0.012000000000001065,
+      "urban_I2T": 0.700000810623169,
+      "urban_T2I": 1.7999985694885254
+    },
+    "feasible": false,
+    "delta_score_vs_clean": 0.24099984502791472,
+    "pareto": false
+  },
+  "suffix6_sparse05": {
+    "name": "suffix6_sparse05",
+    "spec": {
+      "name": "suffix6_sparse05",
+      "lambda_suffix": 6,
+      "lambda_u_sparse": 0.5,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix6_sparse05/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/suffix6_sparse05/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/suffix6_sparse05/bare_student_step500.pt",
+    "bare_sha256": "5cb1e230d19c00085624d3ab3c3e7c929a4f2c31d533aa8acb69d26f8e76e398",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.592,
+          "T2I": 0.4062
+        },
+        "R@5": {
+          "I2T": 0.8152,
+          "T2I": 0.65988
+        },
+        "R@10": {
+          "I2T": 0.8858,
+          "T2I": 0.75912
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8860000371932983,
+          "T2I": 0.8760000467300415
+        },
+        "R@5": {
+          "I2T": 0.9780000448226929,
+          "T2I": 0.9820000529289246
+        },
+        "R@10": {
+          "I2T": 0.9940000176429749,
+          "T2I": 0.9920000433921814
+        }
+      }
+    },
+    "coco_mean_R1": 49.91,
+    "urban_mean_R1": 88.10000419616699,
+    "dev_score": 69.0050020980835,
+    "constraint_margins_pp": {
+      "coco_I2T": -1.1800000000000035,
+      "coco_T2I": -0.4199999999999983,
+      "urban_I2T": 0.700000810623169,
+      "urban_T2I": 2.1000006675720213
+    },
+    "feasible": false,
+    "delta_score_vs_clean": 0.004000369548791127,
+    "pareto": false
+  },
+  "adaptive_slow_gate": {
+    "name": "adaptive_slow_gate",
+    "spec": {
+      "lambda_suffix": 1,
+      "lambda_u_sparse": 2,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 3e-05,
+      "name": "adaptive_slow_gate",
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/adaptive_slow_gate/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/adaptive_slow_gate/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/adaptive_slow_gate/bare_student_step500.pt",
+    "bare_sha256": "88789957cd7df3a248935ed32042d20951d090060d57c115c1987bd772b88d8c",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6038,
+          "T2I": 0.415
+        },
+        "R@5": {
+          "I2T": 0.823,
+          "T2I": 0.66652
+        },
+        "R@10": {
+          "I2T": 0.8896,
+          "T2I": 0.76688
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8830000162124634,
+          "T2I": 0.8580000400543213
+        },
+        "R@5": {
+          "I2T": 0.9740000367164612,
+          "T2I": 0.9750000238418579
+        },
+        "R@10": {
+          "I2T": 0.9910000562667847,
+          "T2I": 0.9880000352859497
+        }
+      }
+    },
+    "coco_mean_R1": 50.94,
+    "urban_mean_R1": 87.05000281333923,
+    "dev_score": 68.99500140666962,
+    "constraint_margins_pp": {
+      "coco_I2T": -1.6653345369377348e-16,
+      "coco_T2I": 0.45999999999999913,
+      "urban_I2T": 0.39999871253967284,
+      "urban_T2I": 0.3
+    },
+    "feasible": true,
+    "delta_score_vs_clean": -0.006000321865087699,
+    "pareto": false
+  },
+  "adaptive_slow_backbone": {
+    "name": "adaptive_slow_backbone",
+    "spec": {
+      "lambda_suffix": 1,
+      "lambda_u_sparse": 2,
+      "lr": 7e-07,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "name": "adaptive_slow_backbone",
+      "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/adaptive_slow_backbone/s0_dual_mask_suffix_masked_step000500.pt"
+    },
+    "export": "/root/lk_projects/SAID-tuning-500/exports/adaptive_slow_backbone/export.json",
+    "bare_student": "/root/lk_projects/SAID-tuning-500/exports/adaptive_slow_backbone/bare_student_step500.pt",
+    "bare_sha256": "aa4ee680e9f4b29d8d2256b9ae1c43c2ee8d12fe4faa600d01faf8b611b2fc6d",
+    "metrics": {
+      "coco": {
+        "R@1": {
+          "I2T": 0.6002,
+          "T2I": 0.41052
+        },
+        "R@5": {
+          "I2T": 0.8218,
+          "T2I": 0.664
+        },
+        "R@10": {
+          "I2T": 0.8902,
+          "T2I": 0.7626
+        }
+      },
+      "urban": {
+        "R@1": {
+          "I2T": 0.8740000128746033,
+          "T2I": 0.8470000624656677
+        },
+        "R@5": {
+          "I2T": 0.9720000624656677,
+          "T2I": 0.9700000286102295
+        },
+        "R@10": {
+          "I2T": 0.9890000224113464,
+          "T2I": 0.987000048160553
+        }
+      }
+    },
+    "coco_mean_R1": 50.536,
+    "urban_mean_R1": 86.05000376701355,
+    "dev_score": 68.29300188350678,
+    "constraint_margins_pp": {
+      "coco_I2T": -0.3600000000000049,
+      "coco_T2I": 0.012000000000000732,
+      "urban_I2T": -0.5000016212463378,
+      "urban_T2I": -0.7999977588653564
+    },
+    "feasible": false,
+    "delta_score_vs_clean": -0.7079998450279277,
+    "pareto": false
+  }
+}

@@ -1,0 +1,46 @@
+/root/lk_projects/SAID-reproduction/full/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+{
+  "action": "urban",
+  "checkpoint": "/root/lk_projects/SAID-tuning-500/exports/s0/bare_student_step500.pt",
+  "checkpoint_sha256": "3c4b638b25d01f7be562488a3cbf14010f860b92a4e52f259dd81fb2d2dab28d",
+  "dataset": {
+    "n_pairs": 1000,
+    "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c",
+    "revision": null,
+    "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k"
+  },
+  "elapsed_seconds": 19.284701339900494,
+  "evaluator_sha256": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+  "strict_bare_student": true,
+  "urban1k": {
+    "added_here": [
+      "R@5",
+      "R@10"
+    ],
+    "checkpoint_sha256": null,
+    "global_pool": "n/a",
+    "image2text": {
+      "R1": 0.8670000433921814,
+      "R10": 0.987000048160553,
+      "R5": 0.9730000495910645
+    },
+    "image_representation": "legacy_cls",
+    "n_captions": 1000,
+    "n_images": 1000,
+    "positive": "diagonal",
+    "protocol": "urban1k-native-cls-v1",
+    "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+    "similarity": "normalized features, plain inner product, full 1000-item pool",
+    "text2image": {
+      "R1": 0.8360000252723694,
+      "R10": 0.9820000529289246,
+      "R5": 0.9620000720024109
+    },
+    "upstream_metrics_reproduced": [
+      "T2I R@1",
+      "I2T R@1"
+    ],
+    "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+  }
+}

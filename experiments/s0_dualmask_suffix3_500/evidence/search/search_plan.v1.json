@@ -1,0 +1,131 @@
+{
+  "created_utc": "2026-09-28T15:43:17.451952+00:00",
+  "budget": {
+    "new_s0_baselines": 1,
+    "coarse_trials": 6,
+    "adaptive_trials": 2,
+    "steps_per_trial": 500
+  },
+  "training": {
+    "seed": 0,
+    "world_size": 4,
+    "batch_size_per_gpu": 256,
+    "epochs": 3,
+    "horizon": 3651,
+    "num_workers_per_rank": 8,
+    "precision": "FP32 master + BF16 autocast",
+    "clip_lr": 1e-06,
+    "mask_lr": 0.001,
+    "suffix_lr": 0.0001,
+    "clip_warmup": 200,
+    "weight_decay": 0.01,
+    "suffix_mode": "masked"
+  },
+  "frozen_code": "dcd33877f1f77a901d292190834f1ffd83a049a8",
+  "init": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+  "init_sha256": "6e9cb606eec915b5b8613b7c81dccbd73dcb6e928a3ded49ac21c0505c454483",
+  "init_tensor_digest": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+  "coarse": [
+    {
+      "name": "suffix1_sparse2",
+      "lambda_suffix": 1,
+      "lambda_u_sparse": 2,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    {
+      "name": "suffix10_sparse0",
+      "lambda_suffix": 10,
+      "lambda_u_sparse": 0,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    {
+      "name": "suffix3_sparse0",
+      "lambda_suffix": 3,
+      "lambda_u_sparse": 0,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    {
+      "name": "suffix3_sparse2",
+      "lambda_suffix": 3,
+      "lambda_u_sparse": 2,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    {
+      "name": "suffix3_sparse05",
+      "lambda_suffix": 3,
+      "lambda_u_sparse": 0.5,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    },
+    {
+      "name": "suffix6_sparse05",
+      "lambda_suffix": 6,
+      "lambda_u_sparse": 0.5,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001
+    }
+  ],
+  "adaptive_rule": "Select highest dev_score feasible coarse or baseline. Independently train (A) suffix_lr=3e-5, other settings same; (B) clip_lr=7e-7 and suffix_lr=1e-4, others same. No extended results used in choosing candidates.",
+  "selection": {
+    "dev_sets": [
+      "coco",
+      "urban"
+    ],
+    "score": "arithmetic mean of COCO I2T/T2I R1 and Urban I2T/T2I R1 in percentage units",
+    "constraints": {
+      "COCO_each_direction_min": "remeasured S0 R1 minus 0.2 percentage points",
+      "Urban_each_direction_min": "remeasured Clean R1 minus 0.3 percentage points"
+    },
+    "tie_break": "within 0.01 percentage points, prefer higher COCO bidirectional mean, then lower suffix weight, then lower U sparsity",
+    "fallback": "If none feasible, retain Clean baseline and report no improved feasible model; report unconstrained and Pareto results too",
+    "improvement_claim": "dev-selected comparison only; no global optimality or statistical significance claim"
+  },
+  "final_diagnostics": [
+    "flickr_test1k",
+    "docci",
+    "dci",
+    "long_dci"
+  ],
+  "historical_baselines_percent": {
+    "s0": {
+      "coco": [
+        60.58,
+        41.236
+      ],
+      "urban": [
+        87.0,
+        84.2
+      ]
+    },
+    "clean": {
+      "coco": [
+        60.54,
+        41.464
+      ],
+      "urban": [
+        88.2,
+        85.8
+      ]
+    },
+    "full": {
+      "coco": [
+        58.78,
+        40.216
+      ],
+      "urban": [
+        88.4,
+        87.8
+      ]
+    }
+  }
+}

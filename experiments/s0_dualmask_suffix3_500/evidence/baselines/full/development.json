@@ -1,0 +1,48 @@
+{
+  "name": "full",
+  "spec": {
+    "name": "full",
+    "lambda_suffix": 10,
+    "lambda_u_sparse": 2,
+    "checkpoint": "/root/lk_projects/SAID-reproduction/runs/full_replica01_500/s0_dual_mask_suffix_masked_step000500.pt",
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "suffix_lr": 0.0001
+  },
+  "export": "/root/lk_projects/SAID-tuning-500/exports/full/export.json",
+  "bare_student": "/root/lk_projects/SAID-tuning-500/exports/full/bare_student_step500.pt",
+  "bare_sha256": "e9ccd26182ecba44e70ae384f02c8032f2af4f23d4536e613acd3b096b1f56b5",
+  "metrics": {
+    "coco": {
+      "R@1": {
+        "I2T": 0.5878,
+        "T2I": 0.40216
+      },
+      "R@5": {
+        "I2T": 0.8154,
+        "T2I": 0.65764
+      },
+      "R@10": {
+        "I2T": 0.885,
+        "T2I": 0.7562
+      }
+    },
+    "urban": {
+      "R@1": {
+        "I2T": 0.8840000629425049,
+        "T2I": 0.878000020980835
+      },
+      "R@5": {
+        "I2T": 0.9790000319480896,
+        "T2I": 0.9800000190734863
+      },
+      "R@10": {
+        "I2T": 0.9930000305175781,
+        "T2I": 0.9910000562667847
+      }
+    }
+  },
+  "coco_mean_R1": 49.498,
+  "urban_mean_R1": 88.10000419616699,
+  "dev_score": 68.79900209808349
+}

@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "name": "s0",
+  "completed_steps": 500,
+  "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/s0/cvssl_S0_smartclip_step000500.pt",
+  "checkpoint_sha256": "38156d367930e920f665869a6d399bf1dbbeac6def72cf1650a486f861bc69c2",
+  "bare_student": "/root/lk_projects/SAID-tuning-500/exports/s0/bare_student_step500.pt",
+  "bare_sha256": "3c4b638b25d01f7be562488a3cbf14010f860b92a4e52f259dd81fb2d2dab28d",
+  "tensor_count": 317,
+  "tensor_digest": "a2939356f5b2a7fafbdd1c5aefb15ce81deea559a9796e58366f9ec45d75617d",
+  "strict_load": true,
+  "roundtrip_equal": true,
+  "optimizer_steps": {
+    "clip": {
+      "min": 500,
+      "max": 500,
+      "state_count": 301
+    },
+    "mask": {
+      "min": 500,
+      "max": 500,
+      "state_count": 14
+    }
+  },
+  "config": {
+    "objective": "said_cls_cvssl",
+    "arm": "S0_smartclip",
+    "arm_mask": "none",
+    "lambda_U": 0.0,
+    "tau_U": 0.1,
+    "rho": 0.0,
+    "mask_source": "hard straight-through mask_net(C_S hidden) as used by the Said forward",
+    "candidate_scope": "global batch, candidates detached",
+    "stopgrad_rule": "candidates detached; anchor live; m_U detached; both directions summed",
+    "view_a": "reference openai-clip _transform(224)",
+    "view_b": "shared_content_weak_v1: same window, resample in [192,224] bilinear, gaussian blur k=3 sigma~U[0.1,1.0]",
+    "sampling": "DistributedSampler(shuffle=True), no drop_last, steps_per_epoch=len(loader)",
+    "precision": "fp32 master + bf16 autocast",
+    "lambda_align": 10.0,
+    "lambda_sparse": 2.0,
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "weight_decay": 0.01,
+    "warmup_length": 200,
+    "epochs": 3,
+    "batch_size_per_gpu": 256,
+    "world_size": 4,
+    "loader_batches": 1217,
+    "lr_horizon_steps": 3651,
+    "seed": 0,
+    "init_state": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+    "initial_state_sha256": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "git_head": "007c524877ef0003b71b4780051c918986fbd6f8",
+    "tokenizer_context": 248,
+    "grad_checkpoint_views": true
+  },
+  "spec": {
+    "name": "s0",
+    "s0": true,
+    "lambda_suffix": 0,
+    "lambda_u_sparse": 0,
+    "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/s0/cvssl_S0_smartclip_step000500.pt",
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "suffix_lr": 0.0
+  }
+}

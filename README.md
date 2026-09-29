@@ -36,6 +36,12 @@ L_full  = L_S0 + 10 L_U + 2 S_U
 
 所有结果使用裸学生的 `normalize(encode_image(I))` 与 `normalize(encode_text(C))` 做全候选池内积检索。没有条件 gate 评分、特征融合或 rerank。Long-DCI 标为**重建版**，与官方 CSV 不混用；本仓库不据单 seed 结果宣称统计显著性或全面领先。
 
+## 500步调参补充：3/0
+
+新增 [S0-DualMask 3/0 @500](experiments/s0_dualmask_suffix3_500/README.md)：后缀对齐权重3、新U门稀疏权重0，固定horizon3651但实际只训练500步。独立页面保存连续训练日志、六项原始检索结果、同为500步的S0/Clean/Full/1/2对照及复现命令。
+
+3/0在COCO/Urban开发集的四方向R@1均值为69.345%，但COCO图→文59.940%未达到原选型门槛60.380%，因此未替代原先选中的1/2。追加扩展评测显示相对Clean在Urban、DCI、Long-DCI的双向R@1提高，COCO和Flickr下降；不宣称全面领先或统计显著。这里的500步结果与上表3651/2000步属于不同训练预算。
+
 ## 获取代码与复现
 
 ```bash

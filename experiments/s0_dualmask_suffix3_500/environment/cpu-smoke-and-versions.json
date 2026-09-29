@@ -1,0 +1,128 @@
+{
+  "sys_version": "3.10.21 (main, Aug 27 2026, 14:42:07) [GCC 14.3.0]",
+  "executable": "/root/miniconda3/envs/said-repro/bin/python",
+  "prefix": "/root/miniconda3/envs/said-repro",
+  "platform": "Linux-5.4.0-100-generic-x86_64-with-glibc2.31",
+  "gpu_test": "Not run; CUDA_VISIBLE_DEVICES is empty for CPU smoke",
+  "imports": {
+    "torch": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/__init__.py"
+    },
+    "torchvision": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torchvision/__init__.py"
+    },
+    "numpy": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/numpy/__init__.py"
+    },
+    "PIL": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/PIL/__init__.py"
+    },
+    "cv2": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/cv2/__init__.py"
+    },
+    "clip": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/clip/__init__.py"
+    },
+    "ftfy": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/ftfy/__init__.py"
+    },
+    "regex": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/regex/__init__.py"
+    },
+    "pycocotools.mask": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/pycocotools/mask.py"
+    },
+    "pandas": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/pandas/__init__.py"
+    },
+    "pyarrow": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/pyarrow/__init__.py"
+    },
+    "tensorboard": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/tensorboard/__init__.py"
+    },
+    "torch.utils.tensorboard": {
+      "status": "PASS",
+      "path": "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/utils/tensorboard/__init__.py"
+    },
+    "model.longclip": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/model/longclip.py"
+    },
+    "model.model_longclip": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/model/model_longclip.py"
+    },
+    "model.salu_model": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/model/salu_model.py"
+    },
+    "model.said_cls_cvssl": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/model/said_cls_cvssl.py"
+    },
+    "model.dual_mask_suffix": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/model/dual_mask_suffix.py"
+    },
+    "sharegpt4v": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/train/sharegpt4v.py"
+    },
+    "said_cvssl_data": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/train/said_cvssl_data.py"
+    },
+    "train_said_cls_cvssl": {
+      "status": "PASS",
+      "path": "/root/lk_projects/SAID/train/train_said_cls_cvssl.py"
+    }
+  },
+  "errors": [],
+  "torch_version": "2.5.1+cu124",
+  "torchvision_version": "0.20.1+cu124",
+  "cuda_build_version": "12.4",
+  "cudnn_version": 90100,
+  "torch_git_version": "a8d6afb511a69687bbb2b7e88a3cf67917e1697e",
+  "numpy_version": "2.2.6",
+  "clip_source_verification": {
+    "commit": "d05afc436d78f1c48dc0dbf8e5980a9d471f35f6",
+    "matching_files": [
+      "__init__.py",
+      "bpe_simple_vocab_16e6.txt.gz",
+      "clip.py",
+      "model.py",
+      "simple_tokenizer.py"
+    ],
+    "direct_url": {
+      "archive_info": {
+        "hash": "sha256=c665a33987c7365078c9988fdae5699026ec75cc4424bc0d59ab2599df22229a",
+        "hashes": {
+          "sha256": "c665a33987c7365078c9988fdae5699026ec75cc4424bc0d59ab2599df22229a"
+        }
+      },
+      "url": "file:///root/lk_projects/SAID-reproduction/environment/clip-d05afc436d78f1c48dc0dbf8e5980a9d471f35f6.zip"
+    }
+  },
+  "cpu_operations": {
+    "forward_backward_optimizer": "PASS",
+    "numpy_bridge": "PASS",
+    "torchvision_nms": "PASS",
+    "clip_tokenizer": "PASS",
+    "loss": 0.2624153792858124
+  },
+  "torch_config": "PyTorch built with:\n  - GCC 9.3\n  - C++ Version: 201703\n  - Intel(R) oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.5.3 (Git Hash 66f0cb9eb66affd2da3bf5f8d897376f04aae6af)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.4, CUDNN_VERSION=9.1.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DLIBKINETO_NOXPUPTI=ON -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.5.1, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=1, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, \n",
+  "status": "PASS"
+}

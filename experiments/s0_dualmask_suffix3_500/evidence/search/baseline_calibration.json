@@ -1,0 +1,59 @@
+{
+  "status": "PASS_WITH_DISCLOSED_S0_DIFFERENCE",
+  "deltas_pp": {
+    "s0": {
+      "coco": {
+        "I2T": -0.3999999999999986,
+        "T2I": 0.0040000000000048885
+      },
+      "urban": {
+        "I2T": -0.29999566078186035,
+        "T2I": -0.5999974727630644
+      }
+    },
+    "clean": {
+      "coco": {
+        "I2T": 7.105427357601002e-15,
+        "T2I": 0.0
+      },
+      "urban": {
+        "I2T": 2.9087066621968916e-06,
+        "T2I": 4.005432131748421e-06
+      }
+    },
+    "full": {
+      "coco": {
+        "I2T": 0.0,
+        "T2I": 0.0
+      },
+      "urban": {
+        "I2T": 6.294250482596908e-06,
+        "T2I": 2.098083498935921e-06
+      }
+    }
+  },
+  "policy": {
+    "allow_s0_replica_difference": true,
+    "required_s0_initial_digest": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "required_s0_sample_digest": "39c9885c41aaf11cd79a05b7828cf07b1cfa6af2d4ad507c978e870f3a422856",
+    "required_s0_caption_digest": "799f8efae42541759ac92239643d2150dc8aa23d1da984676f029063c21c0fd4",
+    "clean_full_max_calibration_difference_pp": 0.31,
+    "reason": "S0 replica differs from frozen historical scores despite matching initialization and sample/caption digests; keep both references and use their directional maximum so the screen is not made easier."
+  },
+  "s0_summary": {
+    "arm": "S0_smartclip",
+    "caption_stream_sha256": "799f8efae42541759ac92239643d2150dc8aa23d1da984676f029063c21c0fd4",
+    "completed_steps": 500,
+    "epochs": 3,
+    "initial_state_sha256": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+    "lr_horizon_steps": 3651,
+    "mean_sec_per_step": 1.033331422328949,
+    "peak_memory_gb": 27.300747394561768,
+    "sample_stream_sha256": "39c9885c41aaf11cd79a05b7828cf07b1cfa6af2d4ad507c978e870f3a422856",
+    "steps_per_epoch": 1217,
+    "view_b_param_stream_sha256": "cbfb7ffdfee3151a214beb57474a796adc9f5545702a73df4f8f1cb5fbbe7c19",
+    "view_b_pixels_sha256_step0": "81888072f9b73f6f",
+    "wall_sec": 623.85733294487
+  },
+  "selection_reference": "directional maximum of historical and local reference, no relaxation"
+}
