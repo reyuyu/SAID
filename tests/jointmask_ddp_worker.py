@@ -93,19 +93,22 @@ def main():
     torch.set_num_threads(2)
     dist.init_process_group('nccl')
     cases = [
-        ('text_only', [1, 1, 1, 1], 2),
-        ('joint_image', [1, 1, 1, 0, 0, 0], 3),
-        ('joint_image', [0, 0, 0, 0], 2),
-        ('joint_image', [1, 0, 0, 0], 2),
-        ('joint_shuffled_image', [1, 1, 1, 1], 2),
+        ('text_only', [1, 1, 1, 1], 2, 2, 2, False),
+        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 2, 2, False),
+        ('joint_image', [0, 0, 0, 0], 2, 2, 2, False),
+        ('joint_image', [1, 0, 0, 0], 2, 2, 2, False),
+        ('joint_shuffled_image', [1, 1, 1, 1], 2, 2, 2, False),
+        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 8, 8, True),
+        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 8, 8, False),
     ]
     results = []
-    for case_index, (mode, validity, local_batch) in enumerate(cases):
+    for case_index, (mode, validity, local_batch, image_chunk,
+                     text_chunk, pair_checkpoint) in enumerate(cases):
         torch.manual_seed(101 + case_index)
         module = NestedSemanticMask(TinyJointCLIP().cuda(), arm='A3',
                                     checkpoint_encoders=False, condition_mode=mode,
-                                    image_chunk=2, text_chunk=2,
-                                    checkpoint_pair_blocks=False).cuda()
+                                    image_chunk=image_chunk, text_chunk=text_chunk,
+                                    checkpoint_pair_blocks=pair_checkpoint).cuda()
         reference = copy.deepcopy(module)
         force_fp32_encoder_paths(module)
         force_fp32_encoder_paths(reference)
@@ -157,6 +160,8 @@ def main():
         for a, b in zip(module.parameters(), reference.parameters()):
             torch.testing.assert_close(a, b, atol=6e-6, rtol=4e-5)
         results.append(dict(mode=mode, validity=validity, local_batch=local_batch,
+                            image_chunk=image_chunk, text_chunk=text_chunk,
+                            pair_checkpoint=pair_checkpoint,
                             loss_error=float((logs['loss'] - expected.detach()).abs()),
                             max_gradient_error=max(gradient_errors),
                             max_update_error=update_error,

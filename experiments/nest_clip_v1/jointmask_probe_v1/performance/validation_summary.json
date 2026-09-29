@@ -1,0 +1,61 @@
+{
+  "date_utc": "2026-09-29",
+  "baseline_branch": "codex/nest-jointmask-probe-v1",
+  "baseline_commit": "82e06b2e5b0a76e51a924928a036be447e8fce02",
+  "production_patch_files": [
+    "model/nested_semantic_mask.py"
+  ],
+  "focused_pytest": {
+    "command": "PYTHONPATH=. /root/miniconda3/envs/said-repro/bin/python -m pytest -q tests/test_jointmask_performance.py tests/test_nested_jointmask.py tests/test_nested_randomk.py tests/test_nested_resume.py tests/test_nested_semantic_mask.py",
+    "passed": 40,
+    "failed": 0,
+    "warnings": 1
+  },
+  "statistics_equivalence": {
+    "scores_atol": 0.0,
+    "scores_rtol": 0.0,
+    "count_statistics_atol": 0.0,
+    "count_statistics_rtol": 0.0,
+    "delta_statistics_atol": 2e-06,
+    "delta_statistics_rtol": 2e-07,
+    "active_pair_cases": ["mixed", "none", "all"]
+  },
+  "chunk_checkpoint_equivalence": {
+    "loss_and_scores_atol": 2e-05,
+    "loss_and_scores_rtol": 2e-06,
+    "gradients_atol": 0.0003,
+    "gradients_rtol": 3e-05,
+    "one_step_update_atol": 5e-07,
+    "one_step_update_rtol": 5e-06,
+    "tested_chunks": ["2x3", "4x4", "8x8", "128x128 partial-tail geometry"],
+    "pair_checkpoint": [true, false],
+    "collect_stats": [true, false]
+  },
+  "tail_geometry": {
+    "local_queries": 180,
+    "global_candidates": 720,
+    "reference_chunks": "32x64",
+    "candidate_chunks": "128x128",
+    "passed": true
+  },
+  "two_rank_nccl_reference": {
+    "command": "CUDA_VISIBLE_DEVICES=0,1 OMP_NUM_THREADS=2 PYTHONPATH=. /root/miniconda3/envs/said-repro/bin/torchrun --standalone --nnodes=1 --nproc-per-node=2 --max-restarts=0 -m tests.jointmask_ddp_worker",
+    "passed": true,
+    "max_loss_error": 0.0001220703125,
+    "max_gradient_error": 0.000244140625,
+    "max_one_step_update_error": 5.960464477539063e-08,
+    "cases": [
+      "text_only all-valid",
+      "joint_image uneven validity with a zero-valid rank",
+      "global V=0",
+      "global V=1",
+      "joint_shuffled_image",
+      "larger chunk with pair checkpoint on",
+      "larger chunk with pair checkpoint off"
+    ],
+    "log": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/ddp-validation-final.console.txt"
+  },
+  "differentiable_gather": "covered by the two-rank distributed single-process reference comparison",
+  "formal_configs_changed": false,
+  "new_formal_training_started": false
+}

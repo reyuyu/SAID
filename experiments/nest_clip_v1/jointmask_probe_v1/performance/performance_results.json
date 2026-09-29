@@ -1,0 +1,1436 @@
+{
+  "baseline_commit": "82e06b2e5b0a76e51a924928a036be447e8fce02",
+  "benchmark_root": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis",
+  "protocol": {
+    "world_size": 4,
+    "per_rank_batch": 256,
+    "global_candidates": 1024,
+    "warmup_steps": 2,
+    "measured_steps": 8,
+    "profiler_enabled": false,
+    "fixed_input_and_initial_state": true,
+    "precision": "existing mixed precision (BF16 encoders, FP32 remaining paths)",
+    "encoder_checkpoint": true
+  },
+  "runs": {
+    "baseline-T-32x64-cp1-r2": {
+      "name": "baseline-T-32x64-cp1-r2",
+      "args": {
+        "mode": "T",
+        "implementation": "baseline",
+        "image_chunk": 32,
+        "text_chunk": 64,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/baseline-T-32x64-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 4200.062353163958,
+          "p90_ms": 4389.772669225931
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.91047954559326,
+          "p90_ms": 23.949853324890135
+        },
+        "forward_ms": {
+          "median_ms": 1657.303955078125,
+          "p90_ms": 1792.0838623046875
+        },
+        "encoder_ms": {
+          "median_ms": 411.4080810546875,
+          "p90_ms": 487.6600372314453
+        },
+        "pair_forward_ms": {
+          "median_ms": 1171.5199966430664,
+          "p90_ms": 1284.7192016601562
+        },
+        "forward_communication_ms": {
+          "median_ms": 138.18953447788954,
+          "p90_ms": 192.50939601883292
+        },
+        "backward_recompute_ms": {
+          "median_ms": 2526.6800537109375,
+          "p90_ms": 2548.7501220703125
+        },
+        "optimizer_ms": {
+          "median_ms": 15.699455738067627,
+          "p90_ms": 18.846821975708007
+        },
+        "logging_ms": {
+          "median_ms": 10.195285081863403,
+          "p90_ms": 13.214997202157974
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.270459175109863,
+        17.270459175109863,
+        17.270459175109863,
+        17.270459175109863
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.109375,
+        18.107421875,
+        18.107421875,
+        18.107421875
+      ],
+      "block_calls_per_measured_step": [
+        1536
+      ],
+      "losses": [
+        23.73813247680664,
+        22.342571258544922,
+        21.55223846435547,
+        20.632938385009766,
+        21.855741500854492,
+        17.971771240234375,
+        17.647356033325195,
+        21.410579681396484
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 961908,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 961909,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 961910,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 961911,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-T-32x64-cp1-r2": {
+      "name": "optimized-T-32x64-cp1-r2",
+      "args": {
+        "mode": "T",
+        "implementation": "optimized",
+        "image_chunk": 32,
+        "text_chunk": 64,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-T-32x64-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 4071.3003054261208,
+          "p90_ms": 4135.41442155838
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.855072021484375,
+          "p90_ms": 23.973094749450684
+        },
+        "forward_ms": {
+          "median_ms": 1427.2642211914062,
+          "p90_ms": 1578.7855712890625
+        },
+        "encoder_ms": {
+          "median_ms": 412.6105308532715,
+          "p90_ms": 414.0566696166992
+        },
+        "pair_forward_ms": {
+          "median_ms": 971.0115776062012,
+          "p90_ms": 1102.191641998291
+        },
+        "forward_communication_ms": {
+          "median_ms": 101.11476933583617,
+          "p90_ms": 239.02498270198703
+        },
+        "backward_recompute_ms": {
+          "median_ms": 2555.84765625,
+          "p90_ms": 2625.8613525390624
+        },
+        "optimizer_ms": {
+          "median_ms": 17.174015998840332,
+          "p90_ms": 18.8361722946167
+        },
+        "logging_ms": {
+          "median_ms": 10.17315685749054,
+          "p90_ms": 21.349241584539413
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.269970893859863,
+        17.269970893859863,
+        17.269970893859863,
+        17.269970893859863
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.107421875,
+        18.107421875,
+        18.109375,
+        18.107421875
+      ],
+      "block_calls_per_measured_step": [
+        1536
+      ],
+      "losses": [
+        23.73813247680664,
+        22.342571258544922,
+        21.55223846435547,
+        20.632938385009766,
+        21.855741500854492,
+        17.971771240234375,
+        17.647356033325195,
+        21.410579681396484
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 963002,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 963003,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 963004,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 963005,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-T-64x128-cp1-r2": {
+      "name": "optimized-T-64x128-cp1-r2",
+      "args": {
+        "mode": "T",
+        "implementation": "optimized",
+        "image_chunk": 64,
+        "text_chunk": 128,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-T-64x128-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 2411.52298822999,
+          "p90_ms": 2505.098517239094
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.931824684143066,
+          "p90_ms": 24.01047592163086
+        },
+        "forward_ms": {
+          "median_ms": 756.5932312011719,
+          "p90_ms": 817.0954040527344
+        },
+        "encoder_ms": {
+          "median_ms": 414.98921966552734,
+          "p90_ms": 416.19152755737304
+        },
+        "pair_forward_ms": {
+          "median_ms": 322.19237899780273,
+          "p90_ms": 366.7490833282471
+        },
+        "forward_communication_ms": {
+          "median_ms": 60.14566330239177,
+          "p90_ms": 144.6265388175845
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1586.8912353515625,
+          "p90_ms": 1686.5077270507813
+        },
+        "optimizer_ms": {
+          "median_ms": 15.642623901367188,
+          "p90_ms": 16.975769233703613
+        },
+        "logging_ms": {
+          "median_ms": 5.640309303998947,
+          "p90_ms": 7.768949121236801
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.269970893859863,
+        17.269970893859863,
+        17.269970893859863,
+        17.269970893859863
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.107421875,
+        18.10546875,
+        18.10546875,
+        18.107421875
+      ],
+      "block_calls_per_measured_step": [
+        384
+      ],
+      "losses": [
+        23.76419448852539,
+        22.314376831054688,
+        21.520267486572266,
+        20.61430549621582,
+        21.86024284362793,
+        17.96936798095703,
+        17.480655670166016,
+        22.025402069091797
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 964088,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 964089,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 964090,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 964091,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-T-128x128-cp1-r2": {
+      "name": "optimized-T-128x128-cp1-r2",
+      "args": {
+        "mode": "T",
+        "implementation": "optimized",
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-T-128x128-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 1990.7473996281624,
+          "p90_ms": 2096.0308104753494
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.997471809387207,
+          "p90_ms": 24.026988220214843
+        },
+        "forward_ms": {
+          "median_ms": 540.4962463378906,
+          "p90_ms": 636.9604675292969
+        },
+        "encoder_ms": {
+          "median_ms": 417.0093574523926,
+          "p90_ms": 446.9171775817871
+        },
+        "pair_forward_ms": {
+          "median_ms": 106.5533447265625,
+          "p90_ms": 137.74499855041503
+        },
+        "forward_communication_ms": {
+          "median_ms": 17.013343868777156,
+          "p90_ms": 32.95403524935245
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1406.724609375,
+          "p90_ms": 1419.7744995117187
+        },
+        "optimizer_ms": {
+          "median_ms": 15.531007766723633,
+          "p90_ms": 16.91064281463623
+        },
+        "logging_ms": {
+          "median_ms": 7.074825465679169,
+          "p90_ms": 8.121076971292496
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.269970893859863,
+        17.269970893859863,
+        17.269970893859863,
+        17.269970893859863
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.107421875,
+        18.107421875,
+        18.107421875,
+        18.107421875
+      ],
+      "block_calls_per_measured_step": [
+        192
+      ],
+      "losses": [
+        23.732593536376953,
+        22.285968780517578,
+        21.439287185668945,
+        20.60976219177246,
+        21.807083129882812,
+        18.218639373779297,
+        18.247650146484375,
+        21.794200897216797
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 965050,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 965051,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 965052,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 965053,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-T-128x128-cp0": {
+      "name": "optimized-T-128x128-cp0",
+      "args": {
+        "mode": "T",
+        "implementation": "optimized",
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "pair_checkpoint": 0,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-T-128x128-cp0",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 1891.2526294589043,
+          "p90_ms": 1944.153507053852
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.982272148132324,
+          "p90_ms": 24.02414436340332
+        },
+        "forward_ms": {
+          "median_ms": 510.6569061279297,
+          "p90_ms": 563.240283203125
+        },
+        "encoder_ms": {
+          "median_ms": 417.0971221923828,
+          "p90_ms": 417.6812210083008
+        },
+        "pair_forward_ms": {
+          "median_ms": 76.70323181152344,
+          "p90_ms": 83.71200008392334
+        },
+        "forward_communication_ms": {
+          "median_ms": 13.83387203142047,
+          "p90_ms": 32.15506305992603
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1333.048828125,
+          "p90_ms": 1341.4174438476562
+        },
+        "optimizer_ms": {
+          "median_ms": 15.951871871948242,
+          "p90_ms": 16.924671936035157
+        },
+        "logging_ms": {
+          "median_ms": 7.875818759202957,
+          "p90_ms": 11.036716401576996
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        28.46280860900879,
+        28.46280860900879,
+        28.46280860900879,
+        28.46280860900879
+      ],
+      "peak_reserved_gib_by_rank": [
+        28.9921875,
+        28.9921875,
+        28.9921875,
+        28.9921875
+      ],
+      "block_calls_per_measured_step": [
+        96
+      ],
+      "losses": [
+        23.732593536376953,
+        22.285968780517578,
+        21.439287185668945,
+        20.60976219177246,
+        21.807083129882812,
+        18.218639373779297,
+        18.247650146484375,
+        21.794200897216797
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 966515,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 966516,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 966517,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 966518,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "matrix-T-r2": {
+      "name": "matrix-T-r2",
+      "args": {
+        "mode": "T",
+        "implementation": "matrix",
+        "image_chunk": 128,
+        "text_chunk": 64,
+        "pair_checkpoint": 0,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/matrix-T-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 1749.0576431155205,
+          "p90_ms": 1794.0362304449081
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.967199325561523,
+          "p90_ms": 23.99468860626221
+        },
+        "forward_ms": {
+          "median_ms": 442.2563018798828,
+          "p90_ms": 474.8292297363281
+        },
+        "encoder_ms": {
+          "median_ms": 420.0835380554199,
+          "p90_ms": 449.8860870361328
+        },
+        "pair_forward_ms": {
+          "median_ms": 0.0,
+          "p90_ms": 0.0
+        },
+        "forward_communication_ms": {
+          "median_ms": 11.467887990176678,
+          "p90_ms": 16.051347281038762
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1265.9655151367188,
+          "p90_ms": 1273.9434936523437
+        },
+        "optimizer_ms": {
+          "median_ms": 14.926336288452148,
+          "p90_ms": 15.895551776885986
+        },
+        "logging_ms": {
+          "median_ms": 6.277937442064285,
+          "p90_ms": 7.719273120164871
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.353114128112793,
+        17.353480339050293,
+        17.352747917175293,
+        17.352747917175293
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.16796875,
+        18.16796875,
+        18.16796875,
+        18.16796875
+      ],
+      "block_calls_per_measured_step": [
+        0
+      ],
+      "losses": [
+        23.745567321777344,
+        22.359249114990234,
+        21.54885482788086,
+        20.690998077392578,
+        21.814924240112305,
+        17.941497802734375,
+        18.05548858642578,
+        21.710403442382812
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 965999,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 966000,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 966001,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 966002,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "baseline-TI-32x64-cp1-r2": {
+      "name": "baseline-TI-32x64-cp1-r2",
+      "args": {
+        "mode": "TI",
+        "implementation": "baseline",
+        "image_chunk": 32,
+        "text_chunk": 64,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/baseline-TI-32x64-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 4639.347225427628,
+          "p90_ms": 4792.234817147255
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.90654468536377,
+          "p90_ms": 23.95902462005615
+        },
+        "forward_ms": {
+          "median_ms": 1742.87548828125,
+          "p90_ms": 1782.2381469726563
+        },
+        "encoder_ms": {
+          "median_ms": 412.6510581970215,
+          "p90_ms": 440.05072631835935
+        },
+        "pair_forward_ms": {
+          "median_ms": 1263.6149673461914,
+          "p90_ms": 1341.3041229248047
+        },
+        "forward_communication_ms": {
+          "median_ms": 85.4360641464591,
+          "p90_ms": 104.41464101597667
+        },
+        "backward_recompute_ms": {
+          "median_ms": 2866.5267333984375,
+          "p90_ms": 2994.8975830078125
+        },
+        "optimizer_ms": {
+          "median_ms": 17.489919662475586,
+          "p90_ms": 20.084735679626466
+        },
+        "logging_ms": {
+          "median_ms": 20.628508180379868,
+          "p90_ms": 30.51419109106064
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.27305269241333,
+        17.27305269241333,
+        17.27305269241333,
+        17.27451753616333
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.41796875,
+        18.41796875,
+        18.419921875,
+        18.111328125
+      ],
+      "block_calls_per_measured_step": [
+        1536
+      ],
+      "losses": [
+        23.73859977722168,
+        22.35085678100586,
+        21.531879425048828,
+        20.622268676757812,
+        21.86574935913086,
+        18.171945571899414,
+        21.4970703125,
+        18.795391082763672
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 962444,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 962445,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 962446,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 962447,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-TI-32x64-cp1-r2": {
+      "name": "optimized-TI-32x64-cp1-r2",
+      "args": {
+        "mode": "TI",
+        "implementation": "optimized",
+        "image_chunk": 32,
+        "text_chunk": 64,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-TI-32x64-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 4460.834793746471,
+          "p90_ms": 4575.311706215143
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.869487762451172,
+          "p90_ms": 23.979830932617187
+        },
+        "forward_ms": {
+          "median_ms": 1509.6887817382812,
+          "p90_ms": 1613.26611328125
+        },
+        "encoder_ms": {
+          "median_ms": 413.5203552246094,
+          "p90_ms": 446.16907424926757
+        },
+        "pair_forward_ms": {
+          "median_ms": 1057.2989387512207,
+          "p90_ms": 1154.9668296813966
+        },
+        "forward_communication_ms": {
+          "median_ms": 75.93784152343869,
+          "p90_ms": 160.8652552269399
+        },
+        "backward_recompute_ms": {
+          "median_ms": 2850.876953125,
+          "p90_ms": 2975.852685546875
+        },
+        "optimizer_ms": {
+          "median_ms": 15.848960399627686,
+          "p90_ms": 19.27260227203369
+        },
+        "logging_ms": {
+          "median_ms": 13.73947411775589,
+          "p90_ms": 23.67381379008293
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.27402925491333,
+        17.27402925491333,
+        17.27402925491333,
+        17.27402925491333
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.111328125,
+        18.109375,
+        18.109375,
+        18.109375
+      ],
+      "block_calls_per_measured_step": [
+        1536
+      ],
+      "losses": [
+        23.73859977722168,
+        22.35085678100586,
+        21.531879425048828,
+        20.622268676757812,
+        21.86574935913086,
+        18.171945571899414,
+        21.4970703125,
+        18.795391082763672
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 963539,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 963540,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 963541,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 963542,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-TI-64x128-cp1-r2": {
+      "name": "optimized-TI-64x128-cp1-r2",
+      "args": {
+        "mode": "TI",
+        "implementation": "optimized",
+        "image_chunk": 64,
+        "text_chunk": 128,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-TI-64x128-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 2449.9608166515827,
+          "p90_ms": 2493.2576566934586
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.93280029296875,
+          "p90_ms": 23.989564514160158
+        },
+        "forward_ms": {
+          "median_ms": 732.6912536621094,
+          "p90_ms": 791.0771423339844
+        },
+        "encoder_ms": {
+          "median_ms": 415.7312927246094,
+          "p90_ms": 503.47598495483396
+        },
+        "pair_forward_ms": {
+          "median_ms": 248.96051216125488,
+          "p90_ms": 347.7199857711792
+        },
+        "forward_communication_ms": {
+          "median_ms": 35.21454422548413,
+          "p90_ms": 97.7047996982932
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1634.1627197265625,
+          "p90_ms": 1757.9519653320312
+        },
+        "optimizer_ms": {
+          "median_ms": 16.492544174194336,
+          "p90_ms": 17.506713104248046
+        },
+        "logging_ms": {
+          "median_ms": 9.350713342428207,
+          "p90_ms": 12.058965861797333
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.27402925491333,
+        17.27402925491333,
+        17.27402925491333,
+        17.27402925491333
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.109375,
+        18.111328125,
+        18.109375,
+        18.111328125
+      ],
+      "block_calls_per_measured_step": [
+        384
+      ],
+      "losses": [
+        23.753936767578125,
+        22.286243438720703,
+        21.50201988220215,
+        20.605953216552734,
+        21.779338836669922,
+        17.97640037536621,
+        17.676673889160156,
+        20.995668411254883
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 964571,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 964572,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 964573,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 964574,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-TI-128x128-cp1-r2": {
+      "name": "optimized-TI-128x128-cp1-r2",
+      "args": {
+        "mode": "TI",
+        "implementation": "optimized",
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "pair_checkpoint": 1,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-TI-128x128-cp1-r2",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 2088.66261318326,
+          "p90_ms": 2173.2454501092434
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.97596836090088,
+          "p90_ms": 24.01581745147705
+        },
+        "forward_ms": {
+          "median_ms": 552.9557189941406,
+          "p90_ms": 623.9663757324219
+        },
+        "encoder_ms": {
+          "median_ms": 417.2594566345215,
+          "p90_ms": 432.68705902099606
+        },
+        "pair_forward_ms": {
+          "median_ms": 117.64940881729126,
+          "p90_ms": 185.1234306335449
+        },
+        "forward_communication_ms": {
+          "median_ms": 16.816640090197325,
+          "p90_ms": 47.462336339801546
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1458.1621704101562,
+          "p90_ms": 1537.6438354492188
+        },
+        "optimizer_ms": {
+          "median_ms": 15.681024074554443,
+          "p90_ms": 15.994982528686524
+        },
+        "logging_ms": {
+          "median_ms": 9.697865694761276,
+          "p90_ms": 13.649509102106094
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        17.27402925491333,
+        17.27402925491333,
+        17.27402925491333,
+        17.27402925491333
+      ],
+      "peak_reserved_gib_by_rank": [
+        18.111328125,
+        18.111328125,
+        18.11328125,
+        18.111328125
+      ],
+      "block_calls_per_measured_step": [
+        192
+      ],
+      "losses": [
+        23.755786895751953,
+        22.324106216430664,
+        21.5354061126709,
+        20.591289520263672,
+        21.807571411132812,
+        18.04251480102539,
+        21.032941818237305,
+        18.883827209472656
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 965524,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 965525,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 965526,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 965527,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    },
+    "optimized-TI-128x128-cp0": {
+      "name": "optimized-TI-128x128-cp0",
+      "args": {
+        "mode": "TI",
+        "implementation": "optimized",
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "pair_checkpoint": 0,
+        "warmup": 2,
+        "steps": 8,
+        "profile": false,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/optimized-TI-128x128-cp0",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "timing": {
+        "step_ms": {
+          "median_ms": 1929.5681677758694,
+          "p90_ms": 2027.194894105196
+        },
+        "data_h2d_ms": {
+          "median_ms": 23.84059238433838,
+          "p90_ms": 23.976499366760255
+        },
+        "forward_ms": {
+          "median_ms": 529.8188781738281,
+          "p90_ms": 614.0552673339844
+        },
+        "encoder_ms": {
+          "median_ms": 418.17334365844727,
+          "p90_ms": 442.2178169250488
+        },
+        "pair_forward_ms": {
+          "median_ms": 86.41740846633911,
+          "p90_ms": 124.32015419006348
+        },
+        "forward_communication_ms": {
+          "median_ms": 22.293584179133177,
+          "p90_ms": 67.38322001397609
+        },
+        "backward_recompute_ms": {
+          "median_ms": 1353.865234375,
+          "p90_ms": 1371.1880615234375
+        },
+        "optimizer_ms": {
+          "median_ms": 15.946751594543457,
+          "p90_ms": 17.729023551940916
+        },
+        "logging_ms": {
+          "median_ms": 10.638393461704254,
+          "p90_ms": 12.800922244787216
+        }
+      },
+      "peak_allocated_gib_by_rank": [
+        28.843078136444092,
+        28.843078136444092,
+        28.843078136444092,
+        28.843078136444092
+      ],
+      "peak_reserved_gib_by_rank": [
+        29.15234375,
+        29.154296875,
+        29.154296875,
+        29.154296875
+      ],
+      "block_calls_per_measured_step": [
+        96
+      ],
+      "losses": [
+        23.755786895751953,
+        22.324106216430664,
+        21.5354061126709,
+        20.591289520263672,
+        21.807571411132812,
+        18.04251480102539,
+        21.032941818237305,
+        18.883827209472656
+      ],
+      "rank_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 966983,
+          "hostname": "interactive93293",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d"
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 966984,
+          "hostname": "interactive93293",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4"
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 966985,
+          "hostname": "interactive93293",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82"
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 966986,
+          "hostname": "interactive93293",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8"
+        }
+      ]
+    }
+  },
+  "comparisons": {
+    "optimized-T-32x64-cp1-r2": {
+      "versus": "baseline-T-32x64-cp1-r2",
+      "median_step_reduction_percent": 3.0657175277609587,
+      "throughput_multiplier": 1.0316267624783724,
+      "loss_delta": {
+        "max_abs": 0.0,
+        "values": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "optimized-T-64x128-cp1-r2": {
+      "versus": "baseline-T-32x64-cp1-r2",
+      "median_step_reduction_percent": 42.58363839733568,
+      "throughput_multiplier": 1.741663825583815,
+      "loss_delta": {
+        "max_abs": 0.6148223876953125,
+        "values": [
+          0.02606201171875,
+          0.028194427490234375,
+          0.031970977783203125,
+          0.018632888793945312,
+          0.0045013427734375,
+          0.00240325927734375,
+          0.1667003631591797,
+          0.6148223876953125
+        ]
+      }
+    },
+    "optimized-T-128x128-cp1-r2": {
+      "versus": "baseline-T-32x64-cp1-r2",
+      "median_step_reduction_percent": 52.601956060759235,
+      "throughput_multiplier": 2.109791706345294,
+      "loss_delta": {
+        "max_abs": 0.6002941131591797,
+        "values": [
+          0.0055389404296875,
+          0.05660247802734375,
+          0.11295127868652344,
+          0.023176193237304688,
+          0.04865837097167969,
+          0.24686813354492188,
+          0.6002941131591797,
+          0.3836212158203125
+        ]
+      }
+    },
+    "optimized-T-128x128-cp0": {
+      "versus": "baseline-T-32x64-cp1-r2",
+      "median_step_reduction_percent": 54.97084399153739,
+      "throughput_multiplier": 2.220783351595717,
+      "loss_delta": {
+        "max_abs": 0.6002941131591797,
+        "values": [
+          0.0055389404296875,
+          0.05660247802734375,
+          0.11295127868652344,
+          0.023176193237304688,
+          0.04865837097167969,
+          0.24686813354492188,
+          0.6002941131591797,
+          0.3836212158203125
+        ]
+      }
+    },
+    "matrix-T-r2": {
+      "versus": "baseline-T-32x64-cp1-r2",
+      "median_step_reduction_percent": 58.35638864270826,
+      "throughput_multiplier": 2.4013287210377863,
+      "loss_delta": {
+        "max_abs": 0.40813255310058594,
+        "values": [
+          0.007434844970703125,
+          0.0166778564453125,
+          0.003383636474609375,
+          0.0580596923828125,
+          0.0408172607421875,
+          0.0302734375,
+          0.40813255310058594,
+          0.2998237609863281
+        ]
+      }
+    },
+    "optimized-TI-32x64-cp1-r2": {
+      "versus": "baseline-TI-32x64-cp1-r2",
+      "median_step_reduction_percent": 3.8477920062278144,
+      "throughput_multiplier": 1.04001771864123,
+      "loss_delta": {
+        "max_abs": 0.0,
+        "values": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "optimized-TI-64x128-cp1-r2": {
+      "versus": "baseline-TI-32x64-cp1-r2",
+      "median_step_reduction_percent": 47.19169103740107,
+      "throughput_multiplier": 1.8936413978115492,
+      "loss_delta": {
+        "max_abs": 3.8203964233398438,
+        "values": [
+          0.015336990356445312,
+          0.06461334228515625,
+          0.029859542846679688,
+          0.016315460205078125,
+          0.0864105224609375,
+          0.19554519653320312,
+          3.8203964233398438,
+          2.200277328491211
+        ]
+      }
+    },
+    "optimized-TI-128x128-cp1-r2": {
+      "versus": "baseline-TI-32x64-cp1-r2",
+      "median_step_reduction_percent": 54.9793858555017,
+      "throughput_multiplier": 2.221204705894053,
+      "loss_delta": {
+        "max_abs": 0.4641284942626953,
+        "values": [
+          0.017187118530273438,
+          0.026750564575195312,
+          0.0035266876220703125,
+          0.030979156494140625,
+          0.058177947998046875,
+          0.12943077087402344,
+          0.4641284942626953,
+          0.08843612670898438
+        ]
+      }
+    },
+    "optimized-TI-128x128-cp0": {
+      "versus": "baseline-TI-32x64-cp1-r2",
+      "median_step_reduction_percent": 58.40862789488637,
+      "throughput_multiplier": 2.404344818133689,
+      "loss_delta": {
+        "max_abs": 0.4641284942626953,
+        "values": [
+          0.017187118530273438,
+          0.026750564575195312,
+          0.0035266876220703125,
+          0.030979156494140625,
+          0.058177947998046875,
+          0.12943077087402344,
+          0.4641284942626953,
+          0.08843612670898438
+        ]
+      }
+    }
+  },
+  "trajectory_note": "Loss deltas compare repeated-update trajectories and are not the numerical acceptance criterion across chunk shapes. Fixed-state loss, gradient, and one-step update tolerances are recorded in validation_summary.json.",
+  "production_loader_probe": {
+    "startup_max_ms": 10650.461323559284,
+    "steady_max_values_ms": [
+      2478.922352194786,
+      634.1810151934624,
+      725.8874252438545,
+      0.7328614592552185,
+      0.7406771183013916
+    ]
+  },
+  "production_loader_probe_rank_waits_ms": [
+    [
+      7875.0309497118,
+      2478.922352194786,
+      0.4955008625984192,
+      0.41857361793518066,
+      0.3266334533691406,
+      0.3391057252883911
+    ],
+    [
+      10650.461323559284,
+      0.2720281481742859,
+      0.5700960755348206,
+      0.4406273365020752,
+      0.4170611500740051,
+      0.4207044839859009
+    ],
+    [
+      10022.454179823399,
+      0.6877556443214417,
+      634.1810151934624,
+      0.5878359079360962,
+      0.5863383412361145,
+      0.475078821182251
+    ],
+    [
+      9509.669795632362,
+      0.6548687815666199,
+      0.9111613035202026,
+      725.8874252438545,
+      0.7328614592552185,
+      0.7406771183013916
+    ]
+  ]
+}

@@ -1,0 +1,947 @@
+{
+  "baseline_commit": "82e06b2e5b0a76e51a924928a036be447e8fce02",
+  "note": "Profiler covers one active step after warmup. Timings are reported only as diagnostic context; profiler-off runs are authoritative.",
+  "raw_trace_root": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis",
+  "profiles": {
+    "profile-baseline-T": {
+      "args": {
+        "mode": "T",
+        "implementation": "baseline",
+        "image_chunk": 32,
+        "text_chunk": 64,
+        "pair_checkpoint": 1,
+        "warmup": 1,
+        "steps": 1,
+        "profile": true,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/profile-baseline-T",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "pair_block_calls_per_rank": [
+        1536
+      ],
+      "ranks": [
+        {
+          "rank": 0,
+          "trace_bytes": 308502761,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 83057,
+          "kernels_under_10us": 76254,
+          "kernels_under_25us": 78859,
+          "kernel_duration_ms": 2141.0655819999997,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 196.070761,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 5677.4634921875,
+            "kernel_busy_ms": 2113.84558203125,
+            "idle_ms": 3563.61791015625,
+            "idle_fraction": 0.6276778203963764,
+            "gaps_over_10us": 70276,
+            "gap_ms_over_10us": 3511.881060546875,
+            "gaps_over_50us": 13493,
+            "gap_ms_over_50us": 1903.6852177734374,
+            "largest_gap_ms": 131.5281884765625
+          }
+        },
+        {
+          "rank": 1,
+          "trace_bytes": 308399503,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 83057,
+          "kernels_under_10us": 76177,
+          "kernels_under_25us": 78846,
+          "kernel_duration_ms": 2151.884469,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 199.48217499999998,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 5679.484939453125,
+            "kernel_busy_ms": 2115.948865234375,
+            "idle_ms": 3563.53607421875,
+            "idle_fraction": 0.627440007713425,
+            "gaps_over_10us": 71164,
+            "gap_ms_over_10us": 3514.37639453125,
+            "gaps_over_50us": 13836,
+            "gap_ms_over_50us": 1865.381884765625,
+            "largest_gap_ms": 83.4949775390625
+          }
+        },
+        {
+          "rank": 2,
+          "trace_bytes": 308517133,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 83057,
+          "kernels_under_10us": 76184,
+          "kernels_under_25us": 78843,
+          "kernel_duration_ms": 2292.765676,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 353.114473,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 5677.576844726563,
+            "kernel_busy_ms": 2246.3104775390625,
+            "idle_ms": 3431.2663671875,
+            "idle_fraction": 0.6043540159873878,
+            "gaps_over_10us": 70558,
+            "gap_ms_over_10us": 3382.4371171875,
+            "gaps_over_50us": 12384,
+            "gap_ms_over_50us": 1733.500681640625,
+            "largest_gap_ms": 82.7625859375
+          }
+        },
+        {
+          "rank": 3,
+          "trace_bytes": 308495042,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 83057,
+          "kernels_under_10us": 76238,
+          "kernels_under_25us": 78838,
+          "kernel_duration_ms": 2204.170208,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 260.297097,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 5679.743095703125,
+            "kernel_busy_ms": 2164.5886328125,
+            "idle_ms": 3515.154462890625,
+            "idle_fraction": 0.6188932146508408,
+            "gaps_over_10us": 70539,
+            "gap_ms_over_10us": 3466.61165625,
+            "gaps_over_50us": 13284,
+            "gap_ms_over_50us": 1847.10759375,
+            "largest_gap_ms": 77.480060546875
+          }
+        }
+      ],
+      "four_rank_summary": {
+        "kernel_count": {
+          "min": 83057,
+          "median": 83057.0,
+          "max": 83057
+        },
+        "kernels_under_10us": {
+          "min": 76177,
+          "median": 76211.0,
+          "max": 76254
+        },
+        "kernels_under_25us": {
+          "min": 78838,
+          "median": 78844.5,
+          "max": 78859
+        },
+        "kernel_duration_ms": {
+          "min": 2141.0655819999997,
+          "median": 2178.0273385,
+          "max": 2292.765676
+        },
+        "nccl_kernel_count": {
+          "min": 55,
+          "median": 55.0,
+          "max": 55
+        },
+        "nccl_kernel_duration_ms": {
+          "min": 196.070761,
+          "median": 229.889636,
+          "max": 353.114473
+        },
+        "aten::nonzero": {
+          "min": 1573,
+          "median": 1573.0,
+          "max": 1573
+        },
+        "aten::index": {
+          "min": 1569,
+          "median": 1569.0,
+          "max": 1569
+        },
+        "aten::index_select": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "cudaStreamSynchronize": {
+          "min": 3153,
+          "median": 3153.0,
+          "max": 3153
+        },
+        "cudaDeviceSynchronize": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "gpu_timeline_profile_gpu_span_ms": {
+          "min": 5677.4634921875,
+          "median": 5678.530892089844,
+          "max": 5679.743095703125
+        },
+        "gpu_timeline_kernel_busy_ms": {
+          "min": 2113.84558203125,
+          "median": 2140.2687490234375,
+          "max": 2246.3104775390625
+        },
+        "gpu_timeline_idle_ms": {
+          "min": 3431.2663671875,
+          "median": 3539.345268554687,
+          "max": 3563.61791015625
+        },
+        "gpu_timeline_idle_fraction": {
+          "min": 0.6043540159873878,
+          "median": 0.6231666111821329,
+          "max": 0.6276778203963764
+        },
+        "gpu_timeline_gaps_over_10us": {
+          "min": 70276,
+          "median": 70548.5,
+          "max": 71164
+        },
+        "gpu_timeline_gap_ms_over_10us": {
+          "min": 3382.4371171875,
+          "median": 3489.246358398437,
+          "max": 3514.37639453125
+        },
+        "gpu_timeline_gaps_over_50us": {
+          "min": 12384,
+          "median": 13388.5,
+          "max": 13836
+        },
+        "gpu_timeline_gap_ms_over_50us": {
+          "min": 1733.500681640625,
+          "median": 1856.2447392578124,
+          "max": 1903.6852177734374
+        },
+        "gpu_timeline_largest_gap_ms": {
+          "min": 77.480060546875,
+          "median": 83.12878173828125,
+          "max": 131.5281884765625
+        }
+      }
+    },
+    "profile-baseline-TI": {
+      "args": {
+        "mode": "TI",
+        "implementation": "baseline",
+        "image_chunk": 32,
+        "text_chunk": 64,
+        "pair_checkpoint": 1,
+        "warmup": 1,
+        "steps": 1,
+        "profile": true,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/profile-baseline-TI",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "pair_block_calls_per_rank": [
+        1536
+      ],
+      "ranks": [
+        {
+          "rank": 0,
+          "trace_bytes": 355586411,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 95797,
+          "kernels_under_10us": 85927,
+          "kernels_under_25us": 91583,
+          "kernel_duration_ms": 2110.134399,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 72.781048,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 6415.875982421875,
+            "kernel_busy_ms": 2064.3968203125,
+            "idle_ms": 4351.479162109375,
+            "idle_fraction": 0.6782361713398911,
+            "gaps_over_10us": 81773,
+            "gap_ms_over_10us": 4298.714232421875,
+            "gaps_over_50us": 17826,
+            "gap_ms_over_50us": 2522.307515625,
+            "largest_gap_ms": 111.6101865234375
+          }
+        },
+        {
+          "rank": 1,
+          "trace_bytes": 355693540,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 95797,
+          "kernels_under_10us": 85850,
+          "kernels_under_25us": 91575,
+          "kernel_duration_ms": 2286.027636,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 243.068255,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 6427.624013671875,
+            "kernel_busy_ms": 2212.6044833984374,
+            "idle_ms": 4215.019530273437,
+            "idle_fraction": 0.6557663487017725,
+            "gaps_over_10us": 81723,
+            "gap_ms_over_10us": 4162.973083984375,
+            "gaps_over_50us": 16648,
+            "gap_ms_over_50us": 2341.757171875,
+            "largest_gap_ms": 109.505240234375
+          }
+        },
+        {
+          "rank": 2,
+          "trace_bytes": 355691286,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 95797,
+          "kernels_under_10us": 85834,
+          "kernels_under_25us": 91566,
+          "kernel_duration_ms": 2236.067725,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 199.09964,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 6451.585633789063,
+            "kernel_busy_ms": 2170.450630859375,
+            "idle_ms": 4281.135002929687,
+            "idle_fraction": 0.663578730243924,
+            "gaps_over_10us": 82124,
+            "gap_ms_over_10us": 4230.6424375,
+            "gaps_over_50us": 17069,
+            "gap_ms_over_50us": 2389.902169921875,
+            "largest_gap_ms": 102.4277490234375
+          }
+        },
+        {
+          "rank": 3,
+          "trace_bytes": 355720120,
+          "operator_counts": {
+            "aten::nonzero": 1573,
+            "aten::index": 1569,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 3153,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 95797,
+          "kernels_under_10us": 85870,
+          "kernels_under_25us": 91566,
+          "kernel_duration_ms": 2338.8462790000003,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 302.488518,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 6427.465599609375,
+            "kernel_busy_ms": 2254.8522880859373,
+            "idle_ms": 4172.613311523438,
+            "idle_fraction": 0.6491848531677906,
+            "gaps_over_10us": 81396,
+            "gap_ms_over_10us": 4119.37915234375,
+            "gaps_over_50us": 16739,
+            "gap_ms_over_50us": 2321.0795595703125,
+            "largest_gap_ms": 92.7945703125
+          }
+        }
+      ],
+      "four_rank_summary": {
+        "kernel_count": {
+          "min": 95797,
+          "median": 95797.0,
+          "max": 95797
+        },
+        "kernels_under_10us": {
+          "min": 85834,
+          "median": 85860.0,
+          "max": 85927
+        },
+        "kernels_under_25us": {
+          "min": 91566,
+          "median": 91570.5,
+          "max": 91583
+        },
+        "kernel_duration_ms": {
+          "min": 2110.134399,
+          "median": 2261.0476805,
+          "max": 2338.8462790000003
+        },
+        "nccl_kernel_count": {
+          "min": 59,
+          "median": 59.0,
+          "max": 59
+        },
+        "nccl_kernel_duration_ms": {
+          "min": 72.781048,
+          "median": 221.0839475,
+          "max": 302.488518
+        },
+        "aten::nonzero": {
+          "min": 1573,
+          "median": 1573.0,
+          "max": 1573
+        },
+        "aten::index": {
+          "min": 1569,
+          "median": 1569.0,
+          "max": 1569
+        },
+        "aten::index_select": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "cudaStreamSynchronize": {
+          "min": 3153,
+          "median": 3153.0,
+          "max": 3153
+        },
+        "cudaDeviceSynchronize": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "gpu_timeline_profile_gpu_span_ms": {
+          "min": 6415.875982421875,
+          "median": 6427.544806640625,
+          "max": 6451.585633789063
+        },
+        "gpu_timeline_kernel_busy_ms": {
+          "min": 2064.3968203125,
+          "median": 2191.527557128906,
+          "max": 2254.8522880859373
+        },
+        "gpu_timeline_idle_ms": {
+          "min": 4172.613311523438,
+          "median": 4248.077266601562,
+          "max": 4351.479162109375
+        },
+        "gpu_timeline_idle_fraction": {
+          "min": 0.6491848531677906,
+          "median": 0.6596725394728482,
+          "max": 0.6782361713398911
+        },
+        "gpu_timeline_gaps_over_10us": {
+          "min": 81396,
+          "median": 81748.0,
+          "max": 82124
+        },
+        "gpu_timeline_gap_ms_over_10us": {
+          "min": 4119.37915234375,
+          "median": 4196.807760742187,
+          "max": 4298.714232421875
+        },
+        "gpu_timeline_gaps_over_50us": {
+          "min": 16648,
+          "median": 16904.0,
+          "max": 17826
+        },
+        "gpu_timeline_gap_ms_over_50us": {
+          "min": 2321.0795595703125,
+          "median": 2365.8296708984376,
+          "max": 2522.307515625
+        },
+        "gpu_timeline_largest_gap_ms": {
+          "min": 92.7945703125,
+          "median": 105.96649462890625,
+          "max": 111.6101865234375
+        }
+      }
+    },
+    "profile-final-T": {
+      "args": {
+        "mode": "T",
+        "implementation": "optimized",
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "pair_checkpoint": 0,
+        "warmup": 1,
+        "steps": 1,
+        "profile": true,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/profile-final-T",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "pair_block_calls_per_rank": [
+        96
+      ],
+      "ranks": [
+        {
+          "rank": 0,
+          "trace_bytes": 53266548,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 13937,
+          "kernels_under_10us": 6020,
+          "kernels_under_25us": 6622,
+          "kernel_duration_ms": 1829.063756,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 89.862212,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 1960.1505595703125,
+            "kernel_busy_ms": 1797.4059072265625,
+            "idle_ms": 162.74465234375,
+            "idle_fraction": 0.08302660810883093,
+            "gaps_over_10us": 2754,
+            "gap_ms_over_10us": 145.0581552734375,
+            "gaps_over_50us": 595,
+            "gap_ms_over_50us": 89.84503515625,
+            "largest_gap_ms": 7.28814453125
+          }
+        },
+        {
+          "rank": 1,
+          "trace_bytes": 53277516,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 13937,
+          "kernels_under_10us": 6023,
+          "kernels_under_25us": 6622,
+          "kernel_duration_ms": 1855.897512,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 107.59918499999999,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 1983.938583984375,
+            "kernel_busy_ms": 1828.0507646484375,
+            "idle_ms": 155.8878193359375,
+            "idle_fraction": 0.07857492192266635,
+            "gaps_over_10us": 2480,
+            "gap_ms_over_10us": 137.2978427734375,
+            "gaps_over_50us": 514,
+            "gap_ms_over_50us": 88.761943359375,
+            "largest_gap_ms": 13.5883251953125
+          }
+        },
+        {
+          "rank": 2,
+          "trace_bytes": 53232402,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 13937,
+          "kernels_under_10us": 6017,
+          "kernels_under_25us": 6618,
+          "kernel_duration_ms": 1824.6257209999999,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 90.241191,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 1960.175744140625,
+            "kernel_busy_ms": 1784.5014189453125,
+            "idle_ms": 175.6743251953125,
+            "idle_fraction": 0.08962172178716106,
+            "gaps_over_10us": 2706,
+            "gap_ms_over_10us": 157.7719091796875,
+            "gaps_over_50us": 586,
+            "gap_ms_over_50us": 105.5145615234375,
+            "largest_gap_ms": 10.408849609375
+          }
+        },
+        {
+          "rank": 3,
+          "trace_bytes": 53357523,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 13937,
+          "kernels_under_10us": 6011,
+          "kernels_under_25us": 6604,
+          "kernel_duration_ms": 1875.394598,
+          "nccl_kernel_count": 55,
+          "nccl_kernel_duration_ms": 138.286736,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 1965.6960380859375,
+            "kernel_busy_ms": 1833.38283984375,
+            "idle_ms": 132.3131982421875,
+            "idle_fraction": 0.06731111813758611,
+            "gaps_over_10us": 2256,
+            "gap_ms_over_10us": 113.8483720703125,
+            "gaps_over_50us": 373,
+            "gap_ms_over_50us": 66.5709765625,
+            "largest_gap_ms": 10.577904296875
+          }
+        }
+      ],
+      "four_rank_summary": {
+        "kernel_count": {
+          "min": 13937,
+          "median": 13937.0,
+          "max": 13937
+        },
+        "kernels_under_10us": {
+          "min": 6011,
+          "median": 6018.5,
+          "max": 6023
+        },
+        "kernels_under_25us": {
+          "min": 6604,
+          "median": 6620.0,
+          "max": 6622
+        },
+        "kernel_duration_ms": {
+          "min": 1824.6257209999999,
+          "median": 1842.480634,
+          "max": 1875.394598
+        },
+        "nccl_kernel_count": {
+          "min": 55,
+          "median": 55.0,
+          "max": 55
+        },
+        "nccl_kernel_duration_ms": {
+          "min": 89.862212,
+          "median": 98.920188,
+          "max": 138.286736
+        },
+        "aten::nonzero": {
+          "min": 37,
+          "median": 37.0,
+          "max": 37
+        },
+        "aten::index": {
+          "min": 33,
+          "median": 33.0,
+          "max": 33
+        },
+        "aten::index_select": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "cudaStreamSynchronize": {
+          "min": 81,
+          "median": 81.0,
+          "max": 81
+        },
+        "cudaDeviceSynchronize": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "gpu_timeline_profile_gpu_span_ms": {
+          "min": 1960.1505595703125,
+          "median": 1962.9358911132813,
+          "max": 1983.938583984375
+        },
+        "gpu_timeline_kernel_busy_ms": {
+          "min": 1784.5014189453125,
+          "median": 1812.7283359375,
+          "max": 1833.38283984375
+        },
+        "gpu_timeline_idle_ms": {
+          "min": 132.3131982421875,
+          "median": 159.31623583984376,
+          "max": 175.6743251953125
+        },
+        "gpu_timeline_idle_fraction": {
+          "min": 0.06731111813758611,
+          "median": 0.08080076501574865,
+          "max": 0.08962172178716106
+        },
+        "gpu_timeline_gaps_over_10us": {
+          "min": 2256,
+          "median": 2593.0,
+          "max": 2754
+        },
+        "gpu_timeline_gap_ms_over_10us": {
+          "min": 113.8483720703125,
+          "median": 141.1779990234375,
+          "max": 157.7719091796875
+        },
+        "gpu_timeline_gaps_over_50us": {
+          "min": 373,
+          "median": 550.0,
+          "max": 595
+        },
+        "gpu_timeline_gap_ms_over_50us": {
+          "min": 66.5709765625,
+          "median": 89.3034892578125,
+          "max": 105.5145615234375
+        },
+        "gpu_timeline_largest_gap_ms": {
+          "min": 7.28814453125,
+          "median": 10.493376953125,
+          "max": 13.5883251953125
+        }
+      }
+    },
+    "profile-final-TI": {
+      "args": {
+        "mode": "TI",
+        "implementation": "optimized",
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "pair_checkpoint": 0,
+        "warmup": 1,
+        "steps": 1,
+        "profile": true,
+        "output": "/root/lk_projects/SAID-nest-clip-v1/jointmask_perf_diagnosis/profile-final-TI",
+        "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      },
+      "pair_block_calls_per_rank": [
+        96
+      ],
+      "ranks": [
+        {
+          "rank": 0,
+          "trace_bytes": 58612821,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 15397,
+          "kernels_under_10us": 7217,
+          "kernels_under_25us": 7720,
+          "kernel_duration_ms": 1957.420256,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 181.38321900000003,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 2072.322322265625,
+            "kernel_busy_ms": 1885.864060546875,
+            "idle_ms": 186.45826171875,
+            "idle_fraction": 0.08997551187640503,
+            "gaps_over_10us": 3335,
+            "gap_ms_over_10us": 169.153576171875,
+            "gaps_over_50us": 678,
+            "gap_ms_over_50us": 99.4456953125,
+            "largest_gap_ms": 7.503859375
+          }
+        },
+        {
+          "rank": 1,
+          "trace_bytes": 58520720,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 15397,
+          "kernels_under_10us": 7211,
+          "kernels_under_25us": 7710,
+          "kernel_duration_ms": 1910.96351,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 129.155197,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 2044.4920546875,
+            "kernel_busy_ms": 1828.0585107421875,
+            "idle_ms": 216.4335439453125,
+            "idle_fraction": 0.10586176818299951,
+            "gaps_over_10us": 3530,
+            "gap_ms_over_10us": 199.1235888671875,
+            "gaps_over_50us": 814,
+            "gap_ms_over_50us": 126.19802734375,
+            "largest_gap_ms": 11.1922685546875
+          }
+        },
+        {
+          "rank": 2,
+          "trace_bytes": 58524151,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 15397,
+          "kernels_under_10us": 7214,
+          "kernels_under_25us": 7733,
+          "kernel_duration_ms": 1892.72061,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 113.114638,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 2041.7922314453126,
+            "kernel_busy_ms": 1822.038052734375,
+            "idle_ms": 219.7541787109375,
+            "idle_fraction": 0.10762808052971251,
+            "gaps_over_10us": 3573,
+            "gap_ms_over_10us": 201.7421923828125,
+            "gaps_over_50us": 798,
+            "gap_ms_over_50us": 126.99104296875,
+            "largest_gap_ms": 10.7388349609375
+          }
+        },
+        {
+          "rank": 3,
+          "trace_bytes": 58522300,
+          "operator_counts": {
+            "aten::nonzero": 37,
+            "aten::index": 33,
+            "aten::index_select": 3,
+            "cudaStreamSynchronize": 81,
+            "cudaDeviceSynchronize": 3
+          },
+          "kernel_count": 15397,
+          "kernels_under_10us": 7221,
+          "kernels_under_25us": 7731,
+          "kernel_duration_ms": 1853.861026,
+          "nccl_kernel_count": 59,
+          "nccl_kernel_duration_ms": 68.530586,
+          "gpu_timeline": {
+            "profile_gpu_span_ms": 2037.64102734375,
+            "kernel_busy_ms": 1807.677189453125,
+            "idle_ms": 229.963837890625,
+            "idle_fraction": 0.11285787575174795,
+            "gaps_over_10us": 3531,
+            "gap_ms_over_10us": 212.7590419921875,
+            "gaps_over_50us": 831,
+            "gap_ms_over_50us": 140.41690625,
+            "largest_gap_ms": 12.0819970703125
+          }
+        }
+      ],
+      "four_rank_summary": {
+        "kernel_count": {
+          "min": 15397,
+          "median": 15397.0,
+          "max": 15397
+        },
+        "kernels_under_10us": {
+          "min": 7211,
+          "median": 7215.5,
+          "max": 7221
+        },
+        "kernels_under_25us": {
+          "min": 7710,
+          "median": 7725.5,
+          "max": 7733
+        },
+        "kernel_duration_ms": {
+          "min": 1853.861026,
+          "median": 1901.84206,
+          "max": 1957.420256
+        },
+        "nccl_kernel_count": {
+          "min": 59,
+          "median": 59.0,
+          "max": 59
+        },
+        "nccl_kernel_duration_ms": {
+          "min": 68.530586,
+          "median": 121.1349175,
+          "max": 181.38321900000003
+        },
+        "aten::nonzero": {
+          "min": 37,
+          "median": 37.0,
+          "max": 37
+        },
+        "aten::index": {
+          "min": 33,
+          "median": 33.0,
+          "max": 33
+        },
+        "aten::index_select": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "cudaStreamSynchronize": {
+          "min": 81,
+          "median": 81.0,
+          "max": 81
+        },
+        "cudaDeviceSynchronize": {
+          "min": 3,
+          "median": 3.0,
+          "max": 3
+        },
+        "gpu_timeline_profile_gpu_span_ms": {
+          "min": 2037.64102734375,
+          "median": 2043.1421430664063,
+          "max": 2072.322322265625
+        },
+        "gpu_timeline_kernel_busy_ms": {
+          "min": 1807.677189453125,
+          "median": 1825.0482817382813,
+          "max": 1885.864060546875
+        },
+        "gpu_timeline_idle_ms": {
+          "min": 186.45826171875,
+          "median": 218.093861328125,
+          "max": 229.963837890625
+        },
+        "gpu_timeline_idle_fraction": {
+          "min": 0.08997551187640503,
+          "median": 0.10674492435635602,
+          "max": 0.11285787575174795
+        },
+        "gpu_timeline_gaps_over_10us": {
+          "min": 3335,
+          "median": 3530.5,
+          "max": 3573
+        },
+        "gpu_timeline_gap_ms_over_10us": {
+          "min": 169.153576171875,
+          "median": 200.432890625,
+          "max": 212.7590419921875
+        },
+        "gpu_timeline_gaps_over_50us": {
+          "min": 678,
+          "median": 806.0,
+          "max": 831
+        },
+        "gpu_timeline_gap_ms_over_50us": {
+          "min": 99.4456953125,
+          "median": 126.59453515625,
+          "max": 140.41690625
+        },
+        "gpu_timeline_largest_gap_ms": {
+          "min": 7.503859375,
+          "median": 10.965551757812499,
+          "max": 12.0819970703125
+        }
+      }
+    }
+  }
+}

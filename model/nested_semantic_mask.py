@@ -86,27 +86,27 @@ def pair_mask(base_logits, image_condition, text_condition, adapter=None):
 
 
 def _pair_score_block(z, t, image_condition, base_logits, text_condition, adapter,
-                      active_pairs):
+                      active_pairs=None):
     masks, probabilities, delta = pair_mask(base_logits, image_condition, text_condition, adapter)
     scores = 100 * (F.normalize(z[:, None].float() * masks, dim=-1, eps=1e-6) *
                     F.normalize(t.float(), dim=-1, eps=1e-6)[None]).sum(-1)
-    selected = (probabilities.detach() >= .5)[active_pairs]
-    selected_delta = delta.detach()[active_pairs]
-    if selected.numel():
-        summary = torch.stack((selected.float().sum(),
-                               selected.new_tensor(selected.numel(), dtype=torch.float32),
-                               selected.all(-1).float().sum(),
-                               (~selected).all(-1).float().sum(),
-                               selected_delta.abs().sum(),
-                               selected_delta.new_tensor(selected_delta.numel(), dtype=torch.float32)))
-    else:
-        summary = scores.detach().new_zeros(6)
+    if active_pairs is None:
+        return scores
+    selected = probabilities.detach() >= .5
+    active = active_pairs.unsqueeze(-1)
+    active_count = active_pairs.sum(dtype=torch.float32)
+    summary = torch.stack((selected.masked_fill(~active, False).float().sum(),
+                           active_count * selected.shape[-1],
+                           (selected.all(-1) & active_pairs).float().sum(),
+                           ((~selected).all(-1) & active_pairs).float().sum(),
+                           delta.detach().abs().masked_fill(~active, 0.).sum(),
+                           active_count * delta.shape[-1]))
     return scores, summary.detach()
 
 
 def pair_scores(images, texts, image_condition, base_logits, text_condition, adapter=None,
                 image_chunk=32, text_chunk=64, row_valid=None, column_valid=None,
-                checkpoint_blocks=False):
+                checkpoint_blocks=False, collect_stats=True):
     """Pair-conditioned scores in two-dimensional tiles; collectives stay outside."""
     row_valid = (torch.ones(len(images), dtype=torch.bool, device=images.device)
                  if row_valid is None else row_valid)
@@ -118,20 +118,26 @@ def pair_scores(images, texts, image_condition, base_logits, text_condition, ada
         block_row = []
         for text_start in range(0, len(texts), text_chunk):
             text_stop = min(text_start + text_chunk, len(texts))
-            active = row_valid[image_start:image_stop, None] & column_valid[None, text_start:text_stop]
             args = (images[image_start:image_stop], texts[text_start:text_stop],
                     image_condition[image_start:image_stop], base_logits[text_start:text_stop],
                     text_condition[text_start:text_stop])
+            active = (row_valid[image_start:image_stop, None] &
+                      column_valid[None, text_start:text_stop]) if collect_stats else None
             function = lambda *values, active=active: _pair_score_block(
                 *values, adapter=adapter, active_pairs=active)
             if checkpoint_blocks and torch.is_grad_enabled():
-                scores, summary = checkpoint(function, *args, use_reentrant=False)
+                output = checkpoint(function, *args, use_reentrant=False)
             else:
-                scores, summary = function(*args)
+                output = function(*args)
+            if collect_stats:
+                scores, summary = output
+                summaries.append(summary)
+            else:
+                scores = output
             block_row.append(scores)
-            summaries.append(summary)
         rows.append(torch.cat(block_row, dim=1))
-    return torch.cat(rows), torch.stack(summaries).sum(0)
+    summary = torch.stack(summaries).sum(0) if collect_stats else None
+    return torch.cat(rows), summary
 
 
 def positive_masks(base_logits, image_condition, text_condition, adapter=None):
@@ -160,7 +166,7 @@ def pair_view_terms(z, t, base_logits, text_condition, image_condition, valid,
                                  checkpoint_blocks)
     qt, _ = pair_scores(zg, t, ag, base_logits, text_condition, adapter,
                         image_chunk, text_chunk, valid_global, valid,
-                        checkpoint_blocks)
+                        checkpoint_blocks, collect_stats=False)
     qt = qt.T
     zero = (zg.sum() + ag.sum() + tg.sum() + lg.sum() + bg.sum() + qi.sum() + qt.sum()) * 0
     if bool(valid.any()):
