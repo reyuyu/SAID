@@ -81,6 +81,32 @@ def view_terms(z, t, m, valid, valid_global, z_global=None, score_chunk=64):
         'candidates': n}
 
 
+def native_scores(images, texts):
+    """Unmasked FP32 cosine with the same fixed scale and epsilon."""
+    with torch.autocast(images.device.type, enabled=False):
+        return 100 * (F.normalize(images.float(), dim=-1, eps=1e-6) @
+                      F.normalize(texts.float(), dim=-1, eps=1e-6).T)
+
+
+def native_full_terms(z, tf, z_global=None):
+    """Full-view local query sums and global differentiable candidates.
+
+    Reuses the encoded image/text features and the existing image bank. No
+    encoder or mask is called here. Gather backward and DDP averaging account
+    for exactly one W/N scaling, identical to the masked task.
+    """
+    world, rank = world_rank()
+    zg = gather(z) if z_global is None else z_global
+    tg = gather(tf)
+    n = len(zg)
+    labels = rank * len(z) + torch.arange(len(z), device=z.device)
+    with torch.autocast(z.device.type, enabled=False):
+        ci = F.cross_entropy(native_scores(z, tg), labels, reduction='sum')
+        ct = F.cross_entropy(native_scores(zg, tf).T, labels, reduction='sum')
+    mean = global_sum(torch.stack((ci.detach(), ct.detach()))) / n
+    return (world / n) * (ci + ct), {'i2t': mean[0], 't2i': mean[1], 'candidates': n}
+
+
 def inclusion(pf, po, pe):
     return .5 * (F.relu(po.detach() - pf).mean(-1) +
                  F.relu(pe.detach() - pf).mean(-1))
@@ -103,12 +129,16 @@ def enable_encoder_checkpointing(clip):
 
 
 class NestedSemanticMask(nn.Module):
-    def __init__(self, clip, arm='A2', checkpoint_encoders=True, score_chunk=64):
+    def __init__(self, clip, arm='A2', checkpoint_encoders=True, score_chunk=64,
+                 full_native_mix=0.):
         super().__init__()
         if arm not in ('A2', 'A3'):
             raise ValueError(arm)
         self.clip = clip  # sole owner of the original mask network
         self.arm, self.score_chunk = arm, score_chunk
+        if not 0. <= full_native_mix <= 1.:
+            raise ValueError('full_native_mix must be in [0,1]')
+        self.full_native_mix = float(full_native_mix)
         if checkpoint_encoders:
             enable_encoder_checkpointing(clip)
 
@@ -131,6 +161,17 @@ class NestedSemanticMask(nn.Module):
         af, sf, logs_f = view_terms(z, tf, mf, all_valid, torch.ones_like(vg), zg,
                                     self.score_chunk)
         logs = {'F_' + k: value for k, value in logs_f.items()}
+        if self.full_native_mix:
+            native, native_logs = native_full_terms(z, tf, zg)
+            eta = self.full_native_mix
+            # Mix separately computed CE losses, never logits. Sparse/inc
+            # coefficients below are intentionally independent of eta.
+            af = (1 - eta) * af + eta * native
+            logs.update(F_mask_i2t=logs_f['i2t'], F_mask_t2i=logs_f['t2i'],
+                        F_native_i2t=native_logs['i2t'], F_native_t2i=native_logs['t2i'],
+                        F_native_candidates=native_logs['candidates'], full_native_mix=eta,
+                        F_hybrid=(1-eta)*(logs_f['i2t']+logs_f['t2i']) +
+                                 eta*(native_logs['i2t']+native_logs['t2i']))
         weight = inclusion_weight(self.arm, completed) if v >= 2 else 0.
         nonfinite = (~torch.isfinite(lf)).sum() + (~torch.isfinite(z)).sum() + (~torch.isfinite(tf)).sum()
         if v >= 2:
@@ -155,5 +196,17 @@ class NestedSemanticMask(nn.Module):
             logs.update(inc=0., hard_inclusion_violation=0., oe_iou=0., O_candidates=0, E_candidates=0)
         logs.update(valid_global=v, inc_weight=weight, nonfinite=global_sum(nonfinite),
                     loss=global_sum(loss) / world)
+        if self.full_native_mix:
+            if v >= 2:
+                alignment = (10/3) * (logs['F_hybrid'] + logs['O_i2t'] + logs['O_t2i'] +
+                                      logs['E_i2t'] + logs['E_t2i'])
+                sparse = (logs['F_sparse'] + 2*logs['O_sparse'] + 2*logs['E_sparse'])/3
+            else:
+                alignment, sparse = 10*logs['F_hybrid'], logs['F_sparse']
+            regularizer = weight*logs['inc']
+            rebuilt = alignment + sparse + regularizer
+            logs.update(alignment_weighted=alignment, sparse_weighted=sparse,
+                        inclusion_weighted=regularizer, loss_reconstructed=rebuilt,
+                        loss_reconstruction_abs_error=(rebuilt-logs['loss']).abs())
         # Only the total loss carries an active graph out of the DDP forward.
         return loss, {k: x.detach() if torch.is_tensor(x) else x for k, x in logs.items()}

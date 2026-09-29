@@ -62,6 +62,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
                 'accumulation', 'epochs', 'seed', 'workers', 'checkpoint_encoders', 'score_chunk'):
         assert old[key] == current[key], f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
+    assert old.get('full_native_mix', 0.) == current.get('full_native_mix', 0.), 'Resume mismatch: full_native_mix'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
         assert old.get(key, default) == current[key], f'Resume mismatch: {key}'
     trainer = 'train/train_nested_semantic_mask.py'
@@ -175,6 +176,7 @@ def main():
     cfg.setdefault('sampling_mode', 'fixed_first')
     cfg.setdefault('sampling_seed', 0)
     cfg.setdefault('experiment_name', cfg['arm'])
+    cfg.setdefault('full_native_mix', 0.)
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates > 0)
     assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
@@ -204,7 +206,8 @@ def main():
     clip.load_state_dict(initial['model'], strict=True)
     module = NestedSemanticMask(clip.float(), arm=cfg['arm'],
                                 checkpoint_encoders=cfg['checkpoint_encoders'],
-                                score_chunk=cfg['score_chunk']).cuda().train()
+                                score_chunk=cfg['score_chunk'],
+                                full_native_mix=cfg['full_native_mix']).cuda().train()
     assert all(p.dtype == torch.float32 for p in module.parameters())
     ddp = DDP(module, device_ids=[local], output_device=local,
               find_unused_parameters=True, static_graph=False)
