@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 
 from model import longclip
 from model.nested_semantic_mask import NestedSemanticMask, gather
-from train.nested_semantic_data import NestedDataset, collate, file_sha
+from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
 def seed_all(seed=0):
@@ -136,6 +136,10 @@ def main():
     p.add_argument('--resume')
     args = p.parse_args()
     cfg = json.loads(Path(args.config).read_text())
+    cfg.setdefault('sampling_mode', 'fixed_first')
+    cfg.setdefault('sampling_seed', 0)
+    cfg.setdefault('experiment_name', cfg['arm'])
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert args.max_updates == (5 if args.run_type == 'smoke' else 500)
     assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
     assert cfg['epochs'] == 3 and cfg['seed'] == 0 and cfg['workers'] == 8
@@ -147,7 +151,7 @@ def main():
     if rank == 0:
         output.mkdir(parents=True, exist_ok=False)
     dist.barrier()
-    dataset = NestedDataset(args.index_dir, args.image_root)
+    dataset = NestedDataset(args.index_dir, args.image_root, cfg['sampling_mode'], cfg['sampling_seed'])
     sampler = DistributedSampler(dataset, num_replicas=world, rank=rank, shuffle=True,
                                  seed=cfg['seed'], drop_last=False)
     loader = DataLoader(dataset, batch_size=cfg['batch_size'], sampler=sampler, collate_fn=collate,
@@ -186,6 +190,8 @@ def main():
         for key in ('arm', 'horizon', 'init_sha256', 'code_sha256', 'data', 'batch_size', 'checkpoint_encoders'):
             assert previous['config'][key] == config[key], f'Resume mismatch: {key}'
         assert previous['config']['run_type'] == args.run_type, 'Smoke cannot initialize formal training'
+        for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
+            assert previous['config'].get(key, default) == cfg[key], f'Resume mismatch: {key}'
         module.clip.load_state_dict(previous['model'], strict=True)
         optimizer.load_state_dict(previous['optimizer'])
         completed = previous['completed_steps']
@@ -202,6 +208,7 @@ def main():
     updates_here = 0
     for epoch in range(cfg['epochs']):
         sampler.set_epoch(epoch)
+        dataset.set_epoch(epoch)  # copied into fresh spawn workers before iter(loader)
         if completed >= (epoch+1)*len(loader):
             continue
         for batch_index, batch in enumerate(loader):
@@ -242,14 +249,15 @@ def main():
                           peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30,
                           stream_sha256=hashlib.sha256(stream).hexdigest(),
                           reasons=dict(Counter(batch['reason'])),
-                          gradient_norms={k:float(v) for k,v in norms.items()}, gradients_finite=True)
+                          gradient_norms={k:float(v) for k,v in norms.items()}, gradients_finite=True,
+                          sampling=sampling_diagnostics(batch))
             rank_health = [None]*world
             dist.all_gather_object(rank_health, health)
             ids = gather(batch['image_id'].cuda(), False)
             unique, counts = ids.unique(return_counts=True)
             duplicates = unique[counts>1].cpu().tolist()
             if rank == 0:
-                row = dict(step=completed, s=completed-1, lr_backbone=lrs[0], lr_mask=lrs[1],
+                row = dict(step=completed, s=completed-1, epoch=epoch, lr_backbone=lrs[0], lr_mask=lrs[1],
                            rank_health=rank_health, duplicate_image_ids=duplicates,
                            **{k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()})
                 with (output / 'steps.jsonl').open('a') as f:
@@ -259,7 +267,11 @@ def main():
                 if completed == 1:
                     (output / 'text_examples.json').write_text(json.dumps(dict(scope='rank0 first batch; raw full text only for explicit overlong fallback',
                         views=batch['views'][:8], reasons=batch['reason'][:8],
-                        untruncated_lengths=batch['untruncated_lengths'][:8]), indent=2))
+                        untruncated_lengths=batch['untruncated_lengths'][:8],
+                        sampling_mode=cfg['sampling_mode'],
+                        local_view_labels=['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration'],
+                        sample_ids=batch['sample_id'][:8].tolist(),
+                        n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
             if completed % 100 == 0 or completed == args.max_updates:
                 save_checkpoint(module, optimizer, config, completed, output)
             if completed >= args.max_updates:
