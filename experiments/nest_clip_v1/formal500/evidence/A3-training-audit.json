@@ -1,0 +1,218 @@
+{
+  "passed": true,
+  "arm": "A3",
+  "execution": {
+    "name": "train500-A3",
+    "command": [
+      "bash",
+      "experiments/nest_clip_v1/run.sh",
+      "train500",
+      "A3"
+    ],
+    "cwd": "/root/lk_projects/SAID",
+    "started_utc": "2026-09-29T06:34:38.204819+00:00",
+    "git_head": "a5742401395f381642bb5ad88ba2d952128a436f",
+    "exit_code": 0,
+    "wall_seconds": 964.7714519426227,
+    "finished_utc": "2026-09-29T06:50:42.979573+00:00"
+  },
+  "config": {
+    "arm": "A3",
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 3,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "score_chunk": 64,
+    "config": "configs/nest_clip_a3.json",
+    "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+    "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+    "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+    "output_dir": "/root/lk_projects/SAID-nest-clip-v1/formal/A3",
+    "run_type": "formal",
+    "max_updates": 500,
+    "resume": null,
+    "horizon": 3651,
+    "batches_per_epoch": 1217,
+    "training_records": 1245901,
+    "sampler_num_samples": 311476,
+    "sampler_padding": 3,
+    "tail_batch": 180,
+    "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "data": {
+      "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+      "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+      "original_records": 1246901,
+      "training_records": 1245901,
+      "skip": 1000,
+      "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+    },
+    "code_sha256": {
+      "model/nested_semantic_mask.py": "cb26f540e78908ad9b3f24a1198f2020f41a34e93605338139eb6a0764d899d7",
+      "train/nested_semantic_data.py": "e7eaeed5470c726094129638c3b073491cbbbf860e3d687df7adc6976f829155",
+      "train/train_nested_semantic_mask.py": "a905e0c196c97c37edd69a92347c1a365f3c97803ed0308d8b3853cf07811e6f",
+      "model/model_longclip.py": "0f85eb499e4f839f3cf8335ee583e5b843197fd46d0531d58cad4d6b942a9e59",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e"
+    },
+    "git_head": "a5742401395f381642bb5ad88ba2d952128a436f",
+    "torch": "2.5.1+cu124",
+    "cuda": "12.4",
+    "nccl": [
+      2,
+      21,
+      5
+    ],
+    "environment": {},
+    "ranks": [
+      {
+        "rank": 0,
+        "local_rank": 0,
+        "pid": 802058,
+        "hostname": "interactive93293",
+        "gpu_name": "NVIDIA A100 80GB PCIe",
+        "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+        "total_memory": 84974239744,
+        "nccl_all_reduce": 10.0,
+        "nccl_seconds": 0.7340221852064133
+      },
+      {
+        "rank": 1,
+        "local_rank": 1,
+        "pid": 802059,
+        "hostname": "interactive93293",
+        "gpu_name": "NVIDIA A100 80GB PCIe",
+        "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+        "total_memory": 84974239744,
+        "nccl_all_reduce": 10.0,
+        "nccl_seconds": 0.8146040290594101
+      },
+      {
+        "rank": 2,
+        "local_rank": 2,
+        "pid": 802060,
+        "hostname": "interactive93293",
+        "gpu_name": "NVIDIA A100 80GB PCIe",
+        "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+        "total_memory": 84974239744,
+        "nccl_all_reduce": 10.0,
+        "nccl_seconds": 0.740044116973877
+      },
+      {
+        "rank": 3,
+        "local_rank": 3,
+        "pid": 802061,
+        "hostname": "interactive93293",
+        "gpu_name": "NVIDIA A100 80GB PCIe",
+        "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+        "total_memory": 84974239744,
+        "nccl_all_reduce": 10.0,
+        "nccl_seconds": 0.7099538892507553
+      }
+    ],
+    "gather_gradient_test": {
+      "expected": 10.0,
+      "actual": 10.0,
+      "passed": true
+    }
+  },
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 947.8304510861635,
+        "peak_allocated_gib": 17.30134677886963,
+        "peak_reserved_gib": 18.4765625
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 947.8310504853725,
+        "peak_allocated_gib": 17.30134677886963,
+        "peak_reserved_gib": 18.4765625
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 947.8314924314618,
+        "peak_allocated_gib": 17.30134677886963,
+        "peak_reserved_gib": 18.4765625
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 947.831497810781,
+        "peak_allocated_gib": 17.30134677886963,
+        "peak_reserved_gib": 18.4765625
+      }
+    ]
+  },
+  "continuous_steps": true,
+  "losses_and_gradients_finite": true,
+  "common_step0_verified": true,
+  "checkpoint_metadata_verified": true,
+  "checkpoints": [
+    {
+      "step": 0,
+      "server_path": "/root/lk_projects/SAID-nest-clip-v1/formal/A3/step000000.pt",
+      "bytes": 612130627,
+      "sha256": "552bf945ab0b254d64c11dcce0ee3e361a1e1e304aac018b59bd3d962600d638"
+    },
+    {
+      "step": 100,
+      "server_path": "/root/lk_projects/SAID-nest-clip-v1/formal/A3/step000100.pt",
+      "bytes": 1835287362,
+      "sha256": "46f6a23798a7d25ff37e6e5923fa4bf1a014be6ea48464cf07d707172aa95713"
+    },
+    {
+      "step": 200,
+      "server_path": "/root/lk_projects/SAID-nest-clip-v1/formal/A3/step000200.pt",
+      "bytes": 1835287362,
+      "sha256": "1d49a15c62e4a15cb44d238ed1702e7d704d7600f99e29664e8dafd027af0d2c"
+    },
+    {
+      "step": 300,
+      "server_path": "/root/lk_projects/SAID-nest-clip-v1/formal/A3/step000300.pt",
+      "bytes": 1835287362,
+      "sha256": "a7dbe80fb07c2d51d3d83ea035c9f10e435f65e6cfdc0340cd7cb5a6dfd33588"
+    },
+    {
+      "step": 400,
+      "server_path": "/root/lk_projects/SAID-nest-clip-v1/formal/A3/step000400.pt",
+      "bytes": 1835287362,
+      "sha256": "4a162b5f79749ce6f00315ba5c1a53e9b99b68f9454c5d665a2063da17d69312"
+    },
+    {
+      "step": 500,
+      "server_path": "/root/lk_projects/SAID-nest-clip-v1/formal/A3/step000500.pt",
+      "bytes": 1835287362,
+      "sha256": "8ac2ffa8461c8db5e854b36abcf0b1beaba220edc1424e74eab466ca7432b8c2"
+    }
+  ],
+  "samples_seen": 512000,
+  "view_reason_counts": {
+    "valid": 511936,
+    "single_visible_segment": 58,
+    "first_segment_overlong": 6
+  },
+  "valid_local_ratio": 0.999875,
+  "f_only_steps": 0,
+  "global_valid_min": 1022,
+  "global_valid_max": 1024,
+  "duplicate_steps": [],
+  "duplicate_ids": [],
+  "sum_max_step_seconds": 925.2019415721297
+}

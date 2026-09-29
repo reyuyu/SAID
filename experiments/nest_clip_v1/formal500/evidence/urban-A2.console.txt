@@ -1,0 +1,33 @@
+/root/lk_projects/SAID/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+{
+  "protocol": "urban1k-native-cls-v1",
+  "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+  "n_images": 1000,
+  "n_captions": 1000,
+  "image_representation": "legacy_cls",
+  "global_pool": "n/a",
+  "similarity": "normalized features, plain inner product, full 1000-item pool",
+  "positive": "diagonal",
+  "image2text": {
+    "R1": 0.8850000500679016,
+    "R5": 0.9770000576972961,
+    "R10": 0.9920000433921814
+  },
+  "text2image": {
+    "R1": 0.8540000319480896,
+    "R5": 0.9730000495910645,
+    "R10": 0.9890000224113464
+  },
+  "checkpoint_sha256": "d055ff9eb9d9006b20b0c577a264228ea1b5cdbfdbd8add53109f4799d416af5",
+  "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+  "upstream_metrics_reproduced": [
+    "T2I R@1",
+    "I2T R@1"
+  ],
+  "added_here": [
+    "R@5",
+    "R@10"
+  ],
+  "native_only": true
+}
