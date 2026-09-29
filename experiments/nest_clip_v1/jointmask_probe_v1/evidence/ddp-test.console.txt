@@ -1,0 +1,85 @@
+/root/lk_projects/SAID/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+[rank0]:[W929 16:06:23.730302148 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1]:[W929 16:06:23.730664971 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+{
+  "passed": true,
+  "world_size": 2,
+  "backend": "nccl",
+  "cases": [
+    {
+      "mode": "text_only",
+      "validity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_batch": 2,
+      "loss_error": 3.0517578125e-05,
+      "max_gradient_error": 0.0001220703125,
+      "max_update_error": 2.9802322387695312e-08,
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 3,
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": 0.00018310546875,
+      "max_update_error": 1.862645149230957e-08,
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 2,
+      "loss_error": 0.0,
+      "max_gradient_error": 0.000244140625,
+      "max_update_error": 2.9802322387695312e-08,
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 2,
+      "loss_error": 0.0001220703125,
+      "max_gradient_error": 0.000244140625,
+      "max_update_error": 2.9802322387695312e-08,
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_shuffled_image",
+      "validity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_batch": 2,
+      "loss_error": 0.0,
+      "max_gradient_error": 0.0001220703125,
+      "max_update_error": 2.9802322387695312e-08,
+      "shuffle_shift": 3
+    }
+  ]
+}

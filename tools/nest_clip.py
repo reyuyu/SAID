@@ -61,10 +61,21 @@ def main():
         payload = torch.load(args.checkpoint, map_location='cpu', weights_only=False)
         model, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
         model.load_state_dict(payload['model'], strict=True)
-        module = NestedSemanticMask(model, arm=payload['config']['arm']).eval()
+        config = payload['config']
+        module = NestedSemanticMask(model, arm=config['arm'], checkpoint_encoders=False,
+                                    image_chunk=config.get('image_chunk', 32),
+                                    text_chunk=config.get('text_chunk', 64),
+                                    condition_mode=config.get('condition_mode', 'text_only'),
+                                    shuffle_seed=config.get('shuffle_seed', 0),
+                                    checkpoint_pair_blocks=config.get(
+                                        'checkpoint_pair_blocks', True)).eval()
+        if module.joint_adapter is None:
+            assert payload.get('adapter') is None
+        else:
+            module.joint_adapter.load_state_dict(payload['adapter'], strict=True)
         optimizer = build_optimizer(module)
         optimizer.load_state_dict(payload['optimizer'])
-        assert len(optimizer.param_groups) == 2
+        assert len(optimizer.param_groups) == (2 if module.joint_adapter is None else 3)
         steps = sorted({int(v['step']) for v in optimizer.state.values()})
         assert steps == [payload['completed_steps']]
         student, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())

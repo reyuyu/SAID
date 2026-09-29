@@ -1,0 +1,87 @@
+{
+  "passed": true,
+  "git_branch": "codex/nest-jointmask-probe-v1",
+  "base_revision": "25a5d1242231050ce544c4a1df76613cd6a69930",
+  "initial_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+  "initial_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "training_metadata": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  },
+  "batches_per_epoch": 1217,
+  "scheduler_horizon": 3651,
+  "formal_stop": 500,
+  "gpu": [
+    {
+      "index": 0,
+      "name": "NVIDIA A100 80GB PCIe",
+      "uuid": "GPU-6810482c-0a4f-2547-407d-7b11db16655d",
+      "total_mib": 81920,
+      "free_mib": 81038,
+      "mig": "Disabled"
+    },
+    {
+      "index": 1,
+      "name": "NVIDIA A100 80GB PCIe",
+      "uuid": "GPU-a85d54c4-620e-6813-9176-ed449a61c7a4",
+      "total_mib": 81920,
+      "free_mib": 81038,
+      "mig": "Disabled"
+    },
+    {
+      "index": 2,
+      "name": "NVIDIA A100 80GB PCIe",
+      "uuid": "GPU-251127fd-2cb2-c90d-6151-54360a5fcb82",
+      "total_mib": 81920,
+      "free_mib": 81038,
+      "mig": "Disabled"
+    },
+    {
+      "index": 3,
+      "name": "NVIDIA A100 80GB PCIe",
+      "uuid": "GPU-cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+      "total_mib": 81920,
+      "free_mib": 81038,
+      "mig": "Disabled"
+    }
+  ],
+  "topology": "\u001b[4mGPU0\tGPU1\tGPU2\tGPU3\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tPIX\tPIX\tPIX\t0-35,72-107\t0\t\tN/A\nGPU1\tPIX\t X \tPIX\tPIX\t0-35,72-107\t0\t\tN/A\nGPU2\tPIX\tPIX\t X \tPIX\t0-35,72-107\t0\t\tN/A\nGPU3\tPIX\tPIX\tPIX\t X \t0-35,72-107\t0\t\tN/A\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks",
+  "cuda_visible_devices": null,
+  "nccl_environment": {},
+  "software": {
+    "torch": "2.5.1+cu124",
+    "cuda": "12.4",
+    "nccl": [
+      2,
+      21,
+      5
+    ]
+  },
+  "resources": {
+    "training_index": "/root/lk_projects/SAID-nest-clip-v1/data_index/metadata.json",
+    "training_images": "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+    "coco": "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+    "urban": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+    "flickr_manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl",
+    "flickr_images": "/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images",
+    "docci_manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl",
+    "docci_images": "/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images",
+    "long_dci_manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl",
+    "long_dci_images": "/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+  },
+  "evaluation_protocol": [
+    "coco",
+    "urban",
+    "flickr_test1k",
+    "docci",
+    "long_dci"
+  ],
+  "excluded_by_user": [
+    "dci_full"
+  ]
+}
