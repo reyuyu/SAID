@@ -1,5 +1,7 @@
 # NEST-CLIP v1
 
+后续任务遵循[最新评测范围](EVALUATION_POLICY.md)，不再运行DCI及Long-DCI。下文保留第一轮5步冒烟归档。
+
 共享 CLIP/LongCLIP backbone 和原 MaskNetwork，独立编码全文 F、概述 O、展开 E。A2 使用三视图 masked 对齐和稀疏；A3 仅增加局部到全文的软包含项。
 
 本轮只完成实现、必要测试及 A2/A3 各 5 步真实四卡冒烟。**未启动正式 500 步训练或检索评测**，这些结果不能用于判断方法效果。
