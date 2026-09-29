@@ -1,0 +1,123 @@
+{
+  "status": "BLOCKED_SMOKE_NCCL_ERROR",
+  "smoke_passed": false,
+  "formal_started": false,
+  "evaluation_started": false,
+  "code_commit": "9327ea90611f85122b0788420513f04ea8e24977",
+  "cause": "Rank3 async ncclSystemError in BROADCAST SeqNum410 (1769472 elements) after update5 during final parameter-agreement/teardown region; precise root cause undetermined",
+  "launcher_exit_code": 0,
+  "acceptance_file_claim": true,
+  "observed_completed_updates": [
+    5,
+    5,
+    5,
+    5
+  ],
+  "observed_max_parameter_difference": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "finite_losses_gradients": true,
+  "native_global_candidates": 1024,
+  "full_native_mix": 0.25,
+  "all_20_rank_streams_equal_original_A3": true,
+  "step0_model_optimizer_equal": true,
+  "checkpoint_metadata_valid": true,
+  "max_formula_reconstruction_error": 1.8179416727548414e-06,
+  "losses": [
+    57.18701934814453,
+    31.85066795349121,
+    25.55116081237793,
+    19.097484588623047,
+    19.362375259399414
+  ],
+  "unit_tests_passed": 20,
+  "ddp_test": {
+    "passed": true,
+    "world_size": 2,
+    "backend": "nccl",
+    "cases": [
+      {
+        "validity": [
+          1,
+          1,
+          1,
+          1,
+          0,
+          0
+        ],
+        "loss_error": 0.0,
+        "max_gradient_error": 0.0002288818359375,
+        "max_sgd_update_error": 2.9802322387695312e-08,
+        "max_adamw_update_error": 0.00019505119416862726,
+        "native_candidates": 6,
+        "reconstruction_error": 3.0517578125e-05
+      },
+      {
+        "validity": [
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "loss_error": 0.0001220703125,
+        "max_gradient_error": 0.0001220703125,
+        "max_sgd_update_error": 2.9802322387695312e-08,
+        "max_adamw_update_error": 0.00018460351566318423,
+        "native_candidates": 6,
+        "reconstruction_error": 0.0001220703125
+      },
+      {
+        "validity": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "loss_error": 3.0517578125e-05,
+        "max_gradient_error": 9.1552734375e-05,
+        "max_sgd_update_error": 5.960464477539063e-08,
+        "max_adamw_update_error": 1.5093100955709815e-06,
+        "native_candidates": 6,
+        "reconstruction_error": 3.0517578125e-05
+      },
+      {
+        "validity": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "loss_error": 3.0517578125e-05,
+        "max_gradient_error": 9.1552734375e-05,
+        "max_sgd_update_error": 5.960464477539063e-08,
+        "max_adamw_update_error": 1.5093100955709815e-06,
+        "native_candidates": 6,
+        "reconstruction_error": 3.0517578125e-05
+      }
+    ]
+  },
+  "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "checkpoints": [
+    {
+      "step": 0,
+      "path": "/root/lk_projects/SAID-nest-clip-v1/hybridf_v1/E11/smoke/step000000.pt",
+      "sha256": "1f76aea37be6b591271d798678858400fbff4a51d9bdfc2d7ca594c3cc2d087a"
+    },
+    {
+      "step": 5,
+      "path": "/root/lk_projects/SAID-nest-clip-v1/hybridf_v1/E11/smoke/step000005.pt",
+      "sha256": "77a0aa6180fdf4a12a622fc079848f34192a4cddd65979849d4ec7865c47d6ab"
+    }
+  ],
+  "policy": "Stop on failed communication acceptance. No retries, NCCL bypasses, batch changes, formal training or evaluation.",
+  "limits": "Training metrics and acceptance.json do not override the NCCL error; cannot claim clean four-card smoke or formal results."
+}

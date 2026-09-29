@@ -1,0 +1,110 @@
+{
+  "arm": "A3",
+  "experiment_name": "NEST-HybridF-E11",
+  "full_native_mix": 0.25,
+  "sampling_mode": "random_k",
+  "sampling_seed": 0,
+  "world_size": 4,
+  "batch_size": 256,
+  "accumulation": 1,
+  "epochs": 3,
+  "seed": 0,
+  "workers": 8,
+  "checkpoint_encoders": true,
+  "score_chunk": 64,
+  "config": "configs/nest_hybridf_e11.json",
+  "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+  "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+  "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+  "output_dir": "/root/lk_projects/SAID-nest-clip-v1/hybridf_v1/E11/smoke",
+  "run_type": "smoke",
+  "max_updates": 5,
+  "resume": null,
+  "expected_parent_trainer_sha256": null,
+  "horizon": 3651,
+  "batches_per_epoch": 1217,
+  "training_records": 1245901,
+  "sampler_num_samples": 311476,
+  "sampler_padding": 3,
+  "tail_batch": 180,
+  "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "data": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  },
+  "code_sha256": {
+    "model/nested_semantic_mask.py": "165058bb7670b92b3f2ef2077a0e5c0d59a23ce49f5334ce8d8f655f8aedbf53",
+    "train/nested_semantic_data.py": "79b65f47550c6e7b35a4d3cde7158fd3f0733712ccc48e53d72dd6bae8d2e336",
+    "train/train_nested_semantic_mask.py": "9c7046630cdf7acb510c1f679769b34318620d5012320b04778eb3cbd34b8b85",
+    "model/model_longclip.py": "0f85eb499e4f839f3cf8335ee583e5b843197fd46d0531d58cad4d6b942a9e59",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e"
+  },
+  "git_head": "9327ea90611f85122b0788420513f04ea8e24977",
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "nccl": [
+    2,
+    21,
+    5
+  ],
+  "environment": {},
+  "ranks": [
+    {
+      "rank": 0,
+      "local_rank": 0,
+      "pid": 900863,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7801678627729416
+    },
+    {
+      "rank": 1,
+      "local_rank": 1,
+      "pid": 900864,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7670167684555054
+    },
+    {
+      "rank": 2,
+      "local_rank": 2,
+      "pid": 900865,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7678977698087692
+    },
+    {
+      "rank": 3,
+      "local_rank": 3,
+      "pid": 900866,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7628533393144608
+    }
+  ],
+  "gather_gradient_test": {
+    "expected": 10.0,
+    "actual": 10.0,
+    "passed": true
+  },
+  "start_updates": 0,
+  "updates_planned_this_run": 5
+}

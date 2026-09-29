@@ -1,0 +1,153 @@
+{
+  "status": "PASS",
+  "checkpoint": "/root/lk_projects/SAID-suffix3-3epoch/run/s0_dual_mask_suffix_masked_step003651.pt",
+  "checkpoint_sha256": "e0c607a8e8001c597fffcc5046f8a2a77309845f46cd7fa48784c7ec9c0c753a",
+  "completed_steps": 3651,
+  "new_updates": 3151,
+  "epochs": 3,
+  "lambda_suffix": 3,
+  "lambda_u_sparse": 0,
+  "bare_student": "/root/lk_projects/SAID-suffix3-3epoch/exports/bare_student_step3651.pt",
+  "bare_sha256": "755b4cca77667713ed28861601f62eaac2e40b7c3757dfa0d7e685c502414d19",
+  "tensor_digest": "c141fd2c940ffb3c3695426df2891bbcb8fb1e3f22ce81d39ef3c7557d9de529",
+  "tensor_count": 317,
+  "roundtrip_equal": true,
+  "optimizer_steps": {
+    "clip": {
+      "min": 3651,
+      "max": 3651,
+      "count": 301
+    },
+    "mask": {
+      "min": 3651,
+      "max": 3651,
+      "count": 14
+    },
+    "suffix": {
+      "min": 3651,
+      "max": 3651,
+      "count": 4
+    }
+  },
+  "continuation_rows": 3151,
+  "first_update": 501,
+  "final_update": 3651,
+  "training_config": {
+    "objective": "s0_dual_mask_suffix_clean_v01",
+    "suffix_mode": "masked",
+    "suffix_lambda": 3.0,
+    "u_sparsity_lambda": 0.0,
+    "total_objective": "10*L_S + 2*S_S + 3*L_U + 0*S_U",
+    "objective_code_sha256": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+    "objective_code_file": "model/dual_mask_suffix.py",
+    "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+    "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
+    "batch_size_per_gpu": 256,
+    "world_size": 4,
+    "epochs": 3,
+    "loader_batches": 1217,
+    "lr_horizon_steps": 3651,
+    "max_steps": 3651,
+    "seed": 0,
+    "total_len": 1000,
+    "image_chunk": 16,
+    "text_chunk": 32,
+    "precision": "fp32 master + bf16 autocast",
+    "run_type": "formal",
+    "formal_optimizer_updates": 3651,
+    "debug_optimizer_updates": 0,
+    "init_state": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+    "training_sha": "873b43a5bc000528311e22aac01e92045ac898e0",
+    "arguments": {
+      "suffix_mode": "masked",
+      "max_steps": 3651,
+      "output_dir": "/root/lk_projects/SAID-suffix3-3epoch/run",
+      "base_model": "B16",
+      "batch_size": 256,
+      "epochs": 3,
+      "lr": 1e-06,
+      "mask_lr": 0.001,
+      "suffix_lr": 0.0001,
+      "weight_decay": 0.01,
+      "warmup": 200,
+      "seed": 0,
+      "init_state": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+      "image_chunk": 16,
+      "text_chunk": 32,
+      "lambda_suffix": 3.0,
+      "lambda_u_sparse": 0.0,
+      "num_workers": 8,
+      "total_len": 1000,
+      "amp_dtype": "bf16",
+      "save_every": 500,
+      "resume": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse0/s0_dual_mask_suffix_masked_step000500.pt",
+      "expect_model_sha": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+      "run_type": "formal"
+    },
+    "accumulation": 1,
+    "u_sparsity": 0.0,
+    "communication_env": {
+      "NCCL_SOCKET_IFNAME": "lo",
+      "NCCL_IB_DISABLE": "1",
+      "NCCL_P2P_DISABLE": "1",
+      "GLOO_SOCKET_IFNAME": "lo",
+      "CUDA_VISIBLE_DEVICES": "0,1,2,3"
+    },
+    "resumed_from": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse0/s0_dual_mask_suffix_masked_step000500.pt",
+    "resume_completed_steps": 500,
+    "resume_epoch": 0,
+    "resume_step_in_epoch": 500,
+    "resume_stream_batch_index": 500,
+    "resume_skip_rule": "skip the first completed_steps batches of the concatenated epoch stream; the recorded step_in_epoch is checked for consistency instead of being used directly",
+    "resumed_from_training_sha": "dcd33877f1f77a901d292190834f1ffd83a049a8",
+    "resumed_from_objective": "10*L_S + 2*S_S + 3*L_U + 0*S_U",
+    "resume_checks": {
+      "loaded_clip_state_digest": "d9f8a4aed852c0de592506f2d68549fc1ffbb950fbd52cddf29aa2c03915c6a3",
+      "checkpoint_provenance_state_digest": "d9f8a4aed852c0de592506f2d68549fc1ffbb950fbd52cddf29aa2c03915c6a3",
+      "clip_state_digest_matches": true,
+      "objective_code_sha256": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+      "objective_code_source": "expect-model-sha",
+      "resumed_from_training_sha": "dcd33877f1f77a901d292190834f1ffd83a049a8",
+      "resumed_from_objective": "10*L_S + 2*S_S + 3*L_U + 0*S_U",
+      "resume_completed_steps": 500,
+      "resume_epoch": 0,
+      "resume_step_in_epoch": 500,
+      "resume_stream_batch_index": 500,
+      "batches_skipped_expected": 500,
+      "optimizer_steps_restored": {
+        "clip": [
+          500
+        ],
+        "mask": [
+          500
+        ],
+        "suffix": [
+          500
+        ]
+      }
+    },
+    "stream_summary": [
+      {
+        "rank": 0,
+        "consumed_samples": 806428,
+        "stream_sha256": "2f046553bccb4865853fce200ca2a6e5cbc636d155a3efaf7241c251e25cbc7c"
+      },
+      {
+        "rank": 1,
+        "consumed_samples": 806428,
+        "stream_sha256": "bb7a77a414921cecbae33383f0c57445179b0c0178b9a6486b1eb47afbd21baa"
+      },
+      {
+        "rank": 2,
+        "consumed_samples": 806428,
+        "stream_sha256": "55769d48780583cc9892170cf62f3eb541a032da631ed5eb22cceb3b4ba403fa"
+      },
+      {
+        "rank": 3,
+        "consumed_samples": 806428,
+        "stream_sha256": "7935576e32c5328701baa91c5ca61b7abc3bd2f8a9e9135b5a3216d46827d393"
+      }
+    ],
+    "training_seconds": 6392.169110201299
+  }
+}

@@ -1,5 +1,7 @@
 # NEST-HybridF-E11
 
+当前状态：实现和单元/两rank测试通过，但真实四卡smoke末尾出现NCCL异步错误，正式训练尚未启动。见[阻塞报告](REPORT.md)与[机器可读状态](results.json)。以下命令仅作复现记录，不能将原始acceptance.json的passed字段当作完整smoke验收通过。
+
 本轮最新完整指令明确授权六项评测和J_long，因此本实验恢复DCI/Long-DCI；它覆盖此前“后续跳过DCI”的范围要求。只训练E11，不运行E00/E01或扫描eta。
 
 模型内部 `arm=A3`，`full_native_mix=0.25` 从首步固定；先计算两项独立双向CE，再混合 `L_F_hybrid=.75 L_F_mask+.25 L_F_native`。正常三视图目标为 `(10/3)(L_F_hybrid+L_P_mask+L_R_mask)+(Omega_F+2 Omega_P+2 Omega_R)/3+lambda_inc L_inc`。全局V<2时为 `10 L_F_hybrid+Omega_F`。没有把稀疏或包含乘0.75，没有混合logits，没有额外编码或参数。
