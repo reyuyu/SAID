@@ -8,7 +8,7 @@ import time
 
 
 here = Path(__file__).resolve().parent
-repo = here.parents[4]
+repo = here.parents[3]
 name, *command = sys.argv[1:]
 assert name and command and '/' not in name
 record = here / f'{name}.execution.json'
