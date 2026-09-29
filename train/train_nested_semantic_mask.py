@@ -218,9 +218,11 @@ def main():
     cfg.setdefault('text_chunk', 64)
     cfg.setdefault('checkpoint_pair_blocks', True)
     cfg.setdefault('full_native_mix', 0.)
+    cfg.setdefault('checkpoint_interval', 100)
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image')
     assert cfg['full_native_mix'] == 0
+    assert int(cfg['checkpoint_interval']) > 0
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates > 0)
     assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
     assert cfg['epochs'] == 3 and cfg['seed'] == 0 and cfg['workers'] == 8
@@ -401,7 +403,7 @@ def main():
                         local_view_labels=['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration'],
                         sample_ids=batch['sample_id'][:8].tolist(),
                         n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
-            if completed % 100 == 0 or completed == args.max_updates:
+            if completed % int(cfg['checkpoint_interval']) == 0 or completed == args.max_updates:
                 save_checkpoint(module, optimizer, config, completed, output)
             # At a full epoch boundary let DataLoader exhaust naturally, so its
             # workers finish through StopIteration rather than only __del__.
