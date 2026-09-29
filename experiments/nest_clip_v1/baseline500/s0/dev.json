@@ -1,0 +1,49 @@
+{
+  "name": "s0",
+  "spec": {
+    "name": "s0",
+    "s0": true,
+    "lambda_suffix": 0,
+    "lambda_u_sparse": 0,
+    "checkpoint": "/root/lk_projects/SAID-tuning-500/runs/s0/cvssl_S0_smartclip_step000500.pt",
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "suffix_lr": 0.0
+  },
+  "export": "/root/lk_projects/SAID-tuning-500/exports/s0/export.json",
+  "bare_student": "/root/lk_projects/SAID-tuning-500/exports/s0/bare_student_step500.pt",
+  "bare_sha256": "3c4b638b25d01f7be562488a3cbf14010f860b92a4e52f259dd81fb2d2dab28d",
+  "metrics": {
+    "coco": {
+      "R@1": {
+        "I2T": 0.6018,
+        "T2I": 0.4124
+      },
+      "R@5": {
+        "I2T": 0.826,
+        "T2I": 0.67084
+      },
+      "R@10": {
+        "I2T": 0.8892,
+        "T2I": 0.76648
+      }
+    },
+    "urban": {
+      "R@1": {
+        "I2T": 0.8670000433921814,
+        "T2I": 0.8360000252723694
+      },
+      "R@5": {
+        "I2T": 0.9730000495910645,
+        "T2I": 0.9620000720024109
+      },
+      "R@10": {
+        "I2T": 0.987000048160553,
+        "T2I": 0.9820000529289246
+      }
+    }
+  },
+  "coco_mean_R1": 50.71,
+  "urban_mean_R1": 85.15000343322754,
+  "dev_score": 67.93000171661377
+}

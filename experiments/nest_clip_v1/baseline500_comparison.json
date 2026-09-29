@@ -1,0 +1,558 @@
+{
+  "scope": "Existing 500-update native retrieval results; no new training or evaluation",
+  "models": {
+    "S0_historical500": "S0 历史@500",
+    "S0_local500": "S0 本机复现@500",
+    "Clean500": "Clean v0.1@500",
+    "A2": "NEST A2@500",
+    "A3": "NEST A3@500"
+  },
+  "verification": {
+    "initialization": {
+      "baseline_file_sha256": "6e9cb606eec915b5b8613b7c81dccbd73dcb6e928a3ded49ac21c0505c454483",
+      "nest_file_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+      "compared_tensors": 317,
+      "all_model_tensors_equal": true,
+      "note": "File containers differ; all 317 model tensors are identical. This does not assert optimizer or RNG stream identity across methods."
+    },
+    "baseline_training": {
+      "s0": {
+        "actual_updates": 500,
+        "training_checkpoint_sha256": "38156d367930e920f665869a6d399bf1dbbeac6def72cf1650a486f861bc69c2",
+        "bare_sha256": "3c4b638b25d01f7be562488a3cbf14010f860b92a4e52f259dd81fb2d2dab28d",
+        "eval_exit_codes": [
+          0,
+          0
+        ],
+        "strict_load": true,
+        "epochs": 3,
+        "horizon": 3651,
+        "world_size": 4,
+        "batch_per_rank": 256,
+        "seed": 0
+      },
+      "clean": {
+        "actual_updates": 500,
+        "training_checkpoint_sha256": "55c9b4b4abf4df0ceb203c597a9982fa5e92791f1987ba511baf8d8e4b920e2e",
+        "bare_sha256": "a98d7678f6498d86f85d1978b26e6af24ca41089dab6eb7c76fea9d56546eea0",
+        "eval_exit_codes": [
+          0,
+          0
+        ],
+        "strict_load": true,
+        "epochs": 3,
+        "horizon": 3651,
+        "world_size": 4,
+        "batch_per_rank": 256,
+        "seed": 0
+      }
+    },
+    "native_code_sha256": {
+      "eval/retrieval/coco_retrieval.py": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+      "tools/urban1k_retrieval.py": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "0f85eb499e4f839f3cf8335ee583e5b843197fd46d0531d58cad4d6b942a9e59",
+      "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad"
+    },
+    "evaluation_compatibility": {
+      "coco_images": 5000,
+      "coco_texts": 25000,
+      "coco_similarity_chunk": 512,
+      "image_batch_size": 64,
+      "urban_fingerprint": {
+        "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "n_pairs": 1000,
+        "revision": null,
+        "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c"
+      },
+      "native_only": true,
+      "evaluator_source_identical": true,
+      "encoder_tokenizer_source_identical": true,
+      "new_training_or_evaluation_started": false
+    }
+  },
+  "raw_sources": [
+    {
+      "path": "s0/coco/coco.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/s0/coco/coco.json",
+      "sha256": "4781c41703ef318687f370bc81b8c0454e2f2f0ab0a04dd6095b5fa381e3e29b"
+    },
+    {
+      "path": "s0/coco/command.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/s0/coco/command.json",
+      "sha256": "c0646e9b21b406d74437c3fd5b90b4f7a2d69ac4fd6d9ea2b86e915e696e623b"
+    },
+    {
+      "path": "s0/coco/console.log.exitcode",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/s0/coco/console.log.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "s0/urban/urban.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/s0/urban/urban.json",
+      "sha256": "6099739445529373777b5d1a1ca85a5a33ff0f19716c36477041e565d09e6cdb"
+    },
+    {
+      "path": "s0/urban/command.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/s0/urban/command.json",
+      "sha256": "5e593bb37ddd47abf5d0444a188311e289e455cd9083b014d56b41d07a7ca563"
+    },
+    {
+      "path": "s0/urban/console.log.exitcode",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/s0/urban/console.log.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "s0/export.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/exports/s0/export.json",
+      "sha256": "d434872b7ec171e44120678769e7928871a58a348b8b2850fec73a0cd727c340"
+    },
+    {
+      "path": "s0/dev.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/reports/s0/dev.json",
+      "sha256": "c90c70458d10861881f548e37be7ec2da3b808a8d9197222c221368c86912118"
+    },
+    {
+      "path": "clean/coco/coco.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/clean/coco/coco.json",
+      "sha256": "c6b6c8d007eeb6d568432998f172b7b92cc124af7011eaa67d883a61c9e0cc48"
+    },
+    {
+      "path": "clean/coco/command.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/clean/coco/command.json",
+      "sha256": "505fe72ddb189c1395ce733ba4c1c3d32369e5d2dc834e654c27b455442d8661"
+    },
+    {
+      "path": "clean/coco/console.log.exitcode",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/clean/coco/console.log.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "clean/urban/urban.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/clean/urban/urban.json",
+      "sha256": "154f0f7cddf644b4586b83c3f706c1bd22d82bc5eebc506143f4e09fc07d67b5"
+    },
+    {
+      "path": "clean/urban/command.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/clean/urban/command.json",
+      "sha256": "21f31cfecb0607b96a21388d990de3bab3fcb86622e0711834dd34c2def89a4a"
+    },
+    {
+      "path": "clean/urban/console.log.exitcode",
+      "server_source": "/root/lk_projects/SAID-tuning-500/eval/clean/urban/console.log.exitcode",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "clean/export.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/exports/clean/export.json",
+      "sha256": "7b710b4a582b9f9cc6e75dcd33128c0533408b5250436a3f77783fd26c707a09"
+    },
+    {
+      "path": "clean/dev.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/reports/clean/dev.json",
+      "sha256": "456230ca380b96bcc67a3122809309ff985af5aa562cc996500e2b0a4957f9a5"
+    },
+    {
+      "path": "baseline_calibration.json",
+      "server_source": "/root/lk_projects/SAID-tuning-500/reports/baseline_calibration.json",
+      "sha256": "4e5a10267125798826f44ef3bc835404a51e4443c43246b41adc2a5fe26d58b5"
+    },
+    {
+      "path": "historical_formal500_report.json",
+      "server_source": "/root/lk_projects/SAID/experiments/s0_dualmask_masked_3epoch/evidence/masked_formal500_report.json",
+      "sha256": "c1cfa37e79339e60585e438d845ffee76fe98b6d12e05f26c44f91f5dbf75c21"
+    }
+  ],
+  "metrics": [
+    {
+      "dataset": "coco",
+      "direction": "I2T",
+      "metric": "R@1",
+      "raw_recall": {
+        "S0_historical500": 0.6058,
+        "S0_local500": 0.6018,
+        "Clean500": 0.6054,
+        "A2": 0.5966,
+        "A3": 0.5906
+      },
+      "recall_percent": {
+        "S0_historical500": 60.58,
+        "S0_local500": 60.18,
+        "Clean500": 60.540000000000006,
+        "A2": 59.660000000000004,
+        "A3": 59.06
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": -0.9199999999999986,
+          "S0_local500": -0.5199999999999982,
+          "Clean500": -0.880000000000003
+        },
+        "A3": {
+          "S0_historical500": -1.5199999999999991,
+          "S0_local500": -1.1199999999999988,
+          "Clean500": -1.4800000000000035
+        }
+      }
+    },
+    {
+      "dataset": "coco",
+      "direction": "I2T",
+      "metric": "R@5",
+      "raw_recall": {
+        "S0_historical500": 0.822,
+        "S0_local500": 0.826,
+        "Clean500": 0.8248,
+        "A2": 0.8226,
+        "A3": 0.8208
+      },
+      "recall_percent": {
+        "S0_historical500": 82.19999999999999,
+        "S0_local500": 82.6,
+        "Clean500": 82.48,
+        "A2": 82.26,
+        "A3": 82.08
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 0.060000000000004494,
+          "S0_local500": -0.33999999999999586,
+          "Clean500": -0.21999999999999797
+        },
+        "A3": {
+          "S0_historical500": -0.11999999999999789,
+          "S0_local500": -0.5199999999999982,
+          "Clean500": -0.40000000000000036
+        }
+      }
+    },
+    {
+      "dataset": "coco",
+      "direction": "I2T",
+      "metric": "R@10",
+      "raw_recall": {
+        "S0_historical500": 0.8906,
+        "S0_local500": 0.8892,
+        "Clean500": 0.8918,
+        "A2": 0.886,
+        "A3": 0.8846
+      },
+      "recall_percent": {
+        "S0_historical500": 89.05999999999999,
+        "S0_local500": 88.92,
+        "Clean500": 89.18,
+        "A2": 88.6,
+        "A3": 88.46000000000001
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": -0.45999999999999375,
+          "S0_local500": -0.31999999999999806,
+          "Clean500": -0.5800000000000027
+        },
+        "A3": {
+          "S0_historical500": -0.5999999999999894,
+          "S0_local500": -0.45999999999999375,
+          "Clean500": -0.7199999999999984
+        }
+      }
+    },
+    {
+      "dataset": "coco",
+      "direction": "T2I",
+      "metric": "R@1",
+      "raw_recall": {
+        "S0_historical500": 0.41236,
+        "S0_local500": 0.4124,
+        "Clean500": 0.41464,
+        "A2": 0.40996,
+        "A3": 0.40908
+      },
+      "recall_percent": {
+        "S0_historical500": 41.236,
+        "S0_local500": 41.24,
+        "Clean500": 41.464,
+        "A2": 40.996,
+        "A3": 40.908
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": -0.24000000000000132,
+          "S0_local500": -0.24399999999999977,
+          "Clean500": -0.46800000000000175
+        },
+        "A3": {
+          "S0_historical500": -0.3280000000000005,
+          "S0_local500": -0.33199999999999896,
+          "Clean500": -0.5560000000000009
+        }
+      }
+    },
+    {
+      "dataset": "coco",
+      "direction": "T2I",
+      "metric": "R@5",
+      "raw_recall": {
+        "S0_historical500": 0.67092,
+        "S0_local500": 0.67084,
+        "Clean500": 0.66672,
+        "A2": 0.66536,
+        "A3": 0.66444
+      },
+      "recall_percent": {
+        "S0_historical500": 67.092,
+        "S0_local500": 67.084,
+        "Clean500": 66.672,
+        "A2": 66.536,
+        "A3": 66.444
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": -0.5560000000000009,
+          "S0_local500": -0.548000000000004,
+          "Clean500": -0.13600000000000279
+        },
+        "A3": {
+          "S0_historical500": -0.647999999999993,
+          "S0_local500": -0.6399999999999961,
+          "Clean500": -0.22799999999999487
+        }
+      }
+    },
+    {
+      "dataset": "coco",
+      "direction": "T2I",
+      "metric": "R@10",
+      "raw_recall": {
+        "S0_historical500": 0.7662,
+        "S0_local500": 0.76648,
+        "Clean500": 0.76552,
+        "A2": 0.7668,
+        "A3": 0.76636
+      },
+      "recall_percent": {
+        "S0_historical500": 76.62,
+        "S0_local500": 76.64800000000001,
+        "Clean500": 76.55199999999999,
+        "A2": 76.68,
+        "A3": 76.63600000000001
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 0.060000000000004494,
+          "S0_local500": 0.031999999999998696,
+          "Clean500": 0.1280000000000059
+        },
+        "A3": {
+          "S0_historical500": 0.0160000000000049,
+          "S0_local500": -0.012000000000000899,
+          "Clean500": 0.08400000000000629
+        }
+      }
+    },
+    {
+      "dataset": "urban",
+      "direction": "I2T",
+      "metric": "R@1",
+      "raw_recall": {
+        "S0_historical500": 0.8700000643730164,
+        "S0_local500": 0.8670000433921814,
+        "Clean500": 0.8820000290870667,
+        "A2": 0.8850000500679016,
+        "A3": 0.8870000243186951
+      },
+      "recall_percent": {
+        "S0_historical500": 87.00000643730164,
+        "S0_local500": 86.70000433921814,
+        "Clean500": 88.20000290870667,
+        "A2": 88.50000500679016,
+        "A3": 88.7000024318695
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 1.4999985694885254,
+          "S0_local500": 1.8000006675720215,
+          "Clean500": 0.3000020980834961
+        },
+        "A3": {
+          "S0_historical500": 1.699995994567871,
+          "S0_local500": 1.9999980926513672,
+          "Clean500": 0.4999995231628418
+        }
+      }
+    },
+    {
+      "dataset": "urban",
+      "direction": "I2T",
+      "metric": "R@5",
+      "raw_recall": {
+        "S0_historical500": 0.971000075340271,
+        "S0_local500": 0.9730000495910645,
+        "Clean500": 0.9750000238418579,
+        "A2": 0.9770000576972961,
+        "A3": 0.9770000576972961
+      },
+      "recall_percent": {
+        "S0_historical500": 97.1000075340271,
+        "S0_local500": 97.30000495910645,
+        "Clean500": 97.50000238418579,
+        "A2": 97.70000576972961,
+        "A3": 97.70000576972961
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 0.5999982357025146,
+          "S0_local500": 0.40000081062316895,
+          "Clean500": 0.20000338554382324
+        },
+        "A3": {
+          "S0_historical500": 0.5999982357025146,
+          "S0_local500": 0.40000081062316895,
+          "Clean500": 0.20000338554382324
+        }
+      }
+    },
+    {
+      "dataset": "urban",
+      "direction": "I2T",
+      "metric": "R@10",
+      "raw_recall": {
+        "S0_historical500": 0.9880000352859497,
+        "S0_local500": 0.987000048160553,
+        "Clean500": 0.9920000433921814,
+        "A2": 0.9920000433921814,
+        "A3": 0.9910000562667847
+      },
+      "recall_percent": {
+        "S0_historical500": 98.80000352859497,
+        "S0_local500": 98.7000048160553,
+        "Clean500": 99.20000433921814,
+        "A2": 99.20000433921814,
+        "A3": 99.10000562667847
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 0.40000081062316895,
+          "S0_local500": 0.4999995231628418,
+          "Clean500": 0.0
+        },
+        "A3": {
+          "S0_historical500": 0.3000020980834961,
+          "S0_local500": 0.40000081062316895,
+          "Clean500": -0.09999871253967285
+        }
+      }
+    },
+    {
+      "dataset": "urban",
+      "direction": "T2I",
+      "metric": "R@1",
+      "raw_recall": {
+        "S0_historical500": 0.8420000672340393,
+        "S0_local500": 0.8360000252723694,
+        "Clean500": 0.8580000400543213,
+        "A2": 0.8540000319480896,
+        "A3": 0.8540000319480896
+      },
+      "recall_percent": {
+        "S0_historical500": 84.20000672340393,
+        "S0_local500": 83.60000252723694,
+        "Clean500": 85.80000400543213,
+        "A2": 85.40000319480896,
+        "A3": 85.40000319480896
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 1.1999964714050293,
+          "S0_local500": 1.8000006675720215,
+          "Clean500": -0.40000081062316895
+        },
+        "A3": {
+          "S0_historical500": 1.1999964714050293,
+          "S0_local500": 1.8000006675720215,
+          "Clean500": -0.40000081062316895
+        }
+      }
+    },
+    {
+      "dataset": "urban",
+      "direction": "T2I",
+      "metric": "R@5",
+      "raw_recall": {
+        "S0_historical500": 0.9670000672340393,
+        "S0_local500": 0.9620000720024109,
+        "Clean500": 0.9750000238418579,
+        "A2": 0.9730000495910645,
+        "A3": 0.971000075340271
+      },
+      "recall_percent": {
+        "S0_historical500": 96.70000672340393,
+        "S0_local500": 96.20000720024109,
+        "Clean500": 97.50000238418579,
+        "A2": 97.30000495910645,
+        "A3": 97.1000075340271
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 0.5999982357025146,
+          "S0_local500": 1.0999977588653564,
+          "Clean500": -0.1999974250793457
+        },
+        "A3": {
+          "S0_historical500": 0.40000081062316895,
+          "S0_local500": 0.9000003337860107,
+          "Clean500": -0.3999948501586914
+        }
+      }
+    },
+    {
+      "dataset": "urban",
+      "direction": "T2I",
+      "metric": "R@10",
+      "raw_recall": {
+        "S0_historical500": 0.9810000658035278,
+        "S0_local500": 0.9820000529289246,
+        "Clean500": 0.9910000562667847,
+        "A2": 0.9890000224113464,
+        "A3": 0.9880000352859497
+      },
+      "recall_percent": {
+        "S0_historical500": 98.10000658035278,
+        "S0_local500": 98.20000529289246,
+        "Clean500": 99.10000562667847,
+        "A2": 98.90000224113464,
+        "A3": 98.80000352859497
+      },
+      "deltas_pp": {
+        "A2": {
+          "S0_historical500": 0.7999956607818604,
+          "S0_local500": 0.6999969482421875,
+          "Clean500": -0.20000338554382324
+        },
+        "A3": {
+          "S0_historical500": 0.6999969482421875,
+          "S0_local500": 0.5999982357025146,
+          "Clean500": -0.3000020980834961
+        }
+      }
+    }
+  ],
+  "interpretation": {
+    "primary_external_baselines": [
+      "S0_local500",
+      "Clean500"
+    ],
+    "historical_reference": "S0_historical500 kept separately because local reproduction differs",
+    "single_factor_comparison": [
+      "A2",
+      "A3"
+    ],
+    "method_comparison_limits": [
+      "S0/Clean use original random prefix K; NEST uses deterministic token-budgeted F/O/E",
+      "Clean has a separate suffix gate; NEST shares one text-conditioned mask",
+      "training objectives, precision/checkpoint implementations and communication settings differ across method families",
+      "identical initial model tensors do not imply identical optimizer or text/RNG streams",
+      "single seed=0, 500 updates; no statistical significance claim"
+    ]
+  }
+}

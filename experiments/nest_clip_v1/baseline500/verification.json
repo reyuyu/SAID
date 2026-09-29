@@ -1,0 +1,64 @@
+{
+  "initialization": {
+    "baseline_file_sha256": "6e9cb606eec915b5b8613b7c81dccbd73dcb6e928a3ded49ac21c0505c454483",
+    "nest_file_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "compared_tensors": 317,
+    "all_model_tensors_equal": true,
+    "note": "File containers differ; all 317 model tensors are identical. This does not assert optimizer or RNG stream identity across methods."
+  },
+  "baseline_training": {
+    "s0": {
+      "actual_updates": 500,
+      "training_checkpoint_sha256": "38156d367930e920f665869a6d399bf1dbbeac6def72cf1650a486f861bc69c2",
+      "bare_sha256": "3c4b638b25d01f7be562488a3cbf14010f860b92a4e52f259dd81fb2d2dab28d",
+      "eval_exit_codes": [
+        0,
+        0
+      ],
+      "strict_load": true,
+      "epochs": 3,
+      "horizon": 3651,
+      "world_size": 4,
+      "batch_per_rank": 256,
+      "seed": 0
+    },
+    "clean": {
+      "actual_updates": 500,
+      "training_checkpoint_sha256": "55c9b4b4abf4df0ceb203c597a9982fa5e92791f1987ba511baf8d8e4b920e2e",
+      "bare_sha256": "a98d7678f6498d86f85d1978b26e6af24ca41089dab6eb7c76fea9d56546eea0",
+      "eval_exit_codes": [
+        0,
+        0
+      ],
+      "strict_load": true,
+      "epochs": 3,
+      "horizon": 3651,
+      "world_size": 4,
+      "batch_per_rank": 256,
+      "seed": 0
+    }
+  },
+  "native_code_sha256": {
+    "eval/retrieval/coco_retrieval.py": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+    "tools/urban1k_retrieval.py": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/model_longclip.py": "0f85eb499e4f839f3cf8335ee583e5b843197fd46d0531d58cad4d6b942a9e59",
+    "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad"
+  },
+  "evaluation_compatibility": {
+    "coco_images": 5000,
+    "coco_texts": 25000,
+    "coco_similarity_chunk": 512,
+    "image_batch_size": 64,
+    "urban_fingerprint": {
+      "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+      "n_pairs": 1000,
+      "revision": null,
+      "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c"
+    },
+    "native_only": true,
+    "evaluator_source_identical": true,
+    "encoder_tokenizer_source_identical": true,
+    "new_training_or_evaluation_started": false
+  }
+}
