@@ -173,3 +173,26 @@ def test_optimizer_groups_and_schedule():
         "backbone", "shared_mask", "visual_input_projection"]
     assert not optimizer.state
     assert learning_rates(0, 3651) == (5e-9, 1e-3, 1e-4)
+
+
+def test_bare_student_export_excludes_projection_and_preserves_native_embeddings():
+    from train.train_nested_joint_input import build_optimizer
+    torch.manual_seed(29)
+    module = NestedJointInputMask(TinyJointInputCLIP(), "cls", "text",
+                                  pair_microbatch=2, checkpoint_pair_block=False,
+                                  checkpoint_encoders=False)
+    images = torch.randn(3, 8)
+    tokens = [torch.randint(0, 31, (3, 6)) for _ in range(3)]
+    valid = torch.tensor([1, 1, 1], dtype=torch.bool)
+    optimizer = build_optimizer(module)
+    loss, _ = module(images, *tokens, valid, 0)
+    loss.backward(); optimizer.step()
+    bare = copy.deepcopy(module.clip.state_dict())
+    assert not any("visual_input_projection" in key for key in bare)
+    student = TinyJointInputCLIP()
+    student.load_state_dict(bare, strict=True)
+    with torch.no_grad():
+        torch.testing.assert_close(module.clip.encode_image(images), student.encode_image(images),
+                                   atol=0, rtol=0)
+        torch.testing.assert_close(module.clip.encode_text(tokens[0]), student.encode_text(tokens[0]),
+                                   atol=0, rtol=0)

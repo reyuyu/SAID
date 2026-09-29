@@ -1,0 +1,99 @@
+{
+  "passed": true,
+  "args": {
+    "visual_mode": "patch",
+    "readout_mode": "text",
+    "pair_batch": 512,
+    "warmup": 2,
+    "steps": 5,
+    "checkpoint_block": 1,
+    "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+    "output": "/root/lk_projects/SAID-nest-clip-v1/mask_design_search_v1/resource/patch-text-large"
+  },
+  "world_size": 4,
+  "git_head": "09cf8f0937fbab4dc7129ec4de072f896eded193",
+  "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "sequence_length": 444,
+  "visual_token_count": 196,
+  "projection_sha256": "63aad777951b024c898d602556bafb44bbe409d0cd77d2bc1ef574cdab6f2a42",
+  "pairs_per_full_step_per_rank": 1572864,
+  "max_rank_step_seconds": [
+    0.43209975957870483,
+    0.43387220054864883,
+    0.43219897896051407,
+    0.43207113444805145,
+    0.4337007701396942
+  ],
+  "median_seconds": 0.43219897896051407,
+  "p90_seconds": 0.4338036283850669,
+  "measured_pairs_per_second_per_rank": 1184.639540869384,
+  "projected_pair_compute_seconds_per_full_step_per_rank": 1327.7152633666992,
+  "forward_flops_per_pair": 3197140992,
+  "forward_flops_per_full_step_per_rank": 5028667969241088,
+  "ranks": [
+    {
+      "rank": 0,
+      "pid": 1049007,
+      "hostname": "interactive93293",
+      "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+      "seconds": [
+        0.43193037807941437,
+        0.43356890231370926,
+        0.43216852843761444,
+        0.43207113444805145,
+        0.43360236287117004
+      ],
+      "peak_allocated_gib": 13.621910095214844,
+      "peak_reserved_gib": 15.091796875
+    },
+    {
+      "rank": 1,
+      "pid": 1049008,
+      "hostname": "interactive93293",
+      "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+      "seconds": [
+        0.43209975957870483,
+        0.43387220054864883,
+        0.4317896440625191,
+        0.4318617060780525,
+        0.4335874989628792
+      ],
+      "peak_allocated_gib": 13.621910095214844,
+      "peak_reserved_gib": 15.091796875
+    },
+    {
+      "rank": 2,
+      "pid": 1049009,
+      "hostname": "interactive93293",
+      "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+      "seconds": [
+        0.43194856494665146,
+        0.43385713547468185,
+        0.43219897896051407,
+        0.4320298358798027,
+        0.4336952567100525
+      ],
+      "peak_allocated_gib": 13.621910095214844,
+      "peak_reserved_gib": 15.091796875
+    },
+    {
+      "rank": 3,
+      "pid": 1049010,
+      "hostname": "interactive93293",
+      "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+      "seconds": [
+        0.4320504665374756,
+        0.4338083863258362,
+        0.43217933177948,
+        0.43196945637464523,
+        0.4337007701396942
+      ],
+      "peak_allocated_gib": 13.62237548828125,
+      "peak_reserved_gib": 15.09765625
+    }
+  ],
+  "resource_gate": {
+    "step_median_seconds_max": 30.0,
+    "peak_allocated_gib_max": 65.0
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "date_utc": "2026-09-29",
+  "passed": true,
+  "checks": [
+    "four exact candidates recorded",
+    "all candidates resource_infeasible",
+    "no smoke/formal/evaluation started",
+    "four unique GPU UUIDs per benchmark",
+    "five stable measurements per rank",
+    "common initialization and projection identities",
+    "source/configuration hashes match current worktree",
+    "B0/B1 J_long recomputation matches references",
+    "DCI Full and Long-DCI excluded from this round"
+  ],
+  "candidate_statuses": {
+    "C1 CLS-All": "resource_infeasible",
+    "C2 CLS-Text": "resource_infeasible",
+    "P1 Patch-All": "resource_infeasible",
+    "P2 Patch-Text": "resource_infeasible"
+  },
+  "resource_benchmark_commit": "09cf8f0937fbab4dc7129ec4de072f896eded193",
+  "source_sha256": {
+    "model/model_longclip.py": "2fa23183f512527bb4adb4cdc35d11f40987d86c858265acb5bceda377d24a2c",
+    "model/nested_joint_input.py": "3862a2ead763b2ce7d4508ea7d03618171e83b6321993593037e96b8f5a5ace1",
+    "train/train_nested_joint_input.py": "8d3ccf77f93c19ef68640febf596f5357fdc7e654479dba85fecf5db703c6c1d",
+    "tests/test_nested_joint_input.py": "9258adca958fa0692ab106388923a743c64500021a1995a26278ee28b841b1d6",
+    "tests/joint_input_ddp_worker.py": "d7e6c68ee2386c253ac91646a752b8666e62e7ae3aeea6e80c0b938dd8ee0bd0",
+    "experiments/nest_clip_v1/mask_design_search_v1/benchmark_pairs.py": "c446d1857ca1b489cbb08ea56b35c23297289faf90654b4763dd12569153eb5e",
+    "experiments/nest_clip_v1/mask_design_search_v1/validate_actual.py": "b940cd6efc1d6e449bcc1c92696a667660a957ebf9a578e38276603dfb78e532",
+    "experiments/nest_clip_v1/mask_design_search_v1/run.sh": "2e43633d3427bf7f28a6624cad86f29a376c99bd891db4b56c051913d5632bd7",
+    "experiments/nest_clip_v1/mask_design_search_v1/summarize.py": "a2c78908de85e316c94587bab38ffd2cbef4c1df955a2c887156f91be44a4f90"
+  },
+  "config_sha256": {
+    "c1_cls_all.json": "72672c099d1c6cca0563361d1b7f3952bf9aa0f5a729a1459ab01fd04141637b",
+    "c2_cls_text.json": "2fe1d16d72a77899df1840e791dd3b92ea596af462c200e84cdcc8452419c57b",
+    "p1_patch_all.json": "602a5aed38e706fb106ee4775a6d293b1f90043a515a65d46092ddd97d483a8a",
+    "p2_patch_text.json": "5c8abac02d769ec503e560c93e9604c2e5f5316abb6c63e77496d07d80cd748b"
+  }
+}

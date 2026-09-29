@@ -1,0 +1,170 @@
+{
+  "passed": true,
+  "world_size": 2,
+  "backend": "nccl",
+  "cases": [
+    {
+      "visual_mode": "cls",
+      "readout_mode": "all",
+      "validity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_batch": 2,
+      "checkpoint_block": false,
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": {
+        "name": "clip.text_projection",
+        "index": [
+          6,
+          1
+        ],
+        "error": 0.00018310546875,
+        "actual_max": 1098.216064453125,
+        "expected_max": 1098.216064453125
+      },
+      "max_adamw_update_error": {
+        "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+        "index": [
+          9
+        ],
+        "error": 0.001870551728643477,
+        "actual_max": 0.0010000000474974513,
+        "expected_max": 0.0010000000474974513
+      },
+      "adamw_null_direction_exception": true
+    },
+    {
+      "visual_mode": "cls",
+      "readout_mode": "text",
+      "validity": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "local_batch": 2,
+      "checkpoint_block": true,
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          4,
+          1
+        ],
+        "error": 0.000244140625,
+        "actual_max": 4786.791015625,
+        "expected_max": 4786.791015625
+      },
+      "max_adamw_update_error": {
+        "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+        "index": [
+          13
+        ],
+        "error": 0.0017878229264169931,
+        "actual_max": 0.0010000000474974513,
+        "expected_max": 0.0010000000474974513
+      },
+      "adamw_null_direction_exception": true
+    },
+    {
+      "visual_mode": "patch",
+      "readout_mode": "all",
+      "validity": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 2,
+      "checkpoint_block": true,
+      "loss_error": 0.0001220703125,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          4,
+          4
+        ],
+        "error": 0.000244140625,
+        "actual_max": 2370.4560546875,
+        "expected_max": 2370.456298828125
+      },
+      "max_adamw_update_error": {
+        "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+        "index": [
+          8
+        ],
+        "error": 0.0012903286842629313,
+        "actual_max": 0.0010000000474974513,
+        "expected_max": 0.0010000000474974513
+      },
+      "adamw_null_direction_exception": true
+    },
+    {
+      "visual_mode": "patch",
+      "readout_mode": "text",
+      "validity": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 2,
+      "checkpoint_block": true,
+      "loss_error": 1.52587890625e-05,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          6,
+          3
+        ],
+        "error": 0.00048828125,
+        "actual_max": 3543.883544921875,
+        "expected_max": 3543.88330078125
+      },
+      "max_adamw_update_error": {
+        "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+        "index": [
+          8
+        ],
+        "error": 0.0019872866105288267,
+        "actual_max": 0.0010000000474974513,
+        "expected_max": 0.0010000000474974513
+      },
+      "adamw_null_direction_exception": true
+    },
+    {
+      "visual_mode": "patch",
+      "readout_mode": "text",
+      "validity": [
+        1,
+        1
+      ],
+      "local_batch": 1,
+      "checkpoint_block": false,
+      "loss_error": 0.0,
+      "max_gradient_error": {
+        "name": "clip.mask_net.resblocks.0.attn.in_proj_weight",
+        "index": [
+          3,
+          0
+        ],
+        "error": 7.450580596923828e-09,
+        "actual_max": 0.027880452573299408,
+        "expected_max": 0.02788044512271881
+      },
+      "max_adamw_update_error": {
+        "name": "clip.mask_net.attn_pool.attention.bias",
+        "index": [
+          0
+        ],
+        "error": 0.00028664921410381794,
+        "actual_max": 8.275549043901265e-05,
+        "expected_max": 0.00020389373821672052
+      },
+      "adamw_null_direction_exception": false
+    }
+  ]
+}

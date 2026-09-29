@@ -1,0 +1,55 @@
+{
+  "date_utc": "2026-09-29",
+  "branch": "codex/nest-mask-design-search-v1",
+  "implementation_commit": "09cf8f0937fbab4dc7129ec4de072f896eded193",
+  "base_commit": "6bafa8a009af4ffee1100027d5171d78dbeb96d3",
+  "initial_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "existing_matching_jointinput_found": false,
+  "reference_results_reused": [
+    "T-fast",
+    "TI-fast"
+  ],
+  "hardware": {
+    "gpu_query": [
+      "0, NVIDIA A100 80GB PCIe, GPU-6810482c-0a4f-2547-407d-7b11db16655d, 81920 MiB",
+      "1, NVIDIA A100 80GB PCIe, GPU-a85d54c4-620e-6813-9176-ed449a61c7a4, 81920 MiB",
+      "2, NVIDIA A100 80GB PCIe, GPU-251127fd-2cb2-c90d-6151-54360a5fcb82, 81920 MiB",
+      "3, NVIDIA A100 80GB PCIe, GPU-cea2e93a-3a77-7373-2c22-cfc59c5094e8, 81920 MiB"
+    ],
+    "topology": "\u001b[4mGPU0\tGPU1\tGPU2\tGPU3\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tPIX\tPIX\tPIX\t0-35,72-107\t0\t\tN/A\nGPU1\tPIX\t X \tPIX\tPIX\t0-35,72-107\t0\t\tN/A\nGPU2\tPIX\tPIX\t X \tPIX\t0-35,72-107\t0\t\tN/A\nGPU3\tPIX\tPIX\tPIX\t X \t0-35,72-107\t0\t\tN/A\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks"
+  },
+  "software": {
+    "torch": "2.5.1+cu124",
+    "cuda": "12.4",
+    "nccl": [
+      2,
+      21,
+      5
+    ]
+  },
+  "training": {
+    "records": 1245901,
+    "updates_per_epoch": 1217,
+    "epochs": 3,
+    "horizon": 3651,
+    "world_size": 4,
+    "batch_per_rank": 256,
+    "global_batch": 1024,
+    "accumulation": 1,
+    "seed": 0
+  },
+  "resource_gate": {
+    "stable_step_median_seconds_max": 30,
+    "peak_allocated_gib_max": 65
+  },
+  "evaluation_policy": [
+    "COCO canonical",
+    "Urban-1k",
+    "Flickr30k test1k",
+    "DOCCI test"
+  ],
+  "excluded": [
+    "DCI Full",
+    "Long-DCI"
+  ]
+}
