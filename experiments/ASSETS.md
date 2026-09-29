@@ -17,6 +17,8 @@ GitHub 同步代码、说明和小型证据；训练数据、模型和缓存独�
 | Full Urban 适配导出 | 2000 | `9225a1b912f2ac51fddb74a4f5e7bce5eac2a323d68cbb842c583003db1e9c29` |
 | 3/0 完整 checkpoint | 500 | `4e905bf1160f640da70de6045729cf27bf6f8ca67834198f2e029e030ec5ed21` |
 | 3/0 bare student | 500 | `04a1a677016be8f26121f3b3cf2de635362eae8540c387ce7bbed0d7cfe05e4d` |
+| 3/0 完整 checkpoint | 3651 | `e0c607a8e8001c597fffcc5046f8a2a77309845f46cd7fa48784c7ec9c0c753a` |
+| 3/0 bare student | 3651 | `755b4cca77667713ed28861601f62eaac2e40b7c3757dfa0d7e685c502414d19` |
 | 本机重建共同初态（历史张量摘要相同，非原容器） | 0 | `6e9cb606eec915b5b8613b7c81dccbd73dcb6e928a3ded49ac21c0505c454483` |
 
 裸学生约612 MB，完整含优化器检查点约1.84 GB；不同导出容器有不同文件哈希。原始 metadata 和检索结果均保留各自实际文件身份。
@@ -45,3 +47,7 @@ GitHub 同步代码、说明和小型证据；训练数据、模型和缓存独�
 ## 3/0 @500 补充资产
 
 3/0的完整身份见 [assets.json](s0_dualmask_suffix3_500/manifests/assets.json)。本次Git同步仅包含代码、文档、小型证据；3/0权重目前保留在复现服务器，未发布公共下载附件，也未据此更新旧云盘备份状态。重建初态的参数摘要与历史CAF摘要一致，但文件SHA与原始 `cvssl_initial.pt` 不同，详见[复现步骤](s0_dualmask_suffix3_500/REPRODUCE.md)。
+
+## 3/0完整3 epoch资产
+
+500→3651的最终权重身份、大小和原路径见 [assets.json](s0_dualmask_suffix3_3epoch/manifests/assets.json)。训练/评测证据已同步，模型及数据仍独立存储；本次未上传GitHub模型附件，也未将其标为已同步到私人云盘。

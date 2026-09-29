@@ -1,0 +1,58 @@
+/root/lk_projects/SAID-reproduction/full-resume/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+{
+  "status": "PASS",
+  "parent_checkpoint": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse0/s0_dual_mask_suffix_masked_step000500.pt",
+  "parent_sha256": "4e905bf1160f640da70de6045729cf27bf6f8ca67834198f2e029e030ec5ed21",
+  "initial_state": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+  "initial_state_sha256": "6e9cb606eec915b5b8613b7c81dccbd73dcb6e928a3ded49ac21c0505c454483",
+  "fixed_training_sha": "873b43a5bc000528311e22aac01e92045ac898e0",
+  "objective_code_sha256": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+  "clip_state_digest": "d9f8a4aed852c0de592506f2d68549fc1ffbb950fbd52cddf29aa2c03915c6a3",
+  "optimizer_steps_restored": {
+    "clip": {
+      "min": 500,
+      "max": 500,
+      "count": 301
+    },
+    "mask": {
+      "min": 500,
+      "max": 500,
+      "count": 14
+    },
+    "suffix": {
+      "min": 500,
+      "max": 500,
+      "count": 4
+    }
+  },
+  "completed_steps": 500,
+  "next_update": 501,
+  "next_epoch": 0,
+  "next_batch": 500,
+  "target_updates": 3651,
+  "additional_updates": 3151,
+  "horizon": 3651,
+  "configuration": {
+    "suffix_mode": "masked",
+    "suffix_lambda": 3.0,
+    "u_sparsity_lambda": 0.0,
+    "batch_size_per_gpu": 256,
+    "seed": 0,
+    "epochs": 3,
+    "total_len": 1000,
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "suffix_lr": 0.0001,
+    "weight_decay": 0.01,
+    "warmup": 200,
+    "image_chunk": 16,
+    "text_chunk": 32,
+    "amp_dtype": "bf16"
+  },
+  "all_restored_tensors_equal": true,
+  "data_gate": "PASS",
+  "records": 1246901,
+  "parent_log_rows": 500,
+  "continuation_note": "Uses the same fixed Full continuation implementation as the prior Full replica: consumed batches are replayed/skipped and only the new continuation stream is hashed. No claim of an independent content-level replay assertion."
+}

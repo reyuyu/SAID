@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "evaluations": 6,
+  "checkpoint_sha256": "755b4cca77667713ed28861601f62eaac2e40b7c3757dfa0d7e685c502414d19",
+  "frozen_evaluators": {
+    "eval/retrieval/coco_retrieval.py": {
+      "same_as_training_checkout": true,
+      "sha256": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086"
+    },
+    "tools/eval_urban1k_cls.py": {
+      "same_as_training_checkout": true,
+      "sha256": "42cc728f587b3b2bd83bde8d205900f7aa8ff4387491a3c3a0f95ffbac0475c7"
+    },
+    "tools/urban1k_retrieval.py": {
+      "same_as_training_checkout": true,
+      "sha256": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2"
+    }
+  },
+  "extended_evaluator_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+  "completed": [
+    {
+      "protocol": "urban",
+      "exit_code": 0,
+      "elapsed_seconds": 20.634530305862427,
+      "result": "/root/lk_projects/SAID-suffix3-3epoch/evaluation/urban/urban.json",
+      "physical_gpu": 1
+    },
+    {
+      "protocol": "flickr_test1k",
+      "exit_code": 0,
+      "elapsed_seconds": 26.026514053344727,
+      "result": "/root/lk_projects/SAID-suffix3-3epoch/evaluation/flickr_test1k/flickr_test1k.json",
+      "physical_gpu": 2
+    },
+    {
+      "protocol": "coco",
+      "exit_code": 0,
+      "elapsed_seconds": 120.35217761993408,
+      "result": "/root/lk_projects/SAID-suffix3-3epoch/evaluation/coco/coco.json",
+      "physical_gpu": 0
+    },
+    {
+      "protocol": "docci",
+      "exit_code": 0,
+      "elapsed_seconds": 279.43747115135193,
+      "result": "/root/lk_projects/SAID-suffix3-3epoch/evaluation/docci/docci.json",
+      "physical_gpu": 3
+    },
+    {
+      "protocol": "long_dci",
+      "exit_code": 0,
+      "elapsed_seconds": 464.1527805328369,
+      "result": "/root/lk_projects/SAID-suffix3-3epoch/evaluation/long_dci/long_dci.json",
+      "physical_gpu": 2
+    },
+    {
+      "protocol": "dci",
+      "exit_code": 0,
+      "elapsed_seconds": 471.36120557785034,
+      "result": "/root/lk_projects/SAID-suffix3-3epoch/evaluation/dci/dci.json",
+      "physical_gpu": 1
+    }
+  ]
+}

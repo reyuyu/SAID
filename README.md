@@ -2,24 +2,26 @@
 
 由 [reyuyu](https://github.com/reyuyu) 维护的视觉–语言检索实验仓库。SAID 基于 SmartCLIP / LongCLIP，研究用描述前缀选择视觉特征，并利用剩余后缀补充监督。这里保存我的实验实现、固定训练配置、检查点校验信息和原生检索评测结果。
 
-## 两个实验
+## 实验配置
 
 | 版本 | 后缀对齐权重 λ_suffix | 新 U 门稀疏权重 λ_U | 已完成训练 | 入口 |
 |---|---:|---:|---|---|
 | **S0-DualMask-Clean v0.1** | 1 | 0 | 500 → 1000 → 3651（3 epoch） | [方法、参数与复现](experiments/s0_dualmask_masked_3epoch/README.md) |
 | **S0-DualMask-Full v0.1** | 10 | 2 | 500 → 3651（3 epoch），另有 step2000 评测 | [方法、参数与复现](experiments/s0_dualmask_full_v01/README.md) |
+| **S0-DualMask 3/0** | 3 | 0 | 500 → 3651（3 epoch） | [结果、参数与复现](experiments/s0_dualmask_suffix3_3epoch/README.md) |
 
-两者保留相同的 S0 前缀目标、候选列前缀条件 `mS_j`、全局正配标签及后缀有效样本的 `W/V` 归约。U 门为 `Linear(1024,512) → GELU → Linear(512,512)`，正式初始化全开。
+这些配置保留相同的 S0 前缀目标、候选列前缀条件 `mS_j`、全局正配标签及后缀有效样本的 `W/V` 归约。U 门为 `Linear(1024,512) → GELU → Linear(512,512)`，正式初始化全开。
 
 ```text
 L_S0    = 10 L_S + 2 S_S
 L_clean = L_S0 + 1 L_U
 L_full  = L_S0 + 10 L_U + 2 S_U
+L_3_0   = L_S0 + 3 L_U
 ```
 
 `S_U` 只统计有效正配的 U 门稀疏项。**Clean 的 U 稀疏系数为 0，不代表 S0 自带的前缀稀疏项被移除。** Full 同时改变后缀权重和 U 稀疏约束，结果只能解释为组合差异，不能单独归因于其中一项。
 
-## 检索结果
+## Clean/Full原历史检索结果
 
 单位为百分比，每格为 **I2T R@1 / T2I R@1**（图→文 / 文→图）。3651 次更新等于本数据流的完整 3 epoch。
 
@@ -42,6 +44,23 @@ L_full  = L_S0 + 10 L_U + 2 S_U
 
 3/0在COCO/Urban开发集的四方向R@1均值为69.345%，但COCO图→文59.940%未达到原选型门槛60.380%，因此未替代原先选中的1/2。追加扩展评测显示相对Clean在Urban、DCI、Long-DCI的双向R@1提高，COCO和Flickr下降；不宣称全面领先或统计显著。这里的500步结果与上表3651/2000步属于不同训练预算。
 
+## 3/0完整3 epoch结果
+
+3/0已从500步完整状态续训到3651步，并完成六项评测。下表为**同一台A100机器的复现对照**；上面的原历史A800数值保持不变。每格为图→文 / 文→图R@1（%）。
+
+| 协议 | 3/0 · 3651 | Clean · 3651（本机） | Full · 3651（本机） |
+|---|---:|---:|---:|
+| COCO canonical | 60.680 / 41.700 | 61.280 / 42.300 | 59.380 / 40.256 |
+| Urban-1k | 91.400 / 90.300 | 91.700 / 89.700 | 91.800 / 90.600 |
+| Flickr30k test1K | 87.600 / 71.640 | 88.500 / 71.900 | 86.800 / 70.120 |
+| DOCCI test5K | 78.300 / 79.280 | 78.260 / 78.860 | 77.600 / 78.500 |
+| DCI full | 49.942 / 49.558 | 50.083 / 48.930 | 49.263 / 49.327 |
+| Long-DCI（重建版） | 58.748 / 59.813 | 58.366 / 58.603 | 57.695 / 60.195 |
+
+相对本机Clean，12个R@1方向6升6降，等权平均仅+0.040个百分点；相对本机Full，9升3降，平均+0.619个百分点。3/0改善了部分长描述检索表现，仍有COCO/Flickr取舍，不据此宣称全面领先或统计显著。
+
+[完整R@1/5/10、训练日志及复现](experiments/s0_dualmask_suffix3_3epoch/README.md) · [逐项差值CSV](experiments/s0_dualmask_suffix3_3epoch/comparison.csv)
+
 ## 获取代码与复现
 
 ```bash
@@ -52,7 +71,7 @@ conda activate said-smartclip
 python -m pip install -r requirements.txt
 ```
 
-`main` 提供项目导航、共享实现及两个版本的完整 Git 历史。共享 `model/dual_mask_suffix.py` 和训练入口保留 Full 分支扩展，默认系数仍为 1/0；Full 必须显式使用 10/2。**复现已有轨迹时，使用各实验说明中的固定训练 SHA 和原初始化，不把今天的 main SHA 当成历史训练 SHA。** Clean/Full 的严格续训入口分别在其固定提交中。
+`main` 提供项目导航、共享实现及这些配置的完整 Git 历史。共享 `model/dual_mask_suffix.py` 和训练入口保留 Full 分支扩展，默认系数仍为 1/0；Full 必须显式使用 10/2。**复现已有轨迹时，使用各实验说明中的固定训练 SHA 和原初始化，不把今天的 main SHA 当成历史训练 SHA。** Clean/Full 的严格续训入口分别在其固定提交中。
 
 ```bash
 # 两份互不覆盖的固定训练代码；0→500 的起点版本见各实验复现说明。
@@ -97,7 +116,7 @@ print(scores)
 
 ## 目录与产物
 
-- [experiments/](experiments/README.md)：两版实验导航、参数、结果和复现资料。
+- [experiments/](experiments/README.md)：各实验导航、参数、结果和复现资料。
 - [model/dual_mask_suffix.py](model/dual_mask_suffix.py)、[train/train_dual_mask_suffix.py](train/train_dual_mask_suffix.py)：共享模型与训练入口。
 - [docs/](docs/)：历次验收、500 步与 3 epoch 原始报告。
 - [检索协议](docs/extended_retrieval/README.md)：COCO、Urban、Flickr30k、DOCCI、DCI 相关准备与评测说明。

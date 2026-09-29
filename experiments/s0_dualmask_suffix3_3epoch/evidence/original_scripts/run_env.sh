@@ -1,0 +1,12 @@
+export REPRO_PYTHON=/root/miniconda3/envs/said-repro/bin/python
+export REPRO_INIT=/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt
+source /root/lk_projects/SAID-assets/data_paths.sh
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export NCCL_SOCKET_IFNAME=lo
+export NCCL_IB_DISABLE=1
+export NCCL_P2P_DISABLE=1
+export GLOO_SOCKET_IFNAME=lo
+export OMP_NUM_THREADS=1
+export HF_ENDPOINT=https://hf-mirror.com
+export PYTHONUNBUFFERED=1
+export PYTHONDONTWRITEBYTECODE=1

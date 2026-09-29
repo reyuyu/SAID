@@ -1,0 +1,118 @@
+{
+  "accumulation": 1,
+  "arguments": {
+    "amp_dtype": "bf16",
+    "base_model": "B16",
+    "batch_size": 256,
+    "epochs": 3,
+    "expect_model_sha": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+    "image_chunk": 16,
+    "init_state": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+    "lambda_suffix": 3.0,
+    "lambda_u_sparse": 0.0,
+    "lr": 1e-06,
+    "mask_lr": 0.001,
+    "max_steps": 3651,
+    "num_workers": 8,
+    "output_dir": "/root/lk_projects/SAID-suffix3-3epoch/run",
+    "resume": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse0/s0_dual_mask_suffix_masked_step000500.pt",
+    "run_type": "formal",
+    "save_every": 500,
+    "seed": 0,
+    "suffix_lr": 0.0001,
+    "suffix_mode": "masked",
+    "text_chunk": 32,
+    "total_len": 1000,
+    "warmup": 200,
+    "weight_decay": 0.01
+  },
+  "batch_size_per_gpu": 256,
+  "communication_env": {
+    "CUDA_VISIBLE_DEVICES": "0,1,2,3",
+    "GLOO_SOCKET_IFNAME": "lo",
+    "NCCL_IB_DISABLE": "1",
+    "NCCL_P2P_DISABLE": "1",
+    "NCCL_SOCKET_IFNAME": "lo"
+  },
+  "debug_optimizer_updates": 0,
+  "epochs": 3,
+  "formal_optimizer_updates": 3651,
+  "image_chunk": 16,
+  "init_state": "/root/lk_projects/SAID-reproduction/checkpoints/common_init_reconstructed.pt",
+  "loader_batches": 1217,
+  "lr_horizon_steps": 3651,
+  "max_steps": 3651,
+  "objective": "s0_dual_mask_suffix_clean_v01",
+  "objective_code_file": "model/dual_mask_suffix.py",
+  "objective_code_sha256": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+  "precision": "fp32 master + bf16 autocast",
+  "resume_checks": {
+    "batches_skipped_expected": 500,
+    "checkpoint_provenance_state_digest": "d9f8a4aed852c0de592506f2d68549fc1ffbb950fbd52cddf29aa2c03915c6a3",
+    "clip_state_digest_matches": true,
+    "loaded_clip_state_digest": "d9f8a4aed852c0de592506f2d68549fc1ffbb950fbd52cddf29aa2c03915c6a3",
+    "objective_code_sha256": "e92232b78511c53612a4eec9ebc7fea1302f60c397eba53c81fba0b9c12ff630",
+    "objective_code_source": "expect-model-sha",
+    "optimizer_steps_restored": {
+      "clip": [
+        500
+      ],
+      "mask": [
+        500
+      ],
+      "suffix": [
+        500
+      ]
+    },
+    "resume_completed_steps": 500,
+    "resume_epoch": 0,
+    "resume_step_in_epoch": 500,
+    "resume_stream_batch_index": 500,
+    "resumed_from_objective": "10*L_S + 2*S_S + 3*L_U + 0*S_U",
+    "resumed_from_training_sha": "dcd33877f1f77a901d292190834f1ffd83a049a8"
+  },
+  "resume_completed_steps": 500,
+  "resume_epoch": 0,
+  "resume_skip_rule": "skip the first completed_steps batches of the concatenated epoch stream; the recorded step_in_epoch is checked for consistency instead of being used directly",
+  "resume_step_in_epoch": 500,
+  "resume_stream_batch_index": 500,
+  "resumed_from": "/root/lk_projects/SAID-tuning-500/runs/suffix3_sparse0/s0_dual_mask_suffix_masked_step000500.pt",
+  "resumed_from_objective": "10*L_S + 2*S_S + 3*L_U + 0*S_U",
+  "resumed_from_training_sha": "dcd33877f1f77a901d292190834f1ffd83a049a8",
+  "run_type": "formal",
+  "seed": 0,
+  "stream_summary": [
+    {
+      "consumed_samples": 806428,
+      "rank": 0,
+      "stream_sha256": "2f046553bccb4865853fce200ca2a6e5cbc636d155a3efaf7241c251e25cbc7c"
+    },
+    {
+      "consumed_samples": 806428,
+      "rank": 1,
+      "stream_sha256": "bb7a77a414921cecbae33383f0c57445179b0c0178b9a6486b1eb47afbd21baa"
+    },
+    {
+      "consumed_samples": 806428,
+      "rank": 2,
+      "stream_sha256": "55769d48780583cc9892170cf62f3eb541a032da631ed5eb22cceb3b4ba403fa"
+    },
+    {
+      "consumed_samples": 806428,
+      "rank": 3,
+      "stream_sha256": "7935576e32c5328701baa91c5ca61b7abc3bd2f8a9e9135b5a3216d46827d393"
+    }
+  ],
+  "suffix_gate": "Sequential(Linear(1024,512),GELU,Linear(512,512))",
+  "suffix_gate_init": "seed=0;xavier_uniform,bias=0;last_weight=0,last_bias=log(8)",
+  "suffix_lambda": 3.0,
+  "suffix_mode": "masked",
+  "text_chunk": 32,
+  "total_len": 1000,
+  "total_objective": "10*L_S + 2*S_S + 3*L_U + 0*S_U",
+  "training_seconds": 6392.169110201299,
+  "training_sha": "873b43a5bc000528311e22aac01e92045ac898e0",
+  "u_sparsity": 0.0,
+  "u_sparsity_lambda": 0.0,
+  "world_size": 4
+}

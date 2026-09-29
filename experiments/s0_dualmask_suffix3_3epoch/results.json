@@ -1,0 +1,137 @@
+{
+  "experiment": "S0-DualMask-Suffix3-U0",
+  "metric_units": "fraction",
+  "completed_steps": 3651,
+  "epochs": 3,
+  "parent_steps": 500,
+  "new_updates": 3151,
+  "lambda_suffix": 3,
+  "lambda_u_sparse": 0,
+  "lr_horizon_steps": 3651,
+  "training_sha": "873b43a5bc000528311e22aac01e92045ac898e0",
+  "parent_training_sha": "dcd33877f1f77a901d292190834f1ffd83a049a8",
+  "checkpoint_sha256": "e0c607a8e8001c597fffcc5046f8a2a77309845f46cd7fa48784c7ec9c0c753a",
+  "bare_student_sha256": "755b4cca77667713ed28861601f62eaac2e40b7c3757dfa0d7e685c502414d19",
+  "results": [
+    {
+      "protocol": "coco",
+      "n_images": 5000,
+      "n_captions": 25000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.6068,
+          "T2I": 0.417
+        },
+        "R@5": {
+          "I2T": 0.828,
+          "T2I": 0.671
+        },
+        "R@10": {
+          "I2T": 0.8926,
+          "T2I": 0.76708
+        }
+      },
+      "raw_result": "evidence/evaluation/coco/coco.json"
+    },
+    {
+      "protocol": "urban",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.9140000343322754,
+          "T2I": 0.9030000567436218
+        },
+        "R@5": {
+          "I2T": 0.987000048160553,
+          "T2I": 0.9830000400543213
+        },
+        "R@10": {
+          "I2T": 0.9950000643730164,
+          "T2I": 0.9900000691413879
+        }
+      },
+      "raw_result": "evidence/evaluation/urban/urban.json"
+    },
+    {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.876,
+          "T2I": 0.7164
+        },
+        "R@5": {
+          "I2T": 0.985,
+          "T2I": 0.9092
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.951
+        }
+      },
+      "raw_result": "evidence/evaluation/flickr_test1k/flickr_test1k.json"
+    },
+    {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.783,
+          "T2I": 0.7928
+        },
+        "R@5": {
+          "I2T": 0.9534,
+          "T2I": 0.9546
+        },
+        "R@10": {
+          "I2T": 0.9816,
+          "T2I": 0.979
+        }
+      },
+      "raw_result": "evidence/evaluation/docci/docci.json"
+    },
+    {
+      "protocol": "dci",
+      "n_images": 7805,
+      "n_captions": 7805,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.4994234465086483,
+          "T2I": 0.49557975656630365
+        },
+        "R@5": {
+          "I2T": 0.7083920563741192,
+          "T2I": 0.7000640614990391
+        },
+        "R@10": {
+          "I2T": 0.7807815502882768,
+          "T2I": 0.7682254964766175
+        }
+      },
+      "raw_result": "evidence/evaluation/dci/dci.json"
+    },
+    {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.5874769797421732,
+          "T2I": 0.5981320705077611
+        },
+        "R@5": {
+          "I2T": 0.7734806629834254,
+          "T2I": 0.7763746382530913
+        },
+        "R@10": {
+          "I2T": 0.8310970797158642,
+          "T2I": 0.8304393580636674
+        }
+      },
+      "raw_result": "evidence/evaluation/long_dci/long_dci.json"
+    }
+  ]
+}

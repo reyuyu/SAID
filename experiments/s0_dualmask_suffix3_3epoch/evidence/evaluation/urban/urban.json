@@ -1,0 +1,44 @@
+{
+  "action": "urban",
+  "checkpoint": "/root/lk_projects/SAID-suffix3-3epoch/exports/bare_student_step3651.pt",
+  "checkpoint_sha256": "755b4cca77667713ed28861601f62eaac2e40b7c3757dfa0d7e685c502414d19",
+  "dataset": {
+    "n_pairs": 1000,
+    "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c",
+    "revision": null,
+    "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k"
+  },
+  "elapsed_seconds": 19.82619198411703,
+  "evaluator_sha256": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+  "strict_bare_student": true,
+  "urban1k": {
+    "added_here": [
+      "R@5",
+      "R@10"
+    ],
+    "checkpoint_sha256": null,
+    "global_pool": "n/a",
+    "image2text": {
+      "R1": 0.9140000343322754,
+      "R10": 0.9950000643730164,
+      "R5": 0.987000048160553
+    },
+    "image_representation": "legacy_cls",
+    "n_captions": 1000,
+    "n_images": 1000,
+    "positive": "diagonal",
+    "protocol": "urban1k-native-cls-v1",
+    "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+    "similarity": "normalized features, plain inner product, full 1000-item pool",
+    "text2image": {
+      "R1": 0.9030000567436218,
+      "R10": 0.9900000691413879,
+      "R5": 0.9830000400543213
+    },
+    "upstream_metrics_reproduced": [
+      "T2I R@1",
+      "I2T R@1"
+    ],
+    "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)"
+  }
+}

@@ -1,0 +1,2545 @@
+{
+  "status": "COMPLETE",
+  "evaluations": 18,
+  "metrics": 108,
+  "all_exit_codes_zero": true,
+  "reference_file": "/root/lk_projects/SAID/experiments/results.json",
+  "reference_sha256": "a03b0abddceeb7027d355c3b4aca5e235388f31783c33c57c0eaa6577afd0c4c",
+  "delta_definition": "100 * (replica_fraction - original_fraction), percentage points",
+  "equality_definition": "same integer retrieval hit count; GPU float32 mean rounding is retained in raw values",
+  "summary": {
+    "clean3651": {
+      "metric_count": 36,
+      "identical_hit_counts": 4,
+      "improved": 13,
+      "decreased": 19,
+      "max_abs_delta_percentage_points": 0.3000020980834961,
+      "mean_abs_delta_percentage_points": 0.08707254580401934,
+      "max_abs_R1_delta_percentage_points": 0.3000020980834961
+    },
+    "full3651": {
+      "metric_count": 36,
+      "identical_hit_counts": 8,
+      "improved": 12,
+      "decreased": 16,
+      "max_abs_delta_percentage_points": 0.3000020980834961,
+      "mean_abs_delta_percentage_points": 0.051868851156201976,
+      "max_abs_R1_delta_percentage_points": 0.10000467300415039
+    },
+    "full2000": {
+      "metric_count": 36,
+      "identical_hit_counts": 36,
+      "improved": 0,
+      "decreased": 0,
+      "max_abs_delta_percentage_points": 0.0,
+      "mean_abs_delta_percentage_points": 0.0,
+      "max_abs_R1_delta_percentage_points": 0.0
+    }
+  },
+  "comparisons": [
+    {
+      "model": "clean3651",
+      "experiment": "S0-DualMask-Clean-v0.1",
+      "steps": 3651,
+      "protocol": "coco",
+      "original": {
+        "R@1": {
+          "I2T": 0.6134,
+          "T2I": 0.42272
+        },
+        "R@5": {
+          "I2T": 0.8334,
+          "T2I": 0.67764
+        },
+        "R@10": {
+          "I2T": 0.8948,
+          "T2I": 0.7738
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.6128,
+          "T2I": 0.423
+        },
+        "R@5": {
+          "I2T": 0.8322,
+          "T2I": 0.67756
+        },
+        "R@10": {
+          "I2T": 0.8962,
+          "T2I": 0.77332
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/clean3651/coco/coco.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.05999999999999339,
+          "T2I": 0.028000000000000247
+        },
+        "R@5": {
+          "I2T": -0.11999999999999789,
+          "T2I": -0.007999999999996898
+        },
+        "R@10": {
+          "I2T": 0.13999999999999568,
+          "T2I": -0.048000000000003595
+        }
+      }
+    },
+    {
+      "model": "clean3651",
+      "experiment": "S0-DualMask-Clean-v0.1",
+      "steps": 3651,
+      "protocol": "urban",
+      "original": {
+        "R@1": {
+          "I2T": 0.9140000343322754,
+          "T2I": 0.8950000405311584
+        },
+        "R@5": {
+          "I2T": 0.984000027179718,
+          "T2I": 0.9780000448226929
+        },
+        "R@10": {
+          "I2T": 0.9940000176429749,
+          "T2I": 0.9890000224113464
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.9170000553131104,
+          "T2I": 0.8970000147819519
+        },
+        "R@5": {
+          "I2T": 0.9850000739097595,
+          "T2I": 0.9780000448226929
+        },
+        "R@10": {
+          "I2T": 0.9950000643730164,
+          "T2I": 0.9890000224113464
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/clean3651/urban/urban.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.3000020980834961,
+          "T2I": 0.1999974250793457
+        },
+        "R@5": {
+          "I2T": 0.10000467300415039,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.10000467300415039,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "clean3651",
+      "experiment": "S0-DualMask-Clean-v0.1",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "original": {
+        "R@1": {
+          "I2T": 0.887,
+          "T2I": 0.7196
+        },
+        "R@5": {
+          "I2T": 0.988,
+          "T2I": 0.9116
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.9526
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.885,
+          "T2I": 0.719
+        },
+        "R@5": {
+          "I2T": 0.987,
+          "T2I": 0.9104
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.953
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/clean3651/flickr_test1k/flickr_test1k.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.20000000000000018,
+          "T2I": -0.060000000000004494
+        },
+        "R@5": {
+          "I2T": -0.10000000000000009,
+          "T2I": -0.11999999999999789
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.039999999999995595
+        }
+      }
+    },
+    {
+      "model": "clean3651",
+      "experiment": "S0-DualMask-Clean-v0.1",
+      "steps": 3651,
+      "protocol": "docci",
+      "original": {
+        "R@1": {
+          "I2T": 0.7814,
+          "T2I": 0.7892
+        },
+        "R@5": {
+          "I2T": 0.9512,
+          "T2I": 0.9518
+        },
+        "R@10": {
+          "I2T": 0.981,
+          "T2I": 0.9772
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.7826,
+          "T2I": 0.7886
+        },
+        "R@5": {
+          "I2T": 0.9498,
+          "T2I": 0.951
+        },
+        "R@10": {
+          "I2T": 0.9808,
+          "T2I": 0.9772
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/clean3651/docci/docci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.11999999999999789,
+          "T2I": -0.060000000000004494
+        },
+        "R@5": {
+          "I2T": -0.14000000000000679,
+          "T2I": -0.08000000000000229
+        },
+        "R@10": {
+          "I2T": -0.019999999999997797,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "clean3651",
+      "experiment": "S0-DualMask-Clean-v0.1",
+      "steps": 3651,
+      "protocol": "dci",
+      "original": {
+        "R@1": {
+          "I2T": 0.5003203074951954,
+          "T2I": 0.4905829596412556
+        },
+        "R@5": {
+          "I2T": 0.7064702114029469,
+          "T2I": 0.6986547085201794
+        },
+        "R@10": {
+          "I2T": 0.776040999359385,
+          "T2I": 0.7633568225496477
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.500832799487508,
+          "T2I": 0.489301729660474
+        },
+        "R@5": {
+          "I2T": 0.7054452274183216,
+          "T2I": 0.6972453555413197
+        },
+        "R@10": {
+          "I2T": 0.776937860345932,
+          "T2I": 0.763613068545804
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/clean3651/dci/dci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.05124919923126248,
+          "T2I": -0.1281229980781562
+        },
+        "R@5": {
+          "I2T": -0.10249839846252495,
+          "T2I": -0.14093529788596904
+        },
+        "R@10": {
+          "I2T": 0.08968609865470656,
+          "T2I": 0.02562459961563679
+        }
+      }
+    },
+    {
+      "model": "clean3651",
+      "experiment": "S0-DualMask-Clean-v0.1",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "original": {
+        "R@1": {
+          "I2T": 0.5847145488029466,
+          "T2I": 0.586687713759537
+        },
+        "R@5": {
+          "I2T": 0.7694027887398053,
+          "T2I": 0.7683504340962904
+        },
+        "R@10": {
+          "I2T": 0.8275453827940016,
+          "T2I": 0.8237305972112602
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.5836621941594318,
+          "T2I": 0.5860299921073402
+        },
+        "R@5": {
+          "I2T": 0.7682188897658511,
+          "T2I": 0.7695343330702447
+        },
+        "R@10": {
+          "I2T": 0.8278084714548803,
+          "T2I": 0.822546698237306
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/clean3651/long_dci/long_dci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.10523546435148301,
+          "T2I": -0.06577216521967966
+        },
+        "R@5": {
+          "I2T": -0.11838989739542116,
+          "T2I": 0.11838989739542116
+        },
+        "R@10": {
+          "I2T": 0.026308866087876304,
+          "T2I": -0.11838989739542116
+        }
+      }
+    },
+    {
+      "model": "full3651",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 3651,
+      "protocol": "coco",
+      "original": {
+        "R@1": {
+          "I2T": 0.5942,
+          "T2I": 0.40296
+        },
+        "R@5": {
+          "I2T": 0.8152,
+          "T2I": 0.65576
+        },
+        "R@10": {
+          "I2T": 0.8874,
+          "T2I": 0.75296
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.5938,
+          "T2I": 0.40256
+        },
+        "R@5": {
+          "I2T": 0.8144,
+          "T2I": 0.65564
+        },
+        "R@10": {
+          "I2T": 0.889,
+          "T2I": 0.75276
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full3651/coco/coco.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.039999999999995595,
+          "T2I": -0.040000000000001146
+        },
+        "R@5": {
+          "I2T": -0.08000000000000229,
+          "T2I": -0.012000000000000899
+        },
+        "R@10": {
+          "I2T": 0.16000000000000458,
+          "T2I": -0.019999999999997797
+        }
+      }
+    },
+    {
+      "model": "full3651",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 3651,
+      "protocol": "urban",
+      "original": {
+        "R@1": {
+          "I2T": 0.9180000424385071,
+          "T2I": 0.9070000648498535
+        },
+        "R@5": {
+          "I2T": 0.9860000610351562,
+          "T2I": 0.9830000400543213
+        },
+        "R@10": {
+          "I2T": 0.9920000433921814,
+          "T2I": 0.9910000562667847
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.9180000424385071,
+          "T2I": 0.906000018119812
+        },
+        "R@5": {
+          "I2T": 0.987000048160553,
+          "T2I": 0.9860000610351562
+        },
+        "R@10": {
+          "I2T": 0.9920000433921814,
+          "T2I": 0.9910000562667847
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full3651/urban/urban.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": -0.10000467300415039
+        },
+        "R@5": {
+          "I2T": 0.09999871253967285,
+          "T2I": 0.3000020980834961
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full3651",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "original": {
+        "R@1": {
+          "I2T": 0.869,
+          "T2I": 0.702
+        },
+        "R@5": {
+          "I2T": 0.981,
+          "T2I": 0.9062
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.9472
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.868,
+          "T2I": 0.7012
+        },
+        "R@5": {
+          "I2T": 0.981,
+          "T2I": 0.9056
+        },
+        "R@10": {
+          "I2T": 0.994,
+          "T2I": 0.9468
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full3651/flickr_test1k/flickr_test1k.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.10000000000000009,
+          "T2I": -0.07999999999999119
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": -0.060000000000004494
+        },
+        "R@10": {
+          "I2T": 0.10000000000000009,
+          "T2I": -0.0400000000000067
+        }
+      }
+    },
+    {
+      "model": "full3651",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 3651,
+      "protocol": "docci",
+      "original": {
+        "R@1": {
+          "I2T": 0.7766,
+          "T2I": 0.7844
+        },
+        "R@5": {
+          "I2T": 0.9554,
+          "T2I": 0.9534
+        },
+        "R@10": {
+          "I2T": 0.981,
+          "T2I": 0.98
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.776,
+          "T2I": 0.785
+        },
+        "R@5": {
+          "I2T": 0.9556,
+          "T2I": 0.9534
+        },
+        "R@10": {
+          "I2T": 0.9814,
+          "T2I": 0.98
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full3651/docci/docci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.05999999999999339,
+          "T2I": 0.060000000000004494
+        },
+        "R@5": {
+          "I2T": 0.019999999999997797,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0400000000000067,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full3651",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 3651,
+      "protocol": "dci",
+      "original": {
+        "R@1": {
+          "I2T": 0.4926329276105061,
+          "T2I": 0.4926329276105061
+        },
+        "R@5": {
+          "I2T": 0.7045483664317745,
+          "T2I": 0.7009609224855862
+        },
+        "R@10": {
+          "I2T": 0.7773222293401666,
+          "T2I": 0.7678411274823831
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.4926329276105061,
+          "T2I": 0.49327354260089684
+        },
+        "R@5": {
+          "I2T": 0.70416399743754,
+          "T2I": 0.7014734144778988
+        },
+        "R@10": {
+          "I2T": 0.7771941063420884,
+          "T2I": 0.7680973734785393
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full3651/dci/dci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.06406149903907532
+        },
+        "R@5": {
+          "I2T": -0.038436899423455184,
+          "T2I": 0.05124919923126248
+        },
+        "R@10": {
+          "I2T": -0.012812299807818395,
+          "T2I": 0.025624599615625687
+        }
+      }
+    },
+    {
+      "model": "full3651",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "original": {
+        "R@1": {
+          "I2T": 0.5772165219679032,
+          "T2I": 0.6011575901078664
+        },
+        "R@5": {
+          "I2T": 0.7688766114180479,
+          "T2I": 0.7820310444619837
+        },
+        "R@10": {
+          "I2T": 0.8267561168113654,
+          "T2I": 0.833201789002894
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.5769534333070244,
+          "T2I": 0.6019468560905025
+        },
+        "R@5": {
+          "I2T": 0.7676927124440937,
+          "T2I": 0.7818995001315443
+        },
+        "R@10": {
+          "I2T": 0.8267561168113654,
+          "T2I": 0.8334648776637726
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full3651/long_dci/long_dci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": -0.026308866087876304,
+          "T2I": 0.0789265982636067
+        },
+        "R@5": {
+          "I2T": -0.11838989739542116,
+          "T2I": -0.013154433043938152
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0263088660878652
+        }
+      }
+    },
+    {
+      "model": "full2000",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 2000,
+      "protocol": "coco",
+      "original": {
+        "R@1": {
+          "I2T": 0.5956,
+          "T2I": 0.40392
+        },
+        "R@5": {
+          "I2T": 0.815,
+          "T2I": 0.6566
+        },
+        "R@10": {
+          "I2T": 0.8874,
+          "T2I": 0.75428
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.5956,
+          "T2I": 0.40392
+        },
+        "R@5": {
+          "I2T": 0.815,
+          "T2I": 0.6566
+        },
+        "R@10": {
+          "I2T": 0.8874,
+          "T2I": 0.75428
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full2000/coco/coco.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full2000",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 2000,
+      "protocol": "urban",
+      "original": {
+        "R@1": {
+          "I2T": 0.9190000295639038,
+          "T2I": 0.906000018119812
+        },
+        "R@5": {
+          "I2T": 0.9850000739097595,
+          "T2I": 0.9820000529289246
+        },
+        "R@10": {
+          "I2T": 0.9930000305175781,
+          "T2I": 0.9910000562667847
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.9190000295639038,
+          "T2I": 0.906000018119812
+        },
+        "R@5": {
+          "I2T": 0.9850000739097595,
+          "T2I": 0.9820000529289246
+        },
+        "R@10": {
+          "I2T": 0.9930000305175781,
+          "T2I": 0.9910000562667847
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full2000/urban/urban.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full2000",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "original": {
+        "R@1": {
+          "I2T": 0.87,
+          "T2I": 0.7004
+        },
+        "R@5": {
+          "I2T": 0.979,
+          "T2I": 0.9054
+        },
+        "R@10": {
+          "I2T": 0.992,
+          "T2I": 0.9464
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.87,
+          "T2I": 0.7004
+        },
+        "R@5": {
+          "I2T": 0.979,
+          "T2I": 0.9054
+        },
+        "R@10": {
+          "I2T": 0.992,
+          "T2I": 0.9464
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full2000/flickr_test1k/flickr_test1k.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full2000",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 2000,
+      "protocol": "docci",
+      "original": {
+        "R@1": {
+          "I2T": 0.7748,
+          "T2I": 0.7832
+        },
+        "R@5": {
+          "I2T": 0.9542,
+          "T2I": 0.9532
+        },
+        "R@10": {
+          "I2T": 0.9818,
+          "T2I": 0.98
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.7748,
+          "T2I": 0.7832
+        },
+        "R@5": {
+          "I2T": 0.9542,
+          "T2I": 0.9532
+        },
+        "R@10": {
+          "I2T": 0.9818,
+          "T2I": 0.98
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full2000/docci/docci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full2000",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 2000,
+      "protocol": "dci",
+      "original": {
+        "R@1": {
+          "I2T": 0.49199231262011534,
+          "T2I": 0.4931454196028187
+        },
+        "R@5": {
+          "I2T": 0.7039077514413837,
+          "T2I": 0.698398462524023
+        },
+        "R@10": {
+          "I2T": 0.7752722613709161,
+          "T2I": 0.7678411274823831
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.49199231262011534,
+          "T2I": 0.4931454196028187
+        },
+        "R@5": {
+          "I2T": 0.7039077514413837,
+          "T2I": 0.698398462524023
+        },
+        "R@10": {
+          "I2T": 0.7752722613709161,
+          "T2I": 0.7678411274823831
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full2000/dci/dci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    },
+    {
+      "model": "full2000",
+      "experiment": "S0-DualMask-Full-v0.1",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "original": {
+        "R@1": {
+          "I2T": 0.5772165219679032,
+          "T2I": 0.5987897921599579
+        },
+        "R@5": {
+          "I2T": 0.7670349907918969,
+          "T2I": 0.778479347540121
+        },
+        "R@10": {
+          "I2T": 0.8274138384635622,
+          "T2I": 0.8304393580636674
+        }
+      },
+      "replica": {
+        "R@1": {
+          "I2T": 0.5772165219679032,
+          "T2I": 0.5987897921599579
+        },
+        "R@5": {
+          "I2T": 0.7670349907918969,
+          "T2I": 0.778479347540121
+        },
+        "R@10": {
+          "I2T": 0.8274138384635622,
+          "T2I": 0.8304393580636674
+        }
+      },
+      "result_file": "/root/lk_projects/SAID-reproduction/evaluation/results/full2000/long_dci/long_dci.json",
+      "delta_percentage_points": {
+        "R@1": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@5": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        },
+        "R@10": {
+          "I2T": 0.0,
+          "T2I": 0.0
+        }
+      }
+    }
+  ],
+  "metrics_rows": [
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 61.339999999999996,
+      "replica_percent": 61.28,
+      "delta_percentage_points": -0.05999999999999339,
+      "original_hits": 3067,
+      "replica_hits": 3064,
+      "query_count": 5000,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 42.272,
+      "replica_percent": 42.3,
+      "delta_percentage_points": 0.028000000000000247,
+      "original_hits": 10568,
+      "replica_hits": 10575,
+      "query_count": 25000,
+      "hit_delta": 7,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 83.34,
+      "replica_percent": 83.22,
+      "delta_percentage_points": -0.11999999999999789,
+      "original_hits": 4167,
+      "replica_hits": 4161,
+      "query_count": 5000,
+      "hit_delta": -6,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 67.764,
+      "replica_percent": 67.756,
+      "delta_percentage_points": -0.007999999999996898,
+      "original_hits": 16941,
+      "replica_hits": 16939,
+      "query_count": 25000,
+      "hit_delta": -2,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 89.48,
+      "replica_percent": 89.62,
+      "delta_percentage_points": 0.13999999999999568,
+      "original_hits": 4474,
+      "replica_hits": 4481,
+      "query_count": 5000,
+      "hit_delta": 7,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 77.38000000000001,
+      "replica_percent": 77.332,
+      "delta_percentage_points": -0.048000000000003595,
+      "original_hits": 19345,
+      "replica_hits": 19333,
+      "query_count": 25000,
+      "hit_delta": -12,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 91.40000343322754,
+      "replica_percent": 91.70000553131104,
+      "delta_percentage_points": 0.3000020980834961,
+      "original_hits": 914,
+      "replica_hits": 917,
+      "query_count": 1000,
+      "hit_delta": 3,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 89.50000405311584,
+      "replica_percent": 89.70000147819519,
+      "delta_percentage_points": 0.1999974250793457,
+      "original_hits": 895,
+      "replica_hits": 897,
+      "query_count": 1000,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 98.4000027179718,
+      "replica_percent": 98.50000739097595,
+      "delta_percentage_points": 0.10000467300415039,
+      "original_hits": 984,
+      "replica_hits": 985,
+      "query_count": 1000,
+      "hit_delta": 1,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 97.80000448226929,
+      "replica_percent": 97.80000448226929,
+      "delta_percentage_points": 0.0,
+      "original_hits": 978,
+      "replica_hits": 978,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 99.40000176429749,
+      "replica_percent": 99.50000643730164,
+      "delta_percentage_points": 0.10000467300415039,
+      "original_hits": 994,
+      "replica_hits": 995,
+      "query_count": 1000,
+      "hit_delta": 1,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 98.90000224113464,
+      "replica_percent": 98.90000224113464,
+      "delta_percentage_points": 0.0,
+      "original_hits": 989,
+      "replica_hits": 989,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 88.7,
+      "replica_percent": 88.5,
+      "delta_percentage_points": -0.20000000000000018,
+      "original_hits": 887,
+      "replica_hits": 885,
+      "query_count": 1000,
+      "hit_delta": -2,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 71.96000000000001,
+      "replica_percent": 71.89999999999999,
+      "delta_percentage_points": -0.060000000000004494,
+      "original_hits": 3598,
+      "replica_hits": 3595,
+      "query_count": 5000,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 98.8,
+      "replica_percent": 98.7,
+      "delta_percentage_points": -0.10000000000000009,
+      "original_hits": 988,
+      "replica_hits": 987,
+      "query_count": 1000,
+      "hit_delta": -1,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 91.16,
+      "replica_percent": 91.03999999999999,
+      "delta_percentage_points": -0.11999999999999789,
+      "original_hits": 4558,
+      "replica_hits": 4552,
+      "query_count": 5000,
+      "hit_delta": -6,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 99.3,
+      "replica_percent": 99.3,
+      "delta_percentage_points": 0.0,
+      "original_hits": 993,
+      "replica_hits": 993,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 95.26,
+      "replica_percent": 95.3,
+      "delta_percentage_points": 0.039999999999995595,
+      "original_hits": 4763,
+      "replica_hits": 4765,
+      "query_count": 5000,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 78.14,
+      "replica_percent": 78.25999999999999,
+      "delta_percentage_points": 0.11999999999999789,
+      "original_hits": 3907,
+      "replica_hits": 3913,
+      "query_count": 5000,
+      "hit_delta": 6,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 78.92,
+      "replica_percent": 78.86,
+      "delta_percentage_points": -0.060000000000004494,
+      "original_hits": 3946,
+      "replica_hits": 3943,
+      "query_count": 5000,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 95.12,
+      "replica_percent": 94.98,
+      "delta_percentage_points": -0.14000000000000679,
+      "original_hits": 4756,
+      "replica_hits": 4749,
+      "query_count": 5000,
+      "hit_delta": -7,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 95.17999999999999,
+      "replica_percent": 95.1,
+      "delta_percentage_points": -0.08000000000000229,
+      "original_hits": 4759,
+      "replica_hits": 4755,
+      "query_count": 5000,
+      "hit_delta": -4,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 98.1,
+      "replica_percent": 98.08,
+      "delta_percentage_points": -0.019999999999997797,
+      "original_hits": 4905,
+      "replica_hits": 4904,
+      "query_count": 5000,
+      "hit_delta": -1,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 97.72,
+      "replica_percent": 97.72,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4886,
+      "replica_hits": 4886,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 50.03203074951954,
+      "replica_percent": 50.0832799487508,
+      "delta_percentage_points": 0.05124919923126248,
+      "original_hits": 3905,
+      "replica_hits": 3909,
+      "query_count": 7805,
+      "hit_delta": 4,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 49.058295964125556,
+      "replica_percent": 48.9301729660474,
+      "delta_percentage_points": -0.1281229980781562,
+      "original_hits": 3829,
+      "replica_hits": 3819,
+      "query_count": 7805,
+      "hit_delta": -10,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 70.64702114029468,
+      "replica_percent": 70.54452274183217,
+      "delta_percentage_points": -0.10249839846252495,
+      "original_hits": 5514,
+      "replica_hits": 5506,
+      "query_count": 7805,
+      "hit_delta": -8,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 69.86547085201794,
+      "replica_percent": 69.72453555413198,
+      "delta_percentage_points": -0.14093529788596904,
+      "original_hits": 5453,
+      "replica_hits": 5442,
+      "query_count": 7805,
+      "hit_delta": -11,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 77.60409993593849,
+      "replica_percent": 77.6937860345932,
+      "delta_percentage_points": 0.08968609865470656,
+      "original_hits": 6057,
+      "replica_hits": 6064,
+      "query_count": 7805,
+      "hit_delta": 7,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 76.33568225496477,
+      "replica_percent": 76.3613068545804,
+      "delta_percentage_points": 0.02562459961563679,
+      "original_hits": 5958,
+      "replica_hits": 5960,
+      "query_count": 7805,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 58.47145488029466,
+      "replica_percent": 58.36621941594318,
+      "delta_percentage_points": -0.10523546435148301,
+      "original_hits": 4445,
+      "replica_hits": 4437,
+      "query_count": 7602,
+      "hit_delta": -8,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 58.668771375953696,
+      "replica_percent": 58.60299921073402,
+      "delta_percentage_points": -0.06577216521967966,
+      "original_hits": 4460,
+      "replica_hits": 4455,
+      "query_count": 7602,
+      "hit_delta": -5,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 76.94027887398053,
+      "replica_percent": 76.8218889765851,
+      "delta_percentage_points": -0.11838989739542116,
+      "original_hits": 5849,
+      "replica_hits": 5840,
+      "query_count": 7602,
+      "hit_delta": -9,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 76.83504340962905,
+      "replica_percent": 76.95343330702447,
+      "delta_percentage_points": 0.11838989739542116,
+      "original_hits": 5841,
+      "replica_hits": 5850,
+      "query_count": 7602,
+      "hit_delta": 9,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 82.75453827940015,
+      "replica_percent": 82.78084714548804,
+      "delta_percentage_points": 0.026308866087876304,
+      "original_hits": 6291,
+      "replica_hits": 6293,
+      "query_count": 7602,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "clean3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 82.37305972112601,
+      "replica_percent": 82.2546698237306,
+      "delta_percentage_points": -0.11838989739542116,
+      "original_hits": 6262,
+      "replica_hits": 6253,
+      "query_count": 7602,
+      "hit_delta": -9,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 59.419999999999995,
+      "replica_percent": 59.38,
+      "delta_percentage_points": -0.039999999999995595,
+      "original_hits": 2971,
+      "replica_hits": 2969,
+      "query_count": 5000,
+      "hit_delta": -2,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 40.296,
+      "replica_percent": 40.256,
+      "delta_percentage_points": -0.040000000000001146,
+      "original_hits": 10074,
+      "replica_hits": 10064,
+      "query_count": 25000,
+      "hit_delta": -10,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 81.52000000000001,
+      "replica_percent": 81.44,
+      "delta_percentage_points": -0.08000000000000229,
+      "original_hits": 4076,
+      "replica_hits": 4072,
+      "query_count": 5000,
+      "hit_delta": -4,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 65.57600000000001,
+      "replica_percent": 65.564,
+      "delta_percentage_points": -0.012000000000000899,
+      "original_hits": 16394,
+      "replica_hits": 16391,
+      "query_count": 25000,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 88.74,
+      "replica_percent": 88.9,
+      "delta_percentage_points": 0.16000000000000458,
+      "original_hits": 4437,
+      "replica_hits": 4445,
+      "query_count": 5000,
+      "hit_delta": 8,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 75.29599999999999,
+      "replica_percent": 75.276,
+      "delta_percentage_points": -0.019999999999997797,
+      "original_hits": 18824,
+      "replica_hits": 18819,
+      "query_count": 25000,
+      "hit_delta": -5,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 91.80000424385071,
+      "replica_percent": 91.80000424385071,
+      "delta_percentage_points": 0.0,
+      "original_hits": 918,
+      "replica_hits": 918,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 90.70000648498535,
+      "replica_percent": 90.6000018119812,
+      "delta_percentage_points": -0.10000467300415039,
+      "original_hits": 907,
+      "replica_hits": 906,
+      "query_count": 1000,
+      "hit_delta": -1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 98.60000610351562,
+      "replica_percent": 98.7000048160553,
+      "delta_percentage_points": 0.09999871253967285,
+      "original_hits": 986,
+      "replica_hits": 987,
+      "query_count": 1000,
+      "hit_delta": 1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 98.30000400543213,
+      "replica_percent": 98.60000610351562,
+      "delta_percentage_points": 0.3000020980834961,
+      "original_hits": 983,
+      "replica_hits": 986,
+      "query_count": 1000,
+      "hit_delta": 3,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 99.20000433921814,
+      "replica_percent": 99.20000433921814,
+      "delta_percentage_points": 0.0,
+      "original_hits": 992,
+      "replica_hits": 992,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 99.10000562667847,
+      "replica_percent": 99.10000562667847,
+      "delta_percentage_points": 0.0,
+      "original_hits": 991,
+      "replica_hits": 991,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 86.9,
+      "replica_percent": 86.8,
+      "delta_percentage_points": -0.10000000000000009,
+      "original_hits": 869,
+      "replica_hits": 868,
+      "query_count": 1000,
+      "hit_delta": -1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 70.19999999999999,
+      "replica_percent": 70.12,
+      "delta_percentage_points": -0.07999999999999119,
+      "original_hits": 3510,
+      "replica_hits": 3506,
+      "query_count": 5000,
+      "hit_delta": -4,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 98.1,
+      "replica_percent": 98.1,
+      "delta_percentage_points": 0.0,
+      "original_hits": 981,
+      "replica_hits": 981,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 90.62,
+      "replica_percent": 90.56,
+      "delta_percentage_points": -0.060000000000004494,
+      "original_hits": 4531,
+      "replica_hits": 4528,
+      "query_count": 5000,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 99.3,
+      "replica_percent": 99.4,
+      "delta_percentage_points": 0.10000000000000009,
+      "original_hits": 993,
+      "replica_hits": 994,
+      "query_count": 1000,
+      "hit_delta": 1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 94.72,
+      "replica_percent": 94.67999999999999,
+      "delta_percentage_points": -0.0400000000000067,
+      "original_hits": 4736,
+      "replica_hits": 4734,
+      "query_count": 5000,
+      "hit_delta": -2,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 77.66,
+      "replica_percent": 77.60000000000001,
+      "delta_percentage_points": -0.05999999999999339,
+      "original_hits": 3883,
+      "replica_hits": 3880,
+      "query_count": 5000,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 78.44,
+      "replica_percent": 78.5,
+      "delta_percentage_points": 0.060000000000004494,
+      "original_hits": 3922,
+      "replica_hits": 3925,
+      "query_count": 5000,
+      "hit_delta": 3,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 95.54,
+      "replica_percent": 95.56,
+      "delta_percentage_points": 0.019999999999997797,
+      "original_hits": 4777,
+      "replica_hits": 4778,
+      "query_count": 5000,
+      "hit_delta": 1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 95.34,
+      "replica_percent": 95.34,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4767,
+      "replica_hits": 4767,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 98.1,
+      "replica_percent": 98.14,
+      "delta_percentage_points": 0.0400000000000067,
+      "original_hits": 4905,
+      "replica_hits": 4907,
+      "query_count": 5000,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 98.0,
+      "replica_percent": 98.0,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4900,
+      "replica_hits": 4900,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 49.26329276105061,
+      "replica_percent": 49.26329276105061,
+      "delta_percentage_points": 0.0,
+      "original_hits": 3845,
+      "replica_hits": 3845,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 49.26329276105061,
+      "replica_percent": 49.327354260089685,
+      "delta_percentage_points": 0.06406149903907532,
+      "original_hits": 3845,
+      "replica_hits": 3850,
+      "query_count": 7805,
+      "hit_delta": 5,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 70.45483664317746,
+      "replica_percent": 70.416399743754,
+      "delta_percentage_points": -0.038436899423455184,
+      "original_hits": 5499,
+      "replica_hits": 5496,
+      "query_count": 7805,
+      "hit_delta": -3,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 70.09609224855862,
+      "replica_percent": 70.14734144778988,
+      "delta_percentage_points": 0.05124919923126248,
+      "original_hits": 5471,
+      "replica_hits": 5475,
+      "query_count": 7805,
+      "hit_delta": 4,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 77.73222293401666,
+      "replica_percent": 77.71941063420884,
+      "delta_percentage_points": -0.012812299807818395,
+      "original_hits": 6067,
+      "replica_hits": 6066,
+      "query_count": 7805,
+      "hit_delta": -1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 76.78411274823831,
+      "replica_percent": 76.80973734785394,
+      "delta_percentage_points": 0.025624599615625687,
+      "original_hits": 5993,
+      "replica_hits": 5995,
+      "query_count": 7805,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 57.721652196790316,
+      "replica_percent": 57.69534333070244,
+      "delta_percentage_points": -0.026308866087876304,
+      "original_hits": 4388,
+      "replica_hits": 4386,
+      "query_count": 7602,
+      "hit_delta": -2,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 60.11575901078664,
+      "replica_percent": 60.19468560905025,
+      "delta_percentage_points": 0.0789265982636067,
+      "original_hits": 4570,
+      "replica_hits": 4576,
+      "query_count": 7602,
+      "hit_delta": 6,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 76.88766114180478,
+      "replica_percent": 76.76927124440937,
+      "delta_percentage_points": -0.11838989739542116,
+      "original_hits": 5845,
+      "replica_hits": 5836,
+      "query_count": 7602,
+      "hit_delta": -9,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 78.20310444619837,
+      "replica_percent": 78.18995001315443,
+      "delta_percentage_points": -0.013154433043938152,
+      "original_hits": 5945,
+      "replica_hits": 5944,
+      "query_count": 7602,
+      "hit_delta": -1,
+      "same_hit_count": false
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 82.67561168113654,
+      "replica_percent": 82.67561168113654,
+      "delta_percentage_points": 0.0,
+      "original_hits": 6285,
+      "replica_hits": 6285,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full3651",
+      "steps": 3651,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 83.32017890028939,
+      "replica_percent": 83.34648776637727,
+      "delta_percentage_points": 0.0263088660878652,
+      "original_hits": 6334,
+      "replica_hits": 6336,
+      "query_count": 7602,
+      "hit_delta": 2,
+      "same_hit_count": false
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 59.56,
+      "replica_percent": 59.56,
+      "delta_percentage_points": 0.0,
+      "original_hits": 2978,
+      "replica_hits": 2978,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 40.392,
+      "replica_percent": 40.392,
+      "delta_percentage_points": 0.0,
+      "original_hits": 10098,
+      "replica_hits": 10098,
+      "query_count": 25000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 81.5,
+      "replica_percent": 81.5,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4075,
+      "replica_hits": 4075,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 65.66,
+      "replica_percent": 65.66,
+      "delta_percentage_points": 0.0,
+      "original_hits": 16415,
+      "replica_hits": 16415,
+      "query_count": 25000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "coco",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 88.74,
+      "replica_percent": 88.74,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4437,
+      "replica_hits": 4437,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "coco",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 75.428,
+      "replica_percent": 75.428,
+      "delta_percentage_points": 0.0,
+      "original_hits": 18857,
+      "replica_hits": 18857,
+      "query_count": 25000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 91.90000295639038,
+      "replica_percent": 91.90000295639038,
+      "delta_percentage_points": 0.0,
+      "original_hits": 919,
+      "replica_hits": 919,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 90.6000018119812,
+      "replica_percent": 90.6000018119812,
+      "delta_percentage_points": 0.0,
+      "original_hits": 906,
+      "replica_hits": 906,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 98.50000739097595,
+      "replica_percent": 98.50000739097595,
+      "delta_percentage_points": 0.0,
+      "original_hits": 985,
+      "replica_hits": 985,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 98.20000529289246,
+      "replica_percent": 98.20000529289246,
+      "delta_percentage_points": 0.0,
+      "original_hits": 982,
+      "replica_hits": 982,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "urban",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 99.30000305175781,
+      "replica_percent": 99.30000305175781,
+      "delta_percentage_points": 0.0,
+      "original_hits": 993,
+      "replica_hits": 993,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "urban",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 99.10000562667847,
+      "replica_percent": 99.10000562667847,
+      "delta_percentage_points": 0.0,
+      "original_hits": 991,
+      "replica_hits": 991,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 87.0,
+      "replica_percent": 87.0,
+      "delta_percentage_points": 0.0,
+      "original_hits": 870,
+      "replica_hits": 870,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 70.04,
+      "replica_percent": 70.04,
+      "delta_percentage_points": 0.0,
+      "original_hits": 3502,
+      "replica_hits": 3502,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 97.89999999999999,
+      "replica_percent": 97.89999999999999,
+      "delta_percentage_points": 0.0,
+      "original_hits": 979,
+      "replica_hits": 979,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 90.53999999999999,
+      "replica_percent": 90.53999999999999,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4527,
+      "replica_hits": 4527,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 99.2,
+      "replica_percent": 99.2,
+      "delta_percentage_points": 0.0,
+      "original_hits": 992,
+      "replica_hits": 992,
+      "query_count": 1000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "flickr_test1k",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 94.64,
+      "replica_percent": 94.64,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4732,
+      "replica_hits": 4732,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 77.48,
+      "replica_percent": 77.48,
+      "delta_percentage_points": 0.0,
+      "original_hits": 3874,
+      "replica_hits": 3874,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 78.32000000000001,
+      "replica_percent": 78.32000000000001,
+      "delta_percentage_points": 0.0,
+      "original_hits": 3916,
+      "replica_hits": 3916,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 95.42,
+      "replica_percent": 95.42,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4771,
+      "replica_hits": 4771,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 95.32000000000001,
+      "replica_percent": 95.32000000000001,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4766,
+      "replica_hits": 4766,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "docci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 98.18,
+      "replica_percent": 98.18,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4909,
+      "replica_hits": 4909,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "docci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 98.0,
+      "replica_percent": 98.0,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4900,
+      "replica_hits": 4900,
+      "query_count": 5000,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 49.19923126201154,
+      "replica_percent": 49.19923126201154,
+      "delta_percentage_points": 0.0,
+      "original_hits": 3840,
+      "replica_hits": 3840,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 49.31454196028187,
+      "replica_percent": 49.31454196028187,
+      "delta_percentage_points": 0.0,
+      "original_hits": 3849,
+      "replica_hits": 3849,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 70.39077514413837,
+      "replica_percent": 70.39077514413837,
+      "delta_percentage_points": 0.0,
+      "original_hits": 5494,
+      "replica_hits": 5494,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 69.83984625240231,
+      "replica_percent": 69.83984625240231,
+      "delta_percentage_points": 0.0,
+      "original_hits": 5451,
+      "replica_hits": 5451,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "dci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 77.5272261370916,
+      "replica_percent": 77.5272261370916,
+      "delta_percentage_points": 0.0,
+      "original_hits": 6051,
+      "replica_hits": 6051,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "dci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 76.78411274823831,
+      "replica_percent": 76.78411274823831,
+      "delta_percentage_points": 0.0,
+      "original_hits": 5993,
+      "replica_hits": 5993,
+      "query_count": 7805,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@1",
+      "original_percent": 57.721652196790316,
+      "replica_percent": 57.721652196790316,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4388,
+      "replica_hits": 4388,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@1",
+      "original_percent": 59.878979215995784,
+      "replica_percent": 59.878979215995784,
+      "delta_percentage_points": 0.0,
+      "original_hits": 4552,
+      "replica_hits": 4552,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@5",
+      "original_percent": 76.70349907918968,
+      "replica_percent": 76.70349907918968,
+      "delta_percentage_points": 0.0,
+      "original_hits": 5831,
+      "replica_hits": 5831,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@5",
+      "original_percent": 77.8479347540121,
+      "replica_percent": 77.8479347540121,
+      "delta_percentage_points": 0.0,
+      "original_hits": 5918,
+      "replica_hits": 5918,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "direction": "I2T",
+      "metric": "R@10",
+      "original_percent": 82.74138384635621,
+      "replica_percent": 82.74138384635621,
+      "delta_percentage_points": 0.0,
+      "original_hits": 6290,
+      "replica_hits": 6290,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    },
+    {
+      "model": "full2000",
+      "steps": 2000,
+      "protocol": "long_dci",
+      "direction": "T2I",
+      "metric": "R@10",
+      "original_percent": 83.04393580636675,
+      "replica_percent": 83.04393580636675,
+      "delta_percentage_points": 0.0,
+      "original_hits": 6313,
+      "replica_hits": 6313,
+      "query_count": 7602,
+      "hit_delta": 0,
+      "same_hit_count": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "utc": "2026-09-29T07:31:11.242212+00:00",
+  "scope": "read-only audit of existing scripts, pinned repos, reference schemas and evaluation paths before adding observer",
+  "blocking_schema_path_validation_errors_found": [],
+  "training_repo_head": "873b43a5bc000528311e22aac01e92045ac898e0",
+  "evaluation_repo_head": "4d66d7a3768c97b41e44f3be2db31b10253422f5",
+  "checks": [
+    "All launch file SHA256 values match original validation/launch_files.json",
+    "All three comparison reference files match pinned SHA256 and contain all six protocols and 36 metrics",
+    "Final checkpoint schema and stream_summary expected 806428 samples/rank match trainer and prior Full3651",
+    "All frozen evaluators and extended/native entry hashes match evaluate.py",
+    "All four extended manifest hashes/counts/image paths and positive ID mappings verified",
+    "COCO annotations hash, 5000 image paths and Urban 1000 pairs/caption hash verified",
+    "Extended evaluator CPU imports resolve to fixed publish checkout",
+    "Model longclip.py/model_longclip.py/dual_mask_suffix.py and loader helpers identical between both fixed checkouts",
+    "All 151 continuation rows available at initial comparison match Full reference on all four ranks; recorded scalar values finite",
+    "657 GiB free disk at audit"
+  ],
+  "modifications": "Original training, hyperparameters, pipeline scripts and launch/reference hash manifests unchanged; added observation-only scripts/supervise.py and separate audit artifacts."
+}
