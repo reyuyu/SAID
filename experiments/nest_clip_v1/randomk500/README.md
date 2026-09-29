@@ -1,5 +1,7 @@
 # A3-RandomK @500
 
+已完成18项测试、5步真实四卡smoke、正式500步及原生检索：[完整报告](REPORT.md) · [机器可读结果](results.json)。相对固定A3，Urban双向R@1提高1.000/1.300 pp，COCO双向R@1下降0.200/0.376 pp。报告保留了正式训练结束时的DataLoader worker析构异常；500步与检查点、导出核验通过，主进程退出码为0。
+
 本实验只改变原A3的局部文本切分：先用旧 `text_views` 确定F，再在F的n个实际可见句段中均匀抽取 `K in {1,...,n-1}`，得到连续前缀P和全部剩余描述R。R保留F末句。`tokens_o/tokens_e` 与日志中的 `O/E` 在本实验分别表示 **P/R**，不再固定代表首句概述/展开。
 
 模型内部仍为 `arm="A3"`；包含权重 `min(1, completed_updates/200)`、网络、评分、稀疏、可导gather及归约完全复用旧实现。`fixed_first` 是缺省模式，保持旧数据输出。首句超长与单句继续F-only；随机切分遇到独立token长度超限直接报出sample_id/epoch/n/K及文本，不重抽、不截断、不改变F。
