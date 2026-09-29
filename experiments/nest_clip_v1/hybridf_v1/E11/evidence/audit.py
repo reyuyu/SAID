@@ -21,7 +21,7 @@ def equal(x,y):
     if isinstance(x,(list,tuple)):return len(x)==len(y) and all(equal(a,b) for a,b in zip(x,y))
     return x==y
 def audit(mode):
-    n=5 if mode=='smoke' else 3651;run=BASE/mode;cfg=read(run/'config.json');acc=read(run/'acceptance.json')
+    n=5 if mode.startswith('smoke') else 3651;run=BASE/mode;cfg=read(run/'config.json');acc=read(run/'acceptance.json')
     ex=read(EV/f'{mode}.execution.json');assert ex['exit_code']==0
     assert cfg['arm']=='A3' and cfg['full_native_mix']==.25 and cfg['sampling_mode']=='random_k'
     assert cfg['sampling_seed']==cfg['seed']==0 and cfg['horizon']==3651 and cfg['max_updates']==n
@@ -31,7 +31,7 @@ def audit(mode):
     assert acc['passed'] and len(acc['ranks'])==4 and len({x['uuid'] for x in cfg['ranks']})==4
     for h in acc['ranks']:assert h['completed_updates']==h['updates_this_run']==n and h['max_parameter_difference_from_rank0']==0
     console=(EV/f'{mode}.console.txt').read_text()
-    assert all(x not in console for x in ('Traceback','ncclSystemError','killed by signal','terminate called','RandomK token boundary overflow'))
+    assert all(x not in console for x in ('Traceback','ncclSystemError','NCCL WARN','killed by signal','terminate called','RandomK token boundary overflow'))
     reference=stream([ROOT/'randomk500/A3-RandomK/steps.jsonl',ROOT/'randomk3epoch/A3-RandomK/steps.jsonl'])
     last50=deque(maxlen=50);milestones={};max_error=0.;samples=0;valid=0;compared=0
     compact=BASE/f'{mode}_trajectory.jsonl'
@@ -77,7 +77,7 @@ def audit(mode):
         assert equal(x['python'],y['python']) and torch.equal(x['cpu'],y['cpu']) and torch.equal(x['cuda'],y['cuda'])
         assert x['numpy'][0]==y['numpy'][0] and (x['numpy'][1]==y['numpy'][1]).all() and x['numpy'][2:]==y['numpy'][2:]
     del common,zero,baseline
-    expected=[0,5] if mode=='smoke' else [0]+list(range(100,3601,100))+[3651]
+    expected=[0,5] if mode.startswith('smoke') else [0]+list(range(100,3601,100))+[3651]
     assert sorted(p.name for p in run.glob('step*.pt'))==[f'step{x:06d}.pt' for x in expected]
     checkpoints=[]
     for step in expected:
