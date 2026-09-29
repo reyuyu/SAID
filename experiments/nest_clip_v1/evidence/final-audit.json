@@ -1,0 +1,270 @@
+{
+  "passed": true,
+  "common_init_model_optimizer_rng_identical": true,
+  "A2_A3_streams_identical": true,
+  "training_code_identical": true,
+  "first_step_loss_identical": true,
+  "formal_started": false,
+  "evaluation_started": false,
+  "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "git_head": "b6ced1ff80635a7671970b702f989da84cc721d5",
+  "training_records": 1245901,
+  "batches_per_epoch": 1217,
+  "horizon": 3651,
+  "sampler_padding": 3,
+  "per_rank_tail_batch": 180,
+  "runs": {
+    "A2": {
+      "identity": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 774760,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7445520982146263
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 774761,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7535629794001579
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 774762,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7386146485805511
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 774763,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7368718534708023
+        }
+      ],
+      "acceptance": {
+        "passed": true,
+        "ranks": [
+          {
+            "rank": 0,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.82915087044239,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          },
+          {
+            "rank": 1,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.829554982483387,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          },
+          {
+            "rank": 2,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.82997217774391,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          },
+          {
+            "rank": 3,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.829952716827393,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.4765625
+          }
+        ]
+      },
+      "losses": [
+        56.21670913696289,
+        24.234294891357422,
+        22.777320861816406,
+        21.252405166625977,
+        18.10358238220215
+      ],
+      "valid_counts": [
+        1024,
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "inclusion_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "compute_step_seconds_sum": 12.449565924704075,
+      "fallback_counts": {
+        "valid": 5120
+      },
+      "duplicate_image_ids": [],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      }
+    },
+    "A3": {
+      "identity": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 777428,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8433023542165756
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 777429,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8511611223220825
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 777430,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8454611822962761
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 777431,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.9456373900175095
+        }
+      ],
+      "acceptance": {
+        "passed": true,
+        "ranks": [
+          {
+            "rank": 0,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.773531287908554,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          },
+          {
+            "rank": 1,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.77382804453373,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          },
+          {
+            "rank": 2,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.773952320218086,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          },
+          {
+            "rank": 3,
+            "completed_updates": 5,
+            "updates_this_run": 5,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 24.77378650009632,
+            "peak_allocated_gib": 17.30134677886963,
+            "peak_reserved_gib": 18.474609375
+          }
+        ]
+      },
+      "losses": [
+        56.21670913696289,
+        24.234529495239258,
+        22.777305603027344,
+        21.239072799682617,
+        18.10738754272461
+      ],
+      "valid_counts": [
+        1024,
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "inclusion_weights": [
+        0.0,
+        0.005,
+        0.01,
+        0.015,
+        0.02
+      ],
+      "compute_step_seconds_sum": 12.783814556896687,
+      "fallback_counts": {
+        "valid": 5120
+      },
+      "duplicate_image_ids": [],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      }
+    }
+  },
+  "new_file_sha256": {
+    "configs/nest_clip_a2.json": "3e6df5418eccac05345f388ae09f9654a6a9665145b4c8a682ff6eca55836af1",
+    "configs/nest_clip_a3.json": "a889a8a6561da593e8204a17a8953c7d8992ee1089d088e486185805e1af24e6",
+    "experiments/nest_clip_v1/run.sh": "13e7a191f345b49c3681026ad51aa6065ab4a52cba4a37fea1b7b9412373fdca",
+    "model/nested_semantic_mask.py": "cb26f540e78908ad9b3f24a1198f2020f41a34e93605338139eb6a0764d899d7",
+    "tests/nest_ddp_worker.py": "8a42c4b4a0180e38cbb70823ceb5c99621a6affa1eedc4497a0a4044abc840fc",
+    "tests/test_nested_semantic_mask.py": "2260048aa1ce17e864464e6ec134b3fc6560f3cc587e3512b613d53da33f6369",
+    "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+    "tools/nest_clip.py": "dec0ff4a6aed19d4d9030119db4f3b20412ff91ef56c568a2c99f30c30d6722d",
+    "train/nested_semantic_data.py": "e7eaeed5470c726094129638c3b073491cbbbf860e3d687df7adc6976f829155",
+    "train/train_nested_semantic_mask.py": "a905e0c196c97c37edd69a92347c1a365f3c97803ed0308d8b3853cf07811e6f"
+  }
+}

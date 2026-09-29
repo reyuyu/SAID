@@ -1,0 +1,52 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+______________________ test_original_smartclip_regression ______________________
+
+    def test_original_smartclip_regression():
+        torch.set_num_threads(2)
+        torch.manual_seed(3)
+        with tempfile.TemporaryDirectory() as tmp:
+            dist.init_process_group('gloo', init_method='file://'+tmp+'/pg', rank=0, world_size=1)
+            try:
+                old = TinyCLIP()
+                new = copy.deepcopy(old)
+                images, tokens = torch.randn(4,8), torch.randint(0,30,(4,6))
+                opts = [torch.optim.AdamW(m.parameters(), lr=1e-4) for m in (old,new)]
+                results=[]
+                for m, opt, original in zip((old,new),opts,(True,False)):
+                    z=m.encode_image(images); t,h=m.encode_text(tokens,return_full=True)
+                    mask,_,_=said_mask_from_hidden(m.mask_net,h)
+                    if original:
+                        terms=compute_smartclip_terms(z,t,mask,0)
+                        loss=terms['loss_smart']; align=terms['loss_sidm']+terms['loss_dism']
+                    else:
+                        valid=torch.ones(4,dtype=torch.bool)
+                        align,sparse,_=view_terms(z,t,mask,valid,valid)
+                        loss=10*align+2*sparse
+                    loss.backward()
+                    results.append((loss.detach(),align.detach(),mask.detach(),[p.grad.clone() for p in m.parameters()]))
+                    opt.step()
+                for a,b in zip(results[0][:3], results[1][:3]):
+                    torch.testing.assert_close(a,b,atol=3e-5,rtol=3e-6)
+                for a,b in zip(results[0][3],results[1][3]):
+                    torch.testing.assert_close(a,b,atol=3e-4,rtol=3e-5)
+                for a,b in zip(old.parameters(),new.parameters()):
+>                   torch.testing.assert_close(a,b,atol=3e-6,rtol=3e-5)
+E                   AssertionError: Tensor-likes are not close!
+E                   
+E                   Mismatched elements: 2 / 24 (8.3%)
+E                   Greatest absolute difference: 0.00019711889035534114 at index (13,) (up to 3e-06 allowed)
+E                   Greatest relative difference: 1.9987480640411377 at index (13,) (up to 3e-05 allowed)
+
+tests/test_nested_semantic_mask.py:140: AssertionError
+------------------------------ Captured log call -------------------------------
+DEBUG    c10d-NullHandler-default:c10d_logger.py:102 {'func_name': 'init_process_group', 'args': "('gloo',), {'init_method': 'file:///tmp/tmpn555h2s0/pg', 'rank': 0, 'world_size': 1}", 'pg_name': 'None', 'backend': 'gloo', 'world_size': '1', 'group_size': '1', 'global_rank': '0', 'local_rank': '0', 'time_spent': '4080430ns'}
+=============================== warnings summary ===============================
+model/longclip.py:6
+  /root/lk_projects/SAID/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+    from pkg_resources import packaging
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_nested_semantic_mask.py::test_original_smartclip_regression
+1 failed, 4 passed, 1 warning in 3.41s

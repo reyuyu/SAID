@@ -1,0 +1,133 @@
+/root/lk_projects/SAID/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+[rank0]:[W929 04:47:31.830857756 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1]:[W929 04:47:31.831043706 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+{
+  "passed": true,
+  "world_size": 2,
+  "backend": "nccl",
+  "cases": [
+    {
+      "arm": "A2",
+      "validity": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "loss_error": 0.0,
+      "max_gradient_error": 0.000213623046875,
+      "max_sgd_update_error": 5.960464477539063e-08,
+      "max_adamw_update_error": 4.289722710382193e-06
+    },
+    {
+      "arm": "A2",
+      "validity": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": 0.000152587890625,
+      "max_sgd_update_error": 5.960464477539063e-08,
+      "max_adamw_update_error": 0.00019554278696887195
+    },
+    {
+      "arm": "A2",
+      "validity": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "loss_error": 0.0,
+      "max_gradient_error": 0.00012969970703125,
+      "max_sgd_update_error": 2.9802322387695312e-08,
+      "max_adamw_update_error": 0.0001989579468499869
+    },
+    {
+      "arm": "A2",
+      "validity": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "loss_error": 0.0,
+      "max_gradient_error": 0.00012969970703125,
+      "max_sgd_update_error": 2.9802322387695312e-08,
+      "max_adamw_update_error": 0.0001989579468499869
+    },
+    {
+      "arm": "A3",
+      "validity": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "loss_error": 3.0517578125e-05,
+      "max_gradient_error": 0.000213623046875,
+      "max_sgd_update_error": 5.960464477539063e-08,
+      "max_adamw_update_error": 0.00019353043171577156
+    },
+    {
+      "arm": "A3",
+      "validity": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": 0.000152587890625,
+      "max_sgd_update_error": 2.9802322387695312e-08,
+      "max_adamw_update_error": 3.7499339669011533e-06
+    },
+    {
+      "arm": "A3",
+      "validity": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "loss_error": 0.0,
+      "max_gradient_error": 0.00012969970703125,
+      "max_sgd_update_error": 2.9802322387695312e-08,
+      "max_adamw_update_error": 0.0001989579468499869
+    },
+    {
+      "arm": "A3",
+      "validity": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "loss_error": 0.0,
+      "max_gradient_error": 0.00012969970703125,
+      "max_sgd_update_error": 2.9802322387695312e-08,
+      "max_adamw_update_error": 0.0001989579468499869
+    }
+  ]
+}

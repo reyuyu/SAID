@@ -1,0 +1,20 @@
+{
+  "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "provenance": {
+    "source": "OpenAI CLIP + original random MaskNetwork",
+    "seed": 0,
+    "original_clip_sha256": "5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f",
+    "constructor": "longclip.load_from_clip; unchanged MaskNetwork; no training",
+    "frozen_position": true,
+    "trainable_residual_position": true
+  },
+  "data": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  }
+}

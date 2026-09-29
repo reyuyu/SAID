@@ -1,0 +1,286 @@
+"""torchrun-only NEST-CLIP v1 trainer; smoke and formal both require four ranks."""
+import argparse
+from collections import Counter
+from datetime import timedelta
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import random
+import socket
+import subprocess
+import time
+
+import numpy as np
+import torch
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data import DataLoader, DistributedSampler
+
+from model import longclip
+from model.nested_semantic_mask import NestedSemanticMask, gather
+from train.nested_semantic_data import NestedDataset, collate, file_sha
+
+
+def seed_all(seed=0):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def build_optimizer(module):
+    mask_ids = {id(p) for p in module.clip.mask_net.parameters()}
+    backbone, mask = [], []
+    for p in module.parameters():
+        if p.requires_grad:
+            (mask if id(p) in mask_ids else backbone).append(p)
+    params = backbone + mask
+    assert len(params) == len({id(p) for p in params})
+    assert len(mask) == len(mask_ids)
+    return torch.optim.AdamW([
+        dict(params=backbone, lr=1e-6, weight_decay=1e-2, name='backbone'),
+        dict(params=mask, lr=1e-3, weight_decay=0., name='shared_mask')],
+        betas=(.9, .999), eps=1e-8)
+
+
+def learning_rates(s, horizon):
+    backbone = 1e-6 * (s+1) / 200 if s < 200 else .5e-6 * (1 + math.cos(math.pi * (s-200)/(horizon-200)))
+    return backbone, .5e-3 * (1 + math.cos(math.pi*s/horizon))
+
+
+def atomic_save(payload, path):
+    path = Path(path)
+    if path.exists():
+        raise FileExistsError(path)
+    temp = path.with_suffix('.tmp')
+    torch.save(payload, temp)
+    temp.rename(path)
+
+
+def rng_state():
+    return dict(python=random.getstate(), numpy=np.random.get_state(),
+                cpu=torch.get_rng_state(), cuda=torch.cuda.get_rng_state())
+
+
+def save_checkpoint(module, optimizer, config, completed, output):
+    # This function MUST be entered by every rank.
+    states = [None] * dist.get_world_size()
+    dist.all_gather_object(states, rng_state())
+    if dist.get_rank() == 0:
+        atomic_save(dict(model=module.clip.state_dict(), optimizer=optimizer.state_dict(),
+                         completed_steps=completed, scheduler_horizon=config['horizon'],
+                         stop_updates=config['max_updates'], rng_per_rank=states,
+                         next_epoch=completed // config['batches_per_epoch'],
+                         next_batch=completed % config['batches_per_epoch'], config=config),
+                    Path(output) / f'step{completed:06d}.pt')
+    dist.barrier()
+
+
+def code_manifest():
+    root = Path(__file__).resolve().parents[1]
+    paths = ['model/nested_semantic_mask.py', 'train/nested_semantic_data.py',
+             'train/train_nested_semantic_mask.py', 'model/model_longclip.py',
+             'model/longclip.py', 'model/said_cls_cvssl.py']
+    return {p: file_sha(root / p) for p in paths}
+
+
+def setup():
+    rank, local, world = (int(os.environ[k]) for k in ('RANK', 'LOCAL_RANK', 'WORLD_SIZE'))
+    assert world == 4, 'Both real smoke and formal jobs require WORLD_SIZE=4'
+    torch.cuda.set_device(local)
+    dist.init_process_group('nccl', timeout=timedelta(minutes=10))
+    check = torch.tensor(float(rank+1), device='cuda')
+    started = time.perf_counter()
+    dist.all_reduce(check)
+    torch.cuda.synchronize()
+    assert check.item() == 10.
+    prop = torch.cuda.get_device_properties(local)
+    identity = dict(rank=rank, local_rank=local, pid=os.getpid(), hostname=socket.gethostname(),
+                    gpu_name=prop.name, uuid=str(prop.uuid), total_memory=prop.total_memory,
+                    nccl_all_reduce=check.item(), nccl_seconds=time.perf_counter()-started)
+    peers = [None] * world
+    dist.all_gather_object(peers, identity)
+    assert len({p['hostname'] for p in peers}) == 1
+    assert len({p['uuid'] for p in peers}) == 4
+    assert all('A100' in p['gpu_name'] and 'MIG' not in p['gpu_name'] for p in peers)
+    # Gradient of each rank's differently weighted global sum must add at owners.
+    from model.nested_semantic_mask import gather as diff_gather
+    x = torch.tensor([[float(rank)]], device='cuda', requires_grad=True)
+    (diff_gather(x).sum() * (rank+1)).backward()
+    assert x.grad.item() == 10.
+    return rank, local, world, peers
+
+
+def parameter_agreement(module):
+    difference = torch.zeros((), device='cuda')
+    with torch.no_grad():
+        for p in module.parameters():
+            reference = p.detach().clone()
+            dist.broadcast(reference, src=0)
+            difference = torch.maximum(difference, (p-reference).abs().max())
+    return float(difference)
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--config', required=True)
+    p.add_argument('--init-state', required=True)
+    p.add_argument('--index-dir', required=True)
+    p.add_argument('--image-root', required=True)
+    p.add_argument('--output-dir', required=True)
+    p.add_argument('--run-type', choices=['smoke', 'formal'], required=True)
+    p.add_argument('--max-updates', type=int, required=True)
+    p.add_argument('--resume')
+    args = p.parse_args()
+    cfg = json.loads(Path(args.config).read_text())
+    assert args.max_updates == (5 if args.run_type == 'smoke' else 500)
+    assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
+    assert cfg['epochs'] == 3 and cfg['seed'] == 0 and cfg['workers'] == 8
+    seed_all(cfg['seed'])
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    rank, local, world, peers = setup()
+    output = Path(args.output_dir)
+    if rank == 0:
+        output.mkdir(parents=True, exist_ok=False)
+    dist.barrier()
+    dataset = NestedDataset(args.index_dir, args.image_root)
+    sampler = DistributedSampler(dataset, num_replicas=world, rank=rank, shuffle=True,
+                                 seed=cfg['seed'], drop_last=False)
+    loader = DataLoader(dataset, batch_size=cfg['batch_size'], sampler=sampler, collate_fn=collate,
+                        num_workers=cfg['workers'], drop_last=False, pin_memory=True,
+                        multiprocessing_context='spawn', prefetch_factor=2,
+                        generator=torch.Generator().manual_seed(cfg['seed']))
+    horizon = cfg['epochs'] * len(loader)
+    assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
+    assert len(loader) == 1217 and horizon == 3651
+    clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
+    initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
+    assert initial['completed_steps'] == 0 and initial['provenance']['source'] == 'OpenAI CLIP + original random MaskNetwork'
+    clip.load_state_dict(initial['model'], strict=True)
+    module = NestedSemanticMask(clip.float(), arm=cfg['arm'],
+                                checkpoint_encoders=cfg['checkpoint_encoders'],
+                                score_chunk=cfg['score_chunk']).cuda().train()
+    assert all(p.dtype == torch.float32 for p in module.parameters())
+    ddp = DDP(module, device_ids=[local], output_device=local,
+              find_unused_parameters=True, static_graph=False)
+    optimizer = build_optimizer(module)
+    optimizer.load_state_dict(initial['optimizer'])
+    del initial
+    config = dict(**cfg, **vars(args), horizon=horizon, batches_per_epoch=len(loader),
+                  training_records=len(dataset), sampler_num_samples=len(sampler),
+                  sampler_padding=world*len(sampler)-len(dataset),
+                  tail_batch=len(sampler) % cfg['batch_size'],
+                  init_sha256=file_sha(args.init_state), data=dataset.metadata,
+                  code_sha256=code_manifest(),
+                  git_head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                  torch=torch.__version__, cuda=torch.version.cuda, nccl=torch.cuda.nccl.version(),
+                  environment={k:v for k,v in os.environ.items() if k.startswith('NCCL') or k=='CUDA_VISIBLE_DEVICES'},
+                  ranks=peers, gather_gradient_test={'expected':10., 'actual':10., 'passed':True})
+    completed = 0
+    if args.resume:
+        previous = torch.load(args.resume, map_location='cpu', weights_only=False)
+        for key in ('arm', 'horizon', 'init_sha256', 'code_sha256', 'data', 'batch_size', 'checkpoint_encoders'):
+            assert previous['config'][key] == config[key], f'Resume mismatch: {key}'
+        assert previous['config']['run_type'] == args.run_type, 'Smoke cannot initialize formal training'
+        module.clip.load_state_dict(previous['model'], strict=True)
+        optimizer.load_state_dict(previous['optimizer'])
+        completed = previous['completed_steps']
+        state = previous['rng_per_rank'][rank]
+        random.setstate(state['python']); np.random.set_state(state['numpy'])
+        torch.set_rng_state(state['cpu']); torch.cuda.set_rng_state(state['cuda'])
+        del previous
+    if rank == 0:
+        (output / 'config.json').write_text(json.dumps(config, indent=2))
+        print(json.dumps({'event':'ready', 'horizon':horizon, 'ranks':peers}), flush=True)
+    save_checkpoint(module, optimizer, config, completed, output)
+    torch.cuda.reset_peak_memory_stats()
+    started = time.perf_counter()
+    updates_here = 0
+    for epoch in range(cfg['epochs']):
+        sampler.set_epoch(epoch)
+        if completed >= (epoch+1)*len(loader):
+            continue
+        for batch_index, batch in enumerate(loader):
+            if epoch*len(loader)+batch_index < completed:
+                continue
+            tick = time.perf_counter()
+            for k in ('image', 'tokens_f', 'tokens_o', 'tokens_e', 'valid'):
+                batch[k] = batch[k].cuda(non_blocking=True)
+            lrs = learning_rates(completed, horizon)
+            for group, lr in zip(optimizer.param_groups, lrs):
+                group['lr'] = lr
+            optimizer.zero_grad(set_to_none=True)
+            loss, logs = ddp(batch['image'], batch['tokens_f'], batch['tokens_o'], batch['tokens_e'],
+                              batch['valid'], completed)
+            finite = torch.isfinite(loss).int()
+            dist.all_reduce(finite, op=dist.ReduceOp.MIN)
+            if not finite.item():
+                raise FloatingPointError(f'Nonfinite loss: {logs}')
+            loss.backward()
+            norms = {}
+            for group in optimizer.param_groups:
+                squares = torch.stack([x.grad.float().square().sum() for x in group['params'] if x.grad is not None])
+                norms[group['name']] = squares.sum().sqrt()
+            finite = torch.stack([torch.isfinite(v) for v in norms.values()]).all().int()
+            dist.all_reduce(finite, op=dist.ReduceOp.MIN)
+            if not finite.item():
+                raise FloatingPointError('Nonfinite parameter gradient on at least one rank')
+            optimizer.step()
+            completed += 1
+            updates_here += 1
+            torch.cuda.synchronize()
+            stream = json.dumps(dict(sample_ids=batch['sample_id'].tolist(), views=batch['views'],
+                                     tokens=[batch[k].cpu().tolist() for k in ('tokens_f','tokens_o','tokens_e')]),
+                                ensure_ascii=False, separators=(',', ':')).encode()
+            health = dict(rank=rank, updates=updates_here, batch=len(batch['image']),
+                          valid=int(batch['valid'].sum()), seconds=time.perf_counter()-tick,
+                          peak_allocated_gib=torch.cuda.max_memory_allocated()/2**30,
+                          peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30,
+                          stream_sha256=hashlib.sha256(stream).hexdigest(),
+                          reasons=dict(Counter(batch['reason'])),
+                          gradient_norms={k:float(v) for k,v in norms.items()}, gradients_finite=True)
+            rank_health = [None]*world
+            dist.all_gather_object(rank_health, health)
+            ids = gather(batch['image_id'].cuda(), False)
+            unique, counts = ids.unique(return_counts=True)
+            duplicates = unique[counts>1].cpu().tolist()
+            if rank == 0:
+                row = dict(step=completed, s=completed-1, lr_backbone=lrs[0], lr_mask=lrs[1],
+                           rank_health=rank_health, duplicate_image_ids=duplicates,
+                           **{k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()})
+                with (output / 'steps.jsonl').open('a') as f:
+                    f.write(json.dumps(row)+'\n')
+                print(json.dumps({'step':completed, 'loss':row['loss'], 'V':row['valid_global'],
+                                  'seconds':max(x['seconds'] for x in rank_health)}), flush=True)
+                if completed == 1:
+                    (output / 'text_examples.json').write_text(json.dumps(dict(scope='rank0 first batch; raw full text only for explicit overlong fallback',
+                        views=batch['views'][:8], reasons=batch['reason'][:8],
+                        untruncated_lengths=batch['untruncated_lengths'][:8]), indent=2))
+            if completed % 100 == 0 or completed == args.max_updates:
+                save_checkpoint(module, optimizer, config, completed, output)
+            if completed >= args.max_updates:
+                break
+        if completed >= args.max_updates:
+            break
+    difference = parameter_agreement(module)
+    summary = dict(rank=rank, completed_updates=completed, updates_this_run=updates_here,
+                   max_parameter_difference_from_rank0=difference, seconds=time.perf_counter()-started,
+                   peak_allocated_gib=torch.cuda.max_memory_allocated()/2**30,
+                   peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30)
+    results = [None]*world
+    dist.all_gather_object(results, summary)
+    assert all(x['completed_updates'] == args.max_updates for x in results)
+    assert all(x['max_parameter_difference_from_rank0'] == 0 for x in results)
+    if rank == 0:
+        (output / 'acceptance.json').write_text(json.dumps(dict(passed=True, ranks=results), indent=2))
+    dist.barrier(device_ids=[local])
+    torch.cuda.synchronize(local)
+    dist.destroy_process_group()
+
+
+if __name__ == '__main__':
+    main()
