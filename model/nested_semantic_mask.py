@@ -263,6 +263,7 @@ class NestedSemanticMask(nn.Module):
             raise ValueError((arm, condition_mode))
         self.clip = clip
         self.arm = arm
+        self.checkpoint_encoders = bool(checkpoint_encoders)
         self.image_chunk, self.text_chunk = int(image_chunk), int(text_chunk)
         self.condition_mode, self.shuffle_seed = condition_mode, int(shuffle_seed)
         self.checkpoint_pair_blocks = bool(checkpoint_pair_blocks)

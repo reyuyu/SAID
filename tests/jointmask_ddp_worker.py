@@ -93,22 +93,25 @@ def main():
     torch.set_num_threads(2)
     dist.init_process_group('nccl')
     cases = [
-        ('text_only', [1, 1, 1, 1], 2, 2, 2, False),
-        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 2, 2, False),
-        ('joint_image', [0, 0, 0, 0], 2, 2, 2, False),
-        ('joint_image', [1, 0, 0, 0], 2, 2, 2, False),
-        ('joint_shuffled_image', [1, 1, 1, 1], 2, 2, 2, False),
-        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 8, 8, True),
-        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 8, 8, False),
+        ('text_only', [1, 1, 1, 1], 2, 2, 2, False, False),
+        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 2, 2, False, True),
+        ('joint_image', [0, 0, 0, 0], 2, 2, 2, False, True),
+        ('joint_image', [1, 0, 0, 0], 2, 2, 2, False, True),
+        ('joint_shuffled_image', [1, 1, 1, 1], 2, 2, 2, False, True),
+        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 8, 8, True, True),
+        ('joint_image', [1, 1, 1, 0, 0, 0], 3, 8, 8, False, True),
     ]
     results = []
     for case_index, (mode, validity, local_batch, image_chunk,
-                     text_chunk, pair_checkpoint) in enumerate(cases):
+                     text_chunk, pair_checkpoint, nonzero_adapter) in enumerate(cases):
         torch.manual_seed(101 + case_index)
         module = NestedSemanticMask(TinyJointCLIP().cuda(), arm='A3',
                                     checkpoint_encoders=False, condition_mode=mode,
                                     image_chunk=image_chunk, text_chunk=text_chunk,
                                     checkpoint_pair_blocks=pair_checkpoint).cuda()
+        if nonzero_adapter:
+            with torch.no_grad():
+                module.joint_adapter.output.weight.normal_(std=.08)
         reference = copy.deepcopy(module)
         force_fp32_encoder_paths(module)
         force_fp32_encoder_paths(reference)
@@ -125,22 +128,30 @@ def main():
         expected = reference_loss(reference, images, tokens, valid, completed)
         loss.backward()
         expected.backward()
+        actual_parameters = dict(module.named_parameters())
+        expected_parameters = dict(reference.named_parameters())
+        assert actual_parameters.keys() == expected_parameters.keys()
         gradient_errors = []
         gradient_diagnostics = []
-        for (name, parameter), (_, target) in zip(module.named_parameters(),
-                                                    reference.named_parameters()):
+        for name, parameter in actual_parameters.items():
+            target = expected_parameters[name]
             assert (parameter.grad is None) == (target.grad is None), name
             if parameter.grad is not None:
-                error = float((parameter.grad - target.grad).abs().max())
+                difference = (parameter.grad - target.grad).abs()
+                flat_index = int(difference.argmax())
+                index = tuple(int(value) for value in torch.unravel_index(
+                    torch.tensor(flat_index, device=difference.device), difference.shape))
+                error = float(difference.flatten()[flat_index])
                 gradient_errors.append(error)
                 gradient_diagnostics.append(dict(
-                    name=name, error=error,
+                    name=name, index=index, error=error,
                     actual_norm=float(parameter.grad.norm()),
                     expected_norm=float(target.grad.norm())))
         try:
-            for diagnostic, (_, parameter), (_, target) in zip(
-                    gradient_diagnostics, module.named_parameters(), reference.named_parameters()):
-                if parameter.grad is not None:
+            for diagnostic in gradient_diagnostics:
+                parameter = actual_parameters[diagnostic['name']]
+                target = expected_parameters[diagnostic['name']]
+                if parameter.grad is not None and target.grad is not None:
                     torch.testing.assert_close(parameter.grad, target.grad,
                                                atol=1.2e-3, rtol=8e-5,
                                                msg=diagnostic['name'])
@@ -155,16 +166,34 @@ def main():
         left = torch.optim.SGD(module.parameters(), lr=1e-4)
         right = torch.optim.SGD(reference.parameters(), lr=1e-4)
         left.step(); right.step()
-        update_error = max(float((a - b).abs().max())
-                           for a, b in zip(module.parameters(), reference.parameters()))
-        for a, b in zip(module.parameters(), reference.parameters()):
-            torch.testing.assert_close(a, b, atol=6e-6, rtol=4e-5)
+        update_diagnostics = []
+        for name, parameter in actual_parameters.items():
+            target = expected_parameters[name]
+            difference = (parameter - target).abs()
+            flat_index = int(difference.argmax())
+            index = tuple(int(value) for value in torch.unravel_index(
+                torch.tensor(flat_index, device=difference.device), difference.shape))
+            update_diagnostics.append(dict(name=name, index=index,
+                                           error=float(difference.flatten()[flat_index])))
+        worst_gradient = max(gradient_diagnostics, key=lambda item: item['error'])
+        worst_update = max(update_diagnostics, key=lambda item: item['error'])
+        if worst_update['error'] > 6e-6:
+            print(json.dumps(dict(rank=rank, case=case_index, mode=mode,
+                                  adamw_update_errors=sorted(
+                                      update_diagnostics,
+                                      key=lambda item: item['error'], reverse=True)[:20]),
+                             indent=2), flush=True)
+            raise AssertionError(
+                f"SGD one-step max error {worst_update['error']} exceeds 6e-6")
+        assert not nonzero_adapter or float(logs['F_delta_abs_mean']) > 0
         results.append(dict(mode=mode, validity=validity, local_batch=local_batch,
                             image_chunk=image_chunk, text_chunk=text_chunk,
                             pair_checkpoint=pair_checkpoint,
+                            nonzero_adapter=nonzero_adapter,
+                            delta_abs_mean=float(logs['F_delta_abs_mean']),
                             loss_error=float((logs['loss'] - expected.detach()).abs()),
-                            max_gradient_error=max(gradient_errors),
-                            max_update_error=update_error,
+                            max_gradient_error=worst_gradient,
+                            max_sgd_update_error=worst_update,
                             shuffle_shift=int(logs['shuffle_shift'])))
         dist.barrier()
     if rank == 0:

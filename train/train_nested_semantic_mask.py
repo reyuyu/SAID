@@ -19,7 +19,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, DistributedSampler
 
 from model import longclip
-from model.nested_semantic_mask import NestedSemanticMask, gather
+from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_blocks
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -150,6 +150,14 @@ def code_manifest():
     return {p: file_sha(root / p) for p in paths}
 
 
+def state_digest(state):
+    digest = hashlib.sha256()
+    for name, tensor in sorted(state.items()):
+        digest.update(name.encode())
+        digest.update(tensor.detach().cpu().contiguous().numpy().tobytes())
+    return digest.hexdigest()
+
+
 def setup():
     rank, local, world = (int(os.environ[k]) for k in ('RANK', 'LOCAL_RANK', 'WORLD_SIZE'))
     assert world == 4, 'Both real smoke and formal jobs require WORLD_SIZE=4'
@@ -248,6 +256,29 @@ def main():
                                 shuffle_seed=cfg['shuffle_seed'],
                                 checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'])
     restore_rng_state(construction_rng)
+    encoder_checkpoint_active = all(
+        getattr(transformer.forward, '__func__', None) is _checkpoint_blocks
+        for transformer in (module.clip.visual.transformer, module.clip.transformer))
+    runtime_model = dict(image_chunk=module.image_chunk, text_chunk=module.text_chunk,
+                         checkpoint_pair_blocks=module.checkpoint_pair_blocks,
+                         checkpoint_encoders=module.checkpoint_encoders,
+                         encoder_checkpoint_active=encoder_checkpoint_active,
+                         condition_mode=module.condition_mode, arm=module.arm)
+    assert runtime_model == dict(image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
+                                 checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'],
+                                 checkpoint_encoders=cfg['checkpoint_encoders'],
+                                 encoder_checkpoint_active=cfg['checkpoint_encoders'],
+                                 condition_mode=cfg['condition_mode'], arm=cfg['arm'])
+    adapter_initialization = None
+    if module.joint_adapter is not None:
+        adapter_initialization = dict(
+            state_sha256=state_digest(module.joint_adapter.state_dict()),
+            image_shape=list(module.joint_adapter.image.weight.shape),
+            text_shape=list(module.joint_adapter.text.weight.shape),
+            output_shape=list(module.joint_adapter.output.weight.shape),
+            image_nonzero=int(module.joint_adapter.image.weight.count_nonzero()),
+            text_nonzero=int(module.joint_adapter.text.weight.count_nonzero()),
+            output_nonzero=int(module.joint_adapter.output.weight.count_nonzero()))
     module = module.cuda().train()
     assert all(p.dtype == torch.float32 for p in module.parameters())
     ddp = DDP(module, device_ids=[local], output_device=local,
@@ -261,6 +292,8 @@ def main():
                   tail_batch=len(sampler) % cfg['batch_size'],
                   init_sha256=file_sha(args.init_state), data=dataset.metadata,
                   code_sha256=code_manifest(),
+                  runtime_model=runtime_model,
+                  adapter_initialization=adapter_initialization,
                   git_head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                   torch=torch.__version__, cuda=torch.version.cuda, nccl=torch.cuda.nccl.version(),
                   environment={k:v for k,v in os.environ.items() if k.startswith('NCCL') or k=='CUDA_VISIBLE_DEVICES'},

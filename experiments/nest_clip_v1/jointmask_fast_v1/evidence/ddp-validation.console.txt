@@ -1,0 +1,263 @@
+/root/lk_projects/SAID-jointmask-fast/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID-jointmask-fast/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+[rank1]:[W929 17:50:23.061758245 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank0]:[W929 17:50:23.061764440 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+{
+  "passed": true,
+  "world_size": 2,
+  "backend": "nccl",
+  "cases": [
+    {
+      "mode": "text_only",
+      "validity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_batch": 2,
+      "image_chunk": 2,
+      "text_chunk": 2,
+      "pair_checkpoint": false,
+      "nonzero_adapter": false,
+      "delta_abs_mean": 0.0,
+      "loss_error": 3.0517578125e-05,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          4,
+          4
+        ],
+        "error": 0.0001220703125,
+        "actual_norm": 8740.4326171875,
+        "expected_norm": 8740.4326171875
+      },
+      "max_sgd_update_error": {
+        "name": "clip.visual.hidden.bias",
+        "index": [
+          3
+        ],
+        "error": 2.9802322387695312e-08
+      },
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 3,
+      "image_chunk": 2,
+      "text_chunk": 2,
+      "pair_checkpoint": false,
+      "nonzero_adapter": true,
+      "delta_abs_mean": 0.06347932666540146,
+      "loss_error": 0.0,
+      "max_gradient_error": {
+        "name": "clip.text_projection",
+        "index": [
+          0,
+          2
+        ],
+        "error": 0.0001220703125,
+        "actual_norm": 1999.18310546875,
+        "expected_norm": 1999.18310546875
+      },
+      "max_sgd_update_error": {
+        "name": "clip.mask_net.resblocks.0.attn.in_proj_weight",
+        "index": [
+          11,
+          4
+        ],
+        "error": 2.9802322387695312e-08
+      },
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 2,
+      "image_chunk": 2,
+      "text_chunk": 2,
+      "pair_checkpoint": false,
+      "nonzero_adapter": true,
+      "delta_abs_mean": 0.04270727187395096,
+      "loss_error": 0.0,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          0,
+          5
+        ],
+        "error": 0.000244140625,
+        "actual_norm": 10404.97265625,
+        "expected_norm": 10404.97265625
+      },
+      "max_sgd_update_error": {
+        "name": "clip.mask_net.resblocks.0.mlp.c_fc.weight",
+        "index": [
+          7,
+          6
+        ],
+        "error": 5.960464477539063e-08
+      },
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 2,
+      "image_chunk": 2,
+      "text_chunk": 2,
+      "pair_checkpoint": false,
+      "nonzero_adapter": true,
+      "delta_abs_mean": 0.05110795050859451,
+      "loss_error": 0.0,
+      "max_gradient_error": {
+        "name": "clip.text_projection",
+        "index": [
+          4,
+          2
+        ],
+        "error": 0.0003662109375,
+        "actual_norm": 3841.843017578125,
+        "expected_norm": 3841.84326171875
+      },
+      "max_sgd_update_error": {
+        "name": "clip.text_projection",
+        "index": [
+          4,
+          2
+        ],
+        "error": 2.9802322387695312e-08
+      },
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_shuffled_image",
+      "validity": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "local_batch": 2,
+      "image_chunk": 2,
+      "text_chunk": 2,
+      "pair_checkpoint": false,
+      "nonzero_adapter": true,
+      "delta_abs_mean": 0.0454418808221817,
+      "loss_error": 3.0517578125e-05,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          3,
+          4
+        ],
+        "error": 0.000152587890625,
+        "actual_norm": 1598.055419921875,
+        "expected_norm": 1598.05517578125
+      },
+      "max_sgd_update_error": {
+        "name": "clip.visual.hidden.weight",
+        "index": [
+          0,
+          1
+        ],
+        "error": 2.9802322387695312e-08
+      },
+      "shuffle_shift": 3
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 3,
+      "image_chunk": 8,
+      "text_chunk": 8,
+      "pair_checkpoint": true,
+      "nonzero_adapter": true,
+      "delta_abs_mean": 0.054429274052381516,
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": {
+        "name": "clip.text_projection",
+        "index": [
+          2,
+          1
+        ],
+        "error": 0.0003662109375,
+        "actual_norm": 3088.160400390625,
+        "expected_norm": 3088.159912109375
+      },
+      "max_sgd_update_error": {
+        "name": "clip.text_projection",
+        "index": [
+          2,
+          1
+        ],
+        "error": 3.725290298461914e-08
+      },
+      "shuffle_shift": 0
+    },
+    {
+      "mode": "joint_image",
+      "validity": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "local_batch": 3,
+      "image_chunk": 8,
+      "text_chunk": 8,
+      "pair_checkpoint": false,
+      "nonzero_adapter": true,
+      "delta_abs_mean": 0.048603739589452744,
+      "loss_error": 6.103515625e-05,
+      "max_gradient_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          7,
+          6
+        ],
+        "error": 0.0009307861328125,
+        "actual_norm": 2102.560791015625,
+        "expected_norm": 2102.560546875
+      },
+      "max_sgd_update_error": {
+        "name": "clip.visual.proj",
+        "index": [
+          7,
+          6
+        ],
+        "error": 9.313225746154785e-08
+      },
+      "shuffle_shift": 0
+    }
+  ]
+}

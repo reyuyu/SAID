@@ -1,0 +1,48 @@
+{
+  "date_utc": "2026-09-29",
+  "passed": true,
+  "performance_base_commit": "f614bda2eab5ad2b71a08ff9f62abdc68edb593a",
+  "branch": "codex/nest-jointmask-fast-v1",
+  "worktree": "/root/lk_projects/SAID-jointmask-fast",
+  "output_root": "/root/lk_projects/SAID-nest-clip-v1/jointmask_fast_v1",
+  "output_root_was_absent": true,
+  "initial_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+  "initial_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "training_records": 1245901,
+  "batches_per_epoch": 1217,
+  "epochs": 3,
+  "scheduler_horizon": 3651,
+  "formal_stop": 500,
+  "world_size": 4,
+  "batch_per_rank": 256,
+  "accumulation": 1,
+  "seed": 0,
+  "hardware": {
+    "count": 4,
+    "model": "NVIDIA A100 80GB PCIe",
+    "mig": "Disabled",
+    "topology": "single host; all GPU pairs PIX",
+    "cuda_visible_devices": null
+  },
+  "software": {
+    "torch": "2.5.1+cu124",
+    "cuda": "12.4",
+    "nccl": [2, 21, 5]
+  },
+  "nccl_environment": {},
+  "fast_runtime": {
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "checkpoint_pair_blocks": false,
+    "checkpoint_encoders": true,
+    "text_only_uses_pair_path": true
+  },
+  "evaluation_protocol": [
+    "coco",
+    "urban",
+    "flickr_test1k",
+    "docci",
+    "long_dci"
+  ],
+  "excluded": ["dci_full"]
+}

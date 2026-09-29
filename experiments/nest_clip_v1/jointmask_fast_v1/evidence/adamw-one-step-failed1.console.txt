@@ -1,0 +1,87 @@
+/root/lk_projects/SAID-jointmask-fast/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID-jointmask-fast/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID-jointmask-fast/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID-jointmask-fast/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank1]:     return _run_code(code, main_globals, None,
+[rank1]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+[rank1]:     exec(code, run_globals)
+[rank1]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 148, in <module>
+[rank1]:     main()
+[rank1]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 131, in main
+[rank1]:     assert gradient['error'] <= 1.2e-3
+[rank1]: AssertionError
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank2]:     return _run_code(code, main_globals, None,
+[rank2]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+[rank2]:     exec(code, run_globals)
+[rank2]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 148, in <module>
+[rank2]:     main()
+[rank2]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 131, in main
+[rank2]:     assert gradient['error'] <= 1.2e-3
+[rank2]: AssertionError
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank0]:     return _run_code(code, main_globals, None,
+[rank0]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+[rank0]:     exec(code, run_globals)
+[rank0]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 148, in <module>
+[rank0]:     main()
+[rank0]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 131, in main
+[rank0]:     assert gradient['error'] <= 1.2e-3
+[rank0]: AssertionError
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank3]:     return _run_code(code, main_globals, None,
+[rank3]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+[rank3]:     exec(code, run_globals)
+[rank3]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 148, in <module>
+[rank3]:     main()
+[rank3]:   File "/root/lk_projects/SAID-jointmask-fast/tests/jointmask_adamw_worker.py", line 131, in main
+[rank3]:     assert gradient['error'] <= 1.2e-3
+[rank3]: AssertionError
+[rank0]:[W929 17:51:03.307723945 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W0929 17:51:04.456000 983079 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 983086 closing signal SIGTERM
+W0929 17:51:04.458000 983079 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 983089 closing signal SIGTERM
+E0929 17:51:05.075000 983079 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 1 (pid: 983087) of binary: /root/miniconda3/envs/said-repro/bin/python
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/said-repro/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
+============================================================
+tests.jointmask_adamw_worker FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-09-29_17:51:04
+  host      : interactive93293
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 983088)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-29_17:51:04
+  host      : interactive93293
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 983087)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
