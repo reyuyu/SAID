@@ -270,9 +270,11 @@ class VisionTransformer(nn.Module):
 		}
 
 	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False,
-				return_local_evidence=False, return_hidden=False):
-		if return_hidden and (return_patches or return_local_evidence):
+				return_local_evidence=False, return_hidden=False, return_joint_tokens=False):
+		if return_hidden and (return_patches or return_local_evidence or return_joint_tokens):
 			raise ValueError('return_hidden is a separate global-feature interface')
+		if return_joint_tokens and (return_patches or return_local_evidence):
+			raise ValueError('joint tokens are a separate post-LN/pre-projection interface')
 		if return_local_evidence and (use_checkpoint or return_patches):
 			raise ValueError('local evidence requires its separate non-checkpoint interface')
 		x = self._token_sequence(x)
@@ -298,6 +300,12 @@ class VisionTransformer(nn.Module):
 			global_feature = global_feature @ self.proj
 		if return_hidden:
 			return global_feature, global_hidden
+		if return_joint_tokens:
+			# Keep the native CLS path byte-for-byte: post-LN is still applied to the
+			# sliced CLS row exactly as above. Patches use the same final block and
+			# post-LN, before visual.proj, without a second visual forward.
+			patch_hidden = self.ln_post(x[:, 1:, :])
+			return global_feature, global_hidden, patch_hidden
 		if return_local_evidence:
 			local_features = self.ln_post(attention_delta.permute(1, 0, 2)[:, 1:, :])
 			if self.proj is not None:
@@ -468,6 +476,12 @@ class CLIP(nn.Module):
 
 	def encode_image_with_checkpoint(self, image):
 		return self.visual(image.type(self.dtype), use_checkpoint=True)
+
+	def encode_image_with_joint_tokens(self, image):
+		"""Native image embedding plus final post-LN/pre-projection CLS and patches."""
+		if not isinstance(self.visual, VisionTransformer):
+			raise NotImplementedError('joint tokens support VisionTransformer only')
+		return self.visual(image.type(self.dtype), return_joint_tokens=True)
 
 	def encode_image_with_patches(self, image, use_checkpoint=False):
 		if not isinstance(self.visual, VisionTransformer):
