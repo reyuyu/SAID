@@ -410,10 +410,15 @@ def main():
         if completed >= args.max_updates:
             break
     difference = parameter_agreement(module)
+    final_nccl = torch.tensor(float(rank + 1), device='cuda')
+    dist.all_reduce(final_nccl)
+    torch.cuda.synchronize()
+    assert final_nccl.item() == 10., 'Final four-rank NCCL all-reduce failed'
     summary = dict(rank=rank, completed_updates=completed, updates_this_run=updates_here,
                    max_parameter_difference_from_rank0=difference, seconds=time.perf_counter()-started,
                    peak_allocated_gib=torch.cuda.max_memory_allocated()/2**30,
-                   peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30)
+                   peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30,
+                   final_nccl_all_reduce=final_nccl.item())
     results = [None]*world
     dist.all_gather_object(results, summary)
     assert all(x['completed_updates'] == args.max_updates for x in results)

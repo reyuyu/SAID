@@ -7,7 +7,7 @@ import torch
 
 
 SERVER = Path('/root/lk_projects/SAID-nest-clip-v1')
-ROOT = SERVER / 'jointmask_fast_v1' / 'smoke'
+ROOT = SERVER / 'jointmask_fast_v1' / 'smoke-recheck'
 HERE = Path(__file__).resolve().parent
 GROUPS = ('T-fast', 'TI-fast', 'TI-Shuffle-fast')
 
@@ -63,6 +63,8 @@ for group in GROUPS:
     assert all(rank['completed_updates'] == rank['updates_this_run'] == 5
                for rank in acceptance[group]['ranks'])
     assert all(rank['max_parameter_difference_from_rank0'] == 0
+               for rank in acceptance[group]['ranks'])
+    assert all(rank['final_nccl_all_reduce'] == 10
                for rank in acceptance[group]['ranks'])
     assert all(row['F_candidates'] == row['O_candidates'] == row['E_candidates'] == 1024
                for row in rows[group])
@@ -146,6 +148,7 @@ result = dict(
         all_three_streams_equal=True,
         original_a3_randomk_first5_streams_equal=True,
         runtime_fast_config_asserted=True,
+        final_nccl_all_reduce=True,
         zero_delta_step1_equal_loss=True,
         adapter_gradient_schedule=True,
         shuffle_fixed_point_free=True),

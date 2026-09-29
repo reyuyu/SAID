@@ -1,0 +1,426 @@
+{
+  "passed": true,
+  "groups": [
+    "T-fast",
+    "TI-fast",
+    "TI-Shuffle-fast"
+  ],
+  "tests": {
+    "four_ranks_five_updates": true,
+    "parameter_agreement_exact": true,
+    "global_candidates": 1024,
+    "batch_per_rank": 256,
+    "common_model_step0_exact": true,
+    "ti_shuffle_adapter_step0_exact": true,
+    "empty_fresh_optimizer_state": true,
+    "construction_rng_replayed": true,
+    "all_three_streams_equal": true,
+    "original_a3_randomk_first5_streams_equal": true,
+    "runtime_fast_config_asserted": true,
+    "zero_delta_step1_equal_loss": true,
+    "adapter_gradient_schedule": true,
+    "shuffle_fixed_point_free": true
+  },
+  "checkpoints": {
+    "T-fast": {
+      "step0_sha256": "1a06e40675d7f47a31d50d69843d7ee37801dd9db0ee8467e5521373c16b8714",
+      "step5_sha256": "c5fac84223e329829a2ffbfc712657c1cad3198b345ce88872dfea0ba96b9e07",
+      "model_state_sha256": "f6db2fa94069bbfe1197d5e5d1144a3869ce191bcbf2142790b9f01c5553a5fc",
+      "adapter_state_sha256": null,
+      "optimizer_state_entries": 0,
+      "optimizer_groups": 2,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6"
+    },
+    "TI-fast": {
+      "step0_sha256": "6e688c4117219c9ecea734b1c455ada9ac29f1ebd079c0ef03d1a36a14376b64",
+      "step5_sha256": "8070131a913bc17a34f97e9752a82ac4b580cfb5a37439b2dca54e10f6ab29ae",
+      "model_state_sha256": "f6db2fa94069bbfe1197d5e5d1144a3869ce191bcbf2142790b9f01c5553a5fc",
+      "adapter_state_sha256": "d3bbfe0625c1bcc8dcdf7a20a8dd30fd0aa10e6e80ebae087d791907cf84901b",
+      "optimizer_state_entries": 0,
+      "optimizer_groups": 3,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6"
+    },
+    "TI-Shuffle-fast": {
+      "step0_sha256": "c036054eac8c84919dd481f6db18006756f38321a05b28c4d0b6dc52b4d7ec36",
+      "step5_sha256": "c52ca8447ff9a27331b6c12dbdbea7ad17f514dfb44382d6bc93b07b49c01175",
+      "model_state_sha256": "f6db2fa94069bbfe1197d5e5d1144a3869ce191bcbf2142790b9f01c5553a5fc",
+      "adapter_state_sha256": "d3bbfe0625c1bcc8dcdf7a20a8dd30fd0aa10e6e80ebae087d791907cf84901b",
+      "optimizer_state_entries": 0,
+      "optimizer_groups": 3,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6"
+    }
+  },
+  "steps": {
+    "T-fast": [
+      {
+        "step": 1,
+        "loss": 59.76386642456055,
+        "delta": 0.0,
+        "shift": 0,
+        "max_seconds": 6.951592184603214
+      },
+      {
+        "step": 2,
+        "loss": 32.52532196044922,
+        "delta": 0.0,
+        "shift": 0,
+        "max_seconds": 2.1292271241545677
+      },
+      {
+        "step": 3,
+        "loss": 25.75469207763672,
+        "delta": 0.0,
+        "shift": 0,
+        "max_seconds": 1.9166221916675568
+      },
+      {
+        "step": 4,
+        "loss": 19.261531829833984,
+        "delta": 0.0,
+        "shift": 0,
+        "max_seconds": 1.9916225522756577
+      },
+      {
+        "step": 5,
+        "loss": 19.39759635925293,
+        "delta": 0.0,
+        "shift": 0,
+        "max_seconds": 1.9225701615214348
+      }
+    ],
+    "TI-fast": [
+      {
+        "step": 1,
+        "loss": 59.76386642456055,
+        "delta": 0.0,
+        "shift": 0,
+        "max_seconds": 7.071003399789333
+      },
+      {
+        "step": 2,
+        "loss": 32.51521301269531,
+        "delta": 0.0004113739705644548,
+        "shift": 0,
+        "max_seconds": 1.9753236547112465
+      },
+      {
+        "step": 3,
+        "loss": 25.762813568115234,
+        "delta": 0.0007665816810913384,
+        "shift": 0,
+        "max_seconds": 1.9639337435364723
+      },
+      {
+        "step": 4,
+        "loss": 19.2990779876709,
+        "delta": 0.0010164453415200114,
+        "shift": 0,
+        "max_seconds": 1.9576640650629997
+      },
+      {
+        "step": 5,
+        "loss": 19.39747428894043,
+        "delta": 0.0012788191670551896,
+        "shift": 0,
+        "max_seconds": 1.9761245548725128
+      }
+    ],
+    "TI-Shuffle-fast": [
+      {
+        "step": 1,
+        "loss": 59.76386642456055,
+        "delta": 0.0,
+        "shift": 1003,
+        "max_seconds": 6.415785640478134
+      },
+      {
+        "step": 2,
+        "loss": 32.51505661010742,
+        "delta": 0.00042275828309357166,
+        "shift": 386,
+        "max_seconds": 2.1669365540146828
+      },
+      {
+        "step": 3,
+        "loss": 25.723604202270508,
+        "delta": 0.0007825485663488507,
+        "shift": 126,
+        "max_seconds": 1.9303454831242561
+      },
+      {
+        "step": 4,
+        "loss": 19.30142593383789,
+        "delta": 0.001033084699884057,
+        "shift": 60,
+        "max_seconds": 2.0456733852624893
+      },
+      {
+        "step": 5,
+        "loss": 19.40314292907715,
+        "delta": 0.0012973648263141513,
+        "shift": 889,
+        "max_seconds": 1.9332303628325462
+      }
+    ]
+  },
+  "resources": {
+    "T-fast": {
+      "device_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 988607,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8585143536329269
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 988608,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8488207533955574
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 988609,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8286139070987701
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 988610,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8155123218894005
+        }
+      ],
+      "acceptance": [
+        {
+          "rank": 0,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.617252565920353,
+          "peak_allocated_gib": 28.461228847503662,
+          "peak_reserved_gib": 28.99609375
+        },
+        {
+          "rank": 1,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.617422305047512,
+          "peak_allocated_gib": 28.461228847503662,
+          "peak_reserved_gib": 28.99609375
+        },
+        {
+          "rank": 2,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.61758054047823,
+          "peak_allocated_gib": 28.461228847503662,
+          "peak_reserved_gib": 28.99609375
+        },
+        {
+          "rank": 3,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.61759342253208,
+          "peak_allocated_gib": 28.461228847503662,
+          "peak_reserved_gib": 28.99609375
+        }
+      ]
+    },
+    "TI-fast": {
+      "device_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 991385,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8154146820306778
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 991386,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8312479257583618
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 991387,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8149590417742729
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 991388,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8509052246809006
+        }
+      ],
+      "acceptance": [
+        {
+          "rank": 0,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 27.188726514577866,
+          "peak_allocated_gib": 28.84419536590576,
+          "peak_reserved_gib": 29.251953125
+        },
+        {
+          "rank": 1,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 27.18916790932417,
+          "peak_allocated_gib": 28.84419536590576,
+          "peak_reserved_gib": 29.25
+        },
+        {
+          "rank": 2,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 27.188134238123894,
+          "peak_allocated_gib": 28.84419536590576,
+          "peak_reserved_gib": 29.251953125
+        },
+        {
+          "rank": 3,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 27.189384810626507,
+          "peak_allocated_gib": 28.84419536590576,
+          "peak_reserved_gib": 29.251953125
+        }
+      ]
+    },
+    "TI-Shuffle-fast": {
+      "device_identities": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 994157,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7200764790177345
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 994158,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7199068740010262
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 994159,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7042565122246742
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 994160,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7039573937654495
+        }
+      ],
+      "acceptance": [
+        {
+          "rank": 0,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.90143148601055,
+          "peak_allocated_gib": 28.844202995300293,
+          "peak_reserved_gib": 29.251953125
+        },
+        {
+          "rank": 1,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.90145818889141,
+          "peak_allocated_gib": 28.844202995300293,
+          "peak_reserved_gib": 29.25
+        },
+        {
+          "rank": 2,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.90184572339058,
+          "peak_allocated_gib": 28.844202995300293,
+          "peak_reserved_gib": 29.25
+        },
+        {
+          "rank": 3,
+          "completed_updates": 5,
+          "updates_this_run": 5,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 26.901846140623093,
+          "peak_allocated_gib": 28.844202995300293,
+          "peak_reserved_gib": 29.251953125
+        }
+      ]
+    }
+  }
+}

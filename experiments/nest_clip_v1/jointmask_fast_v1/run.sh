@@ -3,7 +3,7 @@ set -euo pipefail
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo=$(cd "$script_dir/../../.." && pwd)
 cd "$repo"
-action=${1:?Usage: run.sh smoke|formal|export500|verify-export|coco|urban|flickr_test1k|docci|long_dci T-fast|TI-fast|TI-Shuffle-fast}
+action=${1:?Usage: run.sh smoke|smoke-recheck|formal|export500|verify-export|coco|urban|flickr_test1k|docci|long_dci T-fast|TI-fast|TI-Shuffle-fast}
 group=${2:?Missing group: T-fast|TI-fast|TI-Shuffle-fast}
 case "$group" in
   T-fast) config="$repo/configs/nest_jointmask_t_fast.json" ;;
@@ -16,9 +16,11 @@ experiment="$root/jointmask_fast_v1"
 formal="$experiment/formal/$group"
 python=/root/miniconda3/envs/said-repro/bin/python
 case "$action" in
-  smoke|formal)
+  smoke|smoke-recheck|formal)
     if [[ "$action" == smoke ]]; then
       run_type=smoke; updates=5; destination="$experiment/smoke/$group"
+    elif [[ "$action" == smoke-recheck ]]; then
+      run_type=smoke; updates=5; destination="$experiment/smoke-recheck/$group"
     else
       run_type=formal; updates=500; destination="$formal"
     fi
