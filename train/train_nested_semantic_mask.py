@@ -51,6 +51,40 @@ def learning_rates(s, horizon):
     return backbone, .5e-3 * (1 + math.cos(math.pi*s/horizon))
 
 
+def validate_resume_payload(previous, current, expected_parent_trainer_sha256=None):
+    """Permit a longer stop within the SAME horizon; pin a trainer-only migration.
+
+    Model/objective/data code must match byte-for-byte. A changed trainer is
+    accepted only when its recorded predecessor hash is explicitly supplied.
+    """
+    old = previous['config']
+    for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
+                'accumulation', 'epochs', 'seed', 'workers', 'checkpoint_encoders', 'score_chunk'):
+        assert old[key] == current[key], f'Resume mismatch: {key}'
+    assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
+    for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
+        assert old.get(key, default) == current[key], f'Resume mismatch: {key}'
+    trainer = 'train/train_nested_semantic_mask.py'
+    old_code, new_code = old['code_sha256'], current['code_sha256']
+    assert old_code.keys() == new_code.keys(), 'Resume code manifest keys changed'
+    for path, digest in old_code.items():
+        if digest != new_code[path]:
+            assert path == trainer and digest == expected_parent_trainer_sha256, f'Resume code mismatch: {path}'
+    if expected_parent_trainer_sha256 is not None:
+        assert old_code[trainer] == expected_parent_trainer_sha256
+    completed = int(previous['completed_steps'])
+    assert previous['scheduler_horizon'] == current['horizon']
+    assert 0 <= completed < current['max_updates'] <= current['horizon'], 'Invalid continuation stop'
+    assert previous['next_epoch'] == completed // current['batches_per_epoch']
+    assert previous['next_batch'] == completed % current['batches_per_epoch']
+    assert len(previous['rng_per_rank']) == current['world_size']
+    return completed
+
+
+def consumed_batch(epoch, batch_index, batches_per_epoch, completed):
+    return epoch * batches_per_epoch + batch_index < completed
+
+
 def atomic_save(payload, path):
     path = Path(path)
     if path.exists():
@@ -134,13 +168,15 @@ def main():
     p.add_argument('--run-type', choices=['smoke', 'formal'], required=True)
     p.add_argument('--max-updates', type=int, required=True)
     p.add_argument('--resume')
+    p.add_argument('--expected-parent-trainer-sha256',
+                   help='Explicitly pin a compatible predecessor trainer; model/data/objective hashes must still match')
     args = p.parse_args()
     cfg = json.loads(Path(args.config).read_text())
     cfg.setdefault('sampling_mode', 'fixed_first')
     cfg.setdefault('sampling_seed', 0)
     cfg.setdefault('experiment_name', cfg['arm'])
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
-    assert args.max_updates == (5 if args.run_type == 'smoke' else 500)
+    assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates > 0)
     assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
     assert cfg['epochs'] == 3 and cfg['seed'] == 0 and cfg['workers'] == 8
     seed_all(cfg['seed'])
@@ -161,6 +197,7 @@ def main():
     horizon = cfg['epochs'] * len(loader)
     assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
     assert len(loader) == 1217 and horizon == 3651
+    assert args.max_updates <= horizon, 'Stopping point must not exceed the unchanged three-epoch horizon'
     clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
     initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
     assert initial['completed_steps'] == 0 and initial['provenance']['source'] == 'OpenAI CLIP + original random MaskNetwork'
@@ -187,21 +224,22 @@ def main():
     completed = 0
     if args.resume:
         previous = torch.load(args.resume, map_location='cpu', weights_only=False)
-        for key in ('arm', 'horizon', 'init_sha256', 'code_sha256', 'data', 'batch_size', 'checkpoint_encoders'):
-            assert previous['config'][key] == config[key], f'Resume mismatch: {key}'
-        assert previous['config']['run_type'] == args.run_type, 'Smoke cannot initialize formal training'
-        for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
-            assert previous['config'].get(key, default) == cfg[key], f'Resume mismatch: {key}'
+        completed = validate_resume_payload(previous, config, args.expected_parent_trainer_sha256)
         module.clip.load_state_dict(previous['model'], strict=True)
         optimizer.load_state_dict(previous['optimizer'])
-        completed = previous['completed_steps']
         state = previous['rng_per_rank'][rank]
         random.setstate(state['python']); np.random.set_state(state['numpy'])
         torch.set_rng_state(state['cpu']); torch.cuda.set_rng_state(state['cuda'])
+        config.update(parent_checkpoint_sha256=file_sha(args.resume), parent_completed_updates=completed,
+                      parent_git_head=previous['config']['git_head'],
+                      parent_code_sha256=previous['config']['code_sha256'])
         del previous
+    config['start_updates'] = completed
+    config['updates_planned_this_run'] = args.max_updates - completed
     if rank == 0:
         (output / 'config.json').write_text(json.dumps(config, indent=2))
-        print(json.dumps({'event':'ready', 'horizon':horizon, 'ranks':peers}), flush=True)
+        print(json.dumps({'event':'ready', 'horizon':horizon, 'start_updates':completed,
+                          'stop_updates':args.max_updates, 'ranks':peers}), flush=True)
     save_checkpoint(module, optimizer, config, completed, output)
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
@@ -212,7 +250,7 @@ def main():
         if completed >= (epoch+1)*len(loader):
             continue
         for batch_index, batch in enumerate(loader):
-            if epoch*len(loader)+batch_index < completed:
+            if consumed_batch(epoch, batch_index, len(loader), completed):
                 continue
             tick = time.perf_counter()
             for k in ('image', 'tokens_f', 'tokens_o', 'tokens_e', 'valid'):
@@ -274,7 +312,9 @@ def main():
                         n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
             if completed % 100 == 0 or completed == args.max_updates:
                 save_checkpoint(module, optimizer, config, completed, output)
-            if completed >= args.max_updates:
+            # At a full epoch boundary let DataLoader exhaust naturally, so its
+            # workers finish through StopIteration rather than only __del__.
+            if completed >= args.max_updates and batch_index + 1 < len(loader):
                 break
         if completed >= args.max_updates:
             break
