@@ -42,12 +42,24 @@ def explicit_inputs(module, images, tokens):
 
 
 def explicit_logits(module, zv, zt):
+    if module.fusion == 'balanced_stack':
+        ut = module.clip.mask_net.attn_pool(zt)
+        uv = module.clip.mask_net.attn_pool(zv)
+        joined = torch.cat((ut[:, None].expand(-1, len(uv), -1),
+                            uv[None].expand(len(ut), -1, -1)), dim=-1)
+        gate = module.fusion_branch.gate(joined).sigmoid()
+        return gate * ut[:, None] + (1 - gate) * uv[None]
     if module.fusion == 'stack_pool':
         paired = torch.cat((zv[None].expand(len(zt), -1, -1, -1),
                             zt[:, None].expand(-1, len(zv), -1, -1)), dim=-2)
         return module.clip.mask_net.attn_pool(paired.flatten(0, 1)).reshape(len(zt), len(zv), -1)
     branch = module.fusion_branch
-    relation = torch.einsum('iak,btk->biat', branch.query(zv), branch.key(zt)) / math.sqrt(branch.rank)
+    q, k = branch.query(zv), branch.key(zt)
+    if module.fusion == 'cosine_crossscore':
+        q, k = F.normalize(q, dim=-1, eps=1e-6), F.normalize(k, dim=-1, eps=1e-6)
+        relation = torch.einsum('iak,btk->biat', q, k)
+    else:
+        relation = torch.einsum('iak,btk->biat', q, k) / math.sqrt(branch.rank)
     return branch.readout(relation.flatten(-2))
 
 

@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "gpus": "index, name, uuid, memory.total [MiB], memory.free [MiB], mig.mode.current\n0, NVIDIA A100 80GB PCIe, GPU-6810482c-0a4f-2547-407d-7b11db16655d, 81920 MiB, 81038 MiB, Disabled\n1, NVIDIA A100 80GB PCIe, GPU-a85d54c4-620e-6813-9176-ed449a61c7a4, 81920 MiB, 81038 MiB, Disabled\n2, NVIDIA A100 80GB PCIe, GPU-251127fd-2cb2-c90d-6151-54360a5fcb82, 81920 MiB, 81038 MiB, Disabled\n3, NVIDIA A100 80GB PCIe, GPU-cea2e93a-3a77-7373-2c22-cfc59c5094e8, 81920 MiB, 81038 MiB, Disabled\n",
+  "active_processes": "pid, gpu_uuid, used_gpu_memory [MiB]\n",
+  "topology": "\t\u001b[4mGPU0\tGPU1\tGPU2\tGPU3\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tPIX\tPIX\tPIX\t0-35,72-107\t0\t\tN/A\nGPU1\tPIX\t X \tPIX\tPIX\t0-35,72-107\t0\t\tN/A\nGPU2\tPIX\tPIX\t X \tPIX\t0-35,72-107\t0\t\tN/A\nGPU3\tPIX\tPIX\tPIX\t X \t0-35,72-107\t0\t\tN/A\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n",
+  "environment": {},
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "nccl": [
+    2,
+    21,
+    5
+  ],
+  "initial_checkpoint_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "data": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  },
+  "reference_commit": "6bafa8a009af4ffee1100027d5171d78dbeb96d3",
+  "reference_sha256": "0f36a25b01aa95d116dc74835768172172f20ed2b5a6285167aad914b7799533",
+  "evaluation_assets": [
+    "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+    "/root/lk_projects/SAID-assets/evaluation/coco/annotations/captions_val2017.json",
+    "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+    "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl",
+    "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl",
+    "/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images",
+    "/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+  ],
+  "parent_result_commit": "40d6f44d68a6df89b3e47d78adbcaeda5a5b049c",
+  "parent_results_sha256": "10e626d0093432cd5b2d2a66eba477b97ea75b5fba75b66e3b360e640448cc8e"
+}

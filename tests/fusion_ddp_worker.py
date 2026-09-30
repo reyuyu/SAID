@@ -22,21 +22,21 @@ def fp32_encoders(module):
         with torch.autocast('cuda', enabled=False):
             z, hidden = self.clip.encode_image(images.float(), return_token_hidden=True)
             zv = self.fusion_branch.encode_visual(hidden[:, :1] if self.visual == 'cls' else hidden[:, 1:])
-            if self.fusion == 'stack_pool':
+            if self.fusion in ('stack_pool', 'balanced_stack'):
                 pool = self.clip.mask_net.attn_pool.attention
                 condition = pool_summary(zv, pool.weight, pool.bias)
             else:
-                condition = (self.fusion_branch.query(zv),)
+                condition = (self.fusion_branch.projected_queries(zv),)
         return z, condition
     def encode_view(self, tokens):
         with torch.autocast('cuda', enabled=False):
             text, hidden = self.clip.encode_text(tokens, return_full=True)
             zt = self.clip.mask_net.resblocks(hidden.detach().permute(1,0,2)).permute(1,0,2)
-            if self.fusion == 'stack_pool':
+            if self.fusion in ('stack_pool', 'balanced_stack'):
                 pool = self.clip.mask_net.attn_pool.attention
                 condition = pool_summary(zt, pool.weight, pool.bias)
             else:
-                keys = self.fusion_branch.key(zt)
+                keys = self.fusion_branch.projected_keys(zt)
                 condition = (self.fusion_branch.contract_keys(keys), keys)
         return text, condition
     module.encode_visual = types.MethodType(encode_visual,module)
@@ -60,6 +60,7 @@ def theoretical_zero_mask(name, gradient, visual):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--output',required=True)
+    parser.add_argument('--new-arms', action='store_true')
     args=parser.parse_args()
     local,rank,world=[int(os.environ[k]) for k in ('LOCAL_RANK','RANK','WORLD_SIZE')]
     assert world==2
@@ -70,8 +71,9 @@ def main():
     cases=[('all_valid',2,[1,1,1,1]),('rank1_zero_valid',2,[1,1,0,0]),
            ('V1',2,[1,0,0,0]),('V0',2,[0,0,0,0]),('tail',1,[1,1])]
     results=[]
-    for fusion,visual in [('stack_pool','cls'),('crossscore_flat','cls'),
-                          ('stack_pool','patch'),('crossscore_flat','patch')]:
+    arms = ([('balanced_stack', 'patch'), ('cosine_crossscore', 'cls')] if args.new_arms else
+            [('stack_pool','cls'),('crossscore_flat','cls'),('stack_pool','patch'),('crossscore_flat','patch')])
+    for fusion,visual in arms:
         for index,(case,batch,validity) in enumerate(cases):
             if rank == 0:
                 print(json.dumps(dict(testing=fusion,visual=visual,case=case)),flush=True)

@@ -35,7 +35,10 @@ class FusionBranch(nn.Module):
             torch.manual_seed(1763)
             self.visual_adapter = nn.Linear(visual_width, width, bias=False)
             nn.init.xavier_uniform_(self.visual_adapter.weight)
-            if fusion == 'crossscore_flat':
+            if fusion == 'balanced_stack':
+                self.gate = nn.Linear(width * 2, width, bias=False)
+                nn.init.zeros_(self.gate.weight)
+            if fusion in ('crossscore_flat', 'cosine_crossscore'):
                 torch.manual_seed(1787)
                 self.query = nn.Linear(width, rank, bias=False)
                 self.key = nn.Linear(width, rank, bias=False)
@@ -43,21 +46,37 @@ class FusionBranch(nn.Module):
                 nn.init.xavier_uniform_(self.key.weight)
                 torch.manual_seed(1789)
                 self.readout = nn.Linear(visual_tokens * text_tokens, width, bias=True)
-                nn.init.uniform_(self.readout.weight, -1 / math.sqrt(visual_tokens * text_tokens),
-                                 1 / math.sqrt(visual_tokens * text_tokens))
-                nn.init.zeros_(self.readout.bias)
+                if fusion == 'crossscore_flat':
+                    nn.init.uniform_(self.readout.weight, -1 / math.sqrt(visual_tokens * text_tokens),
+                                     1 / math.sqrt(visual_tokens * text_tokens))
+                    nn.init.zeros_(self.readout.bias)
+
+    def projected_queries(self, tokens):
+        queries = self.query(tokens)
+        return F.normalize(queries, dim=-1, eps=1e-6) if self.fusion == 'cosine_crossscore' else queries
+
+    def projected_keys(self, tokens):
+        keys = self.key(tokens)
+        return F.normalize(keys, dim=-1, eps=1e-6) if self.fusion == 'cosine_crossscore' else keys
+
+    def balanced_gate(self, visual, text, paired=False):
+        width = self.gate.out_features
+        text_part = F.linear(text, self.gate.weight[:, :width])
+        visual_part = F.linear(visual, self.gate.weight[:, width:])
+        return torch.sigmoid(text_part + visual_part if paired else text_part[:, None] + visual_part[None])
 
     def encode_visual(self, hidden):
         tokens = self.visual_adapter(hidden.detach().float())
         return self.visual_blocks(tokens.permute(1, 0, 2)).permute(1, 0, 2)
 
     def text_condition(self, tokens):
-        keys = self.key(tokens)
+        keys = self.projected_keys(tokens)
         return self.contract_keys(keys)
 
     def contract_keys(self, keys):
         if self.visual_tokens == 1:
-            return torch.einsum('dt,btk->bdk', self.readout.weight, keys) / math.sqrt(self.rank)
+            scale = 1. if self.fusion == 'cosine_crossscore' else math.sqrt(self.rank)
+            return torch.einsum('dt,btk->bdk', self.readout.weight, keys) / scale
         weight = self.readout.weight.reshape(self.readout.out_features, self.visual_tokens, self.text_tokens)
         return torch.einsum('dat,btk->bdak', weight, keys) / math.sqrt(self.rank)
 
@@ -71,15 +90,21 @@ class FusionBranch(nn.Module):
                 return torch.einsum('bk,bdk->bd', queries[:, 0], condition) + self.readout.bias
             return torch.einsum('iak,tdk->tid', queries, condition) + self.readout.bias
         if paired:
-            relations = torch.einsum('bak,btk->bat', queries, condition) / math.sqrt(self.rank)
+            relations = torch.einsum('bak,btk->bat', queries, condition)
         else:
-            relations = torch.einsum('iak,btk->biat', queries, condition) / math.sqrt(self.rank)
+            relations = torch.einsum('iak,btk->biat', queries, condition)
+        if self.fusion != 'cosine_crossscore':
+            relations = relations / math.sqrt(self.rank)
         return F.linear(relations.flatten(-2), self.readout.weight, self.readout.bias)
 
 
 def pair_logits(module, visual, text, paired=False):
     if module.fusion == 'stack_pool':
         return stack_logits(visual, text, paired)
+    if module.fusion == 'balanced_stack':
+        gate = module.fusion_branch.balanced_gate(visual[1], text[1], paired)
+        return (gate * text[1] + (1 - gate) * visual[1] if paired else
+                gate * text[1][:, None] + (1 - gate) * visual[1][None])
     return module.fusion_branch.cross_logits(visual[0], text[0], paired)
 
 
@@ -96,7 +121,7 @@ def score_block(module, z, text, visual, condition, active, collect_diagnostics)
                                count * selected.shape[-1],
                                (selected.all(-1) & active).float().sum(),
                                ((~selected).all(-1) & active).float().sum()))
-        extra = logits.new_zeros(8)
+        extra = logits.new_zeros(9)
         if collect_diagnostics:
             enabled = active[..., None]
             extra[:5] = torch.stack((logits.masked_fill(~enabled, 0).sum(),
@@ -106,14 +131,17 @@ def score_block(module, z, text, visual, condition, active, collect_diagnostics)
             if module.fusion == 'stack_pool':
                 text_weight = torch.sigmoid(condition[0][:, None] - visual[0][None])
                 extra[5] = text_weight.masked_fill(~active, 0).sum()
-            else:
+            elif module.fusion in ('crossscore_flat', 'cosine_crossscore'):
                 # Raw K is retained as a view-local tensor for sparse diagnostics.
                 keys = condition[1]
-                relation = torch.einsum('iak,btk->biat', visual[0], keys) / math.sqrt(module.fusion_branch.rank)
+                relation = torch.einsum('iak,btk->biat', visual[0], keys)
+                if module.fusion != 'cosine_crossscore':
+                    relation = relation / math.sqrt(module.fusion_branch.rank)
                 enabled_r = active[..., None, None]
                 extra[5] = relation.masked_fill(~enabled_r, 0).sum()
                 extra[6] = relation.square().masked_fill(~enabled_r, 0).sum()
                 extra[7] = count * relation.shape[-1] * relation.shape[-2]
+                extra[8] = relation.abs().masked_fill(~enabled_r, 0).max()
     return scores, summary, extra
 
 
@@ -138,7 +166,9 @@ def fusion_scores(module, images, texts, visual, condition, image_valid, text_va
             summaries.append(summary)
             extras.append(extra)
         rows.append(torch.cat(row, 1))
-    return torch.cat(rows), torch.stack(summaries).sum(0), torch.stack(extras).sum(0)
+    combined = torch.stack(extras).sum(0)
+    combined[8] = torch.stack(extras)[:, 8].max()
+    return torch.cat(rows), torch.stack(summaries).sum(0), combined
 
 
 def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
@@ -185,9 +215,21 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
         if module.fusion == 'stack_pool':
             logs.update(text_pool_weight=d[5] / d[4].clamp_min(1),
                         visual_pool_weight=1 - d[5] / d[4].clamp_min(1))
-        else:
+        elif module.fusion in ('crossscore_flat', 'cosine_crossscore'):
             qk_mean = d[5] / d[7].clamp_min(1)
             logs.update(qk_mean=qk_mean, qk_variance=d[6] / d[7].clamp_min(1) - qk_mean.square())
+            bound = diagnostic[8].detach().clone()
+            if world > 1:
+                torch.distributed.all_reduce(bound, op=torch.distributed.ReduceOp.MAX)
+            logs['qk_abs_max'] = bound
+        elif module.fusion == 'balanced_stack':
+            gate = module.fusion_branch.balanced_gate(visual[1], condition[1], paired=True).detach()
+            global_gate, enabled = gather(gate, False), gather(valid, False)
+            selected_gates = global_gate[enabled].flatten()
+            logs.update(g_mean=selected_gates.mean(), g_variance=selected_gates.var(unbiased=False))
+            quantiles = torch.quantile(selected_gates, gate.new_tensor([0., .05, .25, .5, .75, .95, 1.]))
+            logs.update({f'g_q{q}': value for q, value in zip(('00', '05', '25', '50', '75', '95', '100'), quantiles)})
+            logs['_diagnostic_gate'] = gate
         with torch.no_grad():
             replacement = tuple(x.roll(1, 0) for x in global_visual)
             replacement_local = tuple(x[rank * len(z):(rank + 1) * len(z)] for x in replacement)
@@ -203,7 +245,9 @@ class NestedFusionMask(nn.Module):
                  checkpoint_pair_blocks=False, fusion='stack_pool', visual='cls', text_tokens=248):
         super().__init__()
         assert arm == 'A3' and condition_mode == 'dual_branch'
-        assert fusion in ('stack_pool', 'crossscore_flat') and visual in ('cls', 'patch')
+        assert fusion in ('stack_pool', 'crossscore_flat', 'balanced_stack', 'cosine_crossscore') and visual in ('cls', 'patch')
+        assert fusion != 'balanced_stack' or visual == 'patch'
+        assert fusion != 'cosine_crossscore' or visual == 'cls'
         self.clip, self.arm, self.condition_mode = clip, arm, condition_mode
         self.fusion, self.visual = fusion, visual
         self.image_chunk, self.text_chunk = int(image_chunk), int(text_chunk)
@@ -213,7 +257,7 @@ class NestedFusionMask(nn.Module):
         width = int(clip.text_projection.shape[0])
         self.fusion_branch = FusionBranch(clip.mask_net.resblocks, int(clip.visual.proj.shape[0]),
                                           width, fusion, 1 if visual == 'cls' else 196, text_tokens)
-        if fusion == 'crossscore_flat':
+        if fusion in ('crossscore_flat', 'cosine_crossscore'):
             clip.mask_net.attn_pool.requires_grad_(False)
         if checkpoint_encoders:
             enable_encoder_checkpointing(clip)
@@ -221,7 +265,7 @@ class NestedFusionMask(nn.Module):
     def mask_parameters(self):
         yield from self.clip.mask_net.resblocks.parameters()
         yield from self.fusion_branch.visual_blocks.parameters()
-        if self.fusion == 'stack_pool':
+        if self.fusion in ('stack_pool', 'balanced_stack'):
             yield from self.clip.mask_net.attn_pool.parameters()
 
     def encode_visual(self, images):
@@ -229,22 +273,22 @@ class NestedFusionMask(nn.Module):
             z, hidden = self.clip.encode_image(images, return_token_hidden=True)
         source = hidden[:, :1] if self.visual == 'cls' else hidden[:, 1:]
         transformed = self.fusion_branch.encode_visual(source)
-        if self.fusion == 'stack_pool':
+        if self.fusion in ('stack_pool', 'balanced_stack'):
             pool = self.clip.mask_net.attn_pool.attention
             condition = pool_summary(transformed, pool.weight, pool.bias)
         else:
-            condition = (self.fusion_branch.query(transformed),)
+            condition = (self.fusion_branch.projected_queries(transformed),)
         return z.float(), condition
 
     def encode_view(self, tokens):
         with torch.autocast('cuda', dtype=torch.bfloat16, enabled=tokens.is_cuda):
             text, hidden = self.clip.encode_text(tokens, return_full=True)
         transformed = self.clip.mask_net.resblocks(hidden.detach().float().permute(1, 0, 2)).permute(1, 0, 2)
-        if self.fusion == 'stack_pool':
+        if self.fusion in ('stack_pool', 'balanced_stack'):
             pool = self.clip.mask_net.attn_pool.attention
             condition = pool_summary(transformed, pool.weight, pool.bias)
         else:
-            keys = self.fusion_branch.key(transformed)
+            keys = self.fusion_branch.projected_keys(transformed)
             condition = (self.fusion_branch.contract_keys(keys), keys)
         return text.float(), condition
 
@@ -260,11 +304,20 @@ class NestedFusionMask(nn.Module):
             return fusion_view_terms(self, z, text, visual, condition, enabled, enabled_global,
                                      global_z, global_visual, diagnostics)
         af, sf, mf, pf, lf = terms(tokens_f, torch.ones_like(valid), torch.ones_like(valid_global))
+        gate_f = lf.pop('_diagnostic_gate', None)
         logs = {'F_' + key: value for key, value in lf.items()}
         weight = inclusion_weight(self.arm, completed) if valid_count >= 2 else 0.
         if valid_count >= 2:
             ao, so, mo, po, lo = terms(tokens_o, valid, valid_global)
             ae, se, me, pe, le = terms(tokens_e, valid, valid_global)
+            gate_o, gate_e = lo.pop('_diagnostic_gate', None), le.pop('_diagnostic_gate', None)
+            if gate_f is not None:
+                differences = torch.stack(((gate_f - gate_o).abs().mean(-1)[valid].sum(),
+                                           (gate_f - gate_e).abs().mean(-1)[valid].sum(),
+                                           (gate_o - gate_e).abs().mean(-1)[valid].sum()))
+                differences = global_sum(differences) / valid_count
+                logs.update(g_F_P_abs_difference=differences[0], g_F_R_abs_difference=differences[1],
+                            g_P_R_abs_difference=differences[2])
             inc_sum = inclusion(pf, po, pe)[valid].sum()
             loss = 10 / 3 * (af + ao + ae) + (sf + 2 * so + 2 * se) / 3 + weight * world_rank()[0] / valid_count * inc_sum
             violation = .5 * ((mo.detach() > mf.detach()).float().mean(-1) +

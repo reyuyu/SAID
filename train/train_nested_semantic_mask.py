@@ -367,7 +367,8 @@ def main():
             visual_adapter=state_digest(branch.visual_adapter.state_dict()),
             crossscore_query=state_digest(branch.query.state_dict()) if hasattr(branch, 'query') else None,
             crossscore_key=state_digest(branch.key.state_dict()) if hasattr(branch, 'key') else None,
-            crossscore_readout=state_digest(branch.readout.state_dict()) if hasattr(branch, 'readout') else None)
+            crossscore_readout=state_digest(branch.readout.state_dict()) if hasattr(branch, 'readout') else None,
+            channel_gate=state_digest(branch.gate.state_dict()) if hasattr(branch, 'gate') else None)
     completed = 0
     if args.resume:
         previous = torch.load(args.resume, map_location='cpu', weights_only=False)
@@ -510,11 +511,16 @@ def main():
                         resource_failure = 'three consecutive full updates exceeded 3 seconds'
                 if torch.cuda.max_memory_allocated() / 2**30 > 65:
                     resource_failure = 'peak allocated memory exceeded 65 GiB'
+                saturation_limit = cfg.get('saturation_abort_fraction')
+                if saturation_limit is not None and any(
+                        float(value) >= saturation_limit for name, value in logs.items()
+                        if name.endswith('_sigmoid_saturation')):
+                    resource_failure = 'sigmoid saturation reached the recorded 99% stop criterion'
                 failed = torch.tensor(int(resource_failure is not None), device='cuda')
                 dist.all_reduce(failed, op=dist.ReduceOp.MAX)
                 if failed.item():
                     resource_failure = resource_failure or 'another rank exceeded the memory limit'
-                    if args.run_type != 'probe':
+                    if args.run_type != 'probe' or resource_failure.startswith('sigmoid saturation'):
                         save_checkpoint(module, optimizer, config, completed, output)
                     break
             if checkpoint_due:
