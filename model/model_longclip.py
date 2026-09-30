@@ -270,7 +270,9 @@ class VisionTransformer(nn.Module):
 		}
 
 	def forward(self, x: torch.Tensor, use_checkpoint=False, return_patches=False,
-				return_local_evidence=False, return_hidden=False):
+				return_local_evidence=False, return_hidden=False, return_token_hidden=False):
+		if return_token_hidden and (return_patches or return_local_evidence or return_hidden):
+			raise ValueError('return_token_hidden is a separate pre-projection interface')
 		if return_hidden and (return_patches or return_local_evidence):
 			raise ValueError('return_hidden is a separate global-feature interface')
 		if return_local_evidence and (use_checkpoint or return_patches):
@@ -296,6 +298,8 @@ class VisionTransformer(nn.Module):
 		global_feature = global_hidden
 		if self.proj is not None:
 			global_feature = global_feature @ self.proj
+		if return_token_hidden:
+			return global_feature, torch.cat([global_hidden[:, None], self.ln_post(x[:, 1:, :])], dim=1)
 		if return_hidden:
 			return global_feature, global_hidden
 		if return_local_evidence:
@@ -463,8 +467,9 @@ class CLIP(nn.Module):
 	def dtype(self):
 		return self.visual.conv1.weight.dtype
 
-	def encode_image(self, image, return_hidden=False):
-		return self.visual(image.type(self.dtype), return_hidden=return_hidden)
+	def encode_image(self, image, return_hidden=False, return_token_hidden=False):
+		return self.visual(image.type(self.dtype), return_hidden=return_hidden,
+						   return_token_hidden=return_token_hidden)
 
 	def encode_image_with_checkpoint(self, image):
 		return self.visual(image.type(self.dtype), use_checkpoint=True)

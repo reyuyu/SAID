@@ -1,0 +1,85 @@
+{
+  "scope": "synthetic single-GPU mask-only shape probe; excludes CLIP, DDP and real data; not speed acceptance",
+  "groups": [
+    {
+      "group": "S-CLS",
+      "image_batch": 8,
+      "text_batch": 4,
+      "text_slots": 248,
+      "visual_slots": 1,
+      "width": 512,
+      "rank": 64,
+      "mask_only_seconds": [
+        0.447274349629879,
+        0.00728018581867218,
+        0.008852079510688782,
+        0.009320773184299469
+      ],
+      "warmup_steps": 1,
+      "peak_allocated_gib": 0.15874052047729492,
+      "readout_weights": null,
+      "full_local_contracted_tensor_gib": null,
+      "keep_ratio": 0.4874267578125
+    },
+    {
+      "group": "C-CLS",
+      "image_batch": 8,
+      "text_batch": 4,
+      "text_slots": 248,
+      "visual_slots": 1,
+      "width": 512,
+      "rank": 64,
+      "mask_only_seconds": [
+        0.010960519313812256,
+        0.007198438048362732,
+        0.006889641284942627,
+        0.007164299488067627
+      ],
+      "warmup_steps": 1,
+      "peak_allocated_gib": 0.16277408599853516,
+      "readout_weights": 126976,
+      "full_local_contracted_tensor_gib": 0.03125,
+      "keep_ratio": 0.5028076171875
+    },
+    {
+      "group": "S-PATCH",
+      "image_batch": 8,
+      "text_batch": 4,
+      "text_slots": 248,
+      "visual_slots": 196,
+      "width": 512,
+      "rank": 64,
+      "mask_only_seconds": [
+        0.013982273638248444,
+        0.008809082210063934,
+        0.007763288915157318,
+        0.00756574422121048
+      ],
+      "warmup_steps": 1,
+      "peak_allocated_gib": 0.23309659957885742,
+      "readout_weights": null,
+      "full_local_contracted_tensor_gib": null,
+      "keep_ratio": 0.49517822265625
+    },
+    {
+      "group": "C-PATCH",
+      "image_batch": 8,
+      "text_batch": 4,
+      "text_slots": 248,
+      "visual_slots": 196,
+      "width": 512,
+      "rank": 64,
+      "mask_only_seconds": [
+        0.01773199439048767,
+        0.010850168764591217,
+        0.01052597165107727,
+        0.01053106039762497
+      ],
+      "warmup_steps": 1,
+      "peak_allocated_gib": 0.6796712875366211,
+      "readout_weights": 24887296,
+      "full_local_contracted_tensor_gib": 6.125,
+      "keep_ratio": 0.56060791015625
+    }
+  ]
+}

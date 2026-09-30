@@ -8,6 +8,7 @@ import torch
 from model import longclip
 from model.nested_semantic_mask import NestedSemanticMask
 from model.nested_vcp_mask import NestedVCPMask
+from model.nested_fusion_mask import NestedFusionMask
 from train.nested_semantic_data import prepare_index, file_sha
 from train.train_nested_semantic_mask import (seed_all, build_optimizer, atomic_save,
                                                 auxiliary_module)
@@ -64,15 +65,18 @@ def main():
         model, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
         model.load_state_dict(payload['model'], strict=True)
         config = payload['config']
-        module_class = (NestedVCPMask if config.get('condition_mode') == 'vcp_mask'
+        module_class = (NestedFusionMask if config.get('condition_mode') == 'dual_branch' else
+                        NestedVCPMask if config.get('condition_mode') == 'vcp_mask'
                         else NestedSemanticMask)
+        model_options = ({'fusion': config['fusion'], 'visual': config['visual']}
+                         if config.get('condition_mode') == 'dual_branch' else {})
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),
                               condition_mode=config.get('condition_mode', 'text_only'),
                               shuffle_seed=config.get('shuffle_seed', 0),
                               checkpoint_pair_blocks=config.get(
-                                  'checkpoint_pair_blocks', True)).eval()
+                                  'checkpoint_pair_blocks', True), **model_options).eval()
         auxiliary = auxiliary_module(module)
         if auxiliary is None:
             assert payload.get('adapter') is None

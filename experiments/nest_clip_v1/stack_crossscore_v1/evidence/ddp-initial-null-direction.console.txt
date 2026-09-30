@@ -1,0 +1,1206 @@
+/root/lk_projects/SAID-stack-crossscore-v1/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+/root/lk_projects/SAID-stack-crossscore-v1/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+[rank0]:[W930 08:32:16.295212085 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+[rank1]:[W930 08:32:16.295702082 reducer.cpp:1400] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+{
+  "fusion": "stack_pool",
+  "visual": "cls",
+  "case": "all_valid",
+  "name": "fusion_branch.visual_blocks.0.attn.in_proj_weight",
+  "gradients": [
+    {
+      "name": "clip.text_projection",
+      "none": false,
+      "max_abs": 0.000244140625,
+      "index": [
+        4,
+        5
+      ],
+      "actual_norm": 3803.600341796875,
+      "reference_norm": 3803.60009765625
+    },
+    {
+      "name": "clip.visual.proj",
+      "none": false,
+      "max_abs": 0.0001220703125,
+      "index": [
+        6,
+        5
+      ],
+      "actual_norm": 2318.7177734375,
+      "reference_norm": 2318.7177734375
+    },
+    {
+      "name": "clip.visual.hidden.weight",
+      "none": false,
+      "max_abs": 6.103515625e-05,
+      "index": [
+        1,
+        4
+      ],
+      "actual_norm": 1017.251953125,
+      "reference_norm": 1017.2518920898438
+    },
+    {
+      "name": "clip.visual.hidden.bias",
+      "none": false,
+      "max_abs": 1.9073486328125e-05,
+      "index": [
+        7
+      ],
+      "actual_norm": 246.96990966796875,
+      "reference_norm": 246.9698944091797
+    },
+    {
+      "name": "clip.token_embedding.weight",
+      "none": false,
+      "max_abs": 3.0517578125e-05,
+      "index": [
+        28,
+        5
+      ],
+      "actual_norm": 488.89971923828125,
+      "reference_norm": 488.8997497558594
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_weight",
+      "none": false,
+      "max_abs": 1.239776611328125e-05,
+      "index": [
+        13,
+        0
+      ],
+      "actual_norm": 147.55787658691406,
+      "reference_norm": 147.55787658691406
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+      "none": false,
+      "max_abs": 5.7220458984375e-06,
+      "index": [
+        21
+      ],
+      "actual_norm": 37.996944427490234,
+      "reference_norm": 37.9969482421875
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.weight",
+      "none": false,
+      "max_abs": 1.33514404296875e-05,
+      "index": [
+        5,
+        5
+      ],
+      "actual_norm": 200.42356872558594,
+      "reference_norm": 200.42356872558594
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.bias",
+      "none": false,
+      "max_abs": 1.33514404296875e-05,
+      "index": [
+        5
+      ],
+      "actual_norm": 72.91409301757812,
+      "reference_norm": 72.9140853881836
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.weight",
+      "none": false,
+      "max_abs": 9.5367431640625e-06,
+      "index": [
+        2
+      ],
+      "actual_norm": 67.70198822021484,
+      "reference_norm": 67.70198059082031
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.bias",
+      "none": false,
+      "max_abs": 5.7220458984375e-06,
+      "index": [
+        4
+      ],
+      "actual_norm": 39.35660934448242,
+      "reference_norm": 39.35661315917969
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.weight",
+      "none": false,
+      "max_abs": 7.62939453125e-06,
+      "index": [
+        13,
+        7
+      ],
+      "actual_norm": 182.4587860107422,
+      "reference_norm": 182.4587860107422
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.bias",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        14
+      ],
+      "actual_norm": 77.46788024902344,
+      "reference_norm": 77.46788024902344
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.weight",
+      "none": false,
+      "max_abs": 9.5367431640625e-06,
+      "index": [
+        5,
+        6
+      ],
+      "actual_norm": 196.07142639160156,
+      "reference_norm": 196.07142639160156
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.bias",
+      "none": false,
+      "max_abs": 1.1444091796875e-05,
+      "index": [
+        1
+      ],
+      "actual_norm": 74.73218536376953,
+      "reference_norm": 74.73219299316406
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.weight",
+      "none": false,
+      "max_abs": 9.5367431640625e-06,
+      "index": [
+        4
+      ],
+      "actual_norm": 54.16749954223633,
+      "reference_norm": 54.16749572753906
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.bias",
+      "none": false,
+      "max_abs": 7.62939453125e-06,
+      "index": [
+        1
+      ],
+      "actual_norm": 43.69407653808594,
+      "reference_norm": 43.69408416748047
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.weight",
+      "none": false,
+      "max_abs": 1.52587890625e-05,
+      "index": [
+        0,
+        5
+      ],
+      "actual_norm": 206.64772033691406,
+      "reference_norm": 206.64772033691406
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.bias",
+      "none": false,
+      "max_abs": 9.894371032714844e-06,
+      "index": [
+        0
+      ],
+      "actual_norm": 9.5367431640625e-06,
+      "reference_norm": 3.5762786865234375e-07
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.in_proj_weight",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        19,
+        2
+      ],
+      "actual_norm": 44.87533950805664,
+      "reference_norm": 44.875335693359375
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+      "none": false,
+      "max_abs": 1.9073486328125e-06,
+      "index": [
+        16
+      ],
+      "actual_norm": 18.646652221679688,
+      "reference_norm": 18.646652221679688
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.out_proj.weight",
+      "none": false,
+      "max_abs": 4.76837158203125e-06,
+      "index": [
+        3,
+        4
+      ],
+      "actual_norm": 57.37538146972656,
+      "reference_norm": 57.375389099121094
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.out_proj.bias",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        1
+      ],
+      "actual_norm": 25.406890869140625,
+      "reference_norm": 25.406890869140625
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_1.weight",
+      "none": false,
+      "max_abs": 2.86102294921875e-06,
+      "index": [
+        4
+      ],
+      "actual_norm": 20.002334594726562,
+      "reference_norm": 20.002330780029297
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_1.bias",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        0
+      ],
+      "actual_norm": 21.07059097290039,
+      "reference_norm": 21.070592880249023
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_fc.weight",
+      "none": false,
+      "max_abs": 3.337860107421875e-06,
+      "index": [
+        14,
+        5
+      ],
+      "actual_norm": 57.01277160644531,
+      "reference_norm": 57.01277160644531
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_fc.bias",
+      "none": false,
+      "max_abs": 1.1920928955078125e-06,
+      "index": [
+        14
+      ],
+      "actual_norm": 23.98213005065918,
+      "reference_norm": 23.98213005065918
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_proj.weight",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        1,
+        6
+      ],
+      "actual_norm": 51.865623474121094,
+      "reference_norm": 51.86561965942383
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_proj.bias",
+      "none": false,
+      "max_abs": 2.86102294921875e-06,
+      "index": [
+        1
+      ],
+      "actual_norm": 19.419801712036133,
+      "reference_norm": 19.419801712036133
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_2.weight",
+      "none": false,
+      "max_abs": 2.86102294921875e-06,
+      "index": [
+        2
+      ],
+      "actual_norm": 12.139423370361328,
+      "reference_norm": 12.139426231384277
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_2.bias",
+      "none": false,
+      "max_abs": 1.6689300537109375e-06,
+      "index": [
+        3
+      ],
+      "actual_norm": 10.20437240600586,
+      "reference_norm": 10.204373359680176
+    },
+    {
+      "name": "fusion_branch.visual_adapter.weight",
+      "none": false,
+      "max_abs": 1.0967254638671875e-05,
+      "index": [
+        1,
+        3
+      ],
+      "actual_norm": 77.31796264648438,
+      "reference_norm": 77.31795501708984
+    }
+  ],
+  "updates": [
+    {
+      "name": "clip.text_projection",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 109.82423400878906,
+      "reference_gradient": 109.8242416381836
+    },
+    {
+      "name": "clip.visual.proj",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 227.7039337158203,
+      "reference_gradient": 227.70394897460938
+    },
+    {
+      "name": "clip.visual.hidden.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 67.43449401855469,
+      "reference_gradient": 67.43448638916016
+    },
+    {
+      "name": "clip.visual.hidden.bias",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 87.9156494140625,
+      "reference_gradient": 87.9156494140625
+    },
+    {
+      "name": "clip.token_embedding.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 0.0,
+      "reference_gradient": 0.0
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -1.8679769039154053,
+      "reference_gradient": -1.8679769039154053
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+      "max_abs": 1.8768361769616604e-05,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        15
+      ],
+      "near_zero_theoretical_bias": true,
+      "actual_gradient": 2.5331974029541016e-06,
+      "reference_gradient": 4.302710294723511e-07
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 25.34835433959961,
+      "reference_gradient": 25.348358154296875
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.bias",
+      "max_abs": 1.1641532182693481e-10,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        5
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 5.748527526855469,
+      "reference_gradient": 5.748540878295898
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 9.704315185546875,
+      "reference_gradient": 9.704318046569824
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.bias",
+      "max_abs": 1.1641532182693481e-10,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        2
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -20.96701431274414,
+      "reference_gradient": -20.967018127441406
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -1.0100791454315186,
+      "reference_gradient": -1.0100810527801514
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.bias",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 11.374863624572754,
+      "reference_gradient": 11.374866485595703
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.weight",
+      "max_abs": 2.3283064365386963e-10,
+      "unexplained_max": 2.3283064365386963e-10,
+      "index": [
+        3,
+        31
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 0.960309624671936,
+      "reference_gradient": 0.9603093862533569
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.bias",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 17.871938705444336,
+      "reference_gradient": 17.871938705444336
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 3.36948299407959,
+      "reference_gradient": 3.3694839477539062
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.bias",
+      "max_abs": 1.1641532182693481e-10,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 17.273698806762695,
+      "reference_gradient": 17.27370262145996
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 49.28665542602539,
+      "reference_gradient": 49.286643981933594
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.bias",
+      "max_abs": 0.0019703933503478765,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": true,
+      "actual_gradient": -9.5367431640625e-06,
+      "reference_gradient": 3.5762786865234375e-07
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.in_proj_weight",
+      "max_abs": 0.0019630789756774902,
+      "unexplained_max": 0.0019630789756774902,
+      "index": [
+        4,
+        4
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -1.2971697742614197e-06,
+      "reference_gradient": 3.4795306191881537e-07
+    }
+  ]
+}
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank0]:     return _run_code(code, main_globals, None,
+[rank0]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+[rank0]:     exec(code, run_globals)
+[rank0]:   File "/root/lk_projects/SAID-stack-crossscore-v1/tests/fusion_ddp_worker.py", line 137, in <module>
+[rank0]:     main()
+[rank0]:   File "/root/lk_projects/SAID-stack-crossscore-v1/tests/fusion_ddp_worker.py", line 125, in main
+[rank0]:     raise AssertionError(f'Unexplained AdamW difference {name}: {float(unexplained.max())}')
+[rank0]: AssertionError: Unexplained AdamW difference fusion_branch.visual_blocks.0.attn.in_proj_weight: 0.0019630789756774902
+{
+  "fusion": "stack_pool",
+  "visual": "cls",
+  "case": "all_valid",
+  "name": "fusion_branch.visual_blocks.0.attn.in_proj_weight",
+  "gradients": [
+    {
+      "name": "clip.text_projection",
+      "none": false,
+      "max_abs": 0.000244140625,
+      "index": [
+        4,
+        5
+      ],
+      "actual_norm": 3803.600341796875,
+      "reference_norm": 3803.60009765625
+    },
+    {
+      "name": "clip.visual.proj",
+      "none": false,
+      "max_abs": 0.0001220703125,
+      "index": [
+        6,
+        5
+      ],
+      "actual_norm": 2318.7177734375,
+      "reference_norm": 2318.7177734375
+    },
+    {
+      "name": "clip.visual.hidden.weight",
+      "none": false,
+      "max_abs": 6.103515625e-05,
+      "index": [
+        1,
+        4
+      ],
+      "actual_norm": 1017.251953125,
+      "reference_norm": 1017.2518920898438
+    },
+    {
+      "name": "clip.visual.hidden.bias",
+      "none": false,
+      "max_abs": 1.9073486328125e-05,
+      "index": [
+        7
+      ],
+      "actual_norm": 246.96990966796875,
+      "reference_norm": 246.9698944091797
+    },
+    {
+      "name": "clip.token_embedding.weight",
+      "none": false,
+      "max_abs": 3.0517578125e-05,
+      "index": [
+        28,
+        5
+      ],
+      "actual_norm": 488.89971923828125,
+      "reference_norm": 488.8997497558594
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_weight",
+      "none": false,
+      "max_abs": 1.239776611328125e-05,
+      "index": [
+        13,
+        0
+      ],
+      "actual_norm": 147.55787658691406,
+      "reference_norm": 147.55787658691406
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+      "none": false,
+      "max_abs": 5.7220458984375e-06,
+      "index": [
+        21
+      ],
+      "actual_norm": 37.996944427490234,
+      "reference_norm": 37.9969482421875
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.weight",
+      "none": false,
+      "max_abs": 1.33514404296875e-05,
+      "index": [
+        5,
+        5
+      ],
+      "actual_norm": 200.42356872558594,
+      "reference_norm": 200.42356872558594
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.bias",
+      "none": false,
+      "max_abs": 1.33514404296875e-05,
+      "index": [
+        5
+      ],
+      "actual_norm": 72.91409301757812,
+      "reference_norm": 72.9140853881836
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.weight",
+      "none": false,
+      "max_abs": 9.5367431640625e-06,
+      "index": [
+        2
+      ],
+      "actual_norm": 67.70198822021484,
+      "reference_norm": 67.70198059082031
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.bias",
+      "none": false,
+      "max_abs": 5.7220458984375e-06,
+      "index": [
+        4
+      ],
+      "actual_norm": 39.35660934448242,
+      "reference_norm": 39.35661315917969
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.weight",
+      "none": false,
+      "max_abs": 7.62939453125e-06,
+      "index": [
+        13,
+        7
+      ],
+      "actual_norm": 182.4587860107422,
+      "reference_norm": 182.4587860107422
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.bias",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        14
+      ],
+      "actual_norm": 77.46788024902344,
+      "reference_norm": 77.46788024902344
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.weight",
+      "none": false,
+      "max_abs": 9.5367431640625e-06,
+      "index": [
+        5,
+        6
+      ],
+      "actual_norm": 196.07142639160156,
+      "reference_norm": 196.07142639160156
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.bias",
+      "none": false,
+      "max_abs": 1.1444091796875e-05,
+      "index": [
+        1
+      ],
+      "actual_norm": 74.73218536376953,
+      "reference_norm": 74.73219299316406
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.weight",
+      "none": false,
+      "max_abs": 9.5367431640625e-06,
+      "index": [
+        4
+      ],
+      "actual_norm": 54.16749954223633,
+      "reference_norm": 54.16749572753906
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.bias",
+      "none": false,
+      "max_abs": 7.62939453125e-06,
+      "index": [
+        1
+      ],
+      "actual_norm": 43.69407653808594,
+      "reference_norm": 43.69408416748047
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.weight",
+      "none": false,
+      "max_abs": 1.52587890625e-05,
+      "index": [
+        0,
+        5
+      ],
+      "actual_norm": 206.64772033691406,
+      "reference_norm": 206.64772033691406
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.bias",
+      "none": false,
+      "max_abs": 9.894371032714844e-06,
+      "index": [
+        0
+      ],
+      "actual_norm": 9.5367431640625e-06,
+      "reference_norm": 3.5762786865234375e-07
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.in_proj_weight",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        19,
+        2
+      ],
+      "actual_norm": 44.87533950805664,
+      "reference_norm": 44.875335693359375
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+      "none": false,
+      "max_abs": 1.9073486328125e-06,
+      "index": [
+        16
+      ],
+      "actual_norm": 18.646652221679688,
+      "reference_norm": 18.646652221679688
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.out_proj.weight",
+      "none": false,
+      "max_abs": 4.76837158203125e-06,
+      "index": [
+        3,
+        4
+      ],
+      "actual_norm": 57.37538146972656,
+      "reference_norm": 57.375389099121094
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.out_proj.bias",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        1
+      ],
+      "actual_norm": 25.406890869140625,
+      "reference_norm": 25.406890869140625
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_1.weight",
+      "none": false,
+      "max_abs": 2.86102294921875e-06,
+      "index": [
+        4
+      ],
+      "actual_norm": 20.002334594726562,
+      "reference_norm": 20.002330780029297
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_1.bias",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        0
+      ],
+      "actual_norm": 21.07059097290039,
+      "reference_norm": 21.070592880249023
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_fc.weight",
+      "none": false,
+      "max_abs": 3.337860107421875e-06,
+      "index": [
+        14,
+        5
+      ],
+      "actual_norm": 57.01277160644531,
+      "reference_norm": 57.01277160644531
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_fc.bias",
+      "none": false,
+      "max_abs": 1.1920928955078125e-06,
+      "index": [
+        14
+      ],
+      "actual_norm": 23.98213005065918,
+      "reference_norm": 23.98213005065918
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_proj.weight",
+      "none": false,
+      "max_abs": 3.814697265625e-06,
+      "index": [
+        1,
+        6
+      ],
+      "actual_norm": 51.865623474121094,
+      "reference_norm": 51.86561965942383
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.mlp.c_proj.bias",
+      "none": false,
+      "max_abs": 2.86102294921875e-06,
+      "index": [
+        1
+      ],
+      "actual_norm": 19.419801712036133,
+      "reference_norm": 19.419801712036133
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_2.weight",
+      "none": false,
+      "max_abs": 2.86102294921875e-06,
+      "index": [
+        2
+      ],
+      "actual_norm": 12.139423370361328,
+      "reference_norm": 12.139426231384277
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.ln_2.bias",
+      "none": false,
+      "max_abs": 1.6689300537109375e-06,
+      "index": [
+        3
+      ],
+      "actual_norm": 10.20437240600586,
+      "reference_norm": 10.204373359680176
+    },
+    {
+      "name": "fusion_branch.visual_adapter.weight",
+      "none": false,
+      "max_abs": 1.0967254638671875e-05,
+      "index": [
+        1,
+        3
+      ],
+      "actual_norm": 77.31796264648438,
+      "reference_norm": 77.31795501708984
+    }
+  ],
+  "updates": [
+    {
+      "name": "clip.text_projection",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 109.82423400878906,
+      "reference_gradient": 109.8242416381836
+    },
+    {
+      "name": "clip.visual.proj",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 227.7039337158203,
+      "reference_gradient": 227.70394897460938
+    },
+    {
+      "name": "clip.visual.hidden.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 67.43449401855469,
+      "reference_gradient": 67.43448638916016
+    },
+    {
+      "name": "clip.visual.hidden.bias",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 87.9156494140625,
+      "reference_gradient": 87.9156494140625
+    },
+    {
+      "name": "clip.token_embedding.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 0.0,
+      "reference_gradient": 0.0
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -1.8679769039154053,
+      "reference_gradient": -1.8679769039154053
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.in_proj_bias",
+      "max_abs": 1.8768361769616604e-05,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        15
+      ],
+      "near_zero_theoretical_bias": true,
+      "actual_gradient": 2.5331974029541016e-06,
+      "reference_gradient": 4.302710294723511e-07
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 25.34835433959961,
+      "reference_gradient": 25.348358154296875
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.attn.out_proj.bias",
+      "max_abs": 1.1641532182693481e-10,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        5
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 5.748527526855469,
+      "reference_gradient": 5.748540878295898
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 9.704315185546875,
+      "reference_gradient": 9.704318046569824
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_1.bias",
+      "max_abs": 1.1641532182693481e-10,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        2
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -20.96701431274414,
+      "reference_gradient": -20.967018127441406
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -1.0100791454315186,
+      "reference_gradient": -1.0100810527801514
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_fc.bias",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 11.374863624572754,
+      "reference_gradient": 11.374866485595703
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.weight",
+      "max_abs": 2.3283064365386963e-10,
+      "unexplained_max": 2.3283064365386963e-10,
+      "index": [
+        3,
+        31
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 0.960309624671936,
+      "reference_gradient": 0.9603093862533569
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.mlp.c_proj.bias",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 17.871938705444336,
+      "reference_gradient": 17.871938705444336
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 3.36948299407959,
+      "reference_gradient": 3.3694839477539062
+    },
+    {
+      "name": "clip.mask_net.resblocks.0.ln_2.bias",
+      "max_abs": 1.1641532182693481e-10,
+      "unexplained_max": 1.1641532182693481e-10,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 17.273698806762695,
+      "reference_gradient": 17.27370262145996
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.weight",
+      "max_abs": 0.0,
+      "unexplained_max": 0.0,
+      "index": [
+        0,
+        0
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": 49.28665542602539,
+      "reference_gradient": 49.286643981933594
+    },
+    {
+      "name": "clip.mask_net.attn_pool.attention.bias",
+      "max_abs": 0.0019703933503478765,
+      "unexplained_max": 0.0,
+      "index": [
+        0
+      ],
+      "near_zero_theoretical_bias": true,
+      "actual_gradient": -9.5367431640625e-06,
+      "reference_gradient": 3.5762786865234375e-07
+    },
+    {
+      "name": "fusion_branch.visual_blocks.0.attn.in_proj_weight",
+      "max_abs": 0.0019630789756774902,
+      "unexplained_max": 0.0019630789756774902,
+      "index": [
+        4,
+        4
+      ],
+      "near_zero_theoretical_bias": false,
+      "actual_gradient": -1.2971697742614197e-06,
+      "reference_gradient": 3.4795306191881537e-07
+    }
+  ]
+}
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank1]:     return _run_code(code, main_globals, None,
+[rank1]:   File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+[rank1]:     exec(code, run_globals)
+[rank1]:   File "/root/lk_projects/SAID-stack-crossscore-v1/tests/fusion_ddp_worker.py", line 137, in <module>
+[rank1]:     main()
+[rank1]:   File "/root/lk_projects/SAID-stack-crossscore-v1/tests/fusion_ddp_worker.py", line 125, in main
+[rank1]:     raise AssertionError(f'Unexplained AdamW difference {name}: {float(unexplained.max())}')
+[rank1]: AssertionError: Unexplained AdamW difference fusion_branch.visual_blocks.0.attn.in_proj_weight: 0.0019630789756774902
+[rank0]:[W930 08:32:16.686553140 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W0930 08:32:17.978000 1199600 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1199608 closing signal SIGTERM
+E0930 08:32:18.093000 1199600 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1199607) of binary: /root/miniconda3/envs/said-repro/bin/python
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/said-repro/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+tests.fusion_ddp_worker FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-30_08:32:17
+  host      : interactive93293
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1199607)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
