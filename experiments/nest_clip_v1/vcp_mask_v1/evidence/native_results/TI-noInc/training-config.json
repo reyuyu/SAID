@@ -1,0 +1,154 @@
+{
+  "arm": "A2",
+  "experiment_name": "NEST-TI-noInc",
+  "condition_mode": "joint_image",
+  "full_native_mix": 0,
+  "sampling_mode": "random_k",
+  "sampling_seed": 0,
+  "shuffle_seed": 0,
+  "world_size": 4,
+  "batch_size": 256,
+  "accumulation": 1,
+  "epochs": 3,
+  "seed": 0,
+  "workers": 8,
+  "checkpoint_encoders": true,
+  "checkpoint_pair_blocks": false,
+  "image_chunk": 128,
+  "text_chunk": 128,
+  "score_chunk": 64,
+  "checkpoint_interval": 100,
+  "config": "/root/lk_projects/SAID-vcp-mask-v1/configs/nest_ti_noinc.json",
+  "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+  "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+  "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+  "output_dir": "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_v1/formal/TI-noInc",
+  "run_type": "formal",
+  "max_updates": 500,
+  "resume": null,
+  "expected_parent_trainer_sha256": null,
+  "horizon": 3651,
+  "batches_per_epoch": 1217,
+  "loader_batches_this_epoch": 500,
+  "training_records": 1245901,
+  "sampler_num_samples": 311476,
+  "sampler_padding": 3,
+  "tail_batch": 180,
+  "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "data": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  },
+  "code_sha256": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "train/nested_semantic_data.py": "79b65f47550c6e7b35a4d3cde7158fd3f0733712ccc48e53d72dd6bae8d2e336",
+    "train/train_nested_semantic_mask.py": "09c007f88935ee1a5fc300342bc2382c6bc5f06da53fb252369dca2c108543b2",
+    "model/model_longclip.py": "2eec22c9eec82fc0025613eb183e7b4ef1c64985d4cf7d8bd6879a6e0d027a0a",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e"
+  },
+  "runtime_model": {
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "checkpoint_pair_blocks": false,
+    "checkpoint_encoders": true,
+    "encoder_checkpoint_active": true,
+    "condition_mode": "joint_image",
+    "arm": "A2"
+  },
+  "adapter_initialization": {
+    "module": "JointMaskAdapter",
+    "state_sha256": "2f65bb06715163533580ef97d6137eb4af9d8f5a3dbaacd9b638ae30e169ca03",
+    "parameters": {
+      "image.weight": {
+        "shape": [
+          64,
+          768
+        ],
+        "nonzero": 49152
+      },
+      "text.weight": {
+        "shape": [
+          64,
+          512
+        ],
+        "nonzero": 32768
+      },
+      "output.weight": {
+        "shape": [
+          512,
+          64
+        ],
+        "nonzero": 0
+      }
+    }
+  },
+  "git_head": "3f64e5592bc94abe85fb22a2b2ebc189e9fad2ca",
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "nccl": [
+    2,
+    21,
+    5
+  ],
+  "environment": {},
+  "ranks": [
+    {
+      "rank": 0,
+      "local_rank": 0,
+      "pid": 1157849,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7652279138565063
+    },
+    {
+      "rank": 1,
+      "local_rank": 1,
+      "pid": 1157850,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7762718498706818
+    },
+    {
+      "rank": 2,
+      "local_rank": 2,
+      "pid": 1157851,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.8112598955631256
+    },
+    {
+      "rank": 3,
+      "local_rank": 3,
+      "pid": 1157852,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7725544944405556
+    }
+  ],
+  "gather_gradient_test": {
+    "expected": 10.0,
+    "actual": 10.0,
+    "passed": true
+  },
+  "start_updates": 0,
+  "updates_planned_this_run": 500
+}

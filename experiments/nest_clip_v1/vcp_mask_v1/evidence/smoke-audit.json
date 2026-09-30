@@ -1,0 +1,103 @@
+{
+  "VCP-Mask": {
+    "passed": true,
+    "steps": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "finite": true,
+    "world_size": 4,
+    "batch_size": 256,
+    "horizon": 3651,
+    "loader_batches_this_epoch": 5,
+    "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "runtime_model": {
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "checkpoint_pair_blocks": false,
+      "checkpoint_encoders": true,
+      "encoder_checkpoint_active": true,
+      "condition_mode": "vcp_mask",
+      "arm": "A3"
+    },
+    "adapter_initialization": {
+      "module": "VCPQueryAdapter",
+      "state_sha256": "a39845725339c029b550ca9dd2222174a5e6b667d4ca50e6fbeba16cf73ef8a3",
+      "parameters": {
+        "visual.weight": {
+          "shape": [
+            64,
+            768
+          ],
+          "nonzero": 49152
+        },
+        "output.weight": {
+          "shape": [
+            512,
+            64
+          ],
+          "nonzero": 0
+        }
+      }
+    },
+    "max_parameter_difference": 0.0,
+    "peak_allocated_gib": 23.420368671417236
+  },
+  "TI-noInc": {
+    "passed": true,
+    "steps": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "finite": true,
+    "world_size": 4,
+    "batch_size": 256,
+    "horizon": 3651,
+    "loader_batches_this_epoch": 5,
+    "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "runtime_model": {
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "checkpoint_pair_blocks": false,
+      "checkpoint_encoders": true,
+      "encoder_checkpoint_active": true,
+      "condition_mode": "joint_image",
+      "arm": "A2"
+    },
+    "adapter_initialization": {
+      "module": "JointMaskAdapter",
+      "state_sha256": "2f65bb06715163533580ef97d6137eb4af9d8f5a3dbaacd9b638ae30e169ca03",
+      "parameters": {
+        "image.weight": {
+          "shape": [
+            64,
+            768
+          ],
+          "nonzero": 49152
+        },
+        "text.weight": {
+          "shape": [
+            64,
+            512
+          ],
+          "nonzero": 32768
+        },
+        "output.weight": {
+          "shape": [
+            512,
+            64
+          ],
+          "nonzero": 0
+        }
+      }
+    },
+    "max_parameter_difference": 0.0,
+    "peak_allocated_gib": 28.84419536590576
+  }
+}
