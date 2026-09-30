@@ -52,6 +52,23 @@ Long-DCI uses 7,602 images and 7,602 captions. Values are percentages.
 
 Evaluation time was 448.9 seconds on `cuda:0`; the bare-student SHA256 matched the other native evaluations.
 
+## Long-DCI pair-conditioned mask-space diagnostic
+
+This diagnostic uses the complete 7,602×7,602 candidate matrix. Every pair uses its own TI-fast mask and score `100*cos(z_i * m_ij, t_j)`; no positive mask is broadcast to negatives.
+
+| Direction | Metric | Native | Mask-space | Delta |
+|---|---:|---:|---:|---:|
+| I2T | R@1 | 58.67 | 55.08 | -3.59 pp |
+| I2T | R@5 | 77.45 | 74.93 | -2.53 pp |
+| I2T | R@10 | 83.35 | 80.86 | -2.49 pp |
+| T2I | R@1 | 60.17 | 57.08 | -3.09 pp |
+| T2I | R@5 | 78.20 | 76.41 | -1.79 pp |
+| T2I | R@10 | 83.28 | 82.07 | -1.21 pp |
+
+The mean positive score changes only from 26.072 to 26.137. The mean hardest negative rises from 24.941 to 25.610 for I2T and from 24.663 to 25.234 for T2I. Consequently, the mean positive-minus-hardest-negative margin falls from 1.131 to 0.527 for I2T and from 1.409 to 0.903 for T2I.
+
+Positive masks retain 76.58% of channels on average, with no all-open or all-closed positive masks. The recomputed native metrics exactly match the separate native evaluation, validating dataset ordering and ranking semantics.
+
 ## Training validation
 
 - Completed updates: 3651/3651; continuation log covers steps 501-3651 without gaps.
@@ -74,6 +91,7 @@ Evaluation time was 448.9 seconds on `cuda:0`; the bare-student SHA256 matched t
 - Training checkpoint SHA256: `c106802b5b7a5fcbc368b7e1ca02a09d83a7ce7caa147976160185f35db73036`
 - Bare student SHA256: `e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df`
 - Strict load passed; optimizer step is 3651; native image and text embedding maximum absolute differences are both 0.
-- Run commit: `b2ec5ae93c9a24dd84875f121eaa8c4032ec2339`
+- Training run commit: `b2ec5ae93c9a24dd84875f121eaa8c4032ec2339`
+- Mask-space evaluator commit: `8f2a0607f234aa2c9a0899729decd57fd62bfa5c`
 - Long-DCI manifest SHA256: `8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b`
 - Checkpoints were saved at 500-step intervals and at the final step3651.

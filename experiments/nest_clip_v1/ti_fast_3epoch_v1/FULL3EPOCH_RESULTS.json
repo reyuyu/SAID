@@ -357,5 +357,182 @@
     },
     "native_student_only": true
   },
-  "evaluation_note": "Long-DCI was added on 2026-09-30 by explicit user request."
+  "evaluation_note": "Long-DCI was added on 2026-09-30 by explicit user request.",
+  "mask_space_long_dci": {
+    "protocol": "long_dci_pair_conditioned_mask_space_v1",
+    "definition": "100*cos(normalize(z_i * hard_st(sigmoid(base_j + delta_ij))), normalize(t_j))",
+    "n_images": 7602,
+    "n_captions": 7602,
+    "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/jointmask_fast_v1/full3epoch/TI-fast/step003651.pt",
+    "checkpoint_sha256": "c106802b5b7a5fcbc368b7e1ca02a09d83a7ce7caa147976160185f35db73036",
+    "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+    "git_head": "8f2a0607f234aa2c9a0899729decd57fd62bfa5c",
+    "chunks": {
+      "image": 128,
+      "text": 128
+    },
+    "native_metrics_recomputed": {
+      "R@1": {
+        "I2T": 0.586687713759537,
+        "T2I": 0.6016837674296238
+      },
+      "R@5": {
+        "I2T": 0.7745330176269403,
+        "T2I": 0.7820310444619837
+      },
+      "R@10": {
+        "I2T": 0.8334648776637726,
+        "T2I": 0.832807156011576
+      }
+    },
+    "masked_metrics": {
+      "R@1": {
+        "I2T": 0.5507761115495922,
+        "T2I": 0.5707708497763746
+      },
+      "R@5": {
+        "I2T": 0.7492765061825836,
+        "T2I": 0.764141015522231
+      },
+      "R@10": {
+        "I2T": 0.808602999210734,
+        "T2I": 0.820705077611155
+      }
+    },
+    "delta_pp_masked_minus_native": {
+      "R@1": {
+        "I2T": -3.5911602209944826,
+        "T2I": -3.0912917653249217
+      },
+      "R@5": {
+        "I2T": -2.52565114443567,
+        "T2I": -1.7890028939752667
+      },
+      "R@10": {
+        "I2T": -2.4861878453038666,
+        "T2I": -1.210207840042099
+      }
+    },
+    "native_score_diagnostics_100x_cosine": {
+      "positive_pair_scores": {
+        "mean": 26.072099685668945,
+        "std": 5.068239212036133,
+        "p05": 17.519859313964844,
+        "median": 26.23134422302246,
+        "p95": 34.18111038208008,
+        "min": 5.578039169311523,
+        "max": 42.92082977294922
+      },
+      "i2t_hardest_negative_scores": {
+        "mean": 24.941171646118164,
+        "std": 2.0951216220855713,
+        "p05": 21.68091583251953,
+        "median": 24.825794219970703,
+        "p95": 28.536090850830078,
+        "min": 16.304468154907227,
+        "max": 35.366817474365234
+      },
+      "i2t_positive_minus_hardest_negative": {
+        "mean": 1.1309266090393066,
+        "std": 5.356203079223633,
+        "p05": -7.715792179107666,
+        "median": 1.0495309829711914,
+        "p95": 10.099990844726562,
+        "min": -20.52155113220215,
+        "max": 20.18901252746582
+      },
+      "t2i_hardest_negative_scores": {
+        "mean": 24.663366317749023,
+        "std": 2.281745433807373,
+        "p05": 21.061683654785156,
+        "median": 24.636775970458984,
+        "p95": 28.50534439086914,
+        "min": 13.864229202270508,
+        "max": 35.366817474365234
+      },
+      "t2i_positive_minus_hardest_negative": {
+        "mean": 1.408733606338501,
+        "std": 5.294680595397949,
+        "p05": -6.992055892944336,
+        "median": 1.213296890258789,
+        "p95": 10.44091796875,
+        "min": -18.493549346923828,
+        "max": 23.41525650024414
+      }
+    },
+    "masked_score_diagnostics_100x_cosine": {
+      "positive_pair_scores": {
+        "mean": 26.137271881103516,
+        "std": 4.594211578369141,
+        "p05": 18.192195892333984,
+        "median": 26.35760498046875,
+        "p95": 33.22491455078125,
+        "min": 4.243627071380615,
+        "max": 42.73917770385742
+      },
+      "i2t_hardest_negative_scores": {
+        "mean": 25.609790802001953,
+        "std": 1.9970691204071045,
+        "p05": 22.38910484313965,
+        "median": 25.55484390258789,
+        "p95": 28.97451400756836,
+        "min": 18.057554244995117,
+        "max": 34.68569564819336
+      },
+      "i2t_positive_minus_hardest_negative": {
+        "mean": 0.5274809002876282,
+        "std": 4.9825053215026855,
+        "p05": -7.7853264808654785,
+        "median": 0.6167087554931641,
+        "p95": 8.6327486038208,
+        "min": -20.364803314208984,
+        "max": 20.065921783447266
+      },
+      "t2i_hardest_negative_scores": {
+        "mean": 25.234434127807617,
+        "std": 2.295804500579834,
+        "p05": 21.439523696899414,
+        "median": 25.277511596679688,
+        "p95": 28.909425735473633,
+        "min": 13.769447326660156,
+        "max": 34.68569564819336
+      },
+      "t2i_positive_minus_hardest_negative": {
+        "mean": 0.9028377532958984,
+        "std": 4.978067874908447,
+        "p05": -7.3091888427734375,
+        "median": 0.8288717269897461,
+        "p95": 9.095952033996582,
+        "min": -20.211576461791992,
+        "max": 21.062339782714844
+      }
+    },
+    "positive_mask_diagnostics": {
+      "positive_keep_ratio": 0.7658303380012512,
+      "positive_all_open_fraction": 0.0,
+      "positive_all_closed_fraction": 0.0,
+      "positive_probability_mean": 0.5815779566764832,
+      "positive_delta_abs_mean": 0.0531310997903347
+    },
+    "timing_seconds": {
+      "load": 5.061696916818619,
+      "text_encoding_and_gate": 15.11214453727007,
+      "image_encoding": 413.88224881887436,
+      "native_scoring_and_metrics": 1.4881323277950287,
+      "masked_pair_scoring_and_metrics": 3.4918069913983345,
+      "total": 439.0360295921564
+    },
+    "device": "cuda:0",
+    "full_pair_matrix": true,
+    "native_student_only": false,
+    "execution": {
+      "name": "TI-fast-step3651-long_dci-mask-space",
+      "started_utc": "2026-09-30T01:55:54Z",
+      "finished_utc": "2026-09-30T02:03:20Z",
+      "exit_code": 0,
+      "wall_seconds": 446,
+      "git_head": "8f2a060"
+    },
+    "interpretation": "Pair-conditioned hard masks slightly raise positive scores but raise the hardest-negative scores more, reducing margins and Recall."
+  }
 }
