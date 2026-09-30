@@ -17,5 +17,9 @@ Server output: `/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/`.
 `console.txt` and `status.json` track the detached run. Four ranks use all four
 GPUs, batch 256 per rank. The continuation records updates 501-3651.
 
-Only training is launched here. Native evaluation will be performed when queried
-after the final checkpoint is available; no DCI evaluation is scheduled.
+The independently launched `evaluate.py` exports and strictly verifies the final
+student, then evaluates COCO, Urban-1k, Flickr30k test1K and DOCCI in that order.
+It writes `evaluation-status.json` separately from the completed training status,
+records each command and exit code, renders comparisons against VCP@500 and
+TI-fast@3651, then commits and pushes compact evidence to this experiment branch.
+Any failed stage stops the pipeline. DCI and Long-DCI are not scheduled.
