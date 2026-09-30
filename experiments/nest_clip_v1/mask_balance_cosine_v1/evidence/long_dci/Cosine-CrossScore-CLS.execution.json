@@ -1,0 +1,23 @@
+{
+  "group": "Cosine-CrossScore-CLS",
+  "command": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Cosine-CrossScore-CLS/student_step500.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Cosine-CrossScore-CLS/long_dci",
+    "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+  ],
+  "cwd": "/root/lk_projects/SAID-mask-balance-cosine-v1",
+  "git_head": "62d416789e8bc4e39f6c506e8fc5fdaa0c26c8e7",
+  "started_utc": "2026-09-30T13:38:31.871974+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 453.59832011163235,
+  "finished_utc": "2026-09-30T13:46:05.470887+00:00"
+}

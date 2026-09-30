@@ -1,0 +1,144 @@
+{
+  "generated_utc": "2026-09-30T13:46:05.473378+00:00",
+  "protocol": "long_dci",
+  "n_images": 7602,
+  "n_captions": 7602,
+  "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+  "metrics": {
+    "TI-fast@500": {
+      "I2T": {
+        "R@1": 0.5559063404367272,
+        "R@10": 0.8134701394369903,
+        "R@5": 0.7475664298868718
+      },
+      "T2I": {
+        "R@1": 0.5644567219152854,
+        "R@10": 0.8182057353328072,
+        "R@5": 0.7603262299394896
+      }
+    },
+    "Balanced-Stack-Patch": {
+      "I2T": {
+        "R@1": 0.5520915548539858,
+        "R@5": 0.746119442252039,
+        "R@10": 0.810444619836885
+      },
+      "T2I": {
+        "R@1": 0.5722178374112076,
+        "R@5": 0.7640094711917916,
+        "R@10": 0.8205735332807156
+      }
+    },
+    "Cosine-CrossScore-CLS": {
+      "I2T": {
+        "R@1": 0.5481452249408051,
+        "R@5": 0.7417784793475402,
+        "R@10": 0.8054459352801894
+      },
+      "T2I": {
+        "R@1": 0.5524861878453039,
+        "R@5": 0.7471717968955538,
+        "R@10": 0.8066298342541437
+      }
+    }
+  },
+  "deltas_vs_TI500_pp": {
+    "Balanced-Stack-Patch": {
+      "I2T": {
+        "R@1": -0.3814785582741398,
+        "R@5": -0.14469876348328636,
+        "R@10": -0.3025519600105331
+      },
+      "T2I": {
+        "R@1": 0.7761115495922177,
+        "R@5": 0.36832412523020164,
+        "R@10": 0.23677979479084232
+      }
+    },
+    "Cosine-CrossScore-CLS": {
+      "I2T": {
+        "R@1": -0.7761115495922066,
+        "R@5": -0.5787950539331677,
+        "R@10": -0.802420415680094
+      },
+      "T2I": {
+        "R@1": -1.1970534069981498,
+        "R@5": -1.315443304393582,
+        "R@10": -1.1575901078663464
+      }
+    }
+  },
+  "evaluation_metadata": {
+    "Balanced-Stack-Patch": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "checkpoint_sha256": "fb5665c4c05c07f4361737ba723fad950fa952d0f4cb1bdd59477885acc7de7f",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 451.3490743637085,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "Cosine-CrossScore-CLS": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "checkpoint_sha256": "bc5d78eed5776797f34a91c3aebb1f7abb245f379dbfd9165003038bb5cad7bd",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 445.169796705246,
+      "device": "cuda:0",
+      "native_student_only": true
+    }
+  },
+  "execution": [
+    {
+      "group": "Balanced-Stack-Patch",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Balanced-Stack-Patch/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Balanced-Stack-Patch/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-mask-balance-cosine-v1",
+      "git_head": "62d416789e8bc4e39f6c506e8fc5fdaa0c26c8e7",
+      "started_utc": "2026-09-30T13:30:52.263816+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 459.54464504122734,
+      "finished_utc": "2026-09-30T13:38:31.809014+00:00"
+    },
+    {
+      "group": "Cosine-CrossScore-CLS",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Cosine-CrossScore-CLS/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Cosine-CrossScore-CLS/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-mask-balance-cosine-v1",
+      "git_head": "62d416789e8bc4e39f6c506e8fc5fdaa0c26c8e7",
+      "started_utc": "2026-09-30T13:38:31.871974+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 453.59832011163235,
+      "finished_utc": "2026-09-30T13:46:05.470887+00:00"
+    }
+  ],
+  "evaluation_git_head": "62d416789e8bc4e39f6c506e8fc5fdaa0c26c8e7",
+  "reference_results_sha256": "0f36a25b01aa95d116dc74835768172172f20ed2b5a6285167aad914b7799533",
+  "note": "Added by explicit user request after the frozen four-set 500-step experiment. Native normalized image/text inner product, batch64, cuda:0. J_long stays the Urban/DOCCI summary; Long-DCI is separate. Original S-PATCH/C-CLS were not evaluated on Long-DCI; no unmeasured scores are inferred."
+}
