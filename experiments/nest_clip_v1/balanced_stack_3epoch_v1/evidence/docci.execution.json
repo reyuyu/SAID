@@ -1,0 +1,23 @@
+{
+  "stage": "docci",
+  "command": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/docci",
+    "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+  ],
+  "started_utc": "2026-09-30T15:56:22.858469+00:00",
+  "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+  "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+  "exit_code": 0,
+  "finished_utc": "2026-09-30T16:00:53.826668+00:00",
+  "elapsed_seconds": 270.9674663245678
+}

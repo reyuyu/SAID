@@ -1,0 +1,1153 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-09-30T16:08:27.262704+00:00",
+  "experiment": "Balanced-Stack-Patch full three epochs",
+  "completed_updates": 3651,
+  "horizon": 3651,
+  "training_git_head": "8e65ad077fefd9fea8be5fe6c1fa01b0079f365f",
+  "evaluation_git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+  "checkpoint_sha256": "ff986c5ca8cf94e718f1f5b28eea54760e3c92416c9e8de63aaf98917fec9234",
+  "bare_sha256": "0f8db00860f119d43a72fdb1a09efab5c570a31ddba3ac23c93c5c243708d086",
+  "export_check": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      3651
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "ff986c5ca8cf94e718f1f5b28eea54760e3c92416c9e8de63aaf98917fec9234",
+    "bare_sha256": "0f8db00860f119d43a72fdb1a09efab5c570a31ddba3ac23c93c5c243708d086"
+  },
+  "training": {
+    "config": {
+      "arm": "A3",
+      "experiment_name": "Balanced-Stack-Patch-3epoch",
+      "condition_mode": "dual_branch",
+      "fusion": "balanced_stack",
+      "visual": "patch",
+      "full_native_mix": 0,
+      "sampling_mode": "random_k",
+      "sampling_seed": 0,
+      "shuffle_seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "accumulation": 1,
+      "epochs": 3,
+      "seed": 0,
+      "workers": 8,
+      "checkpoint_encoders": true,
+      "checkpoint_pair_blocks": false,
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "score_chunk": 64,
+      "checkpoint_interval": 3651,
+      "save_initial_checkpoint": false,
+      "monitor_resources": true,
+      "feasibility_abort_seconds": 15,
+      "config": "/root/lk_projects/SAID-balanced-stack-3epoch-v1/configs/nest_balanced_stack_patch_3epoch.json",
+      "init_state": "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+      "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+      "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+      "output_dir": "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch",
+      "run_type": "formal",
+      "max_updates": 3651,
+      "resume": "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Balanced-Stack-Patch/step000500.pt",
+      "expected_parent_trainer_sha256": null,
+      "horizon": 3651,
+      "batches_per_epoch": 1217,
+      "loader_batches_this_epoch": 1217,
+      "training_records": 1245901,
+      "sampler_num_samples": 311476,
+      "sampler_padding": 3,
+      "tail_batch": 180,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+      "data": {
+        "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+        "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+        "original_records": 1246901,
+        "training_records": 1245901,
+        "skip": 1000,
+        "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+        "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+      },
+      "code_sha256": {
+        "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+        "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+        "model/nested_fusion_mask.py": "7e3852e034a8139e0c889ee35171cd282417567f385bca75f5dc87af7c308bbe",
+        "train/nested_semantic_data.py": "79b65f47550c6e7b35a4d3cde7158fd3f0733712ccc48e53d72dd6bae8d2e336",
+        "train/train_nested_semantic_mask.py": "0d5d971c33b5483154b0af8fbd7bdc3129066f4bed5176899c67de77c3eda625",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e"
+      },
+      "runtime_model": {
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "checkpoint_pair_blocks": false,
+        "checkpoint_encoders": true,
+        "encoder_checkpoint_active": true,
+        "condition_mode": "dual_branch",
+        "arm": "A3",
+        "fusion": "balanced_stack",
+        "visual": "patch"
+      },
+      "adapter_initialization": {
+        "module": "FusionBranch",
+        "state_sha256": "340976d102ce0ec24a6e4fb31fc274b303b7e9d141d0e6244a1de53a0425d5a7",
+        "parameters": {
+          "visual_blocks.0.attn.in_proj_weight": {
+            "shape": [
+              1536,
+              512
+            ],
+            "nonzero": 786432
+          },
+          "visual_blocks.0.attn.in_proj_bias": {
+            "shape": [
+              1536
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.attn.out_proj.weight": {
+            "shape": [
+              512,
+              512
+            ],
+            "nonzero": 262144
+          },
+          "visual_blocks.0.attn.out_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.ln_1.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_1.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.mlp.c_fc.weight": {
+            "shape": [
+              2048,
+              512
+            ],
+            "nonzero": 1048576
+          },
+          "visual_blocks.0.mlp.c_fc.bias": {
+            "shape": [
+              2048
+            ],
+            "nonzero": 2048
+          },
+          "visual_blocks.0.mlp.c_proj.weight": {
+            "shape": [
+              512,
+              2048
+            ],
+            "nonzero": 1048574
+          },
+          "visual_blocks.0.mlp.c_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_adapter.weight": {
+            "shape": [
+              512,
+              768
+            ],
+            "nonzero": 393216
+          },
+          "gate.weight": {
+            "shape": [
+              512,
+              1024
+            ],
+            "nonzero": 0
+          }
+        }
+      },
+      "git_head": "8e65ad077fefd9fea8be5fe6c1fa01b0079f365f",
+      "torch": "2.5.1+cu124",
+      "cuda": "12.4",
+      "nccl": [
+        2,
+        21,
+        5
+      ],
+      "environment": {},
+      "ranks": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 1247771,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8917296826839447
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 1247772,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8385251760482788
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 1247773,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.8372887670993805
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 1247774,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.6996748372912407
+        }
+      ],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      },
+      "parameter_counts": {
+        "total": 157058050,
+        "trainable": 156931074,
+        "added": 4069888,
+        "optimizer_groups": {
+          "backbone": 149708289,
+          "shared_mask": 6305281,
+          "joint_adapter": 917504
+        }
+      },
+      "component_initialization": {
+        "clip": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+        "text_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_adapter": "3672e1e4b12390e7ae1dd76c065bab7a0faefc29062170ca94f253f7beb471ae",
+        "crossscore_query": null,
+        "crossscore_key": null,
+        "crossscore_readout": null,
+        "channel_gate": "e5b95cc7da27bc0230bb4b3fe03a38815057e87d75d19a533b3e9a7152ef0da3"
+      },
+      "parent_checkpoint_sha256": "c09e13d6d636c69491914643db81d8270b90d1c85ef0729513d240c4b108293d",
+      "parent_completed_updates": 500,
+      "parent_git_head": "d32eab53856822c5b345f95f66fd2301e1425c40",
+      "parent_code_sha256": {
+        "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+        "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+        "model/nested_fusion_mask.py": "7e3852e034a8139e0c889ee35171cd282417567f385bca75f5dc87af7c308bbe",
+        "train/nested_semantic_data.py": "79b65f47550c6e7b35a4d3cde7158fd3f0733712ccc48e53d72dd6bae8d2e336",
+        "train/train_nested_semantic_mask.py": "0d5d971c33b5483154b0af8fbd7bdc3129066f4bed5176899c67de77c3eda625",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e"
+      },
+      "start_updates": 500,
+      "updates_planned_this_run": 3151
+    },
+    "acceptance": {
+      "passed": true,
+      "ranks": [
+        {
+          "rank": 0,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6913.471049264073,
+          "peak_allocated_gib": 27.758083820343018,
+          "peak_reserved_gib": 29.166015625,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 1,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6912.026412844658,
+          "peak_allocated_gib": 27.758083820343018,
+          "peak_reserved_gib": 29.166015625,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 2,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6913.471778802574,
+          "peak_allocated_gib": 27.758083820343018,
+          "peak_reserved_gib": 29.16796875,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 3,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6912.24407197535,
+          "peak_allocated_gib": 27.758083820343018,
+          "peak_reserved_gib": 29.166015625,
+          "final_nccl_all_reduce": 10.0
+        }
+      ],
+      "speed_gate": null,
+      "resource_failure": null
+    },
+    "continuous": true,
+    "records": 3151,
+    "loss_and_gradients_finite": true,
+    "timing_scope": "real DataLoader complete cycles, maximum over four ranks, ordinary logs included; disk checkpoint separate",
+    "regular_window": "steps 502-3650; excludes first resumed update and final tail",
+    "mean_seconds": 2.1092813039590683,
+    "median_seconds": 2.0891895294189453,
+    "p95_seconds": 2.2060569524765015,
+    "max_seconds": 12.05888557434082,
+    "slow_steps": [
+      {
+        "step": 1218,
+        "warmup": false,
+        "four_rank_max_seconds": 12.05888557434082
+      },
+      {
+        "step": 2435,
+        "warmup": false,
+        "four_rank_max_seconds": 11.93231201171875
+      }
+    ],
+    "resumed_first_update_seconds": 7.0443854331970215,
+    "loop_seconds": 6913.471778802574,
+    "checkpoint_timing": [
+      {
+        "step": 3651,
+        "four_rank_max_seconds": 3.776451349258423
+      }
+    ],
+    "fallback_steps": 0,
+    "duplicate_id_steps": 0,
+    "F_candidate_range": [
+      720,
+      1024
+    ],
+    "view_valid_range": [
+      719,
+      1024
+    ]
+  },
+  "reference_files": {
+    "Balanced500": {
+      "path": "/root/lk_projects/SAID-mask-balance-cosine-v1/experiments/nest_clip_v1/mask_balance_cosine_v1/RESULTS.json",
+      "sha256": "8665a5fd6a96025f876be00bf347dca4a96c6d8db98469e98a6af0c8e731940a"
+    },
+    "Balanced500Long": {
+      "path": "/root/lk_projects/SAID-mask-balance-cosine-v1/experiments/nest_clip_v1/mask_balance_cosine_v1/LONG_DCI_RESULTS.json",
+      "sha256": "1762f57ec1060bf4db5f6222cbd798caa28976dc1165eacb4096eeb46cbba107"
+    },
+    "TI3651": {
+      "path": "/root/lk_projects/SAID-balanced-stack-3epoch-v1/experiments/nest_clip_v1/ti_fast_3epoch_v1/FULL3EPOCH_RESULTS.json",
+      "sha256": "ee9e444ad058e3ba106b33d334ffcd91ed94131bff6f1c776821b5d2e13cbde7"
+    },
+    "VCP3651": {
+      "path": "/root/lk_projects/SAID-balanced-stack-3epoch-v1/experiments/nest_clip_v1/vcp_mask_3epoch_v1/FULL3EPOCH_RESULTS.json",
+      "sha256": "8a37c051f91617a6d5de98276563ef3fb719d8c4dd82499d63f7d48028e077ba"
+    }
+  },
+  "metrics": {
+    "Balanced@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.614,
+          "R@5": 0.841,
+          "R@10": 0.9008
+        },
+        "T2I": {
+          "R@1": 0.42116,
+          "R@5": 0.67844,
+          "R@10": 0.7758
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9220000505447388,
+          "R@5": 0.9830000400543213,
+          "R@10": 0.9940000176429749
+        },
+        "T2I": {
+          "R@1": 0.909000039100647,
+          "R@5": 0.9850000739097595,
+          "R@10": 0.9920000433921814
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.892,
+          "R@5": 0.982,
+          "R@10": 0.994
+        },
+        "T2I": {
+          "R@1": 0.7178,
+          "R@5": 0.9148,
+          "R@10": 0.9534
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7816,
+          "R@5": 0.9566,
+          "R@10": 0.9824
+        },
+        "T2I": {
+          "R@1": 0.7952,
+          "R@5": 0.9564,
+          "R@10": 0.9806
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.5895816890292028,
+          "R@5": 0.7737437516443041,
+          "R@10": 0.8343856879768482
+        },
+        "T2I": {
+          "R@1": 0.6020784004209419,
+          "R@5": 0.7820310444619837,
+          "R@10": 0.8337279663246514
+        }
+      }
+    },
+    "Balanced@500": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.596,
+          "R@5": 0.8188,
+          "R@10": 0.888
+        },
+        "T2I": {
+          "R@1": 0.40932,
+          "R@5": 0.66636,
+          "R@10": 0.7632
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.8970000147819519,
+          "R@5": 0.984000027179718,
+          "R@10": 0.9950000643730164
+        },
+        "T2I": {
+          "R@1": 0.8740000128746033,
+          "R@5": 0.9820000529289246,
+          "R@10": 0.9910000562667847
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.861,
+          "R@5": 0.975,
+          "R@10": 0.988
+        },
+        "T2I": {
+          "R@1": 0.7034,
+          "R@5": 0.9066,
+          "R@10": 0.9468
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7618,
+          "R@5": 0.9456,
+          "R@10": 0.9756
+        },
+        "T2I": {
+          "R@1": 0.759,
+          "R@5": 0.9472,
+          "R@10": 0.9754
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.5520915548539858,
+          "R@5": 0.746119442252039,
+          "R@10": 0.810444619836885
+        },
+        "T2I": {
+          "R@1": 0.5722178374112076,
+          "R@5": 0.7640094711917916,
+          "R@10": 0.8205735332807156
+        }
+      }
+    },
+    "TI-fast@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.6166,
+          "R@5": 0.8344,
+          "R@10": 0.9014
+        },
+        "T2I": {
+          "R@1": 0.41944,
+          "R@5": 0.67608,
+          "R@10": 0.7736
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9150000214576721,
+          "R@5": 0.9850000739097595,
+          "R@10": 0.9930000305175781
+        },
+        "T2I": {
+          "R@1": 0.8980000615119934,
+          "R@5": 0.9820000529289246,
+          "R@10": 0.9890000224113464
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.88,
+          "R@5": 0.979,
+          "R@10": 0.995
+        },
+        "T2I": {
+          "R@1": 0.7196,
+          "R@5": 0.9122,
+          "R@10": 0.9516
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7848,
+          "R@5": 0.9564,
+          "R@10": 0.9816
+        },
+        "T2I": {
+          "R@1": 0.7928,
+          "R@5": 0.9556,
+          "R@10": 0.9808
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.586687713759537,
+          "R@5": 0.7745330176269403,
+          "R@10": 0.8334648776637726
+        },
+        "T2I": {
+          "R@1": 0.6016837674296238,
+          "R@5": 0.7820310444619837,
+          "R@10": 0.832807156011576
+        }
+      }
+    },
+    "VCP@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.6142,
+          "R@5": 0.8366,
+          "R@10": 0.8986
+        },
+        "T2I": {
+          "R@1": 0.41904,
+          "R@5": 0.67752,
+          "R@10": 0.77384
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9180000424385071,
+          "R@5": 0.9850000739097595,
+          "R@10": 0.9930000305175781
+        },
+        "T2I": {
+          "R@1": 0.8980000615119934,
+          "R@5": 0.9820000529289246,
+          "R@10": 0.9880000352859497
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.885,
+          "R@5": 0.981,
+          "R@10": 0.995
+        },
+        "T2I": {
+          "R@1": 0.7192,
+          "R@5": 0.913,
+          "R@10": 0.9516
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.781,
+          "R@5": 0.9546,
+          "R@10": 0.9808
+        },
+        "T2I": {
+          "R@1": 0.7928,
+          "R@5": 0.957,
+          "R@10": 0.9802
+        }
+      }
+    }
+  },
+  "deltas_pp": {
+    "Balanced@500": {
+      "COCO": {
+        "I2T": {
+          "R@1": 1.8000000000000016,
+          "R@5": 2.2199999999999998,
+          "R@10": 1.2800000000000034
+        },
+        "T2I": {
+          "R@1": 1.1839999999999962,
+          "R@5": 1.208000000000009,
+          "R@10": 1.2600000000000056
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 2.5000035762786865,
+          "R@5": -0.09999871253967285,
+          "R@10": -0.10000467300415039
+        },
+        "T2I": {
+          "R@1": 3.50000262260437,
+          "R@5": 0.3000020980834961,
+          "R@10": 0.09999871253967285
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 3.1000000000000028,
+          "R@5": 0.7000000000000006,
+          "R@10": 0.6000000000000005
+        },
+        "T2I": {
+          "R@1": 1.4399999999999968,
+          "R@5": 0.8199999999999985,
+          "R@10": 0.660000000000005
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 1.9799999999999929,
+          "R@5": 1.100000000000001,
+          "R@10": 0.6800000000000028
+        },
+        "T2I": {
+          "R@1": 3.620000000000001,
+          "R@5": 0.9199999999999986,
+          "R@10": 0.5199999999999982
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 3.749013417521707,
+          "R@5": 2.7624309392265123,
+          "R@10": 2.3941068139963217
+        },
+        "T2I": {
+          "R@1": 2.9860563009734276,
+          "R@5": 1.8021573270192048,
+          "R@10": 1.315443304393582
+        }
+      }
+    },
+    "TI-fast@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.26000000000000467,
+          "R@5": 0.6599999999999939,
+          "R@10": -0.05999999999999339
+        },
+        "T2I": {
+          "R@1": 0.17199999999999993,
+          "R@5": 0.23600000000000287,
+          "R@10": 0.22000000000000908
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.700002908706665,
+          "R@5": -0.20000338554382324,
+          "R@10": 0.09999871253967285
+        },
+        "T2I": {
+          "R@1": 1.0999977588653564,
+          "R@5": 0.3000020980834961,
+          "R@10": 0.3000020980834961
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 1.200000000000001,
+          "R@5": 0.30000000000000027,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": -0.18000000000000238,
+          "R@5": 0.25999999999999357,
+          "R@10": 0.18000000000000238
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.32000000000000917,
+          "R@5": 0.019999999999997797,
+          "R@10": 0.08000000000000229
+        },
+        "T2I": {
+          "R@1": 0.24000000000000687,
+          "R@5": 0.08000000000000229,
+          "R@10": -0.019999999999997797
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.28939752696658383,
+          "R@5": -0.07892659826361781,
+          "R@10": 0.09208103130755596
+        },
+        "T2I": {
+          "R@1": 0.03946329913180335,
+          "R@5": 0.0,
+          "R@10": 0.09208103130754486
+        }
+      }
+    },
+    "VCP@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.019999999999997797,
+          "R@5": 0.43999999999999595,
+          "R@10": 0.22000000000000908
+        },
+        "T2I": {
+          "R@1": 0.21199999999999553,
+          "R@5": 0.09200000000000319,
+          "R@10": 0.19600000000000728
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.40000081062316895,
+          "R@5": -0.20000338554382324,
+          "R@10": 0.09999871253967285
+        },
+        "T2I": {
+          "R@1": 1.0999977588653564,
+          "R@5": 0.3000020980834961,
+          "R@10": 0.40000081062316895
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.7000000000000006,
+          "R@5": 0.10000000000000009,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": -0.13999999999999568,
+          "R@5": 0.17999999999999128,
+          "R@10": 0.18000000000000238
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.05999999999999339,
+          "R@5": 0.20000000000000018,
+          "R@10": 0.16000000000000458
+        },
+        "T2I": {
+          "R@1": 0.24000000000000687,
+          "R@5": -0.05999999999999339,
+          "R@10": 0.0400000000000067
+        }
+      }
+    }
+  },
+  "J_long": {
+    "Balanced@3651": 0.8519500224113464,
+    "Balanced@500": 0.8229500069141388,
+    "TI-fast@3651": 0.8476500207424164,
+    "VCP@3651": 0.8474500259876251
+  },
+  "delta_J_long_pp": {
+    "Balanced@500": 2.9000015497207654,
+    "TI-fast@3651": 0.4300001668930076,
+    "VCP@3651": 0.4499996423721342
+  },
+  "mechanism_last50": {
+    "step": 3626.5,
+    "s": 3625.5,
+    "epoch": 2.0,
+    "lr_backbone": 1.778460616527544e-10,
+    "lr_mask": 1.5889688893570897e-07,
+    "lr_adapter": 1.5889688893570898e-08,
+    "F_i2t": 0.020619184263050556,
+    "F_t2i": 0.023753373324871062,
+    "F_sparse": 0.8157599902153015,
+    "F_keep_ratio": 0.8157599902153015,
+    "F_candidates": 1017.92,
+    "F_all_open": 0.0,
+    "F_all_closed": 0.0,
+    "F_positive_keep_ratio": 0.8157599902153015,
+    "F_negative_keep_ratio": 0.7786360478401184,
+    "F_negative_all_open": 0.0,
+    "F_negative_all_closed": 0.0,
+    "O_i2t": 0.11142295308411121,
+    "O_t2i": 0.1600850334763527,
+    "O_sparse": 0.7226080322265624,
+    "O_keep_ratio": 0.7226080322265624,
+    "O_candidates": 1017.66,
+    "O_all_open": 0.0,
+    "O_all_closed": 0.0,
+    "O_positive_keep_ratio": 0.7226080322265624,
+    "O_negative_keep_ratio": 0.6985673415660858,
+    "O_negative_all_open": 0.0,
+    "O_negative_all_closed": 0.0,
+    "E_i2t": 0.5365259611606598,
+    "E_t2i": 0.6332938796281815,
+    "E_sparse": 0.7577168810367584,
+    "E_keep_ratio": 0.7577168810367584,
+    "E_candidates": 1017.66,
+    "E_all_open": 0.0,
+    "E_all_closed": 0.0,
+    "E_positive_keep_ratio": 0.7577168798446655,
+    "E_negative_keep_ratio": 0.7310199499130249,
+    "E_negative_all_open": 0.0,
+    "E_negative_all_closed": 0.0,
+    "inc": 0.021091254465281963,
+    "hard_inclusion_violation": 0.037417339906096456,
+    "oe_iou": 0.7274907755851746,
+    "loss": 6.232229118347168,
+    "inc_weight": 1.0,
+    "valid_global": 1017.66,
+    "shuffle_shift": 0.0,
+    "nonfinite": 0.0,
+    "common_loss": 6.211137863881886
+  },
+  "mechanism_parent500": {
+    "step": 475.5,
+    "s": 474.5,
+    "epoch": 0.0,
+    "lr_backbone": 9.84428125783896e-07,
+    "lr_mask": 0.000958864144350377,
+    "lr_adapter": 9.588641443503769e-05,
+    "F_i2t": 0.055816613510251044,
+    "F_t2i": 0.06387073069810867,
+    "F_sparse": 0.8942052459716797,
+    "F_keep_ratio": 0.8942052459716797,
+    "F_candidates": 1024.0,
+    "F_all_open": 0.0,
+    "F_all_closed": 0.0,
+    "F_positive_keep_ratio": 0.8942052459716797,
+    "F_negative_keep_ratio": 0.8929815506935119,
+    "F_negative_all_open": 0.0,
+    "F_negative_all_closed": 0.0,
+    "F_logit_mean": 1.1030046939849854,
+    "F_logit_variance": 1.041347622871399,
+    "F_sigmoid_saturation": 0.006102059036493301,
+    "F_g_mean": 0.3734971284866333,
+    "F_g_variance": 0.025757957249879837,
+    "F_g_q00": 0.006545711308717728,
+    "F_g_q05": 0.14696799218654633,
+    "F_g_q25": 0.2616272270679474,
+    "F_g_q50": 0.3569440543651581,
+    "F_g_q75": 0.4560830593109131,
+    "F_g_q95": 0.6962947845458984,
+    "F_g_q100": 0.9806181788444519,
+    "F_replaced_image_mask_switch": 0.12752151489257812,
+    "g_F_P_abs_difference": 0.028169475495815277,
+    "g_F_R_abs_difference": 0.046812042593955994,
+    "g_P_R_abs_difference": 0.054928008466959,
+    "O_i2t": 0.19583957999944687,
+    "O_t2i": 0.25848793536424636,
+    "O_sparse": 0.867089056968689,
+    "O_keep_ratio": 0.867089056968689,
+    "O_candidates": 1023.94,
+    "O_all_open": 0.0,
+    "O_all_closed": 0.0,
+    "O_positive_keep_ratio": 0.867089056968689,
+    "O_negative_keep_ratio": 0.8662085545063019,
+    "O_negative_all_open": 0.0,
+    "O_negative_all_closed": 0.0,
+    "O_logit_mean": 0.9868291020393372,
+    "O_logit_variance": 1.0268361568450928,
+    "O_sigmoid_saturation": 0.004899455234408379,
+    "O_g_mean": 0.38129299879074097,
+    "O_g_variance": 0.021850265562534332,
+    "O_g_q00": 0.009790382348001003,
+    "O_g_q05": 0.1676587611436844,
+    "O_g_q25": 0.28036195039749146,
+    "O_g_q50": 0.3685038685798645,
+    "O_g_q75": 0.4573740065097809,
+    "O_g_q95": 0.6709194183349609,
+    "O_g_q100": 0.9750269055366516,
+    "O_replaced_image_mask_switch": 0.1471538543701172,
+    "E_i2t": 0.8752304530143737,
+    "E_t2i": 0.9579071509838104,
+    "E_sparse": 0.8667604064941407,
+    "E_keep_ratio": 0.8667604064941407,
+    "E_candidates": 1023.94,
+    "E_all_open": 0.0,
+    "E_all_closed": 0.0,
+    "E_positive_keep_ratio": 0.8667604064941407,
+    "E_negative_keep_ratio": 0.8663843190670013,
+    "E_negative_all_open": 0.0,
+    "E_negative_all_closed": 0.0,
+    "E_logit_mean": 1.1097310781478882,
+    "E_logit_variance": 1.543111801147461,
+    "E_sigmoid_saturation": 0.015145208686590195,
+    "E_g_mean": 0.384232759475708,
+    "E_g_variance": 0.02750490978360176,
+    "E_g_q00": 0.0019024097127839923,
+    "E_g_q05": 0.1413584202528,
+    "E_g_q25": 0.2710401713848114,
+    "E_g_q50": 0.3694691061973572,
+    "E_g_q75": 0.4707953631877899,
+    "E_g_q95": 0.7071512341499329,
+    "E_g_q100": 0.9916563034057617,
+    "E_replaced_image_mask_switch": 0.13978958129882812,
+    "inc": 0.02161579519510269,
+    "hard_inclusion_violation": 0.022643211670219897,
+    "oe_iou": 0.8728017127513885,
+    "loss": 9.499425106048584,
+    "inc_weight": 1.0,
+    "valid_global": 1023.94,
+    "shuffle_shift": 0.0,
+    "nonfinite": 0.0,
+    "common_loss": 9.47780931085348
+  },
+  "protocol": {
+    "datasets": [
+      "COCO",
+      "Urban-1k",
+      "Flickr30k-test1k",
+      "DOCCI",
+      "Long-DCI"
+    ],
+    "batch_size": 64,
+    "device": "cuda:0",
+    "coco_similarity_chunk": 512,
+    "native_only": true,
+    "scoring": "normalized student image/text embeddings, plain inner product",
+    "long_dci_manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+    "J_long": "mean Urban/DOCCI I2T/T2I R@1; Long-DCI reported separately",
+    "excluded": [
+      "DCI Full"
+    ]
+  },
+  "execution": {
+    "verify-export.execution.json": {
+      "stage": "verify-export",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/step003651.pt",
+        "--bare",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/export-check.json",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      ],
+      "started_utc": "2026-09-30T15:53:17.346043+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T15:53:35.027452+00:00",
+      "elapsed_seconds": 17.680932261049747
+    },
+    "coco.execution.json": {
+      "stage": "coco",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/coco_native.json"
+      ],
+      "started_utc": "2026-09-30T15:53:35.029070+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T15:55:34.757769+00:00",
+      "elapsed_seconds": 119.72637002170086
+    },
+    "flickr_test1k.execution.json": {
+      "stage": "flickr_test1k",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/flickr_test1k",
+        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-09-30T15:55:56.679951+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T15:56:22.856752+00:00",
+      "elapsed_seconds": 26.17614082992077
+    },
+    "export.execution.json": {
+      "stage": "export",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/step003651.pt",
+        "--expect-updates",
+        "3651",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt"
+      ],
+      "started_utc": "2026-09-30T15:53:06.095224+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T15:53:17.344462+00:00",
+      "elapsed_seconds": 11.24878429621458
+    },
+    "docci.execution.json": {
+      "stage": "docci",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/docci",
+        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-09-30T15:56:22.858469+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T16:00:53.826668+00:00",
+      "elapsed_seconds": 270.9674663245678
+    },
+    "urban.execution.json": {
+      "stage": "urban",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/urban_native.json"
+      ],
+      "started_utc": "2026-09-30T15:55:34.762443+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T15:55:56.678295+00:00",
+      "elapsed_seconds": 21.913738295435905
+    },
+    "long_dci.execution.json": {
+      "stage": "long_dci",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/student_step3651.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-09-30T16:00:53.828009+00:00",
+      "cwd": "/root/lk_projects/SAID-balanced-stack-3epoch-v1",
+      "git_head": "913841fbc6fcb12c83dfdaa0647b5bc4557fb085",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T16:08:24.299621+00:00",
+      "elapsed_seconds": 450.47105422616005
+    }
+  },
+  "limitations": [
+    "one seed; previously inspected benchmarks",
+    "Balanced500 is a budget extension comparison; only TI3651/VCP3651 match final budget",
+    "VCP3651 has no Long-DCI result; absent measurements are not inferred",
+    "gate/logit diagnostics were preset at updates up to500; no final gate quantiles were collected"
+  ]
+}
