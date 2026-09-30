@@ -2,7 +2,7 @@
 
 Date: 2026-09-30 UTC
 
-TI-fast completed the original 3651-update scheduler horizon by continuing the audited step-500 run. The model was exported as a bare student and evaluated with native normalized image/text embeddings only. DCI Full and Long-DCI were not run.
+TI-fast completed the original 3651-update scheduler horizon by continuing the audited step-500 run. The model was exported as a bare student and evaluated with native normalized image/text embeddings only. Long-DCI was subsequently evaluated by explicit user request; DCI Full remains excluded.
 
 ## Retrieval results
 
@@ -37,6 +37,21 @@ All values are percentages. The delta is step3651 minus step500 in percentage po
 
 `J_long` increased from **82.28%** to **84.77%** (**+2.49 pp**). It is the frozen mean of Urban and DOCCI I2T/T2I R@1.
 
+## Long-DCI
+
+Long-DCI uses 7,602 images and 7,602 captions. Values are percentages.
+
+| Direction | Metric | Step500 | Step3651 | Delta |
+|---|---:|---:|---:|---:|
+| I2T | R@1 | 55.59 | 58.67 | +3.08 pp |
+| I2T | R@5 | 74.76 | 77.45 | +2.70 pp |
+| I2T | R@10 | 81.35 | 83.35 | +2.00 pp |
+| T2I | R@1 | 56.45 | 60.17 | +3.72 pp |
+| T2I | R@5 | 76.03 | 78.20 | +2.17 pp |
+| T2I | R@10 | 81.82 | 83.28 | +1.46 pp |
+
+Evaluation time was 448.9 seconds on `cuda:0`; the bare-student SHA256 matched the other native evaluations.
+
 ## Training validation
 
 - Completed updates: 3651/3651; continuation log covers steps 501-3651 without gaps.
@@ -60,4 +75,5 @@ All values are percentages. The delta is step3651 minus step500 in percentage po
 - Bare student SHA256: `e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df`
 - Strict load passed; optimizer step is 3651; native image and text embedding maximum absolute differences are both 0.
 - Run commit: `b2ec5ae93c9a24dd84875f121eaa8c4032ec2339`
+- Long-DCI manifest SHA256: `8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b`
 - Checkpoints were saved at 500-step intervals and at the final step3651.

@@ -102,10 +102,34 @@
       "elapsed_seconds": 261.8334798812866,
       "device": "cuda:0",
       "native_student_only": true
+    },
+    "long_dci": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.586687713759537,
+          "T2I": 0.6016837674296238
+        },
+        "R@5": {
+          "I2T": 0.7745330176269403,
+          "T2I": 0.7820310444619837
+        },
+        "R@10": {
+          "I2T": 0.8334648776637726,
+          "T2I": 0.832807156011576
+        }
+      },
+      "checkpoint_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 448.8786599636078,
+      "device": "cuda:0",
+      "native_student_only": true
     }
   },
   "excluded_evaluations": [
-    "DCI Full",
-    "Long-DCI"
-  ]
+    "DCI Full"
+  ],
+  "evaluation_note": "Long-DCI was added on 2026-09-30 by explicit user request."
 }

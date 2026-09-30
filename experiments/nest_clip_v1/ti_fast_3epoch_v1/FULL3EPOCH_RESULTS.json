@@ -302,7 +302,60 @@
     ]
   },
   "excluded_evaluations": [
-    "DCI Full",
-    "Long-DCI"
-  ]
+    "DCI Full"
+  ],
+  "long_dci_evaluation": {
+    "protocol": "long_dci",
+    "n_images": 7602,
+    "n_captions": 7602,
+    "step500": {
+      "I2T": {
+        "R@1": 0.5559063404367272,
+        "R@5": 0.7475664298868718,
+        "R@10": 0.8134701394369903
+      },
+      "T2I": {
+        "R@1": 0.5644567219152854,
+        "R@5": 0.7603262299394896,
+        "R@10": 0.8182057353328072
+      }
+    },
+    "step3651": {
+      "I2T": {
+        "R@1": 0.586687713759537,
+        "R@5": 0.7745330176269403,
+        "R@10": 0.8334648776637726
+      },
+      "T2I": {
+        "R@1": 0.6016837674296238,
+        "R@5": 0.7820310444619837,
+        "R@10": 0.832807156011576
+      }
+    },
+    "delta_pp_step3651_minus_step500": {
+      "I2T": {
+        "R@1": 3.0781373322809835,
+        "R@5": 2.6966587740068437,
+        "R@10": 1.9994738226782327
+      },
+      "T2I": {
+        "R@1": 3.722704551433842,
+        "R@5": 2.1704814522494065,
+        "R@10": 1.4601420678768795
+      }
+    },
+    "checkpoint_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+    "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+    "elapsed_seconds": 448.8786599636078,
+    "execution": {
+      "name": "TI-fast-step3651-long_dci",
+      "started_utc": "2026-09-30T01:39:50Z",
+      "finished_utc": "2026-09-30T01:47:27Z",
+      "exit_code": 0,
+      "wall_seconds": 457,
+      "git_head": "0b4e62b75b3d25ab373793624e74f2a6cd9c5001"
+    },
+    "native_student_only": true
+  },
+  "evaluation_note": "Long-DCI was added on 2026-09-30 by explicit user request."
 }
