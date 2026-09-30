@@ -20,6 +20,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 
 from model import longclip
 from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_blocks
+from model.nested_vcp_mask import NestedVCPMask
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -31,10 +32,15 @@ def seed_all(seed=0):
         torch.cuda.manual_seed_all(seed)
 
 
+def auxiliary_module(module):
+    joint = getattr(module, 'joint_adapter', None)
+    return joint if joint is not None else getattr(module, 'vcp_query', None)
+
+
 def build_optimizer(module):
     mask_ids = {id(p) for p in module.clip.mask_net.parameters()}
-    adapter_ids = ({id(p) for p in module.joint_adapter.parameters()}
-                   if module.joint_adapter is not None else set())
+    auxiliary = auxiliary_module(module)
+    adapter_ids = {id(p) for p in auxiliary.parameters()} if auxiliary is not None else set()
     backbone, mask, adapter = [], [], []
     for p in module.parameters():
         if p.requires_grad:
@@ -131,7 +137,7 @@ def save_checkpoint(module, optimizer, config, completed, output):
     states = [None] * dist.get_world_size()
     dist.all_gather_object(states, rng_state())
     if dist.get_rank() == 0:
-        adapter = module.joint_adapter.state_dict() if module.joint_adapter is not None else None
+        adapter = auxiliary_module(module).state_dict() if auxiliary_module(module) is not None else None
         atomic_save(dict(model=module.clip.state_dict(), adapter=adapter,
                          optimizer=optimizer.state_dict(),
                          completed_steps=completed, scheduler_horizon=config['horizon'],
@@ -144,7 +150,7 @@ def save_checkpoint(module, optimizer, config, completed, output):
 
 def code_manifest():
     root = Path(__file__).resolve().parents[1]
-    paths = ['model/nested_semantic_mask.py', 'train/nested_semantic_data.py',
+    paths = ['model/nested_semantic_mask.py', 'model/nested_vcp_mask.py', 'train/nested_semantic_data.py',
              'train/train_nested_semantic_mask.py', 'model/model_longclip.py',
              'model/longclip.py', 'model/said_cls_cvssl.py']
     return {p: file_sha(root / p) for p in paths}
@@ -202,7 +208,7 @@ def main():
     p.add_argument('--index-dir', required=True)
     p.add_argument('--image-root', required=True)
     p.add_argument('--output-dir', required=True)
-    p.add_argument('--run-type', choices=['smoke', 'formal'], required=True)
+    p.add_argument('--run-type', choices=['probe', 'smoke', 'formal'], required=True)
     p.add_argument('--max-updates', type=int, required=True)
     p.add_argument('--resume')
     p.add_argument('--expected-parent-trainer-sha256',
@@ -220,10 +226,10 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
-    assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image')
+    assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask')
     assert cfg['full_native_mix'] == 0
     assert int(cfg['checkpoint_interval']) > 0
-    assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates > 0)
+    assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates == 35 if args.run_type == 'probe' else args.max_updates > 0)
     assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
     assert cfg['epochs'] == 3 and cfg['seed'] == 0 and cfg['workers'] == 8
     seed_all(cfg['seed'])
@@ -251,12 +257,13 @@ def main():
     assert not initial['optimizer']['state']
     clip.load_state_dict(initial['model'], strict=True)
     construction_rng = rng_state()
-    module = NestedSemanticMask(clip.float(), arm=cfg['arm'],
-                                checkpoint_encoders=cfg['checkpoint_encoders'],
-                                image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
-                                condition_mode=cfg['condition_mode'],
-                                shuffle_seed=cfg['shuffle_seed'],
-                                checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'])
+    module_class = NestedVCPMask if cfg['condition_mode'] == 'vcp_mask' else NestedSemanticMask
+    module = module_class(clip.float(), arm=cfg['arm'],
+                          checkpoint_encoders=cfg['checkpoint_encoders'],
+                          image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
+                          condition_mode=cfg['condition_mode'],
+                          shuffle_seed=cfg['shuffle_seed'],
+                          checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'])
     restore_rng_state(construction_rng)
     encoder_checkpoint_active = all(
         getattr(transformer.forward, '__func__', None) is _checkpoint_blocks
@@ -272,15 +279,13 @@ def main():
                                  encoder_checkpoint_active=cfg['checkpoint_encoders'],
                                  condition_mode=cfg['condition_mode'], arm=cfg['arm'])
     adapter_initialization = None
-    if module.joint_adapter is not None:
+    auxiliary = auxiliary_module(module)
+    if auxiliary is not None:
         adapter_initialization = dict(
-            state_sha256=state_digest(module.joint_adapter.state_dict()),
-            image_shape=list(module.joint_adapter.image.weight.shape),
-            text_shape=list(module.joint_adapter.text.weight.shape),
-            output_shape=list(module.joint_adapter.output.weight.shape),
-            image_nonzero=int(module.joint_adapter.image.weight.count_nonzero()),
-            text_nonzero=int(module.joint_adapter.text.weight.count_nonzero()),
-            output_nonzero=int(module.joint_adapter.output.weight.count_nonzero()))
+            module=type(auxiliary).__name__, state_sha256=state_digest(auxiliary.state_dict()),
+            parameters={name: dict(shape=list(parameter.shape),
+                                   nonzero=int(parameter.count_nonzero()))
+                        for name, parameter in auxiliary.named_parameters()})
     module = module.cuda().train()
     assert all(p.dtype == torch.float32 for p in module.parameters())
     ddp = DDP(module, device_ids=[local], output_device=local,
@@ -305,10 +310,11 @@ def main():
         previous = torch.load(args.resume, map_location='cpu', weights_only=False)
         completed = validate_resume_payload(previous, config, args.expected_parent_trainer_sha256)
         module.clip.load_state_dict(previous['model'], strict=True)
-        if module.joint_adapter is None:
+        auxiliary = auxiliary_module(module)
+        if auxiliary is None:
             assert previous.get('adapter') is None
         else:
-            module.joint_adapter.load_state_dict(previous['adapter'], strict=True)
+            auxiliary.load_state_dict(previous['adapter'], strict=True)
         optimizer.load_state_dict(previous['optimizer'])
         state = previous['rng_per_rank'][rank]
         restore_rng_state(state)
@@ -322,22 +328,26 @@ def main():
         (output / 'config.json').write_text(json.dumps(config, indent=2))
         print(json.dumps({'event':'ready', 'horizon':horizon, 'start_updates':completed,
                           'stop_updates':args.max_updates, 'ranks':peers}), flush=True)
-    save_checkpoint(module, optimizer, config, completed, output)
+    if args.run_type != 'probe':
+        save_checkpoint(module, optimizer, config, completed, output)
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
     updates_here = 0
+    probe_max_seconds = []
     for epoch in range(cfg['epochs']):
         sampler.set_epoch(epoch)
         dataset.set_epoch(epoch)  # copied into fresh spawn workers before iter(loader)
         if completed >= (epoch+1)*len(loader):
             continue
+        cycle_start = time.perf_counter()
         for batch_index, batch in enumerate(loader):
             if consumed_batch(epoch, batch_index, len(loader), completed):
+                cycle_start = time.perf_counter()
                 continue
             tick = time.perf_counter()
             for k in ('image', 'tokens_f', 'tokens_o', 'tokens_e', 'valid'):
                 batch[k] = batch[k].cuda(non_blocking=True)
-            lrs = learning_rates(completed, horizon, module.joint_adapter is not None)
+            lrs = learning_rates(completed, horizon, auxiliary_module(module) is not None)
             for group, lr in zip(optimizer.param_groups, lrs):
                 group['lr'] = lr
             optimizer.zero_grad(set_to_none=True)
@@ -352,11 +362,10 @@ def main():
             for group in optimizer.param_groups:
                 norms[group['name']] = gradient_norm(group['params'])
             adapter_norms = {}
-            if module.joint_adapter is not None:
-                adapter_norms = {
-                    'WI': gradient_norm(module.joint_adapter.image.parameters()),
-                    'WT': gradient_norm(module.joint_adapter.text.parameters()),
-                    'WO': gradient_norm(module.joint_adapter.output.parameters())}
+            auxiliary = auxiliary_module(module)
+            if auxiliary is not None:
+                adapter_norms = {name: gradient_norm([parameter])
+                                 for name, parameter in auxiliary.named_parameters()}
             finite = torch.stack([torch.isfinite(v) for v in norms.values()]).all().int()
             if adapter_norms:
                 finite = finite * torch.stack(
@@ -403,8 +412,23 @@ def main():
                         local_view_labels=['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration'],
                         sample_ids=batch['sample_id'][:8].tolist(),
                         n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
-            if completed % int(cfg['checkpoint_interval']) == 0 or completed == args.max_updates:
+            if args.run_type != 'probe' and (completed % int(cfg['checkpoint_interval']) == 0 or
+                                                  completed == args.max_updates):
                 save_checkpoint(module, optimizer, config, completed, output)
+            if args.run_type == 'probe':
+                # End-to-end cycle: real DataLoader wait, transfer, update, communication,
+                # ordinary logging, then synchronization on the slowest rank.
+                dist.barrier(device_ids=[local])
+                torch.cuda.synchronize(local)
+                full = torch.tensor(time.perf_counter() - cycle_start, device='cuda')
+                dist.all_reduce(full, op=dist.ReduceOp.MAX)
+                if updates_here > 5:
+                    probe_max_seconds.append(float(full))
+                if rank == 0:
+                    with (output / 'probe_timing.jsonl').open('a') as f:
+                        f.write(json.dumps(dict(step=completed, warmup=updates_here <= 5,
+                                                four_rank_max_seconds=float(full)))+'\n')
+            cycle_start = time.perf_counter()
             # At a full epoch boundary let DataLoader exhaust naturally, so its
             # workers finish through StopIteration rather than only __del__.
             if completed >= args.max_updates and batch_index + 1 < len(loader):
@@ -426,7 +450,23 @@ def main():
     assert all(x['completed_updates'] == args.max_updates for x in results)
     assert all(x['max_parameter_difference_from_rank0'] == 0 for x in results)
     if rank == 0:
-        (output / 'acceptance.json').write_text(json.dumps(dict(passed=True, ranks=results), indent=2))
+        speed_gate = None
+        passed = True
+        if args.run_type == 'probe':
+            values = torch.tensor(probe_max_seconds, dtype=torch.float64)
+            assert len(values) == 30
+            speed_gate = dict(
+                warmup_steps=5, measured_steps=30, threshold_seconds=3.,
+                mean_seconds=float(values.mean()), median_seconds=float(values.median()),
+                p95_seconds=float(torch.quantile(values, .95)), max_seconds=float(values.max()),
+                all_steps_at_most_3s=bool((values <= 3.).all()),
+                allocated_limit_gib=65.,
+                every_rank_peak_allocated_at_most_65gib=all(
+                    x['peak_allocated_gib'] <= 65. for x in results))
+            passed = (speed_gate['all_steps_at_most_3s'] and
+                      speed_gate['every_rank_peak_allocated_at_most_65gib'])
+        (output / 'acceptance.json').write_text(json.dumps(
+            dict(passed=passed, ranks=results, speed_gate=speed_gate), indent=2))
     dist.barrier(device_ids=[local])
     torch.cuda.synchronize(local)
     dist.destroy_process_group()
