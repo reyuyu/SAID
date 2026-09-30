@@ -10,8 +10,10 @@ import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from model.nested_fusion_mask import pool_summary
-from tests.test_nested_fusion import make_model, reference_loss
+from model.nested_fusion_mask import pool_summary, fusion_scores
+from model.nested_semantic_mask import gather, hard_st
+from tests.test_nested_fusion import make_model, reference_loss, explicit_inputs, explicit_logits
+from torch.nn import functional as F
 from train.train_nested_semantic_mask import build_optimizer, learning_rates
 
 
@@ -88,6 +90,20 @@ def main():
             sl=slice(rank*batch,(rank+1)*batch)
             loss,logs=ddp(images[sl],*[x[sl] for x in tokens],valid[sl],61)
             expected=reference_loss(reference,images,tokens,valid,61)
+            with torch.no_grad():
+                z,vv=module.encode_visual(images[sl])
+                t,tt=module.encode_view(tokens[0][sl])
+                zg=gather(z,False)
+                vg=tuple(gather(x,False) for x in vv)
+                score,_,_=fusion_scores(module,zg,t,vg,tt,torch.ones_like(valid),
+                                        torch.ones_like(valid[sl]))
+                score=gather(score,False)
+                rz,rt,rv,rtt=explicit_inputs(reference,images,tokens[0])
+                rm=hard_st(explicit_logits(reference,rv,rtt).sigmoid())
+                score_reference=100*(F.normalize(rz[None]*rm,dim=-1,eps=1e-6)*
+                                     F.normalize(rt,dim=-1,eps=1e-6)[:,None]).sum(-1)
+                torch.testing.assert_close(score,score_reference,atol=8e-5,rtol=3e-6)
+                score_error=float((score-score_reference).abs().max())
             loss.backward()
             expected.backward()
             actual_named=dict(module.named_parameters())
@@ -145,6 +161,7 @@ def main():
                                           gradients=gradients,updates=updates),indent=2),flush=True)
                     raise AssertionError(f'Unexplained AdamW difference {name}: {float(unexplained.max())}')
             results.append(dict(fusion=fusion,visual=visual,case=case,loss_error=float((logs['loss']-expected.detach()).abs()),
+                                score_error=score_error,
                                 test_width=32,test_readout_bias=0.,
                                 gradients=gradients,updates=updates))
             dist.barrier()
