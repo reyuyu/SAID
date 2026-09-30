@@ -44,3 +44,12 @@ Long-DCI, combined architecture, new seeds or full-epoch continuation runs.
 Output root: `/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/`.
 Code/small evidence branch: `codex/nest-mask-balance-cosine-v1`. Checkpoints,
 full per-step token logs, data and caches remain on the server.
+
+After the original four-set results completed, the user explicitly requested a
+separate Long-DCI supplement for both new step500 students. Launch it with
+`python -m experiments.nest_clip_v1.mask_balance_cosine_v1.long_dci`.
+It uses the same 7602-pair manifest as TI-fast@500, normalized native embeddings,
+batch64 on cuda:0, and a complete candidate pool. Progress is recorded separately
+in `long-dci-status.json`. It writes LONG_DCI_REPORT.md / LONG_DCI_RESULTS.json
+and pushes only compact evidence. The original REPORT.md / RESULTS.json and
+their fixed Urban/DOCCI J_long remain unchanged. DCI Full is still excluded.
