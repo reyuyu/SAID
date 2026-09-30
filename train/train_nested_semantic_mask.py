@@ -247,6 +247,7 @@ def main():
     cfg.setdefault('checkpoint_pair_blocks', True)
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
+    cfg.setdefault('save_initial_checkpoint', True)
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask')
     assert cfg['full_native_mix'] == 0
@@ -357,7 +358,7 @@ def main():
         (output / 'config.json').write_text(json.dumps(config, indent=2))
         print(json.dumps({'event':'ready', 'horizon':horizon, 'start_updates':completed,
                           'stop_updates':args.max_updates, 'ranks':peers}), flush=True)
-    if args.run_type != 'probe':
+    if args.run_type != 'probe' and cfg['save_initial_checkpoint']:
         save_checkpoint(module, optimizer, config, completed, output)
     torch.cuda.reset_peak_memory_stats()
     started = time.perf_counter()
