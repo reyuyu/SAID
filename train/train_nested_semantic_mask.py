@@ -1,5 +1,6 @@
 """torchrun-only NEST-CLIP v1 trainer; smoke and formal both require four ranks."""
 import argparse
+import gc
 from collections import Counter
 from datetime import timedelta
 import hashlib
@@ -214,8 +215,11 @@ def parameter_agreement(module):
     with torch.no_grad():
         for p in module.parameters():
             reference = p.detach().clone()
-            dist.broadcast(reference, src=0)
+            work = dist.broadcast(reference, src=0, async_op=True)
+            work.wait()
             difference = torch.maximum(difference, (p-reference).abs().max())
+    torch.cuda.synchronize()
+    dist.barrier()
     return float(difference)
 
 
@@ -499,6 +503,11 @@ def main():
                       speed_gate['every_rank_peak_allocated_at_most_65gib'])
         (output / 'acceptance.json').write_text(json.dumps(
             dict(passed=passed, ranks=results, speed_gate=speed_gate), indent=2))
+    dist.barrier(device_ids=[local])
+    torch.cuda.synchronize(local)
+    del ddp, optimizer, module
+    gc.collect()
+    torch.cuda.empty_cache()
     dist.barrier(device_ids=[local])
     torch.cuda.synchronize(local)
     dist.destroy_process_group()
