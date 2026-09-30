@@ -3,6 +3,7 @@ import argparse
 from collections import Counter
 from datetime import timedelta
 import hashlib
+import itertools
 import json
 import math
 import os
@@ -106,6 +107,23 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
     assert len(previous['rng_per_rank']) == current['world_size']
     return completed
 
+
+
+class CappedSampler:
+    """A rank-local prefix of DistributedSampler with identical order and padding."""
+
+    def __init__(self, sampler, samples):
+        self.sampler = sampler
+        self.samples = min(int(samples), len(sampler))
+
+    def __iter__(self):
+        return itertools.islice(iter(self.sampler), self.samples)
+
+    def __len__(self):
+        return self.samples
+
+    def set_epoch(self, epoch):
+        self.sampler.set_epoch(epoch)
 
 def consumed_batch(epoch, batch_index, batches_per_epoch, completed):
     return epoch * batches_per_epoch + batch_index < completed
@@ -241,15 +259,21 @@ def main():
         output.mkdir(parents=True, exist_ok=False)
     dist.barrier()
     dataset = NestedDataset(args.index_dir, args.image_root, cfg['sampling_mode'], cfg['sampling_seed'])
-    sampler = DistributedSampler(dataset, num_replicas=world, rank=rank, shuffle=True,
-                                 seed=cfg['seed'], drop_last=False)
+    base_sampler = DistributedSampler(dataset, num_replicas=world, rank=rank, shuffle=True,
+                                      seed=cfg['seed'], drop_last=False)
+    full_batches_per_epoch = math.ceil(len(base_sampler) / cfg['batch_size'])
+    # Stops below one epoch consume the exact same sampler prefix but let workers
+    # reach StopIteration naturally instead of aborting on an early loop break.
+    sampler = (CappedSampler(base_sampler, args.max_updates * cfg['batch_size'])
+               if args.max_updates < full_batches_per_epoch else base_sampler)
     loader = DataLoader(dataset, batch_size=cfg['batch_size'], sampler=sampler, collate_fn=collate,
                         num_workers=cfg['workers'], drop_last=False, pin_memory=True,
                         multiprocessing_context='spawn', prefetch_factor=2,
                         generator=torch.Generator().manual_seed(cfg['seed']))
-    horizon = cfg['epochs'] * len(loader)
+    horizon = cfg['epochs'] * full_batches_per_epoch
     assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
-    assert len(loader) == 1217 and horizon == 3651
+    assert full_batches_per_epoch == 1217 and horizon == 3651
+    assert len(loader) == min(args.max_updates, full_batches_per_epoch)
     assert args.max_updates <= horizon, 'Stopping point must not exceed the unchanged three-epoch horizon'
     clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
     initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
@@ -293,10 +317,11 @@ def main():
     optimizer = build_optimizer(module)
     assert not optimizer.state
     del initial
-    config = dict(**cfg, **vars(args), horizon=horizon, batches_per_epoch=len(loader),
-                  training_records=len(dataset), sampler_num_samples=len(sampler),
-                  sampler_padding=world*len(sampler)-len(dataset),
-                  tail_batch=len(sampler) % cfg['batch_size'],
+    config = dict(**cfg, **vars(args), horizon=horizon, batches_per_epoch=full_batches_per_epoch,
+                  loader_batches_this_epoch=len(loader), training_records=len(dataset),
+                  sampler_num_samples=len(base_sampler),
+                  sampler_padding=world*len(base_sampler)-len(dataset),
+                  tail_batch=len(base_sampler) % cfg['batch_size'],
                   init_sha256=file_sha(args.init_state), data=dataset.metadata,
                   code_sha256=code_manifest(),
                   runtime_model=runtime_model,
@@ -337,12 +362,12 @@ def main():
     for epoch in range(cfg['epochs']):
         sampler.set_epoch(epoch)
         dataset.set_epoch(epoch)  # copied into fresh spawn workers before iter(loader)
-        if completed >= (epoch+1)*len(loader):
+        if completed >= (epoch+1)*full_batches_per_epoch:
             continue
         cycle_start = time.perf_counter()
         loader_iterator = iter(loader)
         for batch_index, batch in enumerate(loader_iterator):
-            if consumed_batch(epoch, batch_index, len(loader), completed):
+            if consumed_batch(epoch, batch_index, full_batches_per_epoch, completed):
                 cycle_start = time.perf_counter()
                 continue
             tick = time.perf_counter()
