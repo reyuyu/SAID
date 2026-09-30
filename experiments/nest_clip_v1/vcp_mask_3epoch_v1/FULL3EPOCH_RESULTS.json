@@ -1,0 +1,645 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-09-30T07:56:39.158238+00:00",
+  "experiment": "VCP-Mask full three epochs",
+  "training_git_head": "7236101ad2370df8cf9d12d495d2476352fd6f7a",
+  "evaluation_git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+  "completed_updates": 3651,
+  "scheduler_horizon": 3651,
+  "checkpoint_sha256": "4fbbf8d6239a851552d0ab63a7b82304bf68d667fea4732624a7b3adbab2afa0",
+  "bare_sha256": "cedc2a210b40f7d5d39a722790a562a976b41564c50d8e366ecf73e0381b7656",
+  "export_check": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      3651
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "4fbbf8d6239a851552d0ab63a7b82304bf68d667fea4732624a7b3adbab2afa0",
+    "bare_sha256": "cedc2a210b40f7d5d39a722790a562a976b41564c50d8e366ecf73e0381b7656"
+  },
+  "source_hashes": {
+    "TI_reference": "ee9e444ad058e3ba106b33d334ffcd91ed94131bff6f1c776821b5d2e13cbde7",
+    "VCP500_reference": "2a350a7ba593f25f8ba5fb01edb3be4805b08a5eb910d1a9a7d68fd396aa58de"
+  },
+  "protocol": {
+    "datasets": [
+      "COCO",
+      "Urban-1k",
+      "Flickr30k-test1k",
+      "DOCCI"
+    ],
+    "batch_size": 64,
+    "device": "cuda:0",
+    "coco_images": 5000,
+    "coco_captions": 25000,
+    "coco_similarity_chunk": 512,
+    "native_only": true,
+    "scoring": "normalized native image/text embedding inner product",
+    "excluded": [
+      "DCI",
+      "long-DCI"
+    ]
+  },
+  "metrics": {
+    "VCP@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.6142,
+          "R@5": 0.8366,
+          "R@10": 0.8986
+        },
+        "T2I": {
+          "R@1": 0.41904,
+          "R@5": 0.67752,
+          "R@10": 0.77384
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9180000424385071,
+          "R@5": 0.9850000739097595,
+          "R@10": 0.9930000305175781
+        },
+        "T2I": {
+          "R@1": 0.8980000615119934,
+          "R@5": 0.9820000529289246,
+          "R@10": 0.9880000352859497
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.885,
+          "R@5": 0.981,
+          "R@10": 0.995
+        },
+        "T2I": {
+          "R@1": 0.7192,
+          "R@5": 0.913,
+          "R@10": 0.9516
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.781,
+          "R@5": 0.9546,
+          "R@10": 0.9808
+        },
+        "T2I": {
+          "R@1": 0.7928,
+          "R@5": 0.957,
+          "R@10": 0.9802
+        }
+      }
+    },
+    "VCP@500": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.5858,
+          "R@10": 0.8834,
+          "R@5": 0.8118
+        },
+        "T2I": {
+          "R@1": 0.40516,
+          "R@10": 0.75888,
+          "R@5": 0.66148
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7582,
+          "R@10": 0.9742,
+          "R@5": 0.9446
+        },
+        "T2I": {
+          "R@1": 0.7558,
+          "R@10": 0.9732,
+          "R@5": 0.942
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.857,
+          "R@10": 0.988,
+          "R@5": 0.97
+        },
+        "T2I": {
+          "R@1": 0.7008,
+          "R@10": 0.9432,
+          "R@5": 0.9018
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.8940000534057617,
+          "R@10": 0.9930000305175781,
+          "R@5": 0.9760000705718994
+        },
+        "T2I": {
+          "R@1": 0.8610000610351562,
+          "R@10": 0.987000048160553,
+          "R@5": 0.9770000576972961
+        }
+      }
+    },
+    "TI-fast@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.6166,
+          "R@5": 0.8344,
+          "R@10": 0.9014
+        },
+        "T2I": {
+          "R@1": 0.41944,
+          "R@5": 0.67608,
+          "R@10": 0.7736
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9150000214576721,
+          "R@5": 0.9850000739097595,
+          "R@10": 0.9930000305175781
+        },
+        "T2I": {
+          "R@1": 0.8980000615119934,
+          "R@5": 0.9820000529289246,
+          "R@10": 0.9890000224113464
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.88,
+          "R@5": 0.979,
+          "R@10": 0.995
+        },
+        "T2I": {
+          "R@1": 0.7196,
+          "R@5": 0.9122,
+          "R@10": 0.9516
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7848,
+          "R@5": 0.9564,
+          "R@10": 0.9816
+        },
+        "T2I": {
+          "R@1": 0.7928,
+          "R@5": 0.9556,
+          "R@10": 0.9808
+        }
+      }
+    }
+  },
+  "deltas_pp": {
+    "VCP@500": {
+      "COCO": {
+        "I2T": {
+          "R@1": 2.839999999999998,
+          "R@5": 2.4800000000000044,
+          "R@10": 1.5199999999999991
+        },
+        "T2I": {
+          "R@1": 1.3880000000000003,
+          "R@5": 1.6040000000000054,
+          "R@10": 1.4959999999999973
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 2.399998903274536,
+          "R@5": 0.9000003337860107,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 3.700000047683716,
+          "R@5": 0.4999995231628418,
+          "R@10": 0.09999871253967285
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 2.8000000000000025,
+          "R@5": 1.100000000000001,
+          "R@10": 0.7000000000000006
+        },
+        "T2I": {
+          "R@1": 1.8399999999999972,
+          "R@5": 1.1199999999999988,
+          "R@10": 0.8399999999999963
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 2.2800000000000042,
+          "R@5": 1.0000000000000009,
+          "R@10": 0.660000000000005
+        },
+        "T2I": {
+          "R@1": 3.699999999999992,
+          "R@5": 1.5000000000000013,
+          "R@10": 0.7000000000000006
+        }
+      }
+    },
+    "TI-fast@3651": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.24000000000000687,
+          "R@5": 0.21999999999999797,
+          "R@10": -0.28000000000000247
+        },
+        "T2I": {
+          "R@1": -0.039999999999995595,
+          "R@5": 0.14399999999999968,
+          "R@10": 0.024000000000001798
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.3000020980834961,
+          "R@5": 0.0,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 0.0,
+          "R@5": 0.0,
+          "R@10": -0.09999871253967285
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.5000000000000004,
+          "R@5": 0.20000000000000018,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": -0.0400000000000067,
+          "R@5": 0.08000000000000229,
+          "R@10": 0.0
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.38000000000000256,
+          "R@5": -0.18000000000000238,
+          "R@10": -0.08000000000000229
+        },
+        "T2I": {
+          "R@1": 0.0,
+          "R@5": 0.13999999999999568,
+          "R@10": -0.060000000000004494
+        }
+      }
+    }
+  },
+  "J_long": {
+    "VCP@3651": 0.8474500259876251,
+    "VCP@500": 0.8172500286102296,
+    "TI-fast@3651": 0.8476500207424164
+  },
+  "training": {
+    "records": 3151,
+    "continuous": true,
+    "loss_and_gradients_finite": true,
+    "acceptance": {
+      "passed": true,
+      "ranks": [
+        {
+          "rank": 0,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6863.6596871986985,
+          "peak_allocated_gib": 23.421497344970703,
+          "peak_reserved_gib": 25.140625,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 1,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6863.094468288124,
+          "peak_allocated_gib": 23.421497344970703,
+          "peak_reserved_gib": 25.140625,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 2,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6863.129087634385,
+          "peak_allocated_gib": 23.421497344970703,
+          "peak_reserved_gib": 25.140625,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 3,
+          "completed_updates": 3651,
+          "updates_this_run": 3151,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 6862.995860017836,
+          "peak_allocated_gib": 23.421497344970703,
+          "peak_reserved_gib": 25.140625,
+          "final_nccl_all_reduce": 10.0
+        }
+      ],
+      "speed_gate": null
+    },
+    "regular_timing_window": "steps 502-3650; excludes first resumed step and final tail",
+    "timing_scope": "existing per-rank update/log diagnostic; excludes DataLoader waiting and disk save; total loop below includes them",
+    "regular_step_mean_seconds": 2.0137369521778514,
+    "regular_step_median_seconds": 1.9937400221824646,
+    "regular_step_p95_seconds": 2.1085607819259167,
+    "regular_step_max_seconds": 3.186002030968666,
+    "regular_steps_over_3_seconds": {
+      "1218": 3.086760923266411,
+      "2435": 3.186002030968666
+    },
+    "startup_update_seconds": 6.481825299561024,
+    "loop_seconds": 6863.6596871986985,
+    "global_F_candidates_min": 720,
+    "global_F_candidates_max": 1024,
+    "fallback_steps": 0,
+    "duplicate_id_steps": 0
+  },
+  "mechanism_last50": {
+    "step": 3626.5,
+    "s": 3625.5,
+    "epoch": 2.0,
+    "lr_backbone": 1.778460616527544e-10,
+    "lr_mask": 1.5889688893570897e-07,
+    "lr_adapter": 1.5889688893570898e-08,
+    "F_i2t": 0.02101277669891715,
+    "F_t2i": 0.023621843066066503,
+    "F_sparse": 0.8559703159332276,
+    "F_keep_ratio": 0.8559703159332276,
+    "F_all_open": 0.0,
+    "F_all_closed": 0.0,
+    "F_candidates": 1017.92,
+    "F_positive_keep_ratio": 0.8559703159332276,
+    "F_negative_keep_ratio": 0.8320996046066285,
+    "F_positive_all_open": 0.0,
+    "F_positive_all_closed": 0.0,
+    "F_negative_all_open": 0.0,
+    "F_negative_all_closed": 0.0,
+    "F_delta_abs_mean": 0.0,
+    "F_positive_delta_abs_mean": 0.0,
+    "F_negative_delta_abs_mean": 0.0,
+    "F_pooling_entropy": 3.2440452003479003,
+    "F_pooling_l1_from_text_only": 0.002675298377871513,
+    "F_hard_mask_switch_fraction": 0.09862999394536018,
+    "O_i2t": 0.11592290580272674,
+    "O_t2i": 0.1608057662844658,
+    "O_sparse": 0.7400380909442902,
+    "O_keep_ratio": 0.7400380909442902,
+    "O_all_open": 0.0,
+    "O_all_closed": 0.0,
+    "O_candidates": 1017.66,
+    "O_positive_keep_ratio": 0.7400380933284759,
+    "O_negative_keep_ratio": 0.7404538369178773,
+    "O_positive_all_open": 0.0,
+    "O_positive_all_closed": 0.0,
+    "O_negative_all_open": 0.0,
+    "O_negative_all_closed": 0.0,
+    "O_delta_abs_mean": 0.0,
+    "O_positive_delta_abs_mean": 0.0,
+    "O_negative_delta_abs_mean": 0.0,
+    "O_pooling_entropy": 2.959464602470398,
+    "O_pooling_l1_from_text_only": 0.0024399463180452587,
+    "O_hard_mask_switch_fraction": 0.12353301778435707,
+    "E_i2t": 0.5471083778142929,
+    "E_t2i": 0.6347691798210144,
+    "E_sparse": 0.7838339507579803,
+    "E_keep_ratio": 0.7838339507579803,
+    "E_all_open": 0.0,
+    "E_all_closed": 0.0,
+    "E_candidates": 1017.66,
+    "E_positive_keep_ratio": 0.7838339495658875,
+    "E_negative_keep_ratio": 0.7770809829235077,
+    "E_positive_all_open": 0.0,
+    "E_positive_all_closed": 0.0,
+    "E_negative_all_open": 0.0,
+    "E_negative_all_closed": 0.0,
+    "E_delta_abs_mean": 0.0,
+    "E_positive_delta_abs_mean": 0.0,
+    "E_negative_delta_abs_mean": 0.0,
+    "E_pooling_entropy": 3.5575702476501463,
+    "E_pooling_l1_from_text_only": 0.0029976071044802667,
+    "E_hard_mask_switch_fraction": 0.11074460461735726,
+    "inc": 0.027143255658447742,
+    "hard_inclusion_violation": 0.04435693092644215,
+    "oe_iou": 0.6783619773387909,
+    "valid_global": 1017.66,
+    "inc_weight": 1.0,
+    "q_minus_w_norm": 0.5274434018135071,
+    "w_norm": 0.5442283499240875,
+    "shuffle_shift": 0.0,
+    "nonfinite": 0.0,
+    "loss": 6.339184198379517,
+    "common_loss": 6.312040942721069
+  },
+  "mechanism_VCP500_last50": {
+    "E_all_closed": 0.0,
+    "E_all_open": 0.0,
+    "E_delta_abs_mean": 0.0,
+    "E_hard_mask_switch_fraction": 0.03444354940205813,
+    "E_i2t": 0.8780314004421235,
+    "E_keep_ratio": 0.8784020805358886,
+    "E_negative_keep_ratio": 0.8786683070659638,
+    "E_pooling_entropy": 3.8141700983047486,
+    "E_pooling_l1_from_text_only": 0.0024919292563572526,
+    "E_positive_keep_ratio": 0.8784020805358886,
+    "E_sparse": 0.8784020805358886,
+    "E_t2i": 0.9242696511745453,
+    "F_all_closed": 0.0,
+    "F_all_open": 0.0,
+    "F_delta_abs_mean": 0.0,
+    "F_hard_mask_switch_fraction": 0.031407318115234374,
+    "F_i2t": 0.057781331986188886,
+    "F_keep_ratio": 0.9131943893432617,
+    "F_negative_keep_ratio": 0.9120573139190674,
+    "F_pooling_entropy": 4.038226056098938,
+    "F_pooling_l1_from_text_only": 0.0026618616934865713,
+    "F_positive_keep_ratio": 0.9131943893432617,
+    "F_sparse": 0.9131943893432617,
+    "F_t2i": 0.061919790580868724,
+    "O_all_closed": 0.0,
+    "O_all_open": 0.0,
+    "O_delta_abs_mean": 0.0,
+    "O_hard_mask_switch_fraction": 0.04093332316726446,
+    "O_i2t": 0.19579687029123305,
+    "O_keep_ratio": 0.8839581131935119,
+    "O_negative_keep_ratio": 0.8828110194206238,
+    "O_pooling_entropy": 3.437327084541321,
+    "O_pooling_l1_from_text_only": 0.0026968689216300846,
+    "O_positive_keep_ratio": 0.8839581131935119,
+    "O_sparse": 0.8839581131935119,
+    "O_t2i": 0.25360047519207,
+    "common_loss": 9.38396986398846,
+    "hard_inclusion_violation": 0.02603185225278139,
+    "inc": 0.02704595174640417,
+    "inc_weight": 1.0,
+    "loss": 9.411015815734864,
+    "nonfinite": 0.0,
+    "oe_iou": 0.8489745140075684,
+    "q_minus_w_norm": 0.43395535945892333,
+    "valid_global": 1023.94,
+    "w_norm": 0.6948065507411957
+  },
+  "execution": {
+    "verify-export.execution": {
+      "stage": "verify-export",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/step003651.pt",
+        "--bare",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/student_step3651.pt",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/export-check.json",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      ],
+      "started_utc": "2026-09-30T07:49:01.314451+00:00",
+      "cwd": "/root/lk_projects/SAID-vcp-mask-3epoch-v1",
+      "git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T07:49:18.468929+00:00",
+      "elapsed_seconds": 17.15400853008032
+    },
+    "coco.execution": {
+      "stage": "coco",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/student_step3651.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/coco_native.json"
+      ],
+      "started_utc": "2026-09-30T07:49:18.471187+00:00",
+      "cwd": "/root/lk_projects/SAID-vcp-mask-3epoch-v1",
+      "git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T07:51:17.858139+00:00",
+      "elapsed_seconds": 119.38635823130608
+    },
+    "flickr_test1k.execution": {
+      "stage": "flickr_test1k",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/student_step3651.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/flickr_test1k",
+        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-09-30T07:51:37.904280+00:00",
+      "cwd": "/root/lk_projects/SAID-vcp-mask-3epoch-v1",
+      "git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T07:52:03.857538+00:00",
+      "elapsed_seconds": 25.952593505382538
+    },
+    "export.execution": {
+      "stage": "export",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/step003651.pt",
+        "--expect-updates",
+        "3651",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/student_step3651.pt"
+      ],
+      "started_utc": "2026-09-30T07:48:50.353257+00:00",
+      "cwd": "/root/lk_projects/SAID-vcp-mask-3epoch-v1",
+      "git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T07:49:01.313045+00:00",
+      "elapsed_seconds": 10.959394663572311
+    },
+    "docci.execution": {
+      "stage": "docci",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/student_step3651.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/docci",
+        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-09-30T07:52:03.858857+00:00",
+      "cwd": "/root/lk_projects/SAID-vcp-mask-3epoch-v1",
+      "git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T07:56:36.657509+00:00",
+      "elapsed_seconds": 272.7981241866946
+    },
+    "urban.execution": {
+      "stage": "urban",
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/student_step3651.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/vcp_mask_3epoch_v1/formal/VCP-Mask/urban_native.json"
+      ],
+      "started_utc": "2026-09-30T07:51:17.859665+00:00",
+      "cwd": "/root/lk_projects/SAID-vcp-mask-3epoch-v1",
+      "git_head": "82239ef4884522807fb9f7f4e9b66ef08b229a48",
+      "exit_code": 0,
+      "finished_utc": "2026-09-30T07:51:37.902674+00:00",
+      "elapsed_seconds": 20.04214560240507
+    }
+  },
+  "limitations": [
+    "one seed; previously inspected benchmarks",
+    "longer budget is compared separately from step500 controls"
+  ]
+}
