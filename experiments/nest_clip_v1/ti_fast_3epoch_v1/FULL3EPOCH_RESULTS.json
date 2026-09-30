@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "date_utc": "2026-09-30",
+  "experiment": "TI-fast full 3 epochs",
+  "git_head": "b2ec5ae93c9a24dd84875f121eaa8c4032ec2339",
+  "parent_checkpoint_sha256": "290698e2356711f49a490b4bb5b3724913e5fce0e46669ab3d5c233491e71919",
+  "initial_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "completed_updates": 3651,
+  "scheduler_horizon": 3651,
+  "checkpoint_interval": 500,
+  "checkpoint_sha256": "c106802b5b7a5fcbc368b7e1ca02a09d83a7ce7caa147976160185f35db73036",
+  "bare_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+  "export_check": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      3651
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "c106802b5b7a5fcbc368b7e1ca02a09d83a7ce7caa147976160185f35db73036",
+    "bare_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df"
+  },
+  "training": {
+    "continuation_updates": 3151,
+    "continuation_wall_seconds": 6908.849490173161,
+    "steps_continuous": true,
+    "loss_and_gradients_finite": true,
+    "max_parameter_difference_from_rank0": 0.0,
+    "regular_timing_window": "steps 502-3650; excludes first resumed step and final tail batch",
+    "regular_step_mean_seconds": 2.0279457906468705,
+    "regular_step_median_seconds": 2.007666364312172,
+    "regular_step_p95_seconds": 2.126682221889496,
+    "regular_step_max_seconds": 3.8750776574015617,
+    "regular_steps_over_3_seconds": 1,
+    "notable_slow_steps": {
+      "501": 5.001212917268276,
+      "1218": 3.8750776574015617
+    },
+    "peak_allocated_gib": 28.83855438232422,
+    "peak_reserved_gib": 29.919921875,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 3651,
+        "updates_this_run": 3151,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 6908.849487774074,
+        "peak_allocated_gib": 28.83855438232422,
+        "peak_reserved_gib": 29.919921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 3651,
+        "updates_this_run": 3151,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 6908.849403381348,
+        "peak_allocated_gib": 28.83855438232422,
+        "peak_reserved_gib": 29.919921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 3651,
+        "updates_this_run": 3151,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 6908.849490173161,
+        "peak_allocated_gib": 28.83855438232422,
+        "peak_reserved_gib": 29.919921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 3651,
+        "updates_this_run": 3151,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 6908.84926649183,
+        "peak_allocated_gib": 28.83855438232422,
+        "peak_reserved_gib": 29.919921875,
+        "final_nccl_all_reduce": 10.0
+      }
+    ]
+  },
+  "metrics_step3651": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6166,
+        "R@5": 0.8344,
+        "R@10": 0.9014
+      },
+      "T2I": {
+        "R@1": 0.41944,
+        "R@5": 0.67608,
+        "R@10": 0.7736
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9150000214576721,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9930000305175781
+      },
+      "T2I": {
+        "R@1": 0.8980000615119934,
+        "R@5": 0.9820000529289246,
+        "R@10": 0.9890000224113464
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.88,
+        "R@5": 0.979,
+        "R@10": 0.995
+      },
+      "T2I": {
+        "R@1": 0.7196,
+        "R@5": 0.9122,
+        "R@10": 0.9516
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7848,
+        "R@5": 0.9564,
+        "R@10": 0.9816
+      },
+      "T2I": {
+        "R@1": 0.7928,
+        "R@5": 0.9556,
+        "R@10": 0.9808
+      }
+    }
+  },
+  "metrics_step500": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6004,
+        "R@10": 0.8876,
+        "R@5": 0.8212
+      },
+      "T2I": {
+        "R@1": 0.41148,
+        "R@10": 0.76568,
+        "R@5": 0.66684
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7622,
+        "R@10": 0.974,
+        "R@5": 0.9498
+      },
+      "T2I": {
+        "R@1": 0.766,
+        "R@10": 0.9748,
+        "R@5": 0.9492
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.868,
+        "R@10": 0.989,
+        "R@5": 0.972
+      },
+      "T2I": {
+        "R@1": 0.707,
+        "R@10": 0.9482,
+        "R@5": 0.907
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.8920000195503235,
+        "R@10": 0.9920000433921814,
+        "R@5": 0.9810000658035278
+      },
+      "T2I": {
+        "R@1": 0.8710000514984131,
+        "R@10": 0.9900000691413879,
+        "R@5": 0.9790000319480896
+      }
+    },
+    "long-DCI": {
+      "I2T": {
+        "R@1": 0.5559063404367272,
+        "R@10": 0.8134701394369903,
+        "R@5": 0.7475664298868718
+      },
+      "T2I": {
+        "R@1": 0.5644567219152854,
+        "R@10": 0.8182057353328072,
+        "R@5": 0.7603262299394896
+      }
+    }
+  },
+  "delta_pp_step3651_minus_step500": {
+    "COCO": {
+      "I2T": {
+        "R@1": 1.6199999999999992,
+        "R@5": 1.319999999999999,
+        "R@10": 1.3800000000000034
+      },
+      "T2I": {
+        "R@1": 0.7959999999999967,
+        "R@5": 0.9240000000000026,
+        "R@10": 0.7919999999999927
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 2.3000001907348633,
+        "R@5": 0.40000081062316895,
+        "R@10": 0.09999871253967285
+      },
+      "T2I": {
+        "R@1": 2.7000010013580322,
+        "R@5": 0.3000020980834961,
+        "R@10": -0.10000467300415039
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 1.200000000000001,
+        "R@5": 0.7000000000000006,
+        "R@10": 0.6000000000000005
+      },
+      "T2I": {
+        "R@1": 1.2600000000000056,
+        "R@5": 0.5199999999999982,
+        "R@10": 0.33999999999999586
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 2.2600000000000064,
+        "R@5": 0.660000000000005,
+        "R@10": 0.7600000000000051
+      },
+      "T2I": {
+        "R@1": 2.6799999999999935,
+        "R@5": 0.6399999999999961,
+        "R@10": 0.6000000000000005
+      }
+    }
+  },
+  "J_long": {
+    "step500": 0.8228000177621841,
+    "step3651": 0.8476500207424165,
+    "delta_pp": 2.485000298023232
+  },
+  "mechanism_last50": {
+    "step500": {
+      "E_all_closed": 0.0,
+      "E_all_open": 0.0,
+      "E_delta_abs_mean": 0.022492260672152042,
+      "E_i2t": 0.8149953138828278,
+      "E_keep_ratio": 0.8530406188964844,
+      "E_t2i": 0.8839572453498841,
+      "F_all_closed": 0.0,
+      "F_all_open": 0.0,
+      "F_delta_abs_mean": 0.021296191066503524,
+      "F_i2t": 0.052936126440763474,
+      "F_keep_ratio": 0.8882185745239258,
+      "F_t2i": 0.056233873069286344,
+      "O_all_closed": 0.0,
+      "O_all_open": 0.0,
+      "O_delta_abs_mean": 0.021820269897580145,
+      "O_i2t": 0.18790081441402434,
+      "O_keep_ratio": 0.856287716627121,
+      "O_t2i": 0.24127239763736724,
+      "common_loss": 8.893277487158775,
+      "hard_inclusion_violation": 0.03451058998703957,
+      "inc": 0.02960985720157623,
+      "inc_weight": 1.0,
+      "loss": 8.922887344360351,
+      "nonfinite": 0.0,
+      "oe_iou": 0.8166930842399597,
+      "valid_global": 1023.94
+    },
+    "step3651": {
+      "loss": 6.392563848495484,
+      "F_i2t": 0.022739460542798042,
+      "F_t2i": 0.02346340034157038,
+      "O_i2t": 0.11707353636622429,
+      "O_t2i": 0.15932552888989449,
+      "E_i2t": 0.5563556009531021,
+      "E_t2i": 0.6419179308414459,
+      "F_keep_ratio": 0.8488533890247345,
+      "O_keep_ratio": 0.7440469622611999,
+      "E_keep_ratio": 0.7746754586696625,
+      "inc": 0.027546315602958203,
+      "hard_inclusion_violation": 0.04603137589991093,
+      "oe_iou": 0.6757799470424652,
+      "common_loss": 6.365017532892526
+    },
+    "observations": [
+      "common loss decreased substantially",
+      "F/O/E keep ratios all decreased; F did not approach all-open",
+      "hard inclusion violation increased",
+      "O/E IoU decreased, so O/E selections became less similar"
+    ]
+  },
+  "excluded_evaluations": [
+    "DCI Full",
+    "Long-DCI"
+  ]
+}

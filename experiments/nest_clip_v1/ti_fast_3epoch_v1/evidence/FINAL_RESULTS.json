@@ -1,0 +1,111 @@
+{
+  "completed_updates": 3651,
+  "checkpoint_sha256": "c106802b5b7a5fcbc368b7e1ca02a09d83a7ce7caa147976160185f35db73036",
+  "bare_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+  "export_check": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      3651
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "c106802b5b7a5fcbc368b7e1ca02a09d83a7ce7caa147976160185f35db73036",
+    "bare_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df"
+  },
+  "metrics": {
+    "COCO": {
+      "image2text_R1": 0.6166,
+      "image2text_R5": 0.8344,
+      "image2text_R10": 0.9014,
+      "text2image_R1": 0.41944,
+      "text2image_R5": 0.67608,
+      "text2image_R10": 0.7736,
+      "checkpoint_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+      "native_only": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.9150000214576721,
+        "R5": 0.9850000739097595,
+        "R10": 0.9930000305175781
+      },
+      "text2image": {
+        "R1": 0.8980000615119934,
+        "R5": 0.9820000529289246,
+        "R10": 0.9890000224113464
+      },
+      "checkpoint_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ],
+      "native_only": true
+    },
+    "flickr_test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.88,
+          "T2I": 0.7196
+        },
+        "R@5": {
+          "I2T": 0.979,
+          "T2I": 0.9122
+        },
+        "R@10": {
+          "I2T": 0.995,
+          "T2I": 0.9516
+        }
+      },
+      "checkpoint_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "elapsed_seconds": 17.680169343948364,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "docci": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.7848,
+          "T2I": 0.7928
+        },
+        "R@5": {
+          "I2T": 0.9564,
+          "T2I": 0.9556
+        },
+        "R@10": {
+          "I2T": 0.9816,
+          "T2I": 0.9808
+        }
+      },
+      "checkpoint_sha256": "e9290a6b0eafdf0bca78ee351791115493bca5d19461ad6760a8a304222e10df",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "elapsed_seconds": 261.8334798812866,
+      "device": "cuda:0",
+      "native_student_only": true
+    }
+  },
+  "excluded_evaluations": [
+    "DCI Full",
+    "Long-DCI"
+  ]
+}
