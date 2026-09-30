@@ -101,9 +101,11 @@ def main():
             shutil.copy2(RUN / 'resource-results.json', EVIDENCE / 'resource-results.json')
         else:
             for group in GROUPS:
+                if state['outcomes'][group]['resource_status'] == 'passed':
+                    stage('smoke', group)
+            for group in GROUPS:
                 if state['outcomes'][group]['resource_status'] != 'passed':
                     continue
-                stage('smoke', group)
                 stage('formal', group)
                 for action in ('export', 'verify-export', 'coco', 'urban', 'flickr_test1k', 'docci'):
                     stage(action, group)

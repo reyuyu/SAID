@@ -173,6 +173,14 @@ def save_checkpoint(module, optimizer, config, completed, output):
     dist.barrier()
 
 
+def save_emergency(module, optimizer, config, completed, output):
+    destination = Path(output) / 'emergency'
+    if dist.get_rank() == 0:
+        destination.mkdir(exist_ok=False)
+    dist.barrier()
+    save_checkpoint(module, optimizer, config, completed, destination)
+
+
 def code_manifest():
     root = Path(__file__).resolve().parents[1]
     paths = ['model/nested_semantic_mask.py', 'model/nested_vcp_mask.py', 'model/nested_fusion_mask.py', 'train/nested_semantic_data.py',
@@ -414,6 +422,8 @@ def main():
             finite = torch.isfinite(loss).int()
             dist.all_reduce(finite, op=dist.ReduceOp.MIN)
             if not finite.item():
+                if cfg.get('monitor_resources', False):
+                    save_emergency(module, optimizer, config, completed, output)
                 raise FloatingPointError(f'Nonfinite loss: {logs}')
             loss.backward()
             norms = {}
@@ -430,6 +440,8 @@ def main():
                     [torch.isfinite(v) for v in adapter_norms.values()]).all().int()
             dist.all_reduce(finite, op=dist.ReduceOp.MIN)
             if not finite.item():
+                if cfg.get('monitor_resources', False):
+                    save_emergency(module, optimizer, config, completed, output)
                 raise FloatingPointError('Nonfinite parameter gradient on at least one rank')
             optimizer.step()
             completed += 1
