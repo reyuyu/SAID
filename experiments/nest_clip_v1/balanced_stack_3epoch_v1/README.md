@@ -22,3 +22,15 @@ All four ranks use batch256, seed0 and the original 1217-update DataLoader per
 epoch. Steps501-3651 represent 3151 additional shared optimizer updates, not a
 restart or a new 3651 updates. The full final training checkpoint retains the
 fusion gate and optimizer for strict export and native evaluation afterward.
+
+The user subsequently requested final native evaluation. The independent
+`evaluate.py` exports/verifies step3651 then runs COCO, Urban-1k, Flickr test1K,
+DOCCI and the explicitly authorized Long-DCI protocol in order on cuda:0.
+It records evaluation-status.json independently from the completed training
+status, preserves every stage command/exit code, and stops on errors.
+
+`summarize.py` compares Balanced@500, Balanced@3651, TI-fast@3651 and VCP@3651.
+Long-DCI uses the same7602-pair manifest as previous evaluations; VCP has no
+measurement there and is not assigned an inferred score. J_long remains the
+Urban/DOCCI average. Final reports and compact evidence are committed/pushed
+automatically to this experiment branch; no weights or data enter Git.
