@@ -340,7 +340,8 @@ def main():
         if completed >= (epoch+1)*len(loader):
             continue
         cycle_start = time.perf_counter()
-        for batch_index, batch in enumerate(loader):
+        loader_iterator = iter(loader)
+        for batch_index, batch in enumerate(loader_iterator):
             if consumed_batch(epoch, batch_index, len(loader), completed):
                 cycle_start = time.perf_counter()
                 continue
@@ -433,6 +434,12 @@ def main():
             # workers finish through StopIteration rather than only __del__.
             if completed >= args.max_updates and batch_index + 1 < len(loader):
                 break
+        # An early stop leaves most of the epoch unconsumed.  Join spawn workers
+        # before any final NCCL collective so worker aborts cannot race teardown.
+        shutdown = getattr(loader_iterator, '_shutdown_workers', None)
+        if shutdown is not None:
+            shutdown()
+        del loader_iterator
         if completed >= args.max_updates:
             break
     difference = parameter_agreement(module)
