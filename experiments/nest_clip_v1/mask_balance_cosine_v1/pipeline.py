@@ -112,7 +112,7 @@ def main():
                 status(state)
             state['stage'] = 'report'
             status(state)
-            subprocess.run([PYTHON, str(EXP / 'summarize.py')], cwd=REPO, check=True)
+            subprocess.run([PYTHON, '-m', 'experiments.nest_clip_v1.mask_balance_cosine_v1.summarize'], cwd=REPO, check=True)
             state['stage'] = 'github-sync'
             status(state)
             assert not subprocess.check_output(['git','diff','--cached','--name-only'],cwd=REPO,text=True).strip()
