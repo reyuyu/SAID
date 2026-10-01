@@ -68,8 +68,10 @@ def now():return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
 class Search:
-    def __init__(self,bootstrap=False):
-        self.state_path=RUN/'state.json'
+    def __init__(self,bootstrap=False,*,run_dir=RUN,experiment_dir=EXP):
+        self.run_dir=Path(run_dir)
+        self.experiment_dir=Path(experiment_dir)
+        self.state_path=self.run_dir/'state.json'
         if self.state_path.exists():
             self.state=load(self.state_path)
             assert self.state['status']!='completed','Search already complete'
@@ -78,16 +80,16 @@ class Search:
                             code_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip())
         self.bootstrap=bootstrap
         self.state['supervisor_pid']=os.getpid()
-        RUN.mkdir(exist_ok=True)
-        (EXP/'evidence').mkdir(exist_ok=True)
+        self.run_dir.mkdir(parents=True,exist_ok=True)
+        (self.experiment_dir/'evidence').mkdir(parents=True,exist_ok=True)
         self.save()
 
     def save(self):
         temp=self.state_path.with_suffix('.tmp');temp.write_text(json.dumps(self.state,indent=2)+'\n');temp.replace(self.state_path)
 
     def command(self,key,command,gpu=True):
-        log=RUN/'execution'/f'{key}.console.txt'
-        record=RUN/'execution'/f'{key}.json'
+        log=self.run_dir/'execution'/f'{key}.console.txt'
+        record=self.run_dir/'execution'/f'{key}.json'
         if record.exists():
             result=load(record)
             if result['exit_code']==0:return result
@@ -108,7 +110,7 @@ class Search:
             code=child.wait()
         data.update(exit_code=code,elapsed_seconds=time.monotonic()-tick,finished_utc=now())
         record.write_text(json.dumps(data,indent=2)+'\n');self.state['stages'].append(data);self.save()
-        evidence=EXP/'evidence/execution';evidence.mkdir(exist_ok=True)
+        evidence=self.experiment_dir/'evidence/execution';evidence.mkdir(exist_ok=True)
         shutil.copy2(record,evidence/record.name);shutil.copy2(log,evidence/log.name)
         if code:raise subprocess.CalledProcessError(code,command)
         return data
@@ -117,16 +119,16 @@ class Search:
         cfg=dict(BASE_CONFIG,**hparams(hp));tid=trial_id(hp)
         cfg.update(hparam_search=True,trial_id=tid,experiment_name=f'BalancedSearch-{tid[:12]}',
                    checkpoint_interval=100000,save_initial_checkpoint=False)
-        path=RUN/'configs'/f'{tid}.json';path.parent.mkdir(exist_ok=True)
+        path=self.run_dir/'configs'/f'{tid}.json';path.parent.mkdir(exist_ok=True)
         if path.exists():assert load(path)==cfg
         else:path.write_text(json.dumps(cfg,indent=2)+'\n')
-        compact_path=EXP/'configs';compact_path.mkdir(exist_ok=True)
+        compact_path=self.experiment_dir/'configs';compact_path.mkdir(exist_ok=True)
         shutil.copy2(path,compact_path/path.name)
         return tid,path
 
     def train(self,hp,stop,kind='formal',resume=None,legacy=False):
         tid,cfg=self.config(hp)
-        root=RUN/'trials'/tid/(kind if kind!='formal' else f'step{stop}')
+        root=self.run_dir/'trials'/tid/(kind if kind!='formal' else f'step{stop}')
         command=[TORCHRUN,'--standalone','--nnodes=1','--nproc-per-node=4','--max-restarts=0',
                  '-m','train.train_nested_semantic_mask','--config',str(cfg),'--init-state',str(SHARED),
                  '--index-dir','/root/lk_projects/SAID-nest-clip-v1/data_index','--image-root',
@@ -138,7 +140,7 @@ class Search:
         root.parent.mkdir(parents=True,exist_ok=True)
         self.command(f'{tid[:12]}-{kind}-{stop}',command)
         accepted=load(root/'acceptance.json')
-        dest=EXP/'evidence'/tid[:12];dest.mkdir(exist_ok=True)
+        dest=self.experiment_dir/'evidence'/tid[:12];dest.mkdir(exist_ok=True)
         for filename in ('config.json','acceptance.json'):
             shutil.copy2(root/filename,dest/f'{kind}-{stop}-{filename}')
         if not accepted['passed']:
@@ -191,7 +193,7 @@ class Search:
             if vals:result['timing']=dict(mean_seconds=statistics.fmean(vals),median_seconds=statistics.median(vals),
                                           p95_seconds=statistics.quantiles(vals,n=100)[94],max_seconds=max(vals))
         trial.setdefault('budgets',{})[str(stop)]=result;trial['status']='completed';self.save()
-        dest=EXP/'evidence'/tid[:12]/f'step{stop}';dest.mkdir(parents=True,exist_ok=True)
+        dest=self.experiment_dir/'evidence'/tid[:12]/f'step{stop}';dest.mkdir(parents=True,exist_ok=True)
         for name,source in sources.items():shutil.copy2(source,dest/f'{name.lower().replace("-","_")}.json')
         for filename in ('config.json','acceptance.json','export-check.json'):
             shutil.copy2(root/filename,dest/filename)
@@ -199,7 +201,7 @@ class Search:
         return result
 
     def publish(self):
-        (EXP/'SEARCH_STATE.json').write_text(json.dumps(self.state,indent=2)+'\n')
+        (self.experiment_dir/'SEARCH_STATE.json').write_text(json.dumps(self.state,indent=2)+'\n')
         columns=['trial_id',*hparams({}),'Score5_R1','J_long3','J_long','checkpoint_sha256','reused']
         for budget in (500,1217,3651):
             entries=[]
@@ -209,7 +211,7 @@ class Search:
                     entries.append((result,dict(trial_id=tid,**trial['hparams'],**result['scores'],
                                                  checkpoint_sha256=result['checkpoint_sha256'],reused=result['reused'])))
             entries.sort(key=lambda item:rank_key(item[0]),reverse=True)
-            with (EXP/f'leaderboard_{budget}.csv').open('w',newline='') as handle:
+            with (self.experiment_dir/f'leaderboard_{budget}.csv').open('w',newline='') as handle:
                 writer=csv.DictWriter(handle,fieldnames=columns);writer.writeheader()
                 for _,record in entries:
                     record['view_weights']=json.dumps(record['view_weights'],separators=(',',':'))

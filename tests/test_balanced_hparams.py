@@ -75,7 +75,8 @@ def test_actual_four_groups_and_lr_effect_is_isolated():
     assert rates[1]==1e-3*factor and rates[2]==5e-4*factor and rates[3]==2e-4*factor
 
 
-@pytest.mark.parametrize('field,value',[('sparsity_scale',.75),('inclusion_max',1.5),('view_weights',[2,1,1])])
+@pytest.mark.parametrize('field,value',[('sparsity_scale',.75),('inclusion_max',1.5),('view_weights',[2,1,1]),
+                                      ('inclusion_max',2.),('view_weights',[1,1,2])])
 def test_each_loss_coefficient_only_changes_its_term(field,value):
     torch.manual_seed(911)
     base=make();variant=copy.deepcopy(base);variant.search_hparams=hparams({field:value})
