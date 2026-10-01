@@ -1,0 +1,32 @@
+{
+  "command": [
+    "/root/miniconda3/envs/said-repro/bin/torchrun",
+    "--standalone",
+    "--nnodes=1",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "train.train_nested_semantic_mask",
+    "--config",
+    "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/configs/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee.json",
+    "--init-state",
+    "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+    "--index-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/data_index",
+    "--image-root",
+    "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/smoke",
+    "--run-type",
+    "smoke",
+    "--max-updates",
+    "5"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
+  "started_utc": "2026-10-01T22:14:59.699918+00:00",
+  "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
+  "stage": "0e3327f8f0bf-smoke-5",
+  "exit_code": 0,
+  "elapsed_seconds": 39.32811091840267,
+  "finished_utc": "2026-10-01T22:15:39.028035+00:00"
+}

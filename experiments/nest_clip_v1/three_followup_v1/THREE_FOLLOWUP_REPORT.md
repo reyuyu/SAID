@@ -1,6 +1,6 @@
 # Three Balanced Followups
 
-Status: `ready`. Stage: `prepared`.
+Status: `running`. Stage: `0e3327f8f0bf-500-long_dci`.
 
 Experiments1/2 use the latest instruction: full3651 updates, with evaluations at500 and3651. Both keep fusion_lr=2e-4. Experiment3 has conflicting3/4 epoch instructions and is pending clarification.
 
@@ -16,12 +16,21 @@ Experiment3 selected parent: `6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd9
 | Fusion-only C (6d44ae8d5c34@3651) | 3651 | 72.531265 | 76.723441 | 85.195001 |
 | Previous inclusion1.5 (2ea4a3ae907a@500) | 500 | 70.265202 | 73.775337 | 82.575002 |
 | Previous inclusion1.5 (2ea4a3ae907a@3651) | 3651 | 72.484610 | 76.689683 | 85.220003 |
+| Inclusion++ | 500 | 69.678630 | 73.329050 | 82.070002 |
 
 ## Experiment Status
 
 ### Inclusion++
 
-Status: `pending`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 2.0, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 1.0], "visual_mask_lr_scale": 1.0}`.
+Status: `running`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 2.0, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 1.0], "visual_mask_lr_scale": 1.0}`.
+
+At500, Score5_R1 change versus the inclusion1.5 parent: -0.586572 pp.
+
+At500: full checkpoint SHA256 `d6364a13fa6f93ab31efa4e64a4ab6188cd9e5451c9fe2f5091c95526715cbd4`; bare student SHA256 `9dbe58e255dd6d46ddf8b80b8944d22dd42d16ce0af6bd09bc8559ce81123d1f`.
+
+Export/acceptance: `True` / `True`.
+
+Commands and exit codes are recorded in SEARCH_STATE.json and evidence/execution/. Diagnostic summaries are in SEARCH_STATE.json; full step/token logs remain server-local.
 
 ### Remainder++
 
@@ -118,6 +127,21 @@ Status: `pending`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.5, "spa
 | DOCCI | T2I | 79.620000 | 95.740000 | 98.260000 |
 | Long-DCI | I2T | 58.787161 | 77.558537 | 83.346488 |
 | Long-DCI | T2I | 60.470929 | 78.505656 | 83.859511 |
+
+### Inclusion++ @500
+
+| Dataset | Direction | R@1 % | R@5 % | R@10 % |
+|---|---|---:|---:|---:|
+| COCO | I2T | 59.580000 | 82.040000 | 88.780000 |
+| COCO | T2I | 41.052000 | 66.540000 | 76.188000 |
+| Urban-1k | I2T | 89.100003 | 98.200005 | 99.400002 |
+| Urban-1k | T2I | 87.200004 | 98.100007 | 99.100006 |
+| Flickr30k-test1k | I2T | 85.800000 | 97.400000 | 98.900000 |
+| Flickr30k-test1k | T2I | 70.380000 | 90.620000 | 94.580000 |
+| DOCCI | I2T | 76.140000 | 94.620000 | 97.500000 |
+| DOCCI | T2I | 75.840000 | 94.420000 | 97.460000 |
+| Long-DCI | I2T | 54.840831 | 74.401473 | 80.939227 |
+| Long-DCI | T2I | 56.853460 | 76.006314 | 81.860037 |
 
 ## Current Conclusion
 
