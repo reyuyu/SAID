@@ -46,7 +46,8 @@ def main():
            'are frozen. Coordinates: fusion LR5e-5/2e-4; visual mask LR scale0.5/2; normalized view weights '
            '[2,1,1]/[1,1,1.5]; sparsity scale0.75/1.25; inclusion maximum0.5/1.5. Each round evaluates both '
            'new candidates from the shared untrained state, retaining the current best as the third option. '
-           'All histories remain eligible for global Top3.','',
+           'After all500-step evaluations, global Top2 continue directly from their own step500 to3651. '
+           'The user replaced the original Top3-to1217/Top2-to3651 plan; no intermediate1217 screening is run.','',
            'Default B0@500/@3651 are reused after strict checkpoint/metric verification. Same-trial promotions '
            'restore optimizer moments, all RNG and loader cursor, without resetting the3651 cosine horizon. '
            'The B0 legacy optimizer is split by parameter name with exact moments/step/LR preservation. '
@@ -58,7 +59,7 @@ def main():
     for r in state['rounds']:
         lines.append(f"| {r['round']} | {r['coordinate']} | {r['best_before'][:12]} | "
                      f"{','.join(t[:12] for t in r['participants'][1:])} | {r['best_after'][:12]} |")
-    for budget in (500,1217,3651):
+    for budget in (500,3651):
         entries=[(tid,t,t['budgets'][str(budget)]) for tid,t in trials.items() if str(budget) in t['budgets']]
         entries.sort(key=lambda e:rank_key(e[2]),reverse=True)
         lines += ['',f'## Leaderboard {budget}','',
@@ -73,9 +74,9 @@ def main():
     for label,result in [('Search best@3651',final),*references.items()]:
         s=result['scores'];lines.append(f"| {label} | {s['Score5_R1']*100:.6f} | {s['J_long3']*100:.6f} | {s['J_long']*100:.6f} |")
     lines += ['', '## Complete Native Recall','',
-              'Each table includes all successful500 trials, Top3@1217 and final3651 results. Values are percentages. '
+              'Each table includes all successful500 trials and final3651 results from direct Top2 promotion. Values are percentages. '
               'Native bare-student normalized image/text inner products only; no training mask or rerank.','']
-    for budget in (500,1217,3651):
+    for budget in (500,3651):
         for tid,trial in trials.items():
             record=trial['budgets'].get(str(budget))
             if record is None:continue
@@ -95,7 +96,8 @@ def main():
     lines += ['', '## Artifacts','',
               'Parameter JSON hashes are trial IDs. SEARCH_STATE.json records runtime commits, commands/exit codes, '
               'checkpoint/student hashes, metric JSON, stage costs, promotion lineage and all failure statuses. '
-              'leaderboard_500.csv / leaderboard_1217.csv / leaderboard_3651.csv preserve original score floats. '
+              'leaderboard_500.csv / leaderboard_3651.csv preserve original score floats. '
+              'The existing empty1217 leaderboard records that the superseded stage was not run. '
               'Raw evaluator JSON and compact evidence are committed here; large training checkpoints, RNG/optimizer '
               'payloads, full token logs, data and caches remain server-local.','',
               'Only the five authorized native protocols are used: COCO5000/25000, Urban1000/1000, Flickr1000/5000, '

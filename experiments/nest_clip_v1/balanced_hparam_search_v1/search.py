@@ -44,6 +44,13 @@ def rank_key(record):
     return record['scores']['Score5_R1'],record['scores']['J_long3'],record['scores']['J_long']
 
 
+def select_top2_500(trials):
+    eligible=[tid for tid,trial in trials.items() if '500' in trial['budgets']]
+    ordered=sorted(eligible,key=lambda tid:rank_key(trials[tid]['budgets']['500']),reverse=True)
+    assert len(ordered)>=2
+    return ordered[:2]
+
+
 def native_metrics(root):
     m,raw,sources=metrics(root)
     long=load(root/'long_dci/long_dci.json')
@@ -248,21 +255,13 @@ class Search:
             best=max(eligible,key=lambda tid:rank_key(self.state['trials'][tid]['budgets']['500']))
             self.state['rounds'].append(dict(round=number,coordinate=field,best_before=old_best,participants=participants,best_after=best))
             self.save();self.publish()
-        global500=sorted([tid for tid,t in self.state['trials'].items() if '500' in t['budgets']],
-                         key=lambda tid:rank_key(self.state['trials'][tid]['budgets']['500']),reverse=True)
-        top3=global500[:3];assert len(top3)==3
-        self.state['promotions']['top3_500']=top3;self.save()
-        for tid in top3:
-            trial=self.state['trials'][tid]
-            if '1217' not in trial['budgets']:
-                root=self.train(trial['hparams'],1217,resume=Path(trial['budgets']['500']['checkpoint']),legacy=tid==b0)
-                self.evaluate(tid,root,1217)
-        top2=sorted(top3,key=lambda tid:rank_key(self.state['trials'][tid]['budgets']['1217']),reverse=True)[:2]
-        self.state['promotions']['top2_1217']=top2;self.save()
+        top2=select_top2_500(self.state['trials'])
+        self.state['promotions'].update(policy='global_top2_500_direct_to_3651',top2_500=top2)
+        self.save();self.publish()
         for tid in top2:
             trial=self.state['trials'][tid]
             if '3651' not in trial['budgets']:
-                root=self.train(trial['hparams'],3651,resume=Path(trial['budgets']['1217']['checkpoint']))
+                root=self.train(trial['hparams'],3651,resume=Path(trial['budgets']['500']['checkpoint']),legacy=tid==b0)
                 self.evaluate(tid,root,3651)
         final=max([b0,*top2],key=lambda tid:rank_key(self.state['trials'][tid]['budgets']['3651']))
         self.state.update(status='completed',stage='final-results',best_3651=final,finished_utc=now())

@@ -12,11 +12,17 @@ all participate in tuning; this is not a blind benchmark.
 
 All trial IDs are SHA256 of canonical five-parameter JSON. Different trials start
 at the common untrained checkpoint. Only same-trial promotions restore their
-own full states: global Top3@500 to1217; Top2@1217 to3651. Horizon stays3651.
-B0@500/@3651 are verified and reused rather than retrained. If B0 is promoted
-to1217 its legacy three-group optimizer is split by parameter name into four
+own full states: after all500-step evaluations, global Top2@500 continue directly
+to3651. The user replaced the original Top3@500 to1217 / Top2@1217 to3651 plan;
+no intermediate1217 screening or training is scheduled. Horizon stays3651.
+B0@500/@3651 are verified and reused rather than retrained. Its legacy
+three-group optimizer can be split by parameter name into four
 groups without changing moments, steps or LR. Existing B0@3651 may be reused if
 selected again; this avoids duplicate training of the identical configuration.
+
+The change is applied by a scheduler handoff after the active child finishes.
+Only the old supervisor is paused/replaced; the running torchrun/evaluator is
+allowed to finish normally, with its exit status and artifacts preserved.
 
 The network source model/nested_fusion_mask.py is byte-identical to the parent.
 BalancedSearch adds only coefficient handling and extra detached diagnostics.
