@@ -9,6 +9,7 @@ from model import longclip
 from model.nested_semantic_mask import NestedSemanticMask
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
+from model.balanced_hparam_search import BalancedSearch,hparams
 from train.nested_semantic_data import prepare_index, file_sha
 from train.train_nested_semantic_mask import (seed_all, build_optimizer, atomic_save,
                                                 auxiliary_module)
@@ -70,6 +71,9 @@ def main():
                         else NestedSemanticMask)
         model_options = ({'fusion': config['fusion'], 'visual': config['visual']}
                          if config.get('condition_mode') == 'dual_branch' else {})
+        if config.get('hparam_search'):
+            module_class=BalancedSearch
+            model_options['search_hparams']=hparams(config)
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),
@@ -84,7 +88,7 @@ def main():
             auxiliary.load_state_dict(payload['adapter'], strict=True)
         optimizer = build_optimizer(module)
         optimizer.load_state_dict(payload['optimizer'])
-        assert len(optimizer.param_groups) == (2 if auxiliary is None else 3)
+        assert len(optimizer.param_groups) == (4 if config.get('hparam_search') else 2 if auxiliary is None else 3)
         steps = sorted({int(v['step']) for v in optimizer.state.values()})
         assert steps == [payload['completed_steps']]
         student, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())

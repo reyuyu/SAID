@@ -15,6 +15,9 @@ from model.nested_semantic_mask import gather, hard_st
 from tests.test_nested_fusion import make_model, reference_loss, explicit_inputs, explicit_logits
 from torch.nn import functional as F
 from train.train_nested_semantic_mask import build_optimizer, learning_rates
+from train.train_nested_semantic_mask import optimizer_learning_rates
+from model.balanced_hparam_search import BalancedSearch, hparams
+from tests.test_nested_fusion import TinyFusionCLIP
 
 
 def fp32_encoders(module):
@@ -61,6 +64,7 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--output',required=True)
     parser.add_argument('--new-arms', action='store_true')
+    parser.add_argument('--search-arms',action='store_true')
     args=parser.parse_args()
     local,rank,world=[int(os.environ[k]) for k in ('LOCAL_RANK','RANK','WORLD_SIZE')]
     assert world==2
@@ -71,9 +75,10 @@ def main():
     cases=[('all_valid',2,[1,1,1,1]),('rank1_zero_valid',2,[1,1,0,0]),
            ('V1',2,[1,0,0,0]),('V0',2,[0,0,0,0]),('tail',1,[1,1])]
     results=[]
-    arms = ([('balanced_stack', 'patch'), ('cosine_crossscore', 'cls')] if args.new_arms else
+    arms = ([('balanced_stack','patch')]*2 if args.search_arms else
+            [('balanced_stack', 'patch'), ('cosine_crossscore', 'cls')] if args.new_arms else
             [('stack_pool','cls'),('crossscore_flat','cls'),('stack_pool','patch'),('crossscore_flat','patch')])
-    for fusion,visual in arms:
+    for arm_index,(fusion,visual) in enumerate(arms):
         for index,(case,batch,validity) in enumerate(cases):
             if rank == 0:
                 print(json.dumps(dict(testing=fusion,visual=visual,case=case)),flush=True)
@@ -81,6 +86,11 @@ def main():
             # 32 channels avoid the frequent all-closed degeneracy of an 8-channel fixture.
             # All production initialization rules, including readout bias zero, remain intact.
             module=make_model(fusion,visual,width=32).cuda()
+            if args.search_arms:
+                hp=hparams({} if arm_index==0 else dict(fusion_lr=2e-4,visual_mask_lr_scale=.5,
+                                                        view_weights=[2,1,1],sparsity_scale=.75,inclusion_max=1.5))
+                module=BalancedSearch(TinyFusionCLIP(32),search_hparams=hp,fusion='balanced_stack',visual='patch',
+                                      text_tokens=6,checkpoint_encoders=False,image_chunk=2,text_chunk=2).cuda()
             reference=copy.deepcopy(module)
             fp32_encoders(module)
             fp32_encoders(reference)
@@ -92,6 +102,9 @@ def main():
             sl=slice(rank*batch,(rank+1)*batch)
             loss,logs=ddp(images[sl],*[x[sl] for x in tokens],valid[sl],61)
             expected=reference_loss(reference,images,tokens,valid,61)
+            if args.search_arms:
+                from tests.test_balanced_hparams import weighted_reference
+                expected=weighted_reference(reference,images,tokens,valid,61)
             with torch.no_grad():
                 z,vv=module.encode_visual(images[sl])
                 t,tt=module.encode_view(tokens[0][sl])
@@ -132,7 +145,7 @@ def main():
             torch.testing.assert_close(logs['loss'],expected.detach(),atol=3e-4,rtol=3e-5)
             optimizers=[build_optimizer(module),build_optimizer(reference)]
             for optimizer in optimizers:
-                for group,rate in zip(optimizer.param_groups,learning_rates(61,3651,True)):
+                for group,rate in zip(optimizer.param_groups,optimizer_learning_rates(module,61,3651)):
                     group['lr']=rate
                 optimizer.step()
             updates=[]
@@ -165,6 +178,7 @@ def main():
             results.append(dict(fusion=fusion,visual=visual,case=case,loss_error=float((logs['loss']-expected.detach()).abs()),
                                 score_error=score_error,
                                 test_width=32,test_readout_bias=0.,
+                                search_hparams=module.search_hparams if args.search_arms else None,
                                 gradients=gradients,updates=updates))
             dist.barrier()
             del ddp,module,reference,optimizers

@@ -24,6 +24,7 @@ from model import longclip
 from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_blocks
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
+from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -43,6 +44,8 @@ def auxiliary_module(module):
 
 
 def build_optimizer(module):
+    if isinstance(module, BalancedSearch):
+        return torch.optim.AdamW(module.optimizer_groups(),betas=(.9,.999),eps=1e-8)
     mask_parameters = (module.mask_parameters() if hasattr(module, 'mask_parameters')
                        else module.clip.mask_net.parameters())
     mask_ids = {id(p) for p in mask_parameters if p.requires_grad}
@@ -72,6 +75,15 @@ def learning_rates(s, horizon, include_adapter=False):
     return values + ((.5e-4 * (1 + math.cos(math.pi*s/horizon))),) if include_adapter else values
 
 
+def optimizer_learning_rates(module, s, horizon):
+    if not isinstance(module, BalancedSearch):
+        return learning_rates(s,horizon,auxiliary_module(module) is not None)
+    backbone=learning_rates(s,horizon)[0]
+    factor=.5*(1+math.cos(math.pi*s/horizon))
+    hp=module.search_hparams
+    return backbone,1e-3*factor,1e-3*hp['visual_mask_lr_scale']*factor,hp['fusion_lr']*factor
+
+
 def gradient_norm(parameters):
     squares = [parameter.grad.float().square().sum()
                for parameter in parameters if parameter.grad is not None]
@@ -80,13 +92,17 @@ def gradient_norm(parameters):
     return torch.stack(squares).sum().sqrt()
 
 
-def validate_resume_payload(previous, current, expected_parent_trainer_sha256=None):
+def validate_resume_payload(previous, current, expected_parent_trainer_sha256=None, allow_legacy_b0=False):
     """Permit a longer stop within the SAME horizon; pin a trainer-only migration.
 
     Model/objective/data code must match byte-for-byte. A changed trainer is
     accepted only when its recorded predecessor hash is explicitly supplied.
     """
     old = previous['config']
+    if current.get('hparam_search',False):
+        assert hparams(old)==hparams(current), 'Resume hyperparameters changed'
+        if not allow_legacy_b0:
+            assert old.get('trial_id')==current.get('trial_id'), 'Resume trial identity changed'
     for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
                 'accumulation', 'epochs', 'seed', 'workers', 'checkpoint_encoders',
                 'score_chunk'):
@@ -100,9 +116,18 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old.get(key, default) == current[key], f'Resume mismatch: {key}'
     trainer = 'train/train_nested_semantic_mask.py'
     old_code, new_code = old['code_sha256'], current['code_sha256']
-    assert old_code.keys() == new_code.keys(), 'Resume code manifest keys changed'
+    if allow_legacy_b0:
+        assert current.get('hparam_search') and hparams(old)==hparams({})
+        assert previous['completed_steps']==500
+        assert old['fusion']=='balanced_stack' and old['visual']=='patch'
+        assert file_sha(current['resume'])=='c09e13d6d636c69491914643db81d8270b90d1c85ef0729513d240c4b108293d'
+        assert set(new_code)==set(old_code)|{'model/balanced_hparam_search.py'}
+    else:
+        assert old_code.keys() == new_code.keys(), 'Resume code manifest keys changed'
     for path, digest in old_code.items():
         if digest != new_code[path]:
+            if allow_legacy_b0 and path=='train/train_nested_semantic_mask.py':
+                continue
             assert path == trainer and digest == expected_parent_trainer_sha256, f'Resume code mismatch: {path}'
     if expected_parent_trainer_sha256 is not None:
         assert old_code[trainer] == expected_parent_trainer_sha256
@@ -160,7 +185,12 @@ def restore_rng_state(state):
 def save_checkpoint(module, optimizer, config, completed, output):
     # This function MUST be entered by every rank.
     states = [None] * dist.get_world_size()
-    dist.all_gather_object(states, rng_state())
+    local_state=rng_state()
+    if hasattr(module,'_loader_generator'):
+        boundary=completed % config['batches_per_epoch']==0
+        local_state['loader_generator']= (module._loader_generator.get_state() if boundary else
+                                         module._loader_epoch_generator_state)
+    dist.all_gather_object(states, local_state)
     if dist.get_rank() == 0:
         adapter = auxiliary_module(module).state_dict() if auxiliary_module(module) is not None else None
         atomic_save(dict(model=module.clip.state_dict(), adapter=adapter,
@@ -186,6 +216,8 @@ def code_manifest():
     paths = ['model/nested_semantic_mask.py', 'model/nested_vcp_mask.py', 'model/nested_fusion_mask.py', 'train/nested_semantic_data.py',
              'train/train_nested_semantic_mask.py', 'model/model_longclip.py',
              'model/longclip.py', 'model/said_cls_cvssl.py']
+    if (root/'model/balanced_hparam_search.py').exists():
+        paths.append('model/balanced_hparam_search.py')
     return {p: file_sha(root / p) for p in paths}
 
 
@@ -247,10 +279,13 @@ def main():
     p.add_argument('--run-type', choices=['probe', 'smoke', 'formal'], required=True)
     p.add_argument('--max-updates', type=int, required=True)
     p.add_argument('--resume')
+    p.add_argument('--legacy-b0',action='store_true',help='Pinned default Balanced step500 optimizer migration only')
     p.add_argument('--expected-parent-trainer-sha256',
                    help='Explicitly pin a compatible predecessor trainer; model/data/objective hashes must still match')
     args = p.parse_args()
     cfg = json.loads(Path(args.config).read_text())
+    if cfg.get('hparam_search'):
+        cfg.update(hparams(cfg))
     cfg.setdefault('sampling_mode', 'fixed_first')
     cfg.setdefault('sampling_seed', 0)
     cfg.setdefault('experiment_name', cfg['arm'])
@@ -304,6 +339,9 @@ def main():
                     NestedVCPMask if cfg['condition_mode'] == 'vcp_mask' else NestedSemanticMask)
     model_options = ({'fusion': cfg['fusion'], 'visual': cfg['visual']}
                      if cfg['condition_mode'] == 'dual_branch' else {})
+    if cfg.get('hparam_search'):
+        module_class=BalancedSearch
+        model_options['search_hparams']=hparams(cfg)
     module = module_class(clip.float(), arm=cfg['arm'],
                           checkpoint_encoders=cfg['checkpoint_encoders'],
                           image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
@@ -337,6 +375,9 @@ def main():
     ddp = DDP(module, device_ids=[local], output_device=local,
               find_unused_parameters=True, static_graph=False)
     optimizer = build_optimizer(module)
+    if cfg.get('hparam_search'):
+        module._loader_generator=loader.generator
+        module._loader_epoch_generator_state=loader.generator.get_state()
     assert not optimizer.state
     del initial
     config = dict(**cfg, **vars(args), horizon=horizon, batches_per_epoch=full_batches_per_epoch,
@@ -372,16 +413,21 @@ def main():
     completed = 0
     if args.resume:
         previous = torch.load(args.resume, map_location='cpu', weights_only=False)
-        completed = validate_resume_payload(previous, config, args.expected_parent_trainer_sha256)
+        completed = validate_resume_payload(previous, config, args.expected_parent_trainer_sha256,args.legacy_b0)
         module.clip.load_state_dict(previous['model'], strict=True)
         auxiliary = auxiliary_module(module)
         if auxiliary is None:
             assert previous.get('adapter') is None
         else:
             auxiliary.load_state_dict(previous['adapter'], strict=True)
-        optimizer.load_state_dict(previous['optimizer'])
+        if args.legacy_b0:
+            config['optimizer_migration']=migrate_legacy_optimizer(previous['optimizer'],module,optimizer)
+        else:
+            optimizer.load_state_dict(previous['optimizer'])
         state = previous['rng_per_rank'][rank]
         restore_rng_state(state)
+        if cfg.get('hparam_search') and 'loader_generator' in state:
+            loader.generator.set_state(state['loader_generator'])
         config.update(parent_checkpoint_sha256=file_sha(args.resume), parent_completed_updates=completed,
                       parent_git_head=previous['config']['git_head'],
                       parent_code_sha256=previous['config']['code_sha256'])
@@ -406,6 +452,8 @@ def main():
         if completed >= (epoch+1)*full_batches_per_epoch:
             continue
         cycle_start = time.perf_counter()
+        if cfg.get('hparam_search'):
+            module._loader_epoch_generator_state=loader.generator.get_state()
         loader_iterator = iter(loader)
         for batch_index, batch in enumerate(loader_iterator):
             if consumed_batch(epoch, batch_index, full_batches_per_epoch, completed):
@@ -414,7 +462,7 @@ def main():
             tick = time.perf_counter()
             for k in ('image', 'tokens_f', 'tokens_o', 'tokens_e', 'valid'):
                 batch[k] = batch[k].cuda(non_blocking=True)
-            lrs = learning_rates(completed, horizon, auxiliary_module(module) is not None)
+            lrs = optimizer_learning_rates(module,completed,horizon)
             for group, lr in zip(optimizer.param_groups, lrs):
                 group['lr'] = lr
             optimizer.zero_grad(set_to_none=True)
@@ -468,7 +516,8 @@ def main():
             if rank == 0:
                 row = dict(step=completed, s=completed-1, epoch=epoch,
                            lr_backbone=lrs[0], lr_mask=lrs[1],
-                           lr_adapter=lrs[2] if len(lrs) == 3 else 0.,
+                           lr_adapter=lrs[-1] if len(lrs) >= 3 else 0.,
+                           actual_lrs={g['name']:g['lr'] for g in optimizer.param_groups},
                            rank_health=rank_health, duplicate_image_ids=duplicates,
                            **{k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()})
                 with (output / 'steps.jsonl').open('a') as f:
