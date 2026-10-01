@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/balanced_hparam_search_v1/trials/e4724e65e6a413f13f56cdbf424bab00ea5e8c5d556f4e9eeca6ceea4e08b032/step500/student_step500.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/balanced_hparam_search_v1/trials/e4724e65e6a413f13f56cdbf424bab00ea5e8c5d556f4e9eeca6ceea4e08b032/step500/flickr_test1k",
+    "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-hparam-search-v1",
+  "started_utc": "2026-10-01T13:01:07.217260+00:00",
+  "code_commit": "e57a480bc28e8d444cb831992d6cfe3468c6f29d",
+  "stage": "e4724e65e6a4-500-flickr_test1k",
+  "exit_code": 0,
+  "elapsed_seconds": 25.249842450022697,
+  "finished_utc": "2026-10-01T13:01:32.467109+00:00"
+}

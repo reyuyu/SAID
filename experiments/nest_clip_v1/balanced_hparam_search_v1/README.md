@@ -1,5 +1,9 @@
 # Balanced Fixed-Seed Hyperparameter Search
 
+The complete 500-step parameter leaderboard, all five native Recall tables,
+and comparisons within each coordinate round are in [STEP500_REPORT.md](STEP500_REPORT.md).
+This is an interim snapshot; the final winner awaits both promoted3651 evaluations.
+
 Base: ec7194a, unchanged Balanced-Stack-Patch architecture and shared step0.
 Exactly five exposed coefficients: fusion_lr, visual_mask_lr_scale, view_weights,
 sparsity_scale, inclusion_max. B0: 1e-4 / 1 / [1,1,1] / 1 / 1.
