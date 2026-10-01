@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "tests_passed": 31,
+  "command": "/root/miniconda3/envs/said-repro/bin/python -m pytest -q tests/test_balanced_hparams.py tests/test_nested_resume.py tests/test_search_top2.py tests/test_three_followup.py",
+  "initial_checkpoint_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "architecture_model_and_trainer_unchanged": true,
+  "checks": [
+    "Exact default loss, gradients and next AdamW update",
+    "Inclusion max2 and remainder weights1/1/2 loss isolation",
+    "Actual optimizer learning rates and hyperparameter resume validation",
+    "Independent runtime/config/evidence paths",
+    "Sequential five-step smoke, independent500 training, same-trial3651 continuation",
+    "Full3651 continuation even when500 screening score is poor",
+    "Preserved failed trial without automatic retry"
+  ]
+}

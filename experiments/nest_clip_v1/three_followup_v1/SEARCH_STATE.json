@@ -1,0 +1,641 @@
+{
+  "status": "ready",
+  "started_utc": "2026-10-01T22:13:42.610340+00:00",
+  "trials": {
+    "0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee": {
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 2.0
+      },
+      "seed": 0,
+      "status": "pending",
+      "budgets": {}
+    },
+    "3cc9fbefedd6f4bc68ad19aca1da73c519f06eaa18db815c3dc697338935d699": {
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          2.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.5
+      },
+      "seed": 0,
+      "status": "pending",
+      "budgets": {}
+    }
+  },
+  "rounds": [],
+  "promotions": {},
+  "stages": [],
+  "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
+  "supervisor_pid": 1343861,
+  "references": {
+    "a009f49f814a@500": {
+      "trial_id": "a009f49f814ae09adef53d669145b3c9cb187dc9794b2ee3e7f24adc65324aae",
+      "hparams": {
+        "fusion_lr": 0.0001,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.0
+      },
+      "updates": 500,
+      "scores": {
+        "Score5_R1": 0.6985829419921749,
+        "J_long3": 0.7360182366536248,
+        "J_long": 0.8229500069141388
+      },
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.596,
+            "R@5": 0.8188,
+            "R@10": 0.888
+          },
+          "T2I": {
+            "R@1": 0.40932,
+            "R@5": 0.66636,
+            "R@10": 0.7632
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.8970000147819519,
+            "R@5": 0.984000027179718,
+            "R@10": 0.9950000643730164
+          },
+          "T2I": {
+            "R@1": 0.8740000128746033,
+            "R@5": 0.9820000529289246,
+            "R@10": 0.9910000562667847
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.861,
+            "R@5": 0.975,
+            "R@10": 0.988
+          },
+          "T2I": {
+            "R@1": 0.7034,
+            "R@5": 0.9066,
+            "R@10": 0.9468
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7618,
+            "R@5": 0.9456,
+            "R@10": 0.9756
+          },
+          "T2I": {
+            "R@1": 0.759,
+            "R@5": 0.9472,
+            "R@10": 0.9754
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5520915548539858,
+            "R@5": 0.746119442252039,
+            "R@10": 0.810444619836885
+          },
+          "T2I": {
+            "R@1": 0.5722178374112076,
+            "R@5": 0.7640094711917916,
+            "R@10": 0.8205735332807156
+          }
+        }
+      },
+      "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/mask_balance_cosine_v1/formal/Balanced-Stack-Patch/step000500.pt",
+      "checkpoint_sha256": "c09e13d6d636c69491914643db81d8270b90d1c85ef0729513d240c4b108293d"
+    },
+    "a009f49f814a@3651": {
+      "trial_id": "a009f49f814ae09adef53d669145b3c9cb187dc9794b2ee3e7f24adc65324aae",
+      "hparams": {
+        "fusion_lr": 0.0001,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.0
+      },
+      "updates": 3651,
+      "scores": {
+        "Score5_R1": 0.724442017909553,
+        "J_long3": 0.7665766965159216,
+        "J_long": 0.8519500224113464
+      },
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.614,
+            "R@5": 0.841,
+            "R@10": 0.9008
+          },
+          "T2I": {
+            "R@1": 0.42116,
+            "R@5": 0.67844,
+            "R@10": 0.7758
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.9220000505447388,
+            "R@5": 0.9830000400543213,
+            "R@10": 0.9940000176429749
+          },
+          "T2I": {
+            "R@1": 0.909000039100647,
+            "R@5": 0.9850000739097595,
+            "R@10": 0.9920000433921814
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.892,
+            "R@5": 0.982,
+            "R@10": 0.994
+          },
+          "T2I": {
+            "R@1": 0.7178,
+            "R@5": 0.9148,
+            "R@10": 0.9534
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7816,
+            "R@5": 0.9566,
+            "R@10": 0.9824
+          },
+          "T2I": {
+            "R@1": 0.7952,
+            "R@5": 0.9564,
+            "R@10": 0.9806
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5895816890292028,
+            "R@5": 0.7737437516443041,
+            "R@10": 0.8343856879768482
+          },
+          "T2I": {
+            "R@1": 0.6020784004209419,
+            "R@5": 0.7820310444619837,
+            "R@10": 0.8337279663246514
+          }
+        }
+      },
+      "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_stack_3epoch_v1/formal/Balanced-Stack-Patch/step003651.pt",
+      "checkpoint_sha256": "ff986c5ca8cf94e718f1f5b28eea54760e3c92416c9e8de63aaf98917fec9234"
+    },
+    "6d44ae8d5c34@500": {
+      "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.0
+      },
+      "updates": 500,
+      "scores": {
+        "Score5_R1": 0.6999002652589216,
+        "J_long3": 0.7373471087648692,
+        "J_long": 0.824450023841858
+      },
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.5978,
+            "R@5": 0.8214,
+            "R@10": 0.891
+          },
+          "T2I": {
+            "R@1": 0.41112,
+            "R@5": 0.66728,
+            "R@10": 0.76368
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.893000066280365,
+            "R@5": 0.9830000400543213,
+            "R@10": 0.9940000176429749
+          },
+          "T2I": {
+            "R@1": 0.8820000290870667,
+            "R@5": 0.984000027179718,
+            "R@10": 0.9920000433921814
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.861,
+            "R@5": 0.972,
+            "R@10": 0.988
+          },
+          "T2I": {
+            "R@1": 0.705,
+            "R@5": 0.907,
+            "R@10": 0.9466
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7622,
+            "R@5": 0.9468,
+            "R@10": 0.9762
+          },
+          "T2I": {
+            "R@1": 0.7606,
+            "R@5": 0.9468,
+            "R@10": 0.976
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5555117074454091,
+            "R@5": 0.7511181268087346,
+            "R@10": 0.8126808734543541
+          },
+          "T2I": {
+            "R@1": 0.5707708497763746,
+            "R@5": 0.7633517495395948,
+            "R@10": 0.8196527229676401
+          }
+        }
+      },
+      "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_hparam_search_v1/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/step500/step000500.pt",
+      "checkpoint_sha256": "8bd6517c4b8d04b31e40bb4e12825cea08ac390027f44f331036739ef456831c"
+    },
+    "6d44ae8d5c34@3651": {
+      "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.0
+      },
+      "updates": 3651,
+      "scores": {
+        "Score5_R1": 0.7253126475153273,
+        "J_long3": 0.7672344125255455,
+        "J_long": 0.8519500139474869
+      },
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6184,
+            "R@5": 0.8394,
+            "R@10": 0.9018
+          },
+          "T2I": {
+            "R@1": 0.42092,
+            "R@5": 0.67788,
+            "R@10": 0.77628
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.9190000295639038,
+            "R@5": 0.984000027179718,
+            "R@10": 0.9930000305175781
+          },
+          "T2I": {
+            "R@1": 0.9100000262260437,
+            "R@5": 0.9860000610351562,
+            "R@10": 0.9910000562667847
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.89,
+            "R@5": 0.981,
+            "R@10": 0.995
+          },
+          "T2I": {
+            "R@1": 0.7204,
+            "R@5": 0.914,
+            "R@10": 0.9542
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.783,
+            "R@5": 0.9574,
+            "R@10": 0.9822
+          },
+          "T2I": {
+            "R@1": 0.7958,
+            "R@5": 0.9582,
+            "R@10": 0.9812
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5912917653249145,
+            "R@5": 0.7772954485661668,
+            "R@10": 0.8363588529334386
+          },
+          "T2I": {
+            "R@1": 0.6043146540384109,
+            "R@5": 0.7840042094185741,
+            "R@10": 0.8362273086029992
+          }
+        }
+      },
+      "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_hparam_search_v1/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/step3651/step003651.pt",
+      "checkpoint_sha256": "c48286d4a049c547bc16491ded093fee7cbbbd355bc0ade3593fe886655b826e"
+    },
+    "2ea4a3ae907a@500": {
+      "trial_id": "2ea4a3ae907a389570228424703e4d0cad03a55aba6650d7f4023d95ab38c3f6",
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.5
+      },
+      "updates": 500,
+      "scores": {
+        "Score5_R1": 0.7026520205437525,
+        "J_long3": 0.737753367572921,
+        "J_long": 0.8257500197887421
+      },
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6004,
+            "R@5": 0.8234,
+            "R@10": 0.891
+          },
+          "T2I": {
+            "R@1": 0.4144,
+            "R@5": 0.66804,
+            "R@10": 0.76712
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.8920000195503235,
+            "R@5": 0.984000027179718,
+            "R@10": 0.9920000433921814
+          },
+          "T2I": {
+            "R@1": 0.8750000596046448,
+            "R@5": 0.9830000400543213,
+            "R@10": 0.9910000562667847
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.873,
+            "R@5": 0.972,
+            "R@10": 0.99
+          },
+          "T2I": {
+            "R@1": 0.7122,
+            "R@5": 0.9086,
+            "R@10": 0.9494
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7694,
+            "R@5": 0.9498,
+            "R@10": 0.9748
+          },
+          "T2I": {
+            "R@1": 0.7666,
+            "R@5": 0.9482,
+            "R@10": 0.9766
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5560378847671665,
+            "R@5": 0.7525651144435674,
+            "R@10": 0.8168902920284136
+          },
+          "T2I": {
+            "R@1": 0.5674822415153907,
+            "R@5": 0.7630886608787161,
+            "R@10": 0.8196527229676401
+          }
+        }
+      },
+      "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_hparam_search_v1/trials/2ea4a3ae907a389570228424703e4d0cad03a55aba6650d7f4023d95ab38c3f6/step500/step000500.pt",
+      "checkpoint_sha256": "a576c5ae2f28411113055fd298c03bc2dc5afa40ff176bf92085fb1d7c7b723b"
+    },
+    "2ea4a3ae907a@3651": {
+      "trial_id": "2ea4a3ae907a389570228424703e4d0cad03a55aba6650d7f4023d95ab38c3f6",
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.5
+      },
+      "updates": 3651,
+      "scores": {
+        "Score5_R1": 0.7248461002283209,
+        "J_long3": 0.7668968337138682,
+        "J_long": 0.8522000256299973
+      },
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6166,
+            "R@5": 0.8378,
+            "R@10": 0.9012
+          },
+          "T2I": {
+            "R@1": 0.42168,
+            "R@5": 0.6802,
+            "R@10": 0.775
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.921000063419342,
+            "R@5": 0.9860000610351562,
+            "R@10": 0.9940000176429749
+          },
+          "T2I": {
+            "R@1": 0.909000039100647,
+            "R@5": 0.9860000610351562,
+            "R@10": 0.9920000433921814
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.886,
+            "R@5": 0.981,
+            "R@10": 0.995
+          },
+          "T2I": {
+            "R@1": 0.7228,
+            "R@5": 0.915,
+            "R@10": 0.9534
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7826,
+            "R@5": 0.9564,
+            "R@10": 0.9818
+          },
+          "T2I": {
+            "R@1": 0.7962,
+            "R@5": 0.9574,
+            "R@10": 0.9826
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5878716127334912,
+            "R@5": 0.7755853722704551,
+            "R@10": 0.8334648776637726
+          },
+          "T2I": {
+            "R@1": 0.604709287029729,
+            "R@5": 0.7850565640620889,
+            "R@10": 0.8385951065509076
+          }
+        }
+      },
+      "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_hparam_search_v1/trials/2ea4a3ae907a389570228424703e4d0cad03a55aba6650d7f4023d95ab38c3f6/step3651/step003651.pt",
+      "checkpoint_sha256": "3772c2072d956b560baf8d046983e718e60c1eef963d695da16638f53a32ae9e"
+    }
+  },
+  "experiment3": {
+    "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+    "hparams": {
+      "fusion_lr": 0.0002,
+      "visual_mask_lr_scale": 1.0,
+      "view_weights": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "sparsity_scale": 1.0,
+      "inclusion_max": 1.0
+    },
+    "status": "awaiting_epoch_clarification",
+    "requested_epochs": [
+      3,
+      4
+    ]
+  },
+  "parent_result_commit": "835852aa4a420b8701fe8c1adbc6114b84d4ce94",
+  "common_resource_gate": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 35,
+        "updates_this_run": 35,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 88.48232871294022,
+        "peak_allocated_gib": 27.759880542755127,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 35,
+        "updates_this_run": 35,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 88.50020319968462,
+        "peak_allocated_gib": 27.759880542755127,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 35,
+        "updates_this_run": 35,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 88.35359112173319,
+        "peak_allocated_gib": 27.759880542755127,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 35,
+        "updates_this_run": 35,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 88.46954381465912,
+        "peak_allocated_gib": 27.759880542755127,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": {
+      "warmup_steps": 5,
+      "measured_steps": 30,
+      "threshold_seconds": 3.0,
+      "mean_seconds": 2.0871667146682737,
+      "median_seconds": 2.061203956604004,
+      "p95_seconds": 2.2630790472030635,
+      "max_seconds": 2.3597066402435303,
+      "all_steps_at_most_3s": true,
+      "allocated_limit_gib": 65.0,
+      "every_rank_peak_allocated_at_most_65gib": true
+    },
+    "resource_failure": null
+  },
+  "policy": "sequential_smoke5_then500_eval_then3651_eval",
+  "experiments": [
+    {
+      "name": "Inclusion++",
+      "trial_id": "0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee",
+      "status": "pending"
+    },
+    {
+      "name": "Remainder++",
+      "trial_id": "3cc9fbefedd6f4bc68ad19aca1da73c519f06eaa18db815c3dc697338935d699",
+      "status": "pending"
+    }
+  ],
+  "stage": "prepared"
+}
