@@ -1,0 +1,307 @@
+{
+  "arm": "A3",
+  "experiment_name": "BalancedSearch-6d44ae8d5c34",
+  "base_model": "ViT-L/14",
+  "input_resolution": 224,
+  "context_length": 248,
+  "condition_mode": "dual_branch",
+  "fusion": "balanced_stack",
+  "visual": "patch",
+  "hparam_search": true,
+  "four_epoch_followup": true,
+  "full_native_mix": 0,
+  "sampling_mode": "random_k",
+  "sampling_seed": 0,
+  "shuffle_seed": 0,
+  "world_size": 4,
+  "batch_size": 256,
+  "accumulation": 1,
+  "epochs": 4,
+  "seed": 0,
+  "workers": 8,
+  "checkpoint_encoders": true,
+  "checkpoint_pair_blocks": false,
+  "image_chunk": 128,
+  "text_chunk": 128,
+  "score_chunk": 64,
+  "checkpoint_interval": 100000,
+  "checkpoint_updates": [
+    500,
+    1217,
+    2434,
+    3651,
+    4868
+  ],
+  "save_initial_checkpoint": false,
+  "monitor_resources": true,
+  "max_update_seconds": 5,
+  "measure_all_probe_updates": true,
+  "feasibility_abort_seconds": 15,
+  "execution_path": "direct",
+  "fusion_lr": 0.0002,
+  "visual_mask_lr_scale": 1.0,
+  "view_weights": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "sparsity_scale": 1.0,
+  "inclusion_max": 1.0,
+  "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+  "config": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/configs/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8.json",
+  "init_state": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/shared/step000000.pt",
+  "index_dir": "/root/lk_projects/SAID-nest-clip-v1/data_index",
+  "image_root": "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+  "output_dir": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/smoke",
+  "run_type": "smoke",
+  "max_updates": 5,
+  "resume": null,
+  "legacy_b0": false,
+  "expected_parent_trainer_sha256": null,
+  "horizon": 4868,
+  "batches_per_epoch": 1217,
+  "loader_batches_this_epoch": 5,
+  "training_records": 1245901,
+  "sampler_num_samples": 311476,
+  "sampler_padding": 3,
+  "tail_batch": 180,
+  "init_sha256": "93600bb47184e9d57383c5705a0fa2ec7779c0dfc2409c8bb05f72215f537e18",
+  "data": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  },
+  "code_sha256": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "f74f4e951a780620c38c0107750fd15acaa96bc00286fdee54f42f55fc222113",
+    "train/nested_semantic_data.py": "79b65f47550c6e7b35a4d3cde7158fd3f0733712ccc48e53d72dd6bae8d2e336",
+    "train/train_nested_semantic_mask.py": "a6127328394e15037ff70c625023148603f25aa1070d50109add662888d94f8b",
+    "model/model_longclip.py": "dc52035a5febca61b38a9cfe0d1e3a832d456227824777d29043969fbe783b01",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "model/balanced_hparam_search.py": "4367a8d9c76af672322ee50b3d44d1469237a7fd81176f63b60a99946adca9bb",
+    "model/backbone.py": "9a33fc4c502643e7e9535c2a8b3094c4bb1356e01dcba4262d79f17aed264a78"
+  },
+  "runtime_model": {
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "checkpoint_pair_blocks": false,
+    "checkpoint_encoders": true,
+    "encoder_checkpoint_active": true,
+    "condition_mode": "dual_branch",
+    "arm": "A3",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "search_hparams": {
+      "fusion_lr": 0.0002,
+      "visual_mask_lr_scale": 1.0,
+      "view_weights": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "sparsity_scale": 1.0,
+      "inclusion_max": 1.0
+    }
+  },
+  "backbone_dimensions": {
+    "base_model": "ViT-L/14",
+    "input_resolution": 224,
+    "context_length": 248,
+    "visual_tokens": 257,
+    "visual_width": 1024,
+    "text_width": 768,
+    "embedding_dim": 768,
+    "patch_count": 256,
+    "patch_size": 14,
+    "mask_heads": 12,
+    "visual_layers": 24,
+    "text_layers": 12,
+    "visual_heads": 16,
+    "vocab_size": 49408
+  },
+  "adapter_initialization": {
+    "module": "FusionBranch",
+    "state_sha256": "a2786d1964476c3ba285879679f6f5a12013f039b8ce14226e89f2551756a458",
+    "parameters": {
+      "visual_blocks.0.attn.in_proj_weight": {
+        "shape": [
+          2304,
+          768
+        ],
+        "nonzero": 1769471
+      },
+      "visual_blocks.0.attn.in_proj_bias": {
+        "shape": [
+          2304
+        ],
+        "nonzero": 0
+      },
+      "visual_blocks.0.attn.out_proj.weight": {
+        "shape": [
+          768,
+          768
+        ],
+        "nonzero": 589824
+      },
+      "visual_blocks.0.attn.out_proj.bias": {
+        "shape": [
+          768
+        ],
+        "nonzero": 0
+      },
+      "visual_blocks.0.ln_1.weight": {
+        "shape": [
+          768
+        ],
+        "nonzero": 768
+      },
+      "visual_blocks.0.ln_1.bias": {
+        "shape": [
+          768
+        ],
+        "nonzero": 0
+      },
+      "visual_blocks.0.mlp.c_fc.weight": {
+        "shape": [
+          3072,
+          768
+        ],
+        "nonzero": 2359294
+      },
+      "visual_blocks.0.mlp.c_fc.bias": {
+        "shape": [
+          3072
+        ],
+        "nonzero": 3072
+      },
+      "visual_blocks.0.mlp.c_proj.weight": {
+        "shape": [
+          768,
+          3072
+        ],
+        "nonzero": 2359292
+      },
+      "visual_blocks.0.mlp.c_proj.bias": {
+        "shape": [
+          768
+        ],
+        "nonzero": 768
+      },
+      "visual_blocks.0.ln_2.weight": {
+        "shape": [
+          768
+        ],
+        "nonzero": 768
+      },
+      "visual_blocks.0.ln_2.bias": {
+        "shape": [
+          768
+        ],
+        "nonzero": 0
+      },
+      "visual_adapter.weight": {
+        "shape": [
+          768,
+          1024
+        ],
+        "nonzero": 786432
+      },
+      "gate.weight": {
+        "shape": [
+          768,
+          1536
+        ],
+        "nonzero": 0
+      }
+    }
+  },
+  "git_head": "3c0e0b2114f2fb5a023eda1fbefcdffce0826878",
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "nccl": [
+    2,
+    21,
+    5
+  ],
+  "environment": {},
+  "ranks": [
+    {
+      "rank": 0,
+      "local_rank": 0,
+      "pid": 1410858,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.8200623169541359
+    },
+    {
+      "rank": 1,
+      "local_rank": 1,
+      "pid": 1410859,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7434050738811493
+    },
+    {
+      "rank": 2,
+      "local_rank": 2,
+      "pid": 1410860,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 1.0765943974256516
+    },
+    {
+      "rank": 3,
+      "local_rank": 3,
+      "pid": 1410861,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.9340710714459419
+    }
+  ],
+  "gather_gradient_test": {
+    "expected": 10.0,
+    "actual": 10.0,
+    "passed": true
+  },
+  "parameter_counts": {
+    "total": 444080898,
+    "trainable": 443890434,
+    "added": 9053952,
+    "optimizer_groups": {
+      "backbone": 427747841,
+      "text_mask_and_shared_pool": 7088641,
+      "visual_mask": 7087872,
+      "fusion_adapter": 1966080
+    }
+  },
+  "component_initialization": {
+    "clip": "7b82e7afd2fd9cdc18d34919bc192a2c99354fc3e4d0eb3b96155c14981cb9ad",
+    "text_blocks": "412d042e7c568d41a00134b84db58d74e6134925eee5f422d29adf1d3e5c53f3",
+    "visual_blocks": "412d042e7c568d41a00134b84db58d74e6134925eee5f422d29adf1d3e5c53f3",
+    "visual_adapter": "7ba372da7c6412510abb4aa58aeed798fea801c168e502e0f6f9acc29412d8f2",
+    "crossscore_query": null,
+    "crossscore_key": null,
+    "crossscore_readout": null,
+    "channel_gate": "a9ecf1c4db8ca450369d59d0ca95d94d2305525031f96bb86924e960f7a82c9b"
+  },
+  "start_updates": 0,
+  "updates_planned_this_run": 5
+}

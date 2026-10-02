@@ -1,6 +1,6 @@
 # Balanced L14: Fixed Four-Epoch Migration
 
-Status: `resource_stopped`. Stage: `resource-gate-failed`.
+Status: `ready`. Stage: `validated-resource-gate-and-independent-smoke`.
 
 OpenAI ViT-L/14 at224, text context248, seed0. Faithful Balanced coefficients: fusion_lr2e-4, visual_mask_lr_scale1, view_weights[1,1,1], sparsity_scale1, inclusion_max1. Horizon4868 from a new L14 step0, full4x256 direct logical batch, full1024 candidates (padded sampler tail720), original RandomK and loss definitions.
 
@@ -17,7 +17,9 @@ Additional unnormalized Gaussian-image/short-caption full-L14 stress tests excee
 
 ## Resource Gate
 
-Each attempt measures5 warmup plus30 complete real-DataLoader updates, slowest rank. The approved limit remains3s per regular update and65GiB allocated per GPU. Initialization, checkpoint writes and final agreement checks are separate.
+Each attempt measures5 warmup plus30 complete real-DataLoader updates, slowest rank. The approved limit is5s per regular update and65GiB allocated per GPU. Initialization, checkpoint writes and final agreement checks are separate.
+
+The user explicitly approved updates within5s and instructed continuation. The original3s failure remains below as historical evidence; a fresh5s gate is required.
 
 ### direct-128x128
 
@@ -84,7 +86,71 @@ Passed: `False`. OOM: `False`.
 }
 ```
 
-Formal4868 training and all four evaluation nodes were not run: resource acceptance failed. No B16 score is presented as an L14 result. No new speed budget, smaller candidate pool, different backbone or Gradient Cache path was silently substituted.
+### direct-128x128-limit5s
+
+Passed: `True`. OOM: `False`.
+
+```json
+{
+  "passed": true,
+  "ranks": [
+    {
+      "rank": 0,
+      "completed_updates": 35,
+      "updates_this_run": 35,
+      "max_parameter_difference_from_rank0": 0.0,
+      "seconds": 164.27521651238203,
+      "peak_allocated_gib": 47.36120367050171,
+      "peak_reserved_gib": 48.763671875,
+      "final_nccl_all_reduce": 10.0
+    },
+    {
+      "rank": 1,
+      "completed_updates": 35,
+      "updates_this_run": 35,
+      "max_parameter_difference_from_rank0": 0.0,
+      "seconds": 164.3818627372384,
+      "peak_allocated_gib": 47.36153793334961,
+      "peak_reserved_gib": 48.62109375,
+      "final_nccl_all_reduce": 10.0
+    },
+    {
+      "rank": 2,
+      "completed_updates": 35,
+      "updates_this_run": 35,
+      "max_parameter_difference_from_rank0": 0.0,
+      "seconds": 164.31319300830364,
+      "peak_allocated_gib": 47.36288833618164,
+      "peak_reserved_gib": 48.59765625,
+      "final_nccl_all_reduce": 10.0
+    },
+    {
+      "rank": 3,
+      "completed_updates": 35,
+      "updates_this_run": 35,
+      "max_parameter_difference_from_rank0": 0.0,
+      "seconds": 164.3443381935358,
+      "peak_allocated_gib": 47.36044692993164,
+      "peak_reserved_gib": 48.71484375,
+      "final_nccl_all_reduce": 10.0
+    }
+  ],
+  "speed_gate": {
+    "warmup_steps": 5,
+    "measured_steps": 30,
+    "threshold_seconds": 5.0,
+    "mean_seconds": 4.31757329305013,
+    "median_seconds": 4.308165073394775,
+    "p95_seconds": 4.440561532974243,
+    "max_seconds": 4.527675151824951,
+    "all_steps_at_most_limit": true,
+    "all_steps_at_most_3s": false,
+    "allocated_limit_gib": 65.0,
+    "every_rank_peak_allocated_at_most_65gib": true
+  },
+  "resource_failure": null
+}
+```
 
 ## Native Scores
 

@@ -1,5 +1,5 @@
 {
-  "status": "resource_stopped",
+  "status": "ready",
   "started_utc": "2026-10-02T09:21:20.240997+00:00",
   "trials": {
     "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8": {
@@ -21,9 +21,42 @@
   },
   "rounds": [],
   "promotions": {},
-  "stages": [],
-  "code_commit": "e010f65f3d576c89a2ef17ef2a153a8e647e86df",
-  "supervisor_pid": 1402530,
+  "stages": [
+    {
+      "command": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/configs/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/smoke",
+        "--run-type",
+        "smoke",
+        "--max-updates",
+        "5"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-l14-4epoch-v1",
+      "started_utc": "2026-10-02T09:56:19.265962+00:00",
+      "code_commit": "3c0e0b2114f2fb5a023eda1fbefcdffce0826878",
+      "stage": "6d44ae8d5c34-smoke-5",
+      "exit_code": 0,
+      "elapsed_seconds": 64.15202828496695,
+      "finished_utc": "2026-10-02T09:57:23.417996+00:00"
+    }
+  ],
+  "code_commit": "3c0e0b2114f2fb5a023eda1fbefcdffce0826878",
+  "supervisor_pid": 1408226,
   "initialization": {
     "passed": true,
     "initial_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/shared/step000000.pt",
@@ -292,6 +325,122 @@
       "passed": false,
       "error": "Common B0 resource gate failed: {'passed': False, 'ranks': [{'rank': 0, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.5336399152875, 'peak_allocated_gib': 47.36288833618164, 'peak_reserved_gib': 48.59765625, 'final_nccl_all_reduce': 10.0}, {'rank': 1, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.46719890087843, 'peak_allocated_gib': 47.35835361480713, 'peak_reserved_gib': 48.548828125, 'final_nccl_all_reduce': 10.0}, {'rank': 2, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.2650107294321, 'peak_allocated_gib': 47.363563537597656, 'peak_reserved_gib': 48.59765625, 'final_nccl_all_reduce': 10.0}, {'rank': 3, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.47169978916645, 'peak_allocated_gib': 47.36153793334961, 'peak_reserved_gib': 48.62109375, 'final_nccl_all_reduce': 10.0}], 'speed_gate': {'warmup_steps': 5, 'measured_steps': 30, 'threshold_seconds': 3.0, 'mean_seconds': 4.308759291966756, 'median_seconds': 4.308880805969238, 'p95_seconds': 4.405271553993225, 'max_seconds': 4.452944755554199, 'all_steps_at_most_3s': False, 'allocated_limit_gib': 65.0, 'every_rank_peak_allocated_at_most_65gib': True}, 'resource_failure': 'measured full update exceeded 3 seconds'}",
       "oom": false
+    },
+    {
+      "label": "direct-128x128-limit5s",
+      "config": {
+        "arm": "A3",
+        "experiment_name": "Balanced-L14-4epoch",
+        "base_model": "ViT-L/14",
+        "input_resolution": 224,
+        "context_length": 248,
+        "condition_mode": "dual_branch",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "hparam_search": true,
+        "four_epoch_followup": true,
+        "full_native_mix": 0,
+        "sampling_mode": "random_k",
+        "sampling_seed": 0,
+        "shuffle_seed": 0,
+        "world_size": 4,
+        "batch_size": 256,
+        "accumulation": 1,
+        "epochs": 4,
+        "seed": 0,
+        "workers": 8,
+        "checkpoint_encoders": true,
+        "checkpoint_pair_blocks": false,
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "score_chunk": 64,
+        "checkpoint_interval": 100000,
+        "checkpoint_updates": [
+          500,
+          1217,
+          2434,
+          3651,
+          4868
+        ],
+        "save_initial_checkpoint": true,
+        "monitor_resources": true,
+        "max_update_seconds": 5,
+        "measure_all_probe_updates": true,
+        "feasibility_abort_seconds": 15,
+        "execution_path": "direct",
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1,
+        "view_weights": [
+          1,
+          1,
+          1
+        ],
+        "sparsity_scale": 1,
+        "inclusion_max": 1
+      },
+      "root": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/resources/direct-128x128-limit5s/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/probe",
+      "acceptance": {
+        "passed": true,
+        "ranks": [
+          {
+            "rank": 0,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 164.27521651238203,
+            "peak_allocated_gib": 47.36120367050171,
+            "peak_reserved_gib": 48.763671875,
+            "final_nccl_all_reduce": 10.0
+          },
+          {
+            "rank": 1,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 164.3818627372384,
+            "peak_allocated_gib": 47.36153793334961,
+            "peak_reserved_gib": 48.62109375,
+            "final_nccl_all_reduce": 10.0
+          },
+          {
+            "rank": 2,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 164.31319300830364,
+            "peak_allocated_gib": 47.36288833618164,
+            "peak_reserved_gib": 48.59765625,
+            "final_nccl_all_reduce": 10.0
+          },
+          {
+            "rank": 3,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 164.3443381935358,
+            "peak_allocated_gib": 47.36044692993164,
+            "peak_reserved_gib": 48.71484375,
+            "final_nccl_all_reduce": 10.0
+          }
+        ],
+        "speed_gate": {
+          "warmup_steps": 5,
+          "measured_steps": 30,
+          "threshold_seconds": 5.0,
+          "mean_seconds": 4.31757329305013,
+          "median_seconds": 4.308165073394775,
+          "p95_seconds": 4.440561532974243,
+          "max_seconds": 4.527675151824951,
+          "all_steps_at_most_limit": true,
+          "all_steps_at_most_3s": false,
+          "allocated_limit_gib": 65.0,
+          "every_rank_peak_allocated_at_most_65gib": true
+        },
+        "resource_failure": null
+      },
+      "passed": true,
+      "error": null,
+      "oom": false
     }
   ],
   "l14_trial": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
@@ -303,8 +452,74 @@
     4868
   ],
   "reference_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
-  "stage": "resource-gate-failed",
-  "finished_utc": "2026-10-02T09:24:32.275981+00:00",
+  "stage": "validated-resource-gate-and-independent-smoke",
   "formal_training_started": false,
-  "unmet": "Required complete logical updates<=3s and peak allocated<=65GiB per rank"
+  "github_synced": true,
+  "github_push_exit_code": 0,
+  "result_commit": "475cd1406031e9e126626cb45272bf3ed65a0e2c",
+  "resource_authorization": {
+    "authorization_source": "Explicit user message in this session",
+    "user_message": "5s\u4e4b\u5185\u90fd\u53ef\u4ee5\u63a5\u53d7\uff0c\u7ee7\u7eed",
+    "previous_regular_update_limit_seconds": 3,
+    "approved_regular_update_limit_seconds": 5,
+    "allocated_limit_gib_per_rank": 65,
+    "logical_batch_per_rank": 256,
+    "world_size": 4,
+    "logical_full_batch_candidates": 1024,
+    "action": "Fresh five-warmup/thirty-measured resource gate; independent smoke; then the single formal4868 run from unchanged L14 step0. Preserve prior3s failure."
+  },
+  "resource_gate_passed": true,
+  "approved_training_config": {
+    "arm": "A3",
+    "experiment_name": "Balanced-L14-4epoch",
+    "base_model": "ViT-L/14",
+    "input_resolution": 224,
+    "context_length": 248,
+    "condition_mode": "dual_branch",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "hparam_search": true,
+    "four_epoch_followup": true,
+    "full_native_mix": 0,
+    "sampling_mode": "random_k",
+    "sampling_seed": 0,
+    "shuffle_seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 4,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "checkpoint_pair_blocks": false,
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "score_chunk": 64,
+    "checkpoint_interval": 100000,
+    "checkpoint_updates": [
+      500,
+      1217,
+      2434,
+      3651,
+      4868
+    ],
+    "save_initial_checkpoint": true,
+    "monitor_resources": true,
+    "max_update_seconds": 5,
+    "measure_all_probe_updates": true,
+    "feasibility_abort_seconds": 15,
+    "execution_path": "direct",
+    "fusion_lr": 0.0002,
+    "visual_mask_lr_scale": 1,
+    "view_weights": [
+      1,
+      1,
+      1
+    ],
+    "sparsity_scale": 1,
+    "inclusion_max": 1
+  },
+  "stage_started_utc": "2026-10-02T09:56:19.263911+00:00",
+  "stage_pid": 1410852,
+  "smoke_passed": true
 }
