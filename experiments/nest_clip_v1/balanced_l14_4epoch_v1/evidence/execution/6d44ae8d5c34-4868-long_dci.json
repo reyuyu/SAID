@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/evaluations/step4868/student_step4868.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/evaluations/step4868/long_dci",
+    "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-l14-4epoch-v1",
+  "started_utc": "2026-10-02T17:01:09.210178+00:00",
+  "code_commit": "3c0e0b2114f2fb5a023eda1fbefcdffce0826878",
+  "stage": "6d44ae8d5c34-4868-long_dci",
+  "exit_code": 0,
+  "elapsed_seconds": 531.5067592933774,
+  "finished_utc": "2026-10-02T17:10:00.716941+00:00"
+}
