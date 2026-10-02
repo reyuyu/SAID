@@ -1,6 +1,6 @@
 # Balanced L14: Fixed Four-Epoch Migration
 
-Status: `running`. Stage: `6d44ae8d5c34-4868-long_dci`.
+Status: `completed`. Stage: `final-and-best-observed`.
 
 OpenAI ViT-L/14 at224, text context248, seed0. Faithful Balanced coefficients: fusion_lr2e-4, visual_mask_lr_scale1, view_weights[1,1,1], sparsity_scale1, inclusion_max1. Horizon4868 from a new L14 step0, full4x256 direct logical batch, full1024 candidates (padded sampler tail720), original RandomK and loss definitions.
 
