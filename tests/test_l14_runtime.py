@@ -9,6 +9,7 @@ from model.backbone import infer_base_model,validate_backbone
 from model.model_longclip import CLIP,build_model
 from experiments.nest_clip_v1.balanced_l14_4epoch_v1.run import BASE,L14Run
 from model.balanced_hparam_search import hparams,trial_id
+from train.train_nested_semantic_mask import probe_speed_summary
 
 
 @pytest.mark.parametrize('patch,visual,text,native,tokens,expected',[
@@ -96,3 +97,16 @@ def test_passed_gate_runs_fresh_formal_and_keeps_final_separate_from_observed(mo
     assert evaluations==[(stop,Path('/formal-l14')) for stop in (0,500,3651,4868)]
     assert runner.state['status']=='completed'
     assert runner.state['final_updates']==4868 and runner.state['best_observed_updates']==3651
+
+
+def test_approved_five_second_gate_preserves_three_second_diagnostic():
+    ranks=[dict(peak_allocated_gib=47.4)]*4
+    measured=[4.3]*30
+    old=probe_speed_summary(measured,ranks,3)
+    new=probe_speed_summary(measured,ranks,5)
+    assert old['threshold_seconds']==3 and not old['all_steps_at_most_limit']
+    assert new['threshold_seconds']==5 and new['all_steps_at_most_limit']
+    assert not new['all_steps_at_most_3s']
+    assert new['every_rank_peak_allocated_at_most_65gib']
+    assert not probe_speed_summary(measured[:-1],ranks,5)['all_steps_at_most_limit']
+    assert not probe_speed_summary(measured[:-1]+[5.1],ranks,5)['all_steps_at_most_limit']

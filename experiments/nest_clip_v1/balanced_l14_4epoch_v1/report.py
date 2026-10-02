@@ -9,6 +9,7 @@ def write_report(state,output):
     b16=[r for r in references['evaluations'] if r['name']=='Four-epoch fusion-only']
     assert {r['updates'] for r in b16}=={3651,4868}
     budgets=state['trials'][state['l14_trial']]['budgets']
+    limit=state.get('resource_authorization',{}).get('approved_regular_update_limit_seconds',3)
     lines=['# Balanced L14: Fixed Four-Epoch Migration','',
            f"Status: `{state['status']}`. Stage: `{state.get('stage')}`.",'',
            'OpenAI ViT-L/14 at224, text context248, seed0. Faithful Balanced coefficients: '
@@ -32,8 +33,11 @@ def write_report(state,output):
            'dimension-aware fixtures passed; the numerical scope is explicit.','',
            '## Resource Gate','',
            'Each attempt measures5 warmup plus30 complete real-DataLoader updates, slowest rank. '
-           'The approved limit remains3s per regular update and65GiB allocated per GPU. '
+           f'The approved limit is{limit:g}s per regular update and65GiB allocated per GPU. '
            'Initialization, checkpoint writes and final agreement checks are separate.']
+    if state.get('resource_authorization'):
+        lines += ['','The user explicitly approved updates within5s and instructed continuation. '
+                  'The original3s failure remains below as historical evidence; a fresh5s gate is required.']
     for attempt in state['resources']:
         lines += ['',f"### {attempt['label']}",'',f"Passed: `{attempt['passed']}`. OOM: `{attempt['oom']}`.",'',
                   '```json',json.dumps(attempt['acceptance'],indent=2),'```']

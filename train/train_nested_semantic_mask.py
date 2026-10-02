@@ -98,6 +98,20 @@ def training_horizon(config, batches_per_epoch):
     return epochs * batches_per_epoch
 
 
+def probe_speed_summary(seconds, ranks, limit=3.):
+    values=torch.tensor(seconds,dtype=torch.float64)
+    complete=len(values)==30
+    return dict(warmup_steps=5,measured_steps=len(values),threshold_seconds=float(limit),
+                mean_seconds=float(values.mean()) if len(values) else None,
+                median_seconds=float(values.median()) if len(values) else None,
+                p95_seconds=float(torch.quantile(values,.95)) if len(values) else None,
+                max_seconds=float(values.max()) if len(values) else None,
+                all_steps_at_most_limit=complete and bool((values<=limit).all()),
+                all_steps_at_most_3s=complete and bool((values<=3.).all()),
+                allocated_limit_gib=65.,
+                every_rank_peak_allocated_at_most_65gib=all(r['peak_allocated_gib']<=65. for r in ranks))
+
+
 def gradient_norm(parameters):
     squares = [parameter.grad.float().square().sum()
                for parameter in parameters if parameter.grad is not None]
@@ -643,19 +657,9 @@ def main():
         speed_gate = None
         passed = resource_failure is None
         if args.run_type == 'probe':
-            values = torch.tensor(probe_max_seconds, dtype=torch.float64)
-            assert len(values) == 30 or resource_failure is not None
-            speed_gate = dict(
-                warmup_steps=5, measured_steps=len(values), threshold_seconds=3.,
-                mean_seconds=float(values.mean()) if len(values) else None,
-                median_seconds=float(values.median()) if len(values) else None,
-                p95_seconds=float(torch.quantile(values, .95)) if len(values) else None,
-                max_seconds=float(values.max()) if len(values) else None,
-                all_steps_at_most_3s=bool((values <= 3.).all()) if len(values) == 30 else False,
-                allocated_limit_gib=65.,
-                every_rank_peak_allocated_at_most_65gib=all(
-                    x['peak_allocated_gib'] <= 65. for x in results))
-            passed = (passed and speed_gate['all_steps_at_most_3s'] and
+            assert len(probe_max_seconds) == 30 or resource_failure is not None
+            speed_gate=probe_speed_summary(probe_max_seconds,results,cfg['max_update_seconds'])
+            passed = (passed and speed_gate['all_steps_at_most_limit'] and
                       speed_gate['every_rank_peak_allocated_at_most_65gib'])
         (output / 'acceptance.json').write_text(json.dumps(
             dict(passed=passed, ranks=results, speed_gate=speed_gate,

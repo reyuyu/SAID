@@ -35,6 +35,19 @@ class L14Run(Search):
                               reference_commit=initialization['reference_commit'])
             self.save()
             self.publish()
+        authorization_path=EXP/'evidence/resource-authorization-5s.json'
+        if authorization_path.exists():
+            authorization=load(authorization_path)
+            assert authorization['approved_regular_update_limit_seconds']==BASE['max_update_seconds']
+            if self.state.get('resource_authorization')!=authorization:
+                assert not self.state.get('formal_training_started'), 'Cannot change policy during formal training'
+                self.state.update(resource_authorization=authorization,resource_gate_passed=False,
+                                  status='ready',stage='approved-resource-limit-recheck',
+                                  code_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip())
+                for key in ('finished_utc','unmet','error'):
+                    self.state.pop(key,None)
+                self.save()
+                self.publish()
 
     def publish(self):
         super().publish()
@@ -88,17 +101,19 @@ class L14Run(Search):
     def run(self):
         hp=hparams(BASE)
         if not self.state.get('resource_gate_passed'):
-            resource=self.probe('direct-128x128',copy.deepcopy(BASE))
+            limit=BASE['max_update_seconds']
+            suffix=f'-limit{limit:g}s' if limit!=3 else ''
+            resource=self.probe('direct-128x128'+suffix,copy.deepcopy(BASE))
             if not resource['passed']:
                 memory_failed=resource['oom'] or ('memory' in str(resource['acceptance']).lower())
                 # A speed failure cannot be repaired by redefining the batch or time budget.
                 if memory_failed:
                     smaller=dict(BASE,image_chunk=64,text_chunk=64,checkpoint_pair_blocks=True)
-                    resource=self.probe('direct-64x64-pair-checkpoint',smaller)
+                    resource=self.probe('direct-64x64-pair-checkpoint'+suffix,smaller)
                 if not resource['passed']:
                     self.state.update(status='resource_stopped',stage='resource-gate-failed',finished_utc=now(),
                                       formal_training_started=False,
-                                      unmet='Required complete logical updates<=3s and peak allocated<=65GiB per rank')
+                                      unmet=f'Required complete logical updates<={limit:g}s and peak allocated<=65GiB per rank')
                     self.save()
                     self.sync('Report measured L14 resource gate; preserve stopped formal run')
                     return

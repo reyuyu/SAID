@@ -23,7 +23,9 @@ shapes; every named gradient and AdamW update is checked at the original toleran
 Unnormalized Gaussian-image full-L14 stress failures remain explicitly recorded.
 Real L14 shape/interface tests and real4x256 BF16 resource probes are separate.
 
-Resource acceptance remains5 warmup plus30 complete updates<=3s and allocated
+The user subsequently approved a5s L14 update limit and requested continuation.
+The original3s rejection is preserved. Fresh resource acceptance uses5 warmup
+plus30 complete updates<=5s and allocated
 memory<=65GiB per rank. Try the direct4x256 route first; mathematically equivalent
 pair chunk/checkpoint optimizations are available only if memory is limiting.
 A failed gate stops the task at resources and is reported explicitly. No speed
