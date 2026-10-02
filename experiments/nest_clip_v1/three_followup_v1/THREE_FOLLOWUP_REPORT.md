@@ -1,6 +1,6 @@
 # Three Balanced Followups
 
-Status: `running`. Stage: `6d44ae8d5c34-3651-long_dci`.
+Status: `running`. Stage: `6d44ae8d5c34-4868-long_dci`.
 
 Experiments1/2 use the latest instruction: full3651 updates, with evaluations at500 and3651. Both keep fusion_lr=2e-4. Experiment3 is confirmed as a fresh four-epoch run from shared step0, with horizon4868 from the first update and evaluations at3651/4868. It waits for both preceding experiments.
 
@@ -21,6 +21,7 @@ Experiment3 selected parent: `6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd9
 | Remainder++ | 500 | 3651 | 69.462700 | 73.319833 | 82.020002 |
 | Remainder++ | 3651 | 3651 | 72.169885 | 76.485141 | 85.025002 |
 | Four-epoch fusion-only | 3651 | 4868 | 72.664715 | 76.972525 | 85.345001 |
+| Four-epoch fusion-only | 4868 | 4868 | 72.768147 | 77.070244 | 85.485003 |
 
 ## Experiment Status
 
@@ -71,6 +72,14 @@ Status: `running`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.0, "spa
 At3651, Score5_R1 change versus the original three-epoch fusion-only parent: +0.133450 pp.
 
 At3651: full checkpoint SHA256 `1600bd0fa33c120351ffd8557ca2d8c1183254f58239360b95bcbf6e10f04ff4`; bare student SHA256 `4b754566db679374f3cb5fa8b746304a2504e55089085d39768f50a6681f356a`.
+
+Export/acceptance: `True` / `True`.
+
+Commands and exit codes are recorded in SEARCH_STATE.json and evidence/execution/. Diagnostic summaries are in SEARCH_STATE.json; full step/token logs remain server-local.
+
+At4868, Score5_R1 change versus the original three-epoch fusion-only parent: +0.236882 pp.
+
+At4868: full checkpoint SHA256 `42901d24ae3b0e0147213fd45f5d3f663d9193d17b690536957625901e75500c`; bare student SHA256 `f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb`.
 
 Export/acceptance: `True` / `True`.
 
@@ -242,6 +251,21 @@ Commands and exit codes are recorded in SEARCH_STATE.json and evidence/execution
 | DOCCI | T2I | 79.660000 | 95.860000 | 98.240000 |
 | Long-DCI | I2T | 59.484346 | 78.216259 | 83.898974 |
 | Long-DCI | T2I | 60.970797 | 78.492502 | 83.938437 |
+
+### Four-epoch fusion-only @4868
+
+| Dataset | Direction | R@1 % | R@5 % | R@10 % |
+|---|---|---:|---:|---:|
+| COCO | I2T | 61.700000 | 84.100000 | 90.300000 |
+| COCO | T2I | 42.220000 | 68.032000 | 77.720000 |
+| Urban-1k | I2T | 92.100006 | 98.400003 | 99.300003 |
+| Urban-1k | T2I | 91.100007 | 98.700005 | 99.200004 |
+| Flickr30k-test1k | I2T | 88.900000 | 98.300000 | 99.400000 |
+| Flickr30k-test1k | T2I | 72.440000 | 91.540000 | 95.500000 |
+| DOCCI | I2T | 78.760000 | 95.720000 | 98.260000 |
+| DOCCI | T2I | 79.980000 | 95.880000 | 98.200000 |
+| Long-DCI | I2T | 59.668508 | 78.295185 | 83.793738 |
+| Long-DCI | T2I | 60.812944 | 78.624046 | 84.109445 |
 
 ## Current Conclusion
 
