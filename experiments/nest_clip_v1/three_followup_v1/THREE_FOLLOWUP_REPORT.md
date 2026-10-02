@@ -1,6 +1,6 @@
 # Three Balanced Followups
 
-Status: `running`. Stage: `3cc9fbefedd6-3651-long_dci`.
+Status: `awaiting_epoch_clarification`. Stage: `experiment3-budget`.
 
 Experiments1/2 use the latest instruction: full3651 updates, with evaluations at500 and3651. Both keep fusion_lr=2e-4. Experiment3 has conflicting3/4 epoch instructions and is pending clarification.
 
