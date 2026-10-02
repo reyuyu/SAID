@@ -50,10 +50,14 @@ def write_report(state,output):
                   f"Bare student: `{result['student']}`; SHA256 `{result['bare_sha256']}`.",'',
                   '## Conclusion','']
         if result['scores']['Score5_R1']>base['scores']['Score5_R1']:
-            lines.append('R-SentenceDrop@500 improves the matched Balanced baseline and is worth full4-epoch confirmation. No full run is started by this task.')
+            lines.append('R-SentenceDrop@500 improves the matched Balanced baseline and is worth full 4-epoch confirmation. No full run is started by this task.')
         else:
             lines.append('R-SentenceDrop does not improve the matched baseline.')
     if state.get('error'):lines += ['','Preserved failure: `'+state['error']+'`.']
+    if state.get('reporting_recovery'):
+        lines += ['','Reporting recovery: the callback ran before sampling/resource statistics were '
+                  'aggregated. The original error is retained in RESULTS.json; existing successful '
+                  'training and evaluation outputs were reused without rerunning either stage.']
     lines += ['','## Evidence and Reproduction','',
               'Correctness and readable real-sample proofs are in evidence/. Statistics come from every '
               'valid sample over all500 updates/ranks. RDrop trace hashes match the reused baseline for '
@@ -69,3 +73,7 @@ def write_report(state,output):
               'large checkpoints/data/cache stay server-local. Stop after this single500 evaluation.']
     (output/'RDROP_500_REPORT.md').write_text('\n'.join(lines)+'\n')
     (output/'RESULTS.json').write_text(json.dumps(state,indent=2)+'\n')
+    if result:
+        for key in ('sentence_drop_statistics','resource_summary'):
+            if key in result:
+                (output/(key+'.json')).write_text(json.dumps(result[key],indent=2)+'\n')
