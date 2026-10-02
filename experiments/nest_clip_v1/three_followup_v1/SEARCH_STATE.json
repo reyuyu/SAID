@@ -1,6 +1,6 @@
 {
-  "status": "running",
-  "started_utc": "2026-10-01T22:13:42.610340+00:00",
+  "status": "queued",
+  "started_utc": "2026-10-02T01:15:41.273649+00:00",
   "trials": {
     "0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee": {
       "hparams": {
@@ -2001,446 +2001,29 @@
       "seed": 0,
       "status": "pending",
       "budgets": {}
+    },
+    "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8": {
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.0
+      },
+      "seed": 0,
+      "status": "pending",
+      "budgets": {}
     }
   },
   "rounds": [],
   "promotions": {},
-  "stages": [
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/torchrun",
-        "--standalone",
-        "--nnodes=1",
-        "--nproc-per-node=4",
-        "--max-restarts=0",
-        "-m",
-        "train.train_nested_semantic_mask",
-        "--config",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/configs/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee.json",
-        "--init-state",
-        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
-        "--index-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/data_index",
-        "--image-root",
-        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/smoke",
-        "--run-type",
-        "smoke",
-        "--max-updates",
-        "5"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:14:59.699918+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-smoke-5",
-      "exit_code": 0,
-      "elapsed_seconds": 39.32811091840267,
-      "finished_utc": "2026-10-01T22:15:39.028035+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/torchrun",
-        "--standalone",
-        "--nnodes=1",
-        "--nproc-per-node=4",
-        "--max-restarts=0",
-        "-m",
-        "train.train_nested_semantic_mask",
-        "--config",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/configs/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee.json",
-        "--init-state",
-        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
-        "--index-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/data_index",
-        "--image-root",
-        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500",
-        "--run-type",
-        "formal",
-        "--max-updates",
-        "500"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:15:39.120822+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-formal-500",
-      "exit_code": 0,
-      "elapsed_seconds": 1084.6418288201094,
-      "finished_utc": "2026-10-01T22:33:43.762656+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.nest_clip",
-        "export",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/step000500.pt",
-        "--expect-updates",
-        "500",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:33:43.771896+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-export",
-      "exit_code": 0,
-      "elapsed_seconds": 10.210488863289356,
-      "finished_utc": "2026-10-01T22:33:53.982391+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.nest_clip",
-        "verify-export",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/step000500.pt",
-        "--bare",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/export-check.json",
-        "--index-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/data_index",
-        "--image-root",
-        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:33:53.991569+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-verify",
-      "exit_code": 0,
-      "elapsed_seconds": 17.758799858391285,
-      "finished_utc": "2026-10-01T22:34:11.750375+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.eval_nest_native",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt",
-        "--dataset",
-        "coco",
-        "--root",
-        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/coco_native.json"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:34:11.817412+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-coco",
-      "exit_code": 0,
-      "elapsed_seconds": 121.71509329229593,
-      "finished_utc": "2026-10-01T22:36:13.532511+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.eval_nest_native",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt",
-        "--dataset",
-        "urban",
-        "--root",
-        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/urban_native.json"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:36:13.599951+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-urban",
-      "exit_code": 0,
-      "elapsed_seconds": 20.903519935905933,
-      "finished_utc": "2026-10-01T22:36:34.503475+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/flickr_test1k",
-        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:36:34.596443+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-flickr_test1k",
-      "exit_code": 0,
-      "elapsed_seconds": 27.41375193744898,
-      "finished_utc": "2026-10-01T22:37:02.010199+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/docci",
-        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:37:02.070537+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-docci",
-      "exit_code": 0,
-      "elapsed_seconds": 273.28255277872086,
-      "finished_utc": "2026-10-01T22:41:35.353093+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/student_step500.pt",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/long_dci",
-        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:41:35.454576+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-500-long_dci",
-      "exit_code": 0,
-      "elapsed_seconds": 462.38160119205713,
-      "finished_utc": "2026-10-01T22:49:17.836184+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/torchrun",
-        "--standalone",
-        "--nnodes=1",
-        "--nproc-per-node=4",
-        "--max-restarts=0",
-        "-m",
-        "train.train_nested_semantic_mask",
-        "--config",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/configs/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee.json",
-        "--init-state",
-        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
-        "--index-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/data_index",
-        "--image-root",
-        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651",
-        "--run-type",
-        "formal",
-        "--max-updates",
-        "3651",
-        "--resume",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step500/step000500.pt"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-01T22:49:27.130796+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-formal-3651",
-      "exit_code": 0,
-      "elapsed_seconds": 6933.914582967758,
-      "finished_utc": "2026-10-02T00:45:01.045383+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.nest_clip",
-        "export",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/step003651.pt",
-        "--expect-updates",
-        "3651",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:45:01.066783+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-export",
-      "exit_code": 0,
-      "elapsed_seconds": 10.463809989392757,
-      "finished_utc": "2026-10-02T00:45:11.530598+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.nest_clip",
-        "verify-export",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/step003651.pt",
-        "--bare",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/export-check.json",
-        "--index-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/data_index",
-        "--image-root",
-        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:45:11.550500+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-verify",
-      "exit_code": 0,
-      "elapsed_seconds": 17.508472472429276,
-      "finished_utc": "2026-10-02T00:45:29.058978+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.eval_nest_native",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt",
-        "--dataset",
-        "coco",
-        "--root",
-        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/coco_native.json"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:45:29.167945+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-coco",
-      "exit_code": 0,
-      "elapsed_seconds": 121.15325899422169,
-      "finished_utc": "2026-10-02T00:47:30.321209+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "tools.eval_nest_native",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt",
-        "--dataset",
-        "urban",
-        "--root",
-        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/urban_native.json"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:47:30.426106+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-urban",
-      "exit_code": 0,
-      "elapsed_seconds": 20.51710807532072,
-      "finished_utc": "2026-10-02T00:47:50.943218+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/flickr_test1k",
-        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:47:51.047747+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-flickr_test1k",
-      "exit_code": 0,
-      "elapsed_seconds": 26.696854040026665,
-      "finished_utc": "2026-10-02T00:48:17.744605+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/docci",
-        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:48:17.844998+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-docci",
-      "exit_code": 0,
-      "elapsed_seconds": 272.9975702762604,
-      "finished_utc": "2026-10-02T00:52:50.842571+00:00"
-    },
-    {
-      "command": [
-        "/root/miniconda3/envs/said-repro/bin/python",
-        "-m",
-        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-        "--checkpoint",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/student_step3651.pt",
-        "--device",
-        "cuda:0",
-        "--batch-size",
-        "64",
-        "--output-dir",
-        "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1/trials/0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee/step3651/long_dci",
-        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
-      ],
-      "cwd": "/root/lk_projects/SAID-balanced-three-followup-v1",
-      "started_utc": "2026-10-02T00:52:50.944334+00:00",
-      "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-      "stage": "0e3327f8f0bf-3651-long_dci",
-      "exit_code": 0,
-      "elapsed_seconds": 456.0807857736945,
-      "finished_utc": "2026-10-02T01:00:27.025125+00:00"
-    }
-  ],
-  "code_commit": "40d40f705cb8b68ee5becace616b05bec9eb259c",
-  "supervisor_pid": 1344090,
+  "stages": [],
+  "code_commit": "23a108804bc11c196a70fa98b736e64270407158",
+  "supervisor_pid": 1366193,
   "references": {
     "a009f49f814a@500": {
       "trial_id": "a009f49f814ae09adef53d669145b3c9cb187dc9794b2ee3e7f24adc65324aae",
@@ -2947,6 +2530,28 @@
       "checkpoint_sha256": "3772c2072d956b560baf8d046983e718e60c1eef963d695da16638f53a32ae9e"
     }
   },
+  "experiments": [
+    {
+      "name": "Inclusion++",
+      "trial_id": "0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee",
+      "status": "completed"
+    },
+    {
+      "name": "Remainder++",
+      "trial_id": "3cc9fbefedd6f4bc68ad19aca1da73c519f06eaa18db815c3dc697338935d699",
+      "status": "running"
+    },
+    {
+      "name": "Four-epoch fusion-only",
+      "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+      "status": "pending"
+    }
+  ],
+  "four_epoch_experiment": {
+    "name": "Four-epoch fusion-only",
+    "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+    "status": "pending"
+  },
   "experiment3": {
     "trial_id": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
     "hparams": {
@@ -2960,13 +2565,22 @@
       "sparsity_scale": 1.0,
       "inclusion_max": 1.0
     },
-    "status": "awaiting_epoch_clarification",
+    "status": "pending",
     "requested_epochs": [
       3,
       4
-    ]
+    ],
+    "epochs": 4,
+    "horizon": 4868,
+    "evaluation_updates": [
+      3651,
+      4868
+    ],
+    "selected_from": "completed original A/B/C@3651"
   },
   "parent_result_commit": "835852aa4a420b8701fe8c1adbc6114b84d4ce94",
+  "previous_runtime": "/root/lk_projects/SAID-nest-clip-v1/three_followup_v1",
+  "previous_result_commit": "7ae0e250aff51d1669e5ed00595a8576e61216a7",
   "common_resource_gate": {
     "passed": true,
     "ranks": [
@@ -3025,23 +2639,6 @@
     },
     "resource_failure": null
   },
-  "policy": "sequential_smoke5_then500_eval_then3651_eval",
-  "experiments": [
-    {
-      "name": "Inclusion++",
-      "trial_id": "0e3327f8f0bf90e33307f8e10428a4c27ba3faf898418fc8d47fcad74bcb0bee",
-      "status": "completed"
-    },
-    {
-      "name": "Remainder++",
-      "trial_id": "3cc9fbefedd6f4bc68ad19aca1da73c519f06eaa18db815c3dc697338935d699",
-      "status": "pending"
-    }
-  ],
-  "stage": "0e3327f8f0bf-3651-long_dci",
-  "stage_started_utc": "2026-10-02T00:52:50.934271+00:00",
-  "stage_pid": 1357897,
-  "github_synced": true,
-  "github_push_exit_code": 0,
-  "result_commit": "a5038712ba9b4aed2b092590c1cefe80faef4e4e"
+  "policy": "wait_for_first_two_then_shared_step0_horizon4868_eval3651_eval4868",
+  "stage": "waiting-for-first-two-followups"
 }

@@ -1,23 +1,23 @@
 # Three Balanced Followups
 
-Status: `running`. Stage: `0e3327f8f0bf-3651-long_dci`.
+Status: `queued`. Stage: `waiting-for-first-two-followups`.
 
-Experiments1/2 use the latest instruction: full3651 updates, with evaluations at500 and3651. Both keep fusion_lr=2e-4. Experiment3 has conflicting3/4 epoch instructions and is pending clarification.
+Experiments1/2 use the latest instruction: full3651 updates, with evaluations at500 and3651. Both keep fusion_lr=2e-4. Experiment3 is confirmed as a fresh four-epoch run from shared step0, with horizon4868 from the first update and evaluations at3651/4868. It waits for both preceding experiments.
 
 Experiment3 selected parent: `6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8`; parameters `{"fusion_lr": 0.0002, "inclusion_max": 1.0, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 1.0], "visual_mask_lr_scale": 1.0}`.
 
 ## Scores
 
-| Configuration | Updates | Score5_R1 % | J_long3 % | J_long % |
-|---|---:|---:|---:|---:|
-| Balanced B0 (a009f49f814a@500) | 500 | 69.858294 | 73.601824 | 82.295001 |
-| Balanced B0 (a009f49f814a@3651) | 3651 | 72.444202 | 76.657670 | 85.195002 |
-| Fusion-only C (6d44ae8d5c34@500) | 500 | 69.990027 | 73.734711 | 82.445002 |
-| Fusion-only C (6d44ae8d5c34@3651) | 3651 | 72.531265 | 76.723441 | 85.195001 |
-| Previous inclusion1.5 (2ea4a3ae907a@500) | 500 | 70.265202 | 73.775337 | 82.575002 |
-| Previous inclusion1.5 (2ea4a3ae907a@3651) | 3651 | 72.484610 | 76.689683 | 85.220003 |
-| Inclusion++ | 500 | 69.678630 | 73.329050 | 82.070002 |
-| Inclusion++ | 3651 | 72.492140 | 76.608900 | 85.135002 |
+| Configuration | Updates | Horizon | Score5_R1 % | J_long3 % | J_long % |
+|---|---:|---:|---:|---:|---:|
+| Balanced B0 (a009f49f814a@500) | 500 | 3651 | 69.858294 | 73.601824 | 82.295001 |
+| Balanced B0 (a009f49f814a@3651) | 3651 | 3651 | 72.444202 | 76.657670 | 85.195002 |
+| Fusion-only C (6d44ae8d5c34@500) | 500 | 3651 | 69.990027 | 73.734711 | 82.445002 |
+| Fusion-only C (6d44ae8d5c34@3651) | 3651 | 3651 | 72.531265 | 76.723441 | 85.195001 |
+| Previous inclusion1.5 (2ea4a3ae907a@500) | 500 | 3651 | 70.265202 | 73.775337 | 82.575002 |
+| Previous inclusion1.5 (2ea4a3ae907a@3651) | 3651 | 3651 | 72.484610 | 76.689683 | 85.220003 |
+| Inclusion++ | 500 | 3651 | 69.678630 | 73.329050 | 82.070002 |
+| Inclusion++ | 3651 | 3651 | 72.492140 | 76.608900 | 85.135002 |
 
 ## Experiment Status
 
@@ -43,7 +43,11 @@ Commands and exit codes are recorded in SEARCH_STATE.json and evidence/execution
 
 ### Remainder++
 
-Status: `pending`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.5, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 2.0], "visual_mask_lr_scale": 1.0}`.
+Status: `running`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.5, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 2.0], "visual_mask_lr_scale": 1.0}`.
+
+### Four-epoch fusion-only
+
+Status: `pending`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.0, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 1.0], "visual_mask_lr_scale": 1.0}`.
 
 ## Complete Native Recall
 
@@ -169,15 +173,22 @@ Status: `pending`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.5, "spa
 
 ## Current Conclusion
 
-Highest completed3651 Score5_R1: Fusion-only C (6d44ae8d5c34@3651), 72.531265%.
+Highest completed three-epoch/horizon3651 Score5_R1: Fusion-only C (6d44ae8d5c34@3651), 72.531265%.
+
+Four-epoch evaluation at3651 has the same number of updates as the original run but a different LR trajectory. Evaluation at4868 is the complete four-epoch result. Neither resets the LR or continues an old horizon3651 checkpoint.
 
 Unfinished experiments cannot be ranked at3651. Five datasets participate in selection; these are fixed-seed tuning results, without a significance or global optimality claim.
 
 ## Reproduction
 
 ```bash
+cd /root/lk_projects/SAID-balanced-three-followup-v1
 /root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.three_followup_v1.run --prepare
 /root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.three_followup_v1.run --launch
+# In the isolated SAID-balanced-four-epoch-v1 worktree:
+cd /root/lk_projects/SAID-balanced-four-epoch-v1
+/root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.three_followup_v1.four_epoch --prepare
+/root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.three_followup_v1.four_epoch --launch
 ```
 
 Each successful evaluation preserves exact train/export/verify/evaluator commands and runtime commit in evidence/execution/. Failed stages are not automatically retried. No fourth experiment or additional parameter values are scheduled. Large checkpoints, data and caches are not uploaded.
