@@ -1,0 +1,40 @@
+{
+  "protocol": "flickr_test1k",
+  "n_images": 1000,
+  "n_captions": 5000,
+  "metrics": {
+    "R@1": {
+      "I2T": 0.846,
+      "T2I": 0.6492
+    },
+    "R@5": {
+      "I2T": 0.977,
+      "T2I": 0.8724
+    },
+    "R@10": {
+      "I2T": 0.992,
+      "T2I": 0.9204
+    }
+  },
+  "checkpoint_sha256": "94598e9732b4339a6985f74cc91d11ce691d23b396c3db81d3585ee8737e9e08",
+  "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+  "elapsed_seconds": 34.07749843597412,
+  "device": "cuda:0",
+  "native_student_only": true,
+  "backbone": {
+    "base_model": "ViT-L/14",
+    "input_resolution": 224,
+    "context_length": 248,
+    "visual_tokens": 257,
+    "visual_width": 1024,
+    "text_width": 768,
+    "embedding_dim": 768,
+    "patch_count": 256,
+    "patch_size": 14,
+    "mask_heads": 12,
+    "visual_layers": 24,
+    "text_layers": 12,
+    "visual_heads": 16,
+    "vocab_size": 49408
+  }
+}

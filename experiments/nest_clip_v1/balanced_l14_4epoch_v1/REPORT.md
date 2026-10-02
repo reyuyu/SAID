@@ -1,6 +1,6 @@
 # Balanced L14: Fixed Four-Epoch Migration
 
-Status: `running`. Stage: `6d44ae8d5c34-formal-4868`.
+Status: `running`. Stage: `6d44ae8d5c34-0-long_dci`.
 
 OpenAI ViT-L/14 at224, text context248, seed0. Faithful Balanced coefficients: fusion_lr2e-4, visual_mask_lr_scale1, view_weights[1,1,1], sparsity_scale1, inclusion_max1. Horizon4868 from a new L14 step0, full4x256 direct logical batch, full1024 candidates (padded sampler tail720), original RandomK and loss definitions.
 
@@ -20,9 +20,6 @@ Additional unnormalized Gaussian-image/short-caption full-L14 stress tests excee
 Each attempt measures5 warmup plus30 complete real-DataLoader updates, slowest rank. The approved limit is5s per regular update and65GiB allocated per GPU. Initialization, checkpoint writes and final agreement checks are separate.
 
 The user explicitly approved updates within5s and instructed continuation. The original3s failure remains below as historical evidence; a fresh5s gate is required.
-
-The running configuration inherited save_initial_checkpoint=False from the generic search helper. The omitted complete step0 was reconstructed CPU-only from the unchanged prepared model/adapter/empty optimizer plus per-rank pristine RNG states verified against the initial seeds and loader state. Actual formal config is preserved. This is explicitly a derived checkpoint, not a trainer-emitted or bitwise-replayed trajectory.
-Derived step0 SHA256: `95055d73d824ffbb562035096b584fef1ba806f53636274555a7f031ea390bc9`.
 
 ### direct-128x128
 
@@ -161,10 +158,28 @@ Passed: `True`. OOM: `False`.
 |---|---:|---:|---:|---:|---:|
 | B16 reference | 3651 | 4868 | 72.664715 | 76.972525 | 85.345001 |
 | B16 reference | 4868 | 4868 | 72.768147 | 77.070244 | 85.485003 |
-| L14 | 0 | 4868 | not run | not run | not run |
+| L14 | 0 | 4868 | 54.511173 | 50.697956 | 59.890001 |
 | L14 | 500 | 4868 | not run | not run | not run |
 | L14 | 3651 | 4868 | not run | not run | not run |
 | L14 | 4868 | 4868 | not run | not run | not run |
+
+### L14 @0
+
+Full checkpoint: `/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/step4868/step000000.pt`; SHA256 `95055d73d824ffbb562035096b584fef1ba806f53636274555a7f031ea390bc9`.
+Bare student: `/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/evaluations/step0/student_step0.pt`; SHA256 `94598e9732b4339a6985f74cc91d11ce691d23b396c3db81d3585ee8737e9e08`.
+
+| Dataset | Direction | R1 % | R5 % | R10 % |
+|---|---|---:|---:|---:|
+| COCO | I2T | 56.080000 | 79.540000 | 86.860000 |
+| COCO | T2I | 35.324000 | 59.948000 | 70.144000 |
+| Urban-1k | I2T | 68.300003 | 88.500005 | 93.600005 |
+| Urban-1k | T2I | 53.100002 | 78.200006 | 86.000001 |
+| Flickr30k-test1k | I2T | 84.600000 | 97.700000 | 99.200000 |
+| Flickr30k-test1k | T2I | 64.920000 | 87.240000 | 92.040000 |
+| DOCCI | I2T | 57.560000 | 83.680000 | 89.800000 |
+| DOCCI | T2I | 60.600000 | 86.280000 | 91.900000 |
+| Long-DCI | I2T | 33.307024 | 51.696922 | 58.563536 |
+| Long-DCI | T2I | 31.320705 | 50.552486 | 58.537227 |
 
 The prespecified final result is L14@4868. best_observed is selected only among500/3651/4868 by raw Score5_R1 and is explicitly benchmark-selected; no cross-checkpoint dataset mixing. The auxiliary mask/gate branches are not used in native inference.
 
