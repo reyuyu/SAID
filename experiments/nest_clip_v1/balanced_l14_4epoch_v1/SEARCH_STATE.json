@@ -1,0 +1,310 @@
+{
+  "status": "resource_stopped",
+  "started_utc": "2026-10-02T09:21:20.240997+00:00",
+  "trials": {
+    "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8": {
+      "hparams": {
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1.0,
+        "view_weights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "sparsity_scale": 1.0,
+        "inclusion_max": 1.0
+      },
+      "seed": 0,
+      "status": "pending",
+      "budgets": {}
+    }
+  },
+  "rounds": [],
+  "promotions": {},
+  "stages": [],
+  "code_commit": "e010f65f3d576c89a2ef17ef2a153a8e647e86df",
+  "supervisor_pid": 1402530,
+  "initialization": {
+    "passed": true,
+    "initial_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/shared/step000000.pt",
+    "initial_checkpoint_sha256": "93600bb47184e9d57383c5705a0fa2ec7779c0dfc2409c8bb05f72215f537e18",
+    "provenance": {
+      "source": "OpenAI CLIP + original random MaskNetwork",
+      "base_model": "ViT-L/14",
+      "seed": 0,
+      "input_resolution": 224,
+      "context_length": 248,
+      "pretrained_url": "https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt",
+      "pretrained_sha256": "b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836",
+      "dimensions": {
+        "base_model": "ViT-L/14",
+        "input_resolution": 224,
+        "context_length": 248,
+        "visual_tokens": 257,
+        "visual_width": 1024,
+        "text_width": 768,
+        "embedding_dim": 768,
+        "patch_count": 256,
+        "patch_size": 14,
+        "mask_heads": 12,
+        "visual_layers": 24,
+        "text_layers": 12,
+        "visual_heads": 16,
+        "vocab_size": 49408
+      },
+      "module_initialization": {
+        "text_blocks": "412d042e7c568d41a00134b84db58d74e6134925eee5f422d29adf1d3e5c53f3",
+        "visual_blocks": "412d042e7c568d41a00134b84db58d74e6134925eee5f422d29adf1d3e5c53f3",
+        "visual_adapter": "7ba372da7c6412510abb4aa58aeed798fea801c168e502e0f6f9acc29412d8f2",
+        "gate": "a9ecf1c4db8ca450369d59d0ca95d94d2305525031f96bb86924e960f7a82c9b",
+        "shared_pool": "3ad9f19b0184ab951e3149b15214ca22dce75f4ab2d17195f7f79b3f6ee5c2c5"
+      },
+      "optimizer_initial_state_empty": true,
+      "initialization_rng_isolated": true,
+      "code_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+      "loader_sha256": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model_code_sha256": "dc52035a5febca61b38a9cfe0d1e3a832d456227824777d29043969fbe783b01"
+    },
+    "real_l14_native": {
+      "passed": true,
+      "backbone": {
+        "base_model": "ViT-L/14",
+        "input_resolution": 224,
+        "context_length": 248,
+        "visual_tokens": 257,
+        "visual_width": 1024,
+        "text_width": 768,
+        "embedding_dim": 768,
+        "patch_count": 256,
+        "patch_size": 14,
+        "mask_heads": 12,
+        "visual_layers": 24,
+        "text_layers": 12,
+        "visual_heads": 16,
+        "vocab_size": 49408
+      },
+      "image_shape": [
+        2,
+        768
+      ],
+      "hidden_shape": [
+        2,
+        257,
+        1024
+      ],
+      "text_hidden_shape": [
+        2,
+        248,
+        768
+      ],
+      "image_interface_max_abs": 0.0,
+      "text_interface_max_abs": 0.0,
+      "native_export_image_max_abs": 0.0,
+      "native_export_text_max_abs": 0.0
+    },
+    "b16_native_regression": {
+      "passed": true,
+      "backbone": {
+        "base_model": "ViT-B/16",
+        "input_resolution": 224,
+        "context_length": 248,
+        "visual_tokens": 197,
+        "visual_width": 768,
+        "text_width": 512,
+        "embedding_dim": 512,
+        "patch_count": 196,
+        "patch_size": 16,
+        "mask_heads": 8,
+        "visual_layers": 12,
+        "text_layers": 12,
+        "visual_heads": 12,
+        "vocab_size": 49408
+      },
+      "image_shape": [
+        2,
+        512
+      ],
+      "hidden_shape": [
+        2,
+        197,
+        768
+      ],
+      "text_hidden_shape": [
+        2,
+        248,
+        512
+      ],
+      "image_interface_max_abs": 0.0,
+      "text_interface_max_abs": 0.0,
+      "native_export_image_max_abs": 0.0,
+      "native_export_text_max_abs": 0.0
+    },
+    "reference_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+    "reference_bare_sha256": "f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb",
+    "gate_zero_initialized": true,
+    "text_visual_independent": true,
+    "shared_pool_registered_once": true,
+    "position_extension_exact": true,
+    "cache_path_used": false
+  },
+  "correctness": {
+    "passed": true,
+    "cpu_tests_passed": 74,
+    "cpu_command": "CUDA_VISIBLE_DEVICES='' /root/miniconda3/envs/said-repro/bin/python -m pytest -q tests/test_l14_runtime.py tests/test_nested_fusion.py tests/test_balanced_hparams.py tests/test_nested_resume.py tests/test_search_top2.py tests/test_three_followup.py tests/test_four_epoch_followup.py tests/test_balanced_l14.py",
+    "two_rank_dimension_aware_cases_passed": 10,
+    "real_l14_global_reference_passed": true,
+    "real_model_command": "CUDA_VISIBLE_DEVICES=0,1 CUBLAS_WORKSPACE_CONFIG=:4096:8 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 /root/miniconda3/envs/said-repro/bin/python -m torch.distributed.run --standalone --nproc_per_node=2 -m tests.real_l14_ddp_worker --init-state /root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/shared/step000000.pt --output experiments/nest_clip_v1/balanced_l14_4epoch_v1/evidence/real-l14-ddp.json",
+    "precision_scope": "Real full L14 numerical reference uses FP32 and identical per-sample encoder/mask kernel shapes. Production uses unchanged BF16 encoder autocast with FP32 masks and scoring.",
+    "tolerances_unchanged": {
+      "score_atol": 8e-05,
+      "score_rtol": 3e-06,
+      "loss_atol": 0.0003,
+      "loss_rtol": 3e-05,
+      "gradient_atol": 0.0015,
+      "gradient_rtol": 0.0001,
+      "adamw_unexplained_max": 2e-06
+    },
+    "adamw_near_zero_rule": "Original analytic first-update amplification criterion is retained and reported per parameter; no gradient or parameter is omitted.",
+    "real_l14_input_scope": "First two valid frozen ShareGPT4V epoch0 samples, original Resize/CenterCrop/normalization and RandomK tokens, full two-sample global candidate pool.",
+    "additional_synthetic_stress_passed": false,
+    "additional_synthetic_stress_note": "Unnormalized Gaussian image/short unrelated-caption full-L14 FP32 stress cases exceeded original elementwise convolution-gradient tolerance. Failures remain in evidence/real-l14-ddp-*-failure.json and real-l14-ddp-synthetic-stress.json. Tolerances were not increased. Random-input dimension-aware fixture cases and actual-training-input full-L14 cases passed.",
+    "native_export_image_max_abs": 0,
+    "native_export_text_max_abs": 0,
+    "b16_native_regression_max_abs": 0,
+    "position_extension_exact": true,
+    "gradient_cache_used": false,
+    "logical_global_batch": 1024,
+    "approved_regular_update_limit_seconds": 3,
+    "approved_allocated_limit_gib_per_rank": 65
+  },
+  "resources": [
+    {
+      "label": "direct-128x128",
+      "config": {
+        "arm": "A3",
+        "experiment_name": "Balanced-L14-4epoch",
+        "base_model": "ViT-L/14",
+        "input_resolution": 224,
+        "context_length": 248,
+        "condition_mode": "dual_branch",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "hparam_search": true,
+        "four_epoch_followup": true,
+        "full_native_mix": 0,
+        "sampling_mode": "random_k",
+        "sampling_seed": 0,
+        "shuffle_seed": 0,
+        "world_size": 4,
+        "batch_size": 256,
+        "accumulation": 1,
+        "epochs": 4,
+        "seed": 0,
+        "workers": 8,
+        "checkpoint_encoders": true,
+        "checkpoint_pair_blocks": false,
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "score_chunk": 64,
+        "checkpoint_interval": 100000,
+        "checkpoint_updates": [
+          500,
+          1217,
+          2434,
+          3651,
+          4868
+        ],
+        "save_initial_checkpoint": true,
+        "monitor_resources": true,
+        "max_update_seconds": 3,
+        "measure_all_probe_updates": true,
+        "feasibility_abort_seconds": 15,
+        "execution_path": "direct",
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1,
+        "view_weights": [
+          1,
+          1,
+          1
+        ],
+        "sparsity_scale": 1,
+        "inclusion_max": 1
+      },
+      "root": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/resources/direct-128x128/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/probe",
+      "acceptance": {
+        "passed": false,
+        "ranks": [
+          {
+            "rank": 0,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 165.5336399152875,
+            "peak_allocated_gib": 47.36288833618164,
+            "peak_reserved_gib": 48.59765625,
+            "final_nccl_all_reduce": 10.0
+          },
+          {
+            "rank": 1,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 165.46719890087843,
+            "peak_allocated_gib": 47.35835361480713,
+            "peak_reserved_gib": 48.548828125,
+            "final_nccl_all_reduce": 10.0
+          },
+          {
+            "rank": 2,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 165.2650107294321,
+            "peak_allocated_gib": 47.363563537597656,
+            "peak_reserved_gib": 48.59765625,
+            "final_nccl_all_reduce": 10.0
+          },
+          {
+            "rank": 3,
+            "completed_updates": 35,
+            "updates_this_run": 35,
+            "max_parameter_difference_from_rank0": 0.0,
+            "seconds": 165.47169978916645,
+            "peak_allocated_gib": 47.36153793334961,
+            "peak_reserved_gib": 48.62109375,
+            "final_nccl_all_reduce": 10.0
+          }
+        ],
+        "speed_gate": {
+          "warmup_steps": 5,
+          "measured_steps": 30,
+          "threshold_seconds": 3.0,
+          "mean_seconds": 4.308759291966756,
+          "median_seconds": 4.308880805969238,
+          "p95_seconds": 4.405271553993225,
+          "max_seconds": 4.452944755554199,
+          "all_steps_at_most_3s": false,
+          "allocated_limit_gib": 65.0,
+          "every_rank_peak_allocated_at_most_65gib": true
+        },
+        "resource_failure": "measured full update exceeded 3 seconds"
+      },
+      "passed": false,
+      "error": "Common B0 resource gate failed: {'passed': False, 'ranks': [{'rank': 0, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.5336399152875, 'peak_allocated_gib': 47.36288833618164, 'peak_reserved_gib': 48.59765625, 'final_nccl_all_reduce': 10.0}, {'rank': 1, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.46719890087843, 'peak_allocated_gib': 47.35835361480713, 'peak_reserved_gib': 48.548828125, 'final_nccl_all_reduce': 10.0}, {'rank': 2, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.2650107294321, 'peak_allocated_gib': 47.363563537597656, 'peak_reserved_gib': 48.59765625, 'final_nccl_all_reduce': 10.0}, {'rank': 3, 'completed_updates': 35, 'updates_this_run': 35, 'max_parameter_difference_from_rank0': 0.0, 'seconds': 165.47169978916645, 'peak_allocated_gib': 47.36153793334961, 'peak_reserved_gib': 48.62109375, 'final_nccl_all_reduce': 10.0}], 'speed_gate': {'warmup_steps': 5, 'measured_steps': 30, 'threshold_seconds': 3.0, 'mean_seconds': 4.308759291966756, 'median_seconds': 4.308880805969238, 'p95_seconds': 4.405271553993225, 'max_seconds': 4.452944755554199, 'all_steps_at_most_3s': False, 'allocated_limit_gib': 65.0, 'every_rank_peak_allocated_at_most_65gib': True}, 'resource_failure': 'measured full update exceeded 3 seconds'}",
+      "oom": false
+    }
+  ],
+  "l14_trial": "6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8",
+  "execution_path": "direct",
+  "evaluation_updates": [
+    0,
+    500,
+    3651,
+    4868
+  ],
+  "reference_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+  "stage": "resource-gate-failed",
+  "finished_utc": "2026-10-02T09:24:32.275981+00:00",
+  "formal_training_started": false,
+  "unmet": "Required complete logical updates<=3s and peak allocated<=65GiB per rank"
+}
