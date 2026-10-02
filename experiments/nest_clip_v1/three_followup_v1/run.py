@@ -72,7 +72,8 @@ class Followup(Search):
             write_report(self.state, self.experiment_dir)
 
     def sync(self, message):
-        assert subprocess.check_output(['git','branch','--show-current'], cwd=REPO, text=True).strip() == BRANCH
+        branch = getattr(self, 'branch', BRANCH)
+        assert subprocess.check_output(['git','branch','--show-current'], cwd=REPO, text=True).strip() == branch
         assert not subprocess.check_output(['git','diff','--cached','--name-only'], cwd=REPO, text=True).strip()
         self.publish()
         subprocess.run(['git','add',str(self.experiment_dir.relative_to(REPO))], cwd=REPO, check=True)
@@ -81,7 +82,7 @@ class Followup(Search):
         assert changed in (0,1)
         if changed:
             subprocess.run(['git','commit','-m',message], cwd=REPO, check=True)
-        pushed = subprocess.run(['git','push','origin',BRANCH], cwd=REPO, timeout=180)
+        pushed = subprocess.run(['git','push','origin',branch], cwd=REPO, timeout=180)
         self.state.update(github_synced=pushed.returncode == 0,
                           github_push_exit_code=pushed.returncode,
                           result_commit=subprocess.check_output(['git','rev-parse','HEAD'], cwd=REPO, text=True).strip())

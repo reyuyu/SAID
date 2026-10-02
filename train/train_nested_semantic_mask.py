@@ -84,6 +84,19 @@ def optimizer_learning_rates(module, s, horizon):
     return backbone,1e-3*factor,1e-3*hp['visual_mask_lr_scale']*factor,hp['fusion_lr']*factor
 
 
+def training_horizon(config, batches_per_epoch):
+    assert batches_per_epoch == 1217
+    epochs = config['epochs']
+    assert epochs in (3,4), 'Only three epochs or the authorized four-epoch Balanced followup'
+    if epochs == 4:
+        assert config.get('four_epoch_followup') and config.get('hparam_search')
+        assert config.get('condition_mode') == 'dual_branch'
+        assert config.get('fusion') == 'balanced_stack' and config.get('visual') == 'patch'
+    else:
+        assert not config.get('four_epoch_followup'), 'Four-epoch configuration must use four epochs'
+    return epochs * batches_per_epoch
+
+
 def gradient_norm(parameters):
     squares = [parameter.grad.float().square().sum()
                for parameter in parameters if parameter.grad is not None]
@@ -109,7 +122,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old[key] == current[key], f'Resume mismatch: {key}'
     for key, default in (('image_chunk', 32), ('text_chunk', 64),
                          ('condition_mode', 'text_only'), ('shuffle_seed', 0),
-                         ('checkpoint_pair_blocks', True)):
+                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False)):
         assert old.get(key, default) == current.get(key, default), f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
@@ -303,7 +316,8 @@ def main():
     assert int(cfg['checkpoint_interval']) > 0
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates == 35 if args.run_type == 'probe' else args.max_updates > 0)
     assert cfg['batch_size'] == 256 and cfg['world_size'] == 4 and cfg['accumulation'] == 1
-    assert cfg['epochs'] == 3 and cfg['seed'] == 0 and cfg['workers'] == 8
+    assert cfg['seed'] == 0 and cfg['workers'] == 8
+    training_horizon(cfg, 1217)
     seed_all(cfg['seed'])
     torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32 = False
@@ -324,11 +338,10 @@ def main():
                         num_workers=cfg['workers'], drop_last=False, pin_memory=True,
                         multiprocessing_context='spawn', prefetch_factor=2,
                         generator=torch.Generator().manual_seed(cfg['seed']))
-    horizon = cfg['epochs'] * full_batches_per_epoch
+    horizon = training_horizon(cfg, full_batches_per_epoch)
     assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
-    assert full_batches_per_epoch == 1217 and horizon == 3651
     assert len(loader) == min(args.max_updates, full_batches_per_epoch)
-    assert args.max_updates <= horizon, 'Stopping point must not exceed the unchanged three-epoch horizon'
+    assert args.max_updates <= horizon, 'Stopping point must not exceed the configured horizon'
     clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
     initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
     assert initial['completed_steps'] == 0 and initial['provenance']['source'] == 'OpenAI CLIP + original random MaskNetwork'

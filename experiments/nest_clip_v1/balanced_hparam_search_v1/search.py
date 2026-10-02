@@ -68,9 +68,10 @@ def now():return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
 class Search:
-    def __init__(self,bootstrap=False,*,run_dir=RUN,experiment_dir=EXP):
+    def __init__(self,bootstrap=False,*,run_dir=RUN,experiment_dir=EXP,base_config=None):
         self.run_dir=Path(run_dir)
         self.experiment_dir=Path(experiment_dir)
+        self.base_config=copy.deepcopy(BASE_CONFIG if base_config is None else base_config)
         self.state_path=self.run_dir/'state.json'
         if self.state_path.exists():
             self.state=load(self.state_path)
@@ -116,7 +117,7 @@ class Search:
         return data
 
     def config(self,hp):
-        cfg=dict(BASE_CONFIG,**hparams(hp));tid=trial_id(hp)
+        cfg=dict(self.base_config,**hparams(hp));tid=trial_id(hp)
         cfg.update(hparam_search=True,trial_id=tid,experiment_name=f'BalancedSearch-{tid[:12]}',
                    checkpoint_interval=100000,save_initial_checkpoint=False)
         path=self.run_dir/'configs'/f'{tid}.json';path.parent.mkdir(exist_ok=True)
@@ -184,7 +185,7 @@ class Search:
             assert signatures(records)==signatures(reference),'Sample/F/P/R/K stream drift'
             result['streams_equal_B0']=True
         result['diagnostics']={str(r['step']):{k:v for k,v in r.items() if k!='rank_health'} for r in records
-                               if r['step'] in (1,100,200,500,1217,2000,3000,3651)}
+                               if r['step'] in (1,100,200,500,1217,2000,3000,3651,4868)}
         result['last50_mean']={k:statistics.fmean(r[k] for r in records[-50:] if k in r)
                                for k,v in records[-1].items() if isinstance(v,(float,int))}
         if (root/'cycle_timing.jsonl').exists():
@@ -203,7 +204,7 @@ class Search:
     def publish(self):
         (self.experiment_dir/'SEARCH_STATE.json').write_text(json.dumps(self.state,indent=2)+'\n')
         columns=['trial_id',*hparams({}),'Score5_R1','J_long3','J_long','checkpoint_sha256','reused']
-        for budget in (500,1217,3651):
+        for budget in (500,1217,3651,4868):
             entries=[]
             for tid,trial in self.state['trials'].items():
                 result=trial.get('budgets',{}).get(str(budget))
