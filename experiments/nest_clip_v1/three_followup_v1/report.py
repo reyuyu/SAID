@@ -86,6 +86,6 @@ def write_report(state, output):
     (output/'THREE_FOLLOWUP_REPORT.md').write_text('\n'.join(lines)+'\n')
     (output/'RESULTS.json').write_text(json.dumps(dict(
         status=state['status'], experiment3=state['experiment3'], evaluations=[
-            dict(name=label, updates=budget, **record) for label,budget,record in entries],
+            dict(record, name=label, updates=budget) for label,budget,record in entries],
         comparison_note='Four-epoch@3651 uses horizon4868; the original three-epoch@3651 uses horizon3651',
     ),indent=2)+'\n')

@@ -41,6 +41,8 @@ class FourEpoch(Followup):
         self.enroll(hp)
         experiment = self.state.get('four_epoch_experiment', dict(
             name='Four-epoch fusion-only', trial_id=tid, status='pending'))
+        if not self.state['stages']:
+            self.state['code_commit'] = subprocess.check_output(['git','rev-parse','HEAD'], cwd=REPO, text=True).strip()
         self.state.update(
             references=references,
             experiments=copy.deepcopy(previous['experiments'])+[experiment],

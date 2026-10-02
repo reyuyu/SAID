@@ -1,5 +1,6 @@
 """Four-epoch schedule, exact boundary continuation and frozen parent selection."""
 import copy
+import json
 import math
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import pytest
 
 from experiments.nest_clip_v1.balanced_hparam_search_v1.search import BASE_CONFIG, Search
 from experiments.nest_clip_v1.three_followup_v1 import four_epoch
+from experiments.nest_clip_v1.three_followup_v1.report import write_report
 from model.balanced_hparam_search import hparams, trial_id
 from tests.test_balanced_hparams import make
 from tests.test_nested_resume import payloads
@@ -84,3 +86,30 @@ def test_third_starts_at_step0_and_resumes_its_own_four_epoch_checkpoint(monkeyp
     assert calls == [(3651,None),(4868,Path('/four-epoch/step3651/step003651.pt'))]
     assert runner.state['status'] == 'completed'
     assert runner.state['experiment3']['status'] == 'completed'
+
+
+def test_unified_report_preserves_reference_updates_and_distinguishes_horizons(tmp_path):
+    datasets = ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI')
+    metrics = {ds:{direction:{f'R@{k}':.5 for k in (1,5,10)}
+                   for direction in ('I2T','T2I')} for ds in datasets}
+    record = dict(scores=dict(Score5_R1=.5,J_long3=.5,J_long=.5), metrics=metrics)
+    hp = hparams(dict(fusion_lr=2e-4))
+    tid = trial_id(hp)
+    inc_hp = hparams(dict(fusion_lr=2e-4,inclusion_max=1.5))
+    inc_tid = trial_id(inc_hp)
+    references = {
+        f'{tid[:12]}@3651':dict(record,trial_id=tid,hparams=hp,updates=3651),
+        f'{inc_tid[:12]}@500':dict(record,trial_id=inc_tid,hparams=inc_hp,updates=500),
+    }
+    final = dict(record, config=dict(horizon=4868,four_epoch_followup=True),
+                 checkpoint_sha256='checkpoint',bare_sha256='bare',
+                 export_check=dict(passed=True),acceptance=dict(passed=True))
+    state = dict(status='running',experiment3=dict(trial_id=tid,hparams=hp),references=references,
+                 experiments=[dict(name='Four-epoch fusion-only',trial_id=tid,status='running')],
+                 trials={tid:dict(hparams=hp,budgets={'3651':final})})
+    write_report(state,tmp_path)
+    results = json.loads((tmp_path/'RESULTS.json').read_text())
+    assert results['evaluations'][0]['updates'] == 3651
+    assert results['evaluations'][-1]['config']['horizon'] == 4868
+    text = (tmp_path/'THREE_FOLLOWUP_REPORT.md').read_text()
+    assert 'same number of updates' in text and 'different LR trajectory' in text
