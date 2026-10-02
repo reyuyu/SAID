@@ -68,6 +68,18 @@ def mask_remainder_prefix(tokens_f, prefix):
     return result,boundary
 
 
+def sample_sentence_subset(m, sampling_seed, epoch, sample_id):
+    """Independent salted RNG: uniform nonempty size, distinct indices, original order."""
+    if m<1:
+        raise ValueError('SentenceDrop requires at least one suffix sentence')
+    material=f'{int(sampling_seed)}:{int(epoch)}:{int(sample_id)}:r_sentence_drop_v1'.encode('utf-8')
+    seed=int.from_bytes(hashlib.sha256(material).digest(),'big')
+    local=random.Random(seed)
+    q=local.randrange(1,m+1)
+    selected=local.sample(range(m),q)
+    return q,selected,sorted(selected)
+
+
 def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                        epoch=0, sample_id=0,remainder_mode='compact'):
     """Pack F with the unchanged old rule, then optionally resplit ONLY that F.
@@ -79,7 +91,7 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     """
     if sampling_mode not in ('fixed_first', 'random_k'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
-    if remainder_mode not in ('compact','prefix_pad'):
+    if remainder_mode not in ('compact','prefix_pad','sentence_drop'):
         raise ValueError(f'Unknown remainder_mode: {remainder_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
@@ -115,6 +127,27 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                       prefix_token_boundary=boundary,full_eot_index=int(result['tokens_f'].argmax()),
                       suffix_first_index=boundary,compact_suffix_first_index=1)
         result['untruncated_lengths']=[*result['untruncated_lengths'][:2],result['untruncated_lengths'][0]]
+    elif remainder_mode=='sentence_drop':
+        suffix=parts[k:]
+        m=len(suffix)
+        q,selected,ordered=sample_sentence_subset(m,sampling_seed,epoch,sample_id)
+        if not (1<=q<=m and len(selected)==q and len(set(selected))==q and
+                ordered==sorted(selected) and all(0<=index<m for index in ordered)):
+            raise ValueError('Invalid SentenceDrop subset')
+        text='. '.join(suffix[index] for index in ordered)
+        if not text:
+            raise ValueError('SentenceDrop produced empty text')
+        token_length=len(longclip._tokenizer.encode(text))+2
+        if token_length>248:
+            raise ValueError(f'SentenceDrop token boundary overflow: sample_id={sample_id},epoch={epoch},length={token_length}')
+        original_tokens=result['tokens_e']
+        dropped=(original_tokens if text==remainder else
+                 longclip.tokenize([text],context_length=248,truncate=False)[0])
+        result.update(tokens_e=dropped,views=[result['views'][0],result['views'][1],text],
+                      old_remainder_text=remainder,drop_m=m,drop_q=q,
+                      drop_selected_indices_before_sort=selected,drop_selected_indices_after_sort=ordered,
+                      drop_same_old_r=bool(text==remainder and torch.equal(dropped,original_tokens)),
+                      untruncated_lengths=[*result['untruncated_lengths'][:2],token_length])
     return result
 
 
@@ -161,6 +194,14 @@ def sampling_diagnostics(batch):
             prefix_end_position_sum=sum(boundaries[i]-1 for i in enabled),
             suffix_first_position_sum=sum(boundaries[i] for i in enabled),
             compact_suffix_first_position_sum=len(enabled),suffix_first_position_counts=counts)
+    if 'drop_m' in batch:
+        ms,qs=batch['drop_m'].tolist(),batch['drop_q'].tolist()
+        enabled=[i for i,v in enumerate(valid) if v]
+        joint=Counter(f'{ms[i]}:{qs[i]}' for i in enabled)
+        result['sentence_drop_diagnostics']=dict(
+            valid_samples=len(enabled),m_counts=dict(Counter(ms[i] for i in enabled)),
+            q_counts=dict(Counter(qs[i] for i in enabled)),joint_m_q_counts=dict(joint),
+            same_old_r_count=sum(bool(batch['drop_same_old_r'][i]) for i in enabled))
     return result
 
 
@@ -200,7 +241,7 @@ class NestedDataset(Dataset):
         if sampling_mode not in ('fixed_first', 'random_k'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
-        if remainder_mode not in ('compact','prefix_pad'):
+        if remainder_mode not in ('compact','prefix_pad','sentence_drop'):
             raise ValueError(remainder_mode)
         self.remainder_mode=remainder_mode
         self._records = self._offsets = self._file = None
@@ -223,6 +264,9 @@ class NestedDataset(Dataset):
             views.update(tokens_e_compact=views['tokens_e'],prefix_token_boundary=-1,
                          full_eot_index=int(views['tokens_f'].argmax()),suffix_first_index=-1,
                          compact_suffix_first_index=-1)
+        if self.remainder_mode=='sentence_drop' and not views['valid']:
+            views.update(old_remainder_text=views['views'][2],drop_m=0,drop_q=0,
+                         drop_selected_indices_before_sort=[],drop_selected_indices_after_sort=[],drop_same_old_r=True)
         path = self.image_root / record['image']
         try:
             with Image.open(path) as im:
@@ -247,4 +291,7 @@ def collate(samples):
         for key in ('prefix_token_boundary','full_eot_index','suffix_first_index','compact_suffix_first_index'):
             result[key]=torch.tensor([s[key] for s in samples])
         result['tokens_e_compact']=torch.stack([s['tokens_e_compact'] for s in samples])
+    if 'drop_m' in samples[0]:
+        for key in ('drop_m','drop_q','drop_same_old_r'):
+            result[key]=torch.tensor([s[key] for s in samples])
     return result

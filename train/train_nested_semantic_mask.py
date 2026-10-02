@@ -312,7 +312,7 @@ def main():
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
     cfg.setdefault('remainder_mode','compact')
-    assert cfg['remainder_mode'] in ('compact','prefix_pad')
+    assert cfg['remainder_mode'] in ('compact','prefix_pad','sentence_drop')
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
     assert cfg['full_native_mix'] == 0
