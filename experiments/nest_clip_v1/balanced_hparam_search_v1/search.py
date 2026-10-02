@@ -149,7 +149,7 @@ class Search:
             raise TrialFailure(f'Non-passing {kind} acceptance: {accepted}')
         return root
 
-    def evaluate(self,tid,root,stop,reused=False):
+    def evaluate(self,tid,root,stop,reused=False,stream_reference=None,stream_keys=None):
         checkpoint=root/f'step{stop:06d}.pt';bare=root/f'student_step{stop}.pt'
         if not reused:
             prefix=f'{tid[:12]}-{stop}'
@@ -181,9 +181,16 @@ class Search:
         assert [r['step'] for r in records]==list(range(records[0]['step'],stop+1))
         assert all(r['nonfinite']==0 and all(h['gradients_finite'] for h in r['rank_health']) for r in records)
         if stop==500:
-            reference=rows(PARENT500/'steps.jsonl')
-            assert signatures(records)==signatures(reference),'Sample/F/P/R/K stream drift'
-            result['streams_equal_B0']=True
+            reference=rows(stream_reference or PARENT500/'steps.jsonl')
+            if stream_keys is None:
+                assert signatures(records)==signatures(reference),'Sample/F/P/R/K stream drift'
+                result['streams_equal_B0']=True
+            else:
+                digest=lambda entries:[[(h['rank'],*[h['sampling'][key] for key in stream_keys])
+                                         for h in r['rank_health']] for r in entries]
+                assert digest(records)==digest(reference),'Matched sample/F/P/K stream drift'
+                result['matched_stream_keys']=list(stream_keys)
+                result['matched_streams_equal']=True
         result['diagnostics']={str(r['step']):{k:v for k,v in r.items() if k!='rank_health'} for r in records
                                if r['step'] in (1,100,200,500,1217,2000,3000,3651,4868)}
         result['last50_mean']={k:statistics.fmean(r[k] for r in records[-50:] if k in r)

@@ -122,7 +122,8 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old[key] == current[key], f'Resume mismatch: {key}'
     for key, default in (('image_chunk', 32), ('text_chunk', 64),
                          ('condition_mode', 'text_only'), ('shuffle_seed', 0),
-                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False)):
+                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False),
+                         ('remainder_mode','compact')):
         assert old.get(key, default) == current.get(key, default), f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
@@ -310,6 +311,8 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
+    cfg.setdefault('remainder_mode','compact')
+    assert cfg['remainder_mode'] in ('compact','prefix_pad')
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
     assert cfg['full_native_mix'] == 0
@@ -326,7 +329,7 @@ def main():
     if rank == 0:
         output.mkdir(parents=True, exist_ok=False)
     dist.barrier()
-    dataset = NestedDataset(args.index_dir, args.image_root, cfg['sampling_mode'], cfg['sampling_seed'])
+    dataset = NestedDataset(args.index_dir, args.image_root, cfg['sampling_mode'], cfg['sampling_seed'],cfg['remainder_mode'])
     base_sampler = DistributedSampler(dataset, num_replicas=world, rank=rank, shuffle=True,
                                       seed=cfg['seed'], drop_last=False)
     full_batches_per_epoch = math.ceil(len(base_sampler) / cfg['batch_size'])

@@ -52,8 +52,24 @@ def sample_split_k(n, sampling_seed, epoch, sample_id):
     return random.Random(local_seed).randrange(1, n)
 
 
+def mask_remainder_prefix(tokens_f, prefix):
+    """Mask exact BPE tokens of the prefix plus its separator, retaining all positions."""
+    start_id=longclip._tokenizer.encoder['<|startoftext|>']
+    end_id=longclip._tokenizer.encoder['<|endoftext|>']
+    ids=longclip._tokenizer.encode(prefix+'. ')
+    boundary=1+len(ids)
+    end=int(tokens_f.argmax())
+    if (int(tokens_f[0])!=start_id or int(tokens_f[end])!=end_id or
+            not 1<boundary<end or not torch.equal(tokens_f[1:boundary],tokens_f.new_tensor(ids))):
+        raise ValueError('Prefix BPE span does not match the full caption at the selected sentence boundary')
+    result=tokens_f.clone()
+    result[1:boundary]=0
+    assert int(result.argmax())==end and torch.equal(result[boundary:],tokens_f[boundary:])
+    return result,boundary
+
+
 def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
-                       epoch=0, sample_id=0):
+                       epoch=0, sample_id=0,remainder_mode='compact'):
     """Pack F with the unchanged old rule, then optionally resplit ONLY that F.
 
     tokens_o/e carry prefix/remainder in random_k. The old fields below are
@@ -63,6 +79,8 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     """
     if sampling_mode not in ('fixed_first', 'random_k'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
+    if remainder_mode not in ('compact','prefix_pad'):
+        raise ValueError(f'Unknown remainder_mode: {remainder_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
                   reference_tokens_o=original['tokens_o'],
@@ -90,6 +108,13 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                       views=[original['views'][0], prefix, remainder],
                       untruncated_lengths=[original['untruncated_lengths'][0], *lengths])
     # k=1 preserves all old fields bit-for-bit, including token tensors.
+    if remainder_mode=='prefix_pad':
+        compact=result['tokens_e']
+        masked,boundary=mask_remainder_prefix(result['tokens_f'],prefix)
+        result.update(tokens_e=masked,tokens_e_compact=compact,
+                      prefix_token_boundary=boundary,full_eot_index=int(result['tokens_f'].argmax()),
+                      suffix_first_index=boundary,compact_suffix_first_index=1)
+        result['untruncated_lengths']=[*result['untruncated_lengths'][:2],result['untruncated_lengths'][0]]
     return result
 
 
@@ -113,16 +138,30 @@ def sampling_diagnostics(batch):
     reference = dict(sample_ids=ids, views=batch['reference_views'],
                      tokens=[tokens[0], batch['reference_tokens_o'].tolist(),
                              batch['reference_tokens_e'].tolist()])
-    return dict(sample_ids=ids, n=ns, K=ks, valid_count=sum(valid),
+    result=dict(sample_ids=ids, n=ns, K=ks, valid_count=sum(valid),
                 k1_count=sum(k == 1 and enabled for k, enabled in zip(ks, valid)),
                 K_histogram_by_n={n: dict(v) for n, v in by_n.items()},
                 prefix_segments=histogram(p_counts), remainder_segments=histogram(r_counts),
                 prefix_token_lengths=histogram(p_lengths), remainder_token_lengths=histogram(r_lengths),
                 sample_id_sha256=digest(ids),
                 full_view_sha256=digest(dict(sample_ids=ids, F=[v[0] for v in batch['views']], tokens_f=tokens[0])),
+                prefix_view_sha256=digest(dict(sample_ids=ids,P=[v[1] for v in batch['views']],tokens_p=tokens[1])),
                 local_views_sha256=digest(dict(sample_ids=ids, PR=[v[1:] for v in batch['views']], tokens_pr=tokens[1:])),
                 split_sha256=digest(dict(sample_ids=ids, n=ns, K=ks)),
                 fixed_first_reference_stream_sha256=digest(reference))
+    if 'prefix_token_boundary' in batch:
+        ends=batch['full_eot_index'].tolist()
+        boundaries=batch['prefix_token_boundary'].tolist()
+        enabled=[i for i,v in enumerate(valid) if v]
+        bins=((0,31),(32,63),(64,127),(128,191),(192,247))
+        counts={f'{lo}-{hi}':sum(lo<=boundaries[i]<=hi for i in enabled) for lo,hi in bins}
+        result['position_diagnostics']=dict(
+            samples=len(ids),valid_samples=len(enabled),F_eot_sum=sum(ends),
+            prefix_boundary_sum=sum(boundaries[i] for i in enabled),
+            prefix_end_position_sum=sum(boundaries[i]-1 for i in enabled),
+            suffix_first_position_sum=sum(boundaries[i] for i in enabled),
+            compact_suffix_first_position_sum=len(enabled),suffix_first_position_counts=counts)
+    return result
 
 
 def file_sha(path):
@@ -154,13 +193,16 @@ def prepare_index(annotation, output):
 
 
 class NestedDataset(Dataset):
-    def __init__(self, index_dir, image_root, sampling_mode='fixed_first', sampling_seed=0):
+    def __init__(self, index_dir, image_root, sampling_mode='fixed_first', sampling_seed=0,remainder_mode='compact'):
         self.index_dir, self.image_root = Path(index_dir), Path(image_root)
         self.metadata = json.loads((self.index_dir / 'metadata.json').read_text())
         self.transform = reference_view_a_transform()
         if sampling_mode not in ('fixed_first', 'random_k'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
+        if remainder_mode not in ('compact','prefix_pad'):
+            raise ValueError(remainder_mode)
+        self.remainder_mode=remainder_mode
         self._records = self._offsets = self._file = None
 
     def __len__(self):
@@ -176,7 +218,11 @@ class NestedDataset(Dataset):
             self._offsets = np.load(self.index_dir / 'offsets.npy', mmap_mode='r')
         record = json.loads(self._records[self._offsets[index]:self._offsets[index+1]])
         views = sampled_text_views(record['caption'], self.sampling_mode, self.sampling_seed,
-                                   self.epoch, index+1000)
+                                   self.epoch, index+1000,self.remainder_mode)
+        if self.remainder_mode=='prefix_pad' and not views['valid']:
+            views.update(tokens_e_compact=views['tokens_e'],prefix_token_boundary=-1,
+                         full_eot_index=int(views['tokens_f'].argmax()),suffix_first_index=-1,
+                         compact_suffix_first_index=-1)
         path = self.image_root / record['image']
         try:
             with Image.open(path) as im:
@@ -197,4 +243,8 @@ def collate(samples):
         result['reference_views'] = [s['reference_views'] for s in samples]
         for k in ('reference_tokens_o', 'reference_tokens_e'):
             result[k] = torch.stack([s[k] for s in samples])
+    if 'prefix_token_boundary' in samples[0]:
+        for key in ('prefix_token_boundary','full_eot_index','suffix_first_index','compact_suffix_first_index'):
+            result[key]=torch.tensor([s[key] for s in samples])
+        result['tokens_e_compact']=torch.stack([s['tokens_e_compact'] for s in samples])
     return result

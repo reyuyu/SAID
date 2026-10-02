@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "tests_passed": 67,
+  "command": "CUDA_VISIBLE_DEVICES='' /root/miniconda3/envs/said-repro/bin/python -m pytest -q tests/test_remainder_prefix_mask.py tests/test_nested_randomk.py tests/test_nested_resume.py tests/test_balanced_hparams.py",
+  "real_sample_epoch_pairs_checked": 128,
+  "checks": [
+    "Image, F tokens, P tokens and RandomK are identical",
+    "Exact BPE prefix-plus-delimiter span verified against full F token IDs",
+    "All prefix positions become PAD0; suffix IDs and absolute positions remain unchanged",
+    "SOT and EOT IDs and original F EOT position remain unchanged",
+    "K1 and K(n-1), Unicode/punctuation and near248-token cases",
+    "Overlong/single-segment and global valid<2 fallbacks remain unchanged",
+    "Internal PAD encoding is finite with unchanged causal attention",
+    "Spawned-worker epoch and sampling propagation remain deterministic",
+    "Balanced model, MaskNetwork and loss source are byte-identical to14653c9"
+  ],
+  "model": "ViT-B/16",
+  "max_updates": 500,
+  "scheduler_horizon": 4868,
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "resource_limit_seconds": 3,
+  "allocated_limit_gib_per_rank": 65,
+  "matched_baseline_checkpoint_exists": false,
+  "matched_baseline_action": "Run the authorized unique old-R baseline at500 with horizon4868; do not substitute historicalH3651 scores"
+}
