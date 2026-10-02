@@ -124,12 +124,14 @@ class L14Run(Search):
             self.base_config=self.state['approved_training_config']
         if not self.state.get('smoke_passed'):
             self.train(hp,5,'smoke')
-            self.state['smoke_passed']=True
+            self.state.update(smoke_passed=True,status='ready',stage='validated-resource-gate-and-independent-smoke')
             self.save()
+            self.sync('Record approved L14 resource gate and independent smoke before formal training')
         tid=self.state['l14_trial']
         if not self.state.get('formal_training_finished'):
-            self.state['formal_training_started']=True
+            self.state.update(formal_training_started=True,status='running',stage='formal-training-starting')
             self.save()
+            self.publish()
             root=self.train(hp,4868)
             self.state.update(formal_training_finished=True,formal_root=str(root))
             self.save()
