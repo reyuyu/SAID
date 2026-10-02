@@ -38,6 +38,15 @@ def write_report(state,output):
     if state.get('resource_authorization'):
         lines += ['','The user explicitly approved updates within5s and instructed continuation. '
                   'The original3s failure remains below as historical evidence; a fresh5s gate is required.']
+    recovery=output/'evidence/initial-checkpoint-reconstruction.json'
+    if recovery.exists():
+        record=json.loads(recovery.read_text())
+        lines += ['','The running configuration inherited save_initial_checkpoint=False from the generic '
+                  'search helper. The omitted complete step0 was reconstructed CPU-only from the unchanged '
+                  'prepared model/adapter/empty optimizer plus per-rank pristine RNG states verified against '
+                  'the initial seeds and loader state. Actual formal config is preserved. This is explicitly '
+                  'a derived checkpoint, not a trainer-emitted or bitwise-replayed trajectory.',
+                  f"Derived step0 SHA256: `{record['checkpoint_sha256']}`."]
     for attempt in state['resources']:
         lines += ['',f"### {attempt['label']}",'',f"Passed: `{attempt['passed']}`. OOM: `{attempt['oom']}`.",'',
                   '```json',json.dumps(attempt['acceptance'],indent=2),'```']

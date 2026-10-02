@@ -1,6 +1,6 @@
 # Balanced L14: Fixed Four-Epoch Migration
 
-Status: `ready`. Stage: `validated-resource-gate-and-independent-smoke`.
+Status: `running`. Stage: `6d44ae8d5c34-formal-4868`.
 
 OpenAI ViT-L/14 at224, text context248, seed0. Faithful Balanced coefficients: fusion_lr2e-4, visual_mask_lr_scale1, view_weights[1,1,1], sparsity_scale1, inclusion_max1. Horizon4868 from a new L14 step0, full4x256 direct logical batch, full1024 candidates (padded sampler tail720), original RandomK and loss definitions.
 
@@ -20,6 +20,9 @@ Additional unnormalized Gaussian-image/short-caption full-L14 stress tests excee
 Each attempt measures5 warmup plus30 complete real-DataLoader updates, slowest rank. The approved limit is5s per regular update and65GiB allocated per GPU. Initialization, checkpoint writes and final agreement checks are separate.
 
 The user explicitly approved updates within5s and instructed continuation. The original3s failure remains below as historical evidence; a fresh5s gate is required.
+
+The running configuration inherited save_initial_checkpoint=False from the generic search helper. The omitted complete step0 was reconstructed CPU-only from the unchanged prepared model/adapter/empty optimizer plus per-rank pristine RNG states verified against the initial seeds and loader state. Actual formal config is preserved. This is explicitly a derived checkpoint, not a trainer-emitted or bitwise-replayed trajectory.
+Derived step0 SHA256: `95055d73d824ffbb562035096b584fef1ba806f53636274555a7f031ea390bc9`.
 
 ### direct-128x128
 

@@ -38,6 +38,14 @@ full checkpoints; evaluate0/500/3651/4868 sequentially after training. Formal
 nonfinite errors, communications/data errors or three consecutive slow updates
 preserve a checkpoint and stop. Native five-dataset protocols are unchanged.
 
+The first live run inherited an initial-checkpoint suppression from the generic
+search helper. Its omitted complete step0 was reconstructed CPU-only from the
+verified unchanged prepared weights/empty optimizer and pristine per-rank RNG
+records. See evidence/initial-checkpoint-reconstruction.json for source hashes
+and the explicit derived-checkpoint provenance. The live training was not
+restarted, and actual formal configuration remains unchanged. New L14 configs
+now retain the requested initial-checkpoint option.
+
 See REPORT.md, RESULTS.json and evidence for actual progress, measurements,
 uncompleted nodes, hashes and commands. Push only code/configs/small evidence;
 large weights and full data/token logs stay server-local. End after this run.

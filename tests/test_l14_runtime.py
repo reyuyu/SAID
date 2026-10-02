@@ -8,6 +8,7 @@ import torch
 from model.backbone import infer_base_model,validate_backbone
 from model.model_longclip import CLIP,build_model
 from experiments.nest_clip_v1.balanced_l14_4epoch_v1.run import BASE,L14Run
+from experiments.nest_clip_v1.balanced_hparam_search_v1.search import Search
 from model.balanced_hparam_search import hparams,trial_id
 from train.train_nested_semantic_mask import probe_speed_summary
 
@@ -110,3 +111,12 @@ def test_approved_five_second_gate_preserves_three_second_diagnostic():
     assert new['every_rank_peak_allocated_at_most_65gib']
     assert not probe_speed_summary(measured[:-1],ranks,5)['all_steps_at_most_limit']
     assert not probe_speed_summary(measured[:-1]+[5.1],ranks,5)['all_steps_at_most_limit']
+
+
+def test_l14_preserves_requested_initial_checkpoint_policy(tmp_path):
+    runner=Search(run_dir=tmp_path/'runtime',experiment_dir=tmp_path/'evidence',base_config=BASE)
+    _,path=runner.config(hparams(BASE))
+    import json
+    config=json.loads(path.read_text())
+    assert config['save_initial_checkpoint'] is True
+    assert config['checkpoint_updates']==[500,1217,2434,3651,4868]

@@ -121,6 +121,8 @@ class Search:
         cfg=dict(self.base_config,**hparams(hp));tid=trial_id(hp)
         cfg.update(hparam_search=True,trial_id=tid,experiment_name=f'BalancedSearch-{tid[:12]}',
                    checkpoint_interval=100000,save_initial_checkpoint=False)
+        if cfg.get('base_model')=='ViT-L/14':
+            cfg['save_initial_checkpoint']=self.base_config.get('save_initial_checkpoint',True)
         path=self.run_dir/'configs'/f'{tid}.json';path.parent.mkdir(exist_ok=True)
         if path.exists():assert load(path)==cfg
         else:path.write_text(json.dumps(cfg,indent=2)+'\n')
