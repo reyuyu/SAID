@@ -6,6 +6,9 @@ Four-epoch and unified-report branch: codex/nest-balanced-four-epoch-v1.
 First-two runtime: /root/lk_projects/SAID-nest-clip-v1/three_followup_v1/.
 Four-epoch runtime: /root/lk_projects/SAID-nest-clip-v1/three_followup_v1/four_epoch/.
 
+The completed four-epoch scores and per-dataset comparison are in
+[FOUR_EPOCH_RESULTS.md](FOUR_EPOCH_RESULTS.md). All three experiments have finished.
+
 The user's opening instruction extends both new coefficient experiments to
 three full epochs instead of the 500-step-only budget in the pasted details.
 Each runs a five-update smoke from shared step0, an independent formal 500-update
