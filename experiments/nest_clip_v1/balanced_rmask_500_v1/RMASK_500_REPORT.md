@@ -1,6 +1,6 @@
 # Balanced RMask: Single-Variable500 Experiment
 
-Status: `running`. Stage: `five-native-evaluations`.
+Status: `completed`. Stage: `final500-comparison`.
 
 ViT-B/16,224,context248,seed0,full4x256. Only the R tensor construction differs: compact suffix versus F clone with exact BPE prefix-plus-separator positions replaced by PAD0. SOT, suffix IDs/positions, F EOT and trailing PAD remain unchanged. No new attention mask, view, architecture, loss or optimizer coefficient.
 
@@ -14,6 +14,7 @@ The exact prior four-epoch run has no step500 checkpoint; one matched old-R base
 |---|---:|---:|---:|---:|
 | Balanced matched old-R@500 | 4868 | 69.900394 | 73.603324 | 82.340003 |
 | Balanced RMask@500 | 4868 | 69.475768 | 73.126947 | 81.780003 |
+| Delta (pp) | - | -0.424626 | -0.476376 | -0.560000 |
 
 ## Matched old-R Complete Recall
 
