@@ -96,6 +96,9 @@ class Experiment(Search):
             assert config['component_initialization']==self.state['baseline']['config']['component_initialization']
             result=self.evaluate(tid,root,500,
                 stream_reference=Path(self.state['baseline']['root'])/'steps.jsonl',stream_keys=MATCH_KEYS)
+        result=self.state['trials'][tid]['budgets']['500']
+        if 'sentence_drop_statistics' not in result:
+            root=Path(result['root'])
             result['sentence_drop_statistics']=summarize_sampling(rows(root/'steps.jsonl'))
             timing=[r['four_rank_max_seconds'] for r in rows(root/'cycle_timing.jsonl') if not r['warmup']]
             result['resource_summary']=dict(mean_seconds=statistics.fmean(timing),
@@ -112,17 +115,36 @@ class Experiment(Search):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--launch',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--launch',action='store_true')
+    parser.add_argument('--launch-finalizer',action='store_true')
+    parser.add_argument('--finish-after-current',action='store_true')
+    args=parser.parse_args()
     RUN.mkdir(parents=True,exist_ok=True)
-    if args.launch:
-        with (RUN/'supervisor.console.txt').open('ab') as log:
-            process=subprocess.Popen([PYTHON,'-u','-m','experiments.nest_clip_v1.balanced_rdrop_500_v1.run'],
+    if args.launch or args.launch_finalizer:
+        command=[PYTHON,'-u','-m','experiments.nest_clip_v1.balanced_rdrop_500_v1.run']
+        if args.launch_finalizer:command.append('--finish-after-current')
+        with (RUN/('finalizer.console.txt' if args.launch_finalizer else 'supervisor.console.txt')).open('ab') as log:
+            process=subprocess.Popen(command,
                 cwd=REPO,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,
                 env=dict(os.environ,OMP_NUM_THREADS='4',MKL_NUM_THREADS='4'))
         print(json.dumps(dict(supervisor_pid=process.pid,runtime=str(RUN))));return
     with (RUN/'supervisor.lock').open('a') as lock:
-        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        fcntl.flock(lock,fcntl.LOCK_EX if args.finish_after_current else fcntl.LOCK_EX|fcntl.LOCK_NB)
+        if args.finish_after_current:
+            state=load(RUN/'state.json')
+            if state['status']=='completed':
+                print(json.dumps(dict(status='already completed')));return
+            if ('500' not in state['trials'][state['rdrop_trial']]['budgets'] or
+                    state.get('error') not in ("'sentence_drop_statistics'","'resource_summary'")):
+                print(json.dumps(dict(status='no reporting-only recovery permitted',error=state.get('error'))));return
         controller=Experiment()
+        if args.finish_after_current:
+            controller.state['reporting_recovery']=dict(original_error=controller.state.pop('error'),
+                original_failed_utc=controller.state.pop('failed_utc',None),recovered_utc=now(),
+                cause='Report callback ran before the post-evaluation statistics were aggregated',
+                training_or_evaluation_repeated=False)
+            controller.save()
         try:controller.run()
         except Exception as exc:
             controller.state.update(status='failed',error=str(exc),failed_utc=now())

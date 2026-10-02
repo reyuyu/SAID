@@ -44,8 +44,8 @@ def write_report(state,output):
                 delta=100*(result['metrics'][ds][direction]['R@1']-base['metrics'][ds][direction]['R@1'])
                 lines.append(f'| {ds} | {direction} | {delta:+.6f} |')
         lines += ['','## Sentence Subset Statistics','','```json',
-                  json.dumps(result['sentence_drop_statistics'],indent=2),'```',
-                  '','## Resource Statistics','','```json',json.dumps(result['resource_summary'],indent=2),'```',
+                  json.dumps(result.get('sentence_drop_statistics',{'status':'pending aggregation'}),indent=2),'```',
+                  '','## Resource Statistics','','```json',json.dumps(result.get('resource_summary',{'status':'pending aggregation'}),indent=2),'```',
                   '',f"Full checkpoint: `{result['checkpoint']}`; SHA256 `{result['checkpoint_sha256']}`.",
                   f"Bare student: `{result['student']}`; SHA256 `{result['bare_sha256']}`.",'',
                   '## Conclusion','']

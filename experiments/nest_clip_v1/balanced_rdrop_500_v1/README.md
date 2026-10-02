@@ -23,6 +23,11 @@ step0; smoke is not a warm start. All five frozen native protocols are evaluated
 Report raw recalls, ten R1 deltas, m/q/keep distributions and resource measurements
 in RDROP_500_REPORT.md/RESULTS.json. Preserve failures without automatic retries.
 
+The optional `--launch-finalizer` waits for the current supervisor lock. It can
+recover only the known report-callback ordering error after all five evaluations
+have already been saved. It aggregates existing logs and publishes the report;
+it cannot retry training or evaluation. The original error is retained in results.
+
 Even a gain only warrants recommending full4epoch confirmation; do not actually
 start4868, retune q, resume RMask, add views/losses or seeds. Compact evidence/code
 are pushed to this independent branch; large checkpoints/data/cache stay local.
