@@ -13,7 +13,7 @@ The exact prior four-epoch run has no step500 checkpoint; one matched old-R base
 | Model | Horizon | Score5_R1 % | J_long3 % | J_long % |
 |---|---:|---:|---:|---:|
 | Balanced matched old-R@500 | 4868 | 69.900394 | 73.603324 | 82.340003 |
-| Balanced RMask@500 | 4868 | not completed | not completed | not completed |
+| Balanced RMask@500 | 4868 | 69.475768 | 73.126947 | 81.780003 |
 
 ## Matched old-R Complete Recall
 
@@ -47,6 +47,86 @@ Bare-student SHA256: `90e60b028a7d8c038b41512c295bcede21ccc5cb57d7b31c3b3bd42af7
   "peak_reserved_gib": 28.44921875
 }
 ```
+
+## RMask Complete Recall
+
+Full checkpoint SHA256: `f6f21be17a09aedf5697e891a8354259a30f700a32092b6781813c724add6783`.
+Bare-student SHA256: `be4989b2fe5c7c85a802625a7ba30e7b6bee788bf71f250903d5cf6aecebc10f`.
+
+| Dataset | Direction | R1 % | R5 % | R10 % |
+|---|---|---:|---:|---:|
+| COCO | I2T | 58.740000 | 81.520000 | 88.000000 |
+| COCO | T2I | 40.536000 | 66.364000 | 76.104000 |
+| Urban-1k | I2T | 89.000005 | 98.000002 | 99.100006 |
+| Urban-1k | T2I | 86.500007 | 98.000002 | 99.100006 |
+| Flickr30k-test1k | I2T | 85.800000 | 97.200000 | 98.600000 |
+| Flickr30k-test1k | T2I | 70.920000 | 90.500000 | 94.820000 |
+| DOCCI | I2T | 75.800000 | 94.440000 | 97.660000 |
+| DOCCI | T2I | 75.820000 | 94.200000 | 97.340000 |
+| Long-DCI | I2T | 55.182847 | 74.533018 | 80.689292 |
+| Long-DCI | T2I | 56.458827 | 75.690608 | 81.570639 |
+
+### Resource Evidence
+
+```json
+{
+  "mean_seconds": 2.1083403972664265,
+  "median_seconds": 2.0913572311401367,
+  "p95_seconds": 2.217528772354126,
+  "max_seconds": 2.3211746215820312,
+  "normal_updates": 495,
+  "approved_seconds": 3,
+  "peak_allocated_gib": 27.759892463684082,
+  "peak_reserved_gib": 28.447265625
+}
+```
+
+### Absolute-Position Statistics
+
+```json
+{
+  "mean_F_eot_position": 170.452984375,
+  "mean_prefix_boundary": 83.60286637392174,
+  "mean_prefix_end_position": 82.60286637392174,
+  "mean_suffix_first_position": 83.60286637392174,
+  "mean_old_compact_suffix_first_position": 1.0,
+  "suffix_first_bins_count": {
+    "0-31": 86077,
+    "32-63": 115125,
+    "64-127": 211324,
+    "128-191": 86906,
+    "192-247": 12504
+  },
+  "suffix_first_bins_fraction": {
+    "0-31": 0.1681401581447681,
+    "32-63": 0.22488162582822852,
+    "64-127": 0.41279378672334044,
+    "128-191": 0.16975950118764846,
+    "192-247": 0.024424928116014502
+  },
+  "valid_samples": 511936,
+  "total_samples": 512000
+}
+```
+
+## Ten R1 Deltas
+
+| Dataset | Direction | RMask minus matched old-R (pp) |
+|---|---|---:|
+| COCO | I2T | -1.220000 |
+| COCO | T2I | -0.388000 |
+| Urban-1k | I2T | +0.000000 |
+| Urban-1k | T2I | -1.400000 |
+| Flickr30k-test1k | I2T | -0.400000 |
+| Flickr30k-test1k | T2I | +0.620000 |
+| DOCCI | I2T | -0.520000 |
+| DOCCI | T2I | -0.320000 |
+| Long-DCI | I2T | -0.210471 |
+| Long-DCI | T2I | -0.407787 |
+
+## Conclusion
+
+RMask@500 is worse. Fixed seed0, measured raw Score5_R1; no rounding-based selection or statistical-significance claim.
 
 ## Evidence and Reproduction
 
