@@ -1,0 +1,123 @@
+{
+  "passed": true,
+  "initial_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/shared/step000000.pt",
+  "initial_checkpoint_sha256": "93600bb47184e9d57383c5705a0fa2ec7779c0dfc2409c8bb05f72215f537e18",
+  "provenance": {
+    "source": "OpenAI CLIP + original random MaskNetwork",
+    "base_model": "ViT-L/14",
+    "seed": 0,
+    "input_resolution": 224,
+    "context_length": 248,
+    "pretrained_url": "https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt",
+    "pretrained_sha256": "b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836",
+    "dimensions": {
+      "base_model": "ViT-L/14",
+      "input_resolution": 224,
+      "context_length": 248,
+      "visual_tokens": 257,
+      "visual_width": 1024,
+      "text_width": 768,
+      "embedding_dim": 768,
+      "patch_count": 256,
+      "patch_size": 14,
+      "mask_heads": 12,
+      "visual_layers": 24,
+      "text_layers": 12,
+      "visual_heads": 16,
+      "vocab_size": 49408
+    },
+    "module_initialization": {
+      "text_blocks": "412d042e7c568d41a00134b84db58d74e6134925eee5f422d29adf1d3e5c53f3",
+      "visual_blocks": "412d042e7c568d41a00134b84db58d74e6134925eee5f422d29adf1d3e5c53f3",
+      "visual_adapter": "7ba372da7c6412510abb4aa58aeed798fea801c168e502e0f6f9acc29412d8f2",
+      "gate": "a9ecf1c4db8ca450369d59d0ca95d94d2305525031f96bb86924e960f7a82c9b",
+      "shared_pool": "3ad9f19b0184ab951e3149b15214ca22dce75f4ab2d17195f7f79b3f6ee5c2c5"
+    },
+    "optimizer_initial_state_empty": true,
+    "initialization_rng_isolated": true,
+    "code_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+    "loader_sha256": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model_code_sha256": "dc52035a5febca61b38a9cfe0d1e3a832d456227824777d29043969fbe783b01"
+  },
+  "real_l14_native": {
+    "passed": true,
+    "backbone": {
+      "base_model": "ViT-L/14",
+      "input_resolution": 224,
+      "context_length": 248,
+      "visual_tokens": 257,
+      "visual_width": 1024,
+      "text_width": 768,
+      "embedding_dim": 768,
+      "patch_count": 256,
+      "patch_size": 14,
+      "mask_heads": 12,
+      "visual_layers": 24,
+      "text_layers": 12,
+      "visual_heads": 16,
+      "vocab_size": 49408
+    },
+    "image_shape": [
+      2,
+      768
+    ],
+    "hidden_shape": [
+      2,
+      257,
+      1024
+    ],
+    "text_hidden_shape": [
+      2,
+      248,
+      768
+    ],
+    "image_interface_max_abs": 0.0,
+    "text_interface_max_abs": 0.0,
+    "native_export_image_max_abs": 0.0,
+    "native_export_text_max_abs": 0.0
+  },
+  "b16_native_regression": {
+    "passed": true,
+    "backbone": {
+      "base_model": "ViT-B/16",
+      "input_resolution": 224,
+      "context_length": 248,
+      "visual_tokens": 197,
+      "visual_width": 768,
+      "text_width": 512,
+      "embedding_dim": 512,
+      "patch_count": 196,
+      "patch_size": 16,
+      "mask_heads": 8,
+      "visual_layers": 12,
+      "text_layers": 12,
+      "visual_heads": 12,
+      "vocab_size": 49408
+    },
+    "image_shape": [
+      2,
+      512
+    ],
+    "hidden_shape": [
+      2,
+      197,
+      768
+    ],
+    "text_hidden_shape": [
+      2,
+      248,
+      512
+    ],
+    "image_interface_max_abs": 0.0,
+    "text_interface_max_abs": 0.0,
+    "native_export_image_max_abs": 0.0,
+    "native_export_text_max_abs": 0.0
+  },
+  "reference_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+  "reference_bare_sha256": "f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb",
+  "gate_zero_initialized": true,
+  "text_visual_independent": true,
+  "shared_pool_registered_once": true,
+  "position_extension_exact": true,
+  "cache_path_used": false
+}

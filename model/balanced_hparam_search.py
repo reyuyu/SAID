@@ -11,7 +11,7 @@ from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_
 
 DEFAULTS = dict(fusion_lr=1e-4, visual_mask_lr_scale=1., view_weights=[1.,1.,1.],
                 sparsity_scale=1., inclusion_max=1.)
-DIAGNOSTIC_UPDATES = (1,100,200,500,1217,2000,3000,3651,4868)
+DIAGNOSTIC_UPDATES = (1,100,200,500,1217,2000,2434,3000,3651,4868)
 
 
 def hparams(config):

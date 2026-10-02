@@ -25,6 +25,7 @@ from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_b
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
+from model.backbone import validate_backbone
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -122,7 +123,8 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old[key] == current[key], f'Resume mismatch: {key}'
     for key, default in (('image_chunk', 32), ('text_chunk', 64),
                          ('condition_mode', 'text_only'), ('shuffle_seed', 0),
-                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False)):
+                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False),
+                         ('base_model', 'ViT-B/16'), ('execution_path', 'direct')):
         assert old.get(key, default) == current.get(key, default), f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
@@ -231,6 +233,8 @@ def code_manifest():
              'model/longclip.py', 'model/said_cls_cvssl.py']
     if (root/'model/balanced_hparam_search.py').exists():
         paths.append('model/balanced_hparam_search.py')
+    if (root/'model/backbone.py').exists():
+        paths.append('model/backbone.py')
     return {p: file_sha(root / p) for p in paths}
 
 
@@ -310,6 +314,11 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
+    cfg.setdefault('base_model', 'ViT-B/16')
+    cfg.setdefault('execution_path', 'direct')
+    cfg.setdefault('max_update_seconds', 3.)
+    assert cfg['base_model'] in ('ViT-B/16','ViT-L/14')
+    assert cfg['execution_path'] == 'direct'
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
     assert cfg['full_native_mix'] == 0
@@ -342,9 +351,10 @@ def main():
     assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
     assert len(loader) == min(args.max_updates, full_batches_per_epoch)
     assert args.max_updates <= horizon, 'Stopping point must not exceed the configured horizon'
-    clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
+    clip, _ = longclip.load_from_clip(cfg['base_model'], device='cpu', args=argparse.Namespace())
     initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
     assert initial['completed_steps'] == 0 and initial['provenance']['source'] == 'OpenAI CLIP + original random MaskNetwork'
+    assert initial['provenance'].get('base_model','ViT-B/16') == cfg['base_model']
     assert not initial['optimizer']['state']
     clip.load_state_dict(initial['model'], strict=True)
     construction_rng = rng_state()
@@ -361,6 +371,9 @@ def main():
                           condition_mode=cfg['condition_mode'],
                           shuffle_seed=cfg['shuffle_seed'],
                           checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'], **model_options)
+    backbone_dimensions = validate_backbone(clip, cfg['base_model'])
+    if initial.get('adapter') is not None:
+        auxiliary_module(module).load_state_dict(initial['adapter'],strict=True)
     restore_rng_state(construction_rng)
     encoder_checkpoint_active = all(
         getattr(transformer.forward, '__func__', None) is _checkpoint_blocks
@@ -401,6 +414,7 @@ def main():
                   init_sha256=file_sha(args.init_state), data=dataset.metadata,
                   code_sha256=code_manifest(),
                   runtime_model=runtime_model,
+                  backbone_dimensions=backbone_dimensions,
                   adapter_initialization=adapter_initialization,
                   git_head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                   torch=torch.__version__, cuda=torch.version.cuda, nccl=torch.cuda.nccl.version(),
@@ -546,7 +560,8 @@ def main():
                         sample_ids=batch['sample_id'][:8].tolist(),
                         n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
             checkpoint_due = args.run_type != 'probe' and (
-                completed % int(cfg['checkpoint_interval']) == 0 or completed == args.max_updates)
+                completed % int(cfg['checkpoint_interval']) == 0 or completed == args.max_updates or
+                completed in cfg.get('checkpoint_updates',[]))
             if args.run_type == 'probe' or cfg.get('monitor_resources', False):
                 # End-to-end cycle: real DataLoader wait, transfer, update, communication,
                 # ordinary logging, then synchronization on the slowest rank.
@@ -563,14 +578,14 @@ def main():
                                                 four_rank_max_seconds=float(full)))+'\n')
                 cycle_seconds = float(full)
                 if args.run_type == 'probe':
-                    if updates_here > 5 and cycle_seconds > 3:
-                        resource_failure = 'measured full update exceeded 3 seconds'
+                    if updates_here > 5 and cycle_seconds > cfg['max_update_seconds']:
+                        resource_failure = f"measured full update exceeded {cfg['max_update_seconds']:g} seconds"
                     elif updates_here >= 2 and cycle_seconds > cfg.get('feasibility_abort_seconds', float('inf')):
                         resource_failure = 'limited full-update feasibility probe exceeded its abort threshold'
                 elif updates_here > 1:
-                    consecutive_slow = consecutive_slow + 1 if cycle_seconds > 3 else 0
+                    consecutive_slow = consecutive_slow + 1 if cycle_seconds > cfg['max_update_seconds'] else 0
                     if consecutive_slow >= 3:
-                        resource_failure = 'three consecutive full updates exceeded 3 seconds'
+                        resource_failure = f"three consecutive full updates exceeded {cfg['max_update_seconds']:g} seconds"
                 if torch.cuda.max_memory_allocated() / 2**30 > 65:
                     resource_failure = 'peak allocated memory exceeded 65 GiB'
                 saturation_limit = cfg.get('saturation_abort_fraction')
@@ -582,6 +597,10 @@ def main():
                 dist.all_reduce(failed, op=dist.ReduceOp.MAX)
                 if failed.item():
                     resource_failure = resource_failure or 'another rank exceeded the memory limit'
+                    if (args.run_type == 'probe' and cfg.get('measure_all_probe_updates',False)
+                            and resource_failure.startswith('measured full update exceeded')):
+                        cycle_start = time.perf_counter()
+                        continue
                     if args.run_type != 'probe' or resource_failure.startswith('sigmoid saturation'):
                         save_checkpoint(module, optimizer, config, completed, output)
                     break

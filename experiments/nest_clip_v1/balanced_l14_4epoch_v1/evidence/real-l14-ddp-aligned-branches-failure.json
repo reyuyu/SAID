@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "case": "real_l14_all_valid",
+  "native_and_mask_branch_batch_shape": 1,
+  "global_candidates": 2,
+  "failed_parameter": "clip.visual.conv1.weight",
+  "gradient_max_abs": 0.0027618408203125,
+  "gradient_actual_norm": 4143.81201171875,
+  "gradient_reference_norm": 4143.81884765625,
+  "gradient_atol": 0.0015,
+  "gradient_rtol": 0.0001,
+  "action": "Preserve failure; enable deterministic reference kernels to remove CUDA backward reduction nondeterminism. Production kernels and original tolerances are unchanged."
+}

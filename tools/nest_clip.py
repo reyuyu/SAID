@@ -10,6 +10,7 @@ from model.nested_semantic_mask import NestedSemanticMask
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch,hparams
+from model.backbone import load_native_state
 from train.nested_semantic_data import prepare_index, file_sha
 from train.train_nested_semantic_mask import (seed_all, build_optimizer, atomic_save,
                                                 auxiliary_module)
@@ -55,17 +56,15 @@ def main():
     elif args.command == 'export':
         payload = torch.load(args.checkpoint, map_location='cpu', weights_only=False)
         assert payload['completed_steps'] == args.expect_updates
-        model, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
-        model.load_state_dict(payload['model'], strict=True)
+        model, _, backbone = load_native_state(payload['model'], (payload.get('config') or {}).get('base_model'))
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
         atomic_save(model.state_dict(), args.output)
-        print(json.dumps(dict(output=args.output, sha256=file_sha(args.output), strict_load=True)))
+        print(json.dumps(dict(output=args.output, sha256=file_sha(args.output), strict_load=True,backbone=backbone)))
     else:
         from train.nested_semantic_data import NestedDataset
         payload = torch.load(args.checkpoint, map_location='cpu', weights_only=False)
-        model, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
-        model.load_state_dict(payload['model'], strict=True)
         config = payload['config']
+        model, _, backbone = load_native_state(payload['model'],config.get('base_model'))
         module_class = (NestedFusionMask if config.get('condition_mode') == 'dual_branch' else
                         NestedVCPMask if config.get('condition_mode') == 'vcp_mask'
                         else NestedSemanticMask)
@@ -90,9 +89,9 @@ def main():
         optimizer.load_state_dict(payload['optimizer'])
         assert len(optimizer.param_groups) == (4 if config.get('hparam_search') else 2 if auxiliary is None else 3)
         steps = sorted({int(v['step']) for v in optimizer.state.values()})
-        assert steps == [payload['completed_steps']]
-        student, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
-        student.load_state_dict(torch.load(args.bare, map_location='cpu', weights_only=True), strict=True)
+        assert steps == ([] if payload['completed_steps']==0 else [payload['completed_steps']])
+        student, _, student_backbone = load_native_state(torch.load(args.bare, map_location='cpu', weights_only=True),backbone['base_model'])
+        assert student_backbone == backbone
         student.eval()
         dataset = NestedDataset(args.index_dir, args.image_root)
         samples = [dataset[i] for i in (0,1)]
@@ -104,6 +103,7 @@ def main():
         torch.testing.assert_close(a,b,atol=0,rtol=0)
         torch.testing.assert_close(c,d,atol=0,rtol=0)
         result = dict(passed=True, strict_load=True, optimizer_steps=steps,
+                      backbone=backbone,
                       image_max_abs=float((a-b).abs().max()), text_max_abs=float((c-d).abs().max()),
                       checkpoint_sha256=file_sha(args.checkpoint), bare_sha256=file_sha(args.bare))
         Path(args.output).write_text(json.dumps(result,indent=2))

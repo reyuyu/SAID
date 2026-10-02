@@ -68,10 +68,11 @@ def now():return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
 class Search:
-    def __init__(self,bootstrap=False,*,run_dir=RUN,experiment_dir=EXP,base_config=None):
+    def __init__(self,bootstrap=False,*,run_dir=RUN,experiment_dir=EXP,base_config=None,init_state=SHARED):
         self.run_dir=Path(run_dir)
         self.experiment_dir=Path(experiment_dir)
         self.base_config=copy.deepcopy(BASE_CONFIG if base_config is None else base_config)
+        self.init_state=Path(init_state)
         self.state_path=self.run_dir/'state.json'
         if self.state_path.exists():
             self.state=load(self.state_path)
@@ -131,7 +132,7 @@ class Search:
         tid,cfg=self.config(hp)
         root=self.run_dir/'trials'/tid/(kind if kind!='formal' else f'step{stop}')
         command=[TORCHRUN,'--standalone','--nnodes=1','--nproc-per-node=4','--max-restarts=0',
-                 '-m','train.train_nested_semantic_mask','--config',str(cfg),'--init-state',str(SHARED),
+                 '-m','train.train_nested_semantic_mask','--config',str(cfg),'--init-state',str(self.init_state),
                  '--index-dir','/root/lk_projects/SAID-nest-clip-v1/data_index','--image-root',
                  str(ASSETS/'training/ShareGPT4V'),'--output-dir',str(root),'--run-type',kind,'--max-updates',str(stop)]
         if resume:
@@ -149,8 +150,10 @@ class Search:
             raise TrialFailure(f'Non-passing {kind} acceptance: {accepted}')
         return root
 
-    def evaluate(self,tid,root,stop,reused=False):
-        checkpoint=root/f'step{stop:06d}.pt';bare=root/f'student_step{stop}.pt'
+    def evaluate(self,tid,root,stop,reused=False,training_root=None):
+        training_root=Path(training_root) if training_root is not None else root
+        root.mkdir(parents=True,exist_ok=True)
+        checkpoint=training_root/f'step{stop:06d}.pt';bare=root/f'student_step{stop}.pt'
         if not reused:
             prefix=f'{tid[:12]}-{stop}'
             self.command(prefix+'-export',[PYTHON,'-m','tools.nest_clip','export','--checkpoint',str(checkpoint),
@@ -170,34 +173,37 @@ class Search:
                                              '--checkpoint',str(bare),'--device','cuda:0','--batch-size','64','--output-dir',str(root/name),
                                              f'{name}:{bench/"manifests"/manifest}:{bench/images}'])
         m,raw,sources=native_metrics(root)
-        check=load(root/'export-check.json');assert check['optimizer_steps']==[stop]
+        check=load(root/'export-check.json');assert check['optimizer_steps']==([] if stop==0 else [stop])
         score=scores(m)
         trial=self.state['trials'][tid]
         result=dict(root=str(root),checkpoint=str(checkpoint),checkpoint_sha256=sha(checkpoint),
                     student=str(bare),bare_sha256=sha(bare),metrics=m,scores=score,reused=reused,
-                    export_check=check,config=load(root/'config.json'),acceptance=load(root/'acceptance.json'))
-        records=rows(root/'steps.jsonl');result['step_range']=[records[0]['step'],records[-1]['step']]
-        assert records[-1]['step']==stop
-        assert [r['step'] for r in records]==list(range(records[0]['step'],stop+1))
+                    export_check=check,config=load(training_root/'config.json'),acceptance=load(training_root/'acceptance.json'))
+        records=([r for r in rows(training_root/'steps.jsonl') if r['step']<=stop] if stop else [])
+        result['step_range']=[records[0]['step'],records[-1]['step']] if records else [0,0]
+        if stop:
+            assert records and records[-1]['step']==stop
+            assert [r['step'] for r in records]==list(range(records[0]['step'],stop+1))
         assert all(r['nonfinite']==0 and all(h['gradients_finite'] for h in r['rank_health']) for r in records)
         if stop==500:
             reference=rows(PARENT500/'steps.jsonl')
             assert signatures(records)==signatures(reference),'Sample/F/P/R/K stream drift'
             result['streams_equal_B0']=True
         result['diagnostics']={str(r['step']):{k:v for k,v in r.items() if k!='rank_health'} for r in records
-                               if r['step'] in (1,100,200,500,1217,2000,3000,3651,4868)}
+                               if r['step'] in (1,100,200,500,1217,2000,2434,3000,3651,4868)}
         result['last50_mean']={k:statistics.fmean(r[k] for r in records[-50:] if k in r)
-                               for k,v in records[-1].items() if isinstance(v,(float,int))}
-        if (root/'cycle_timing.jsonl').exists():
-            cycles=rows(root/'cycle_timing.jsonl')
+                               for k,v in (records[-1] if records else {}).items() if isinstance(v,(float,int))}
+        if records and (training_root/'cycle_timing.jsonl').exists():
+            cycles=[r for r in rows(training_root/'cycle_timing.jsonl') if r['step']<=stop]
             vals=[r['four_rank_max_seconds'] for r in cycles if r['step']>records[0]['step']]
             if vals:result['timing']=dict(mean_seconds=statistics.fmean(vals),median_seconds=statistics.median(vals),
                                           p95_seconds=statistics.quantiles(vals,n=100)[94],max_seconds=max(vals))
         trial.setdefault('budgets',{})[str(stop)]=result;trial['status']='completed';self.save()
         dest=self.experiment_dir/'evidence'/tid[:12]/f'step{stop}';dest.mkdir(parents=True,exist_ok=True)
         for name,source in sources.items():shutil.copy2(source,dest/f'{name.lower().replace("-","_")}.json')
-        for filename in ('config.json','acceptance.json','export-check.json'):
-            shutil.copy2(root/filename,dest/filename)
+        for filename in ('config.json','acceptance.json'):
+            shutil.copy2(training_root/filename,dest/filename)
+        shutil.copy2(root/'export-check.json',dest/'export-check.json')
         self.publish()
         return result
 

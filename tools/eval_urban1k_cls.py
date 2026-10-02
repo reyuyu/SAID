@@ -16,10 +16,11 @@ import importlib
 import json
 import os
 import sys
+from pathlib import Path
 
 import torch
 
-REPO = '/root/SAID-gap-completion'
+REPO = str(Path(__file__).resolve().parents[1])
 sys.path.insert(0, REPO)
 sys.path.insert(0, os.path.join(REPO, 'eval', 'retrieval'))
 sys.path.insert(0, os.path.join(REPO, 'tools'))
@@ -27,6 +28,7 @@ sys.path.insert(0, os.path.join(REPO, 'tools'))
 # ``from model import longclip`` -- the repository's LongCLIP; the bare top-level module uses
 # relative imports and only resolves from inside the package
 from model import longclip  # noqa: E402
+from model.backbone import load_native_state  # noqa: E402
 
 from tools.urban1k_retrieval import (DEFAULT_ROOT, dataset_fingerprint,  # noqa: E402
                                      evaluate_urban1k)
@@ -48,10 +50,6 @@ def load_student(path, base_model, device, expect_steps=None):
     ``module.`` prefix. The prefix is stripped only when the remaining keys are a subset of the
     model's own keys, so a wrong checkpoint can never silently "load".
     """
-    model, preprocess = longclip.load_from_clip(base_model, device='cpu', download_root=None,
-                                               args=argparse.Namespace())
-    target = set(model.state_dict())
-
     payload = torch.load(path, map_location='cpu', weights_only=False)
     if isinstance(payload, dict) and 'model' in payload:
         state = payload['model']
@@ -64,19 +62,15 @@ def load_student(path, base_model, device, expect_steps=None):
     else:
         raise ValueError('unsupported checkpoint layout at %s' % path)
 
-    if not set(state) <= target:
-        stripped = None
-        for prefix in ('module.', 'clip.', 'model.'):
-            candidate = {key[len(prefix):]: value for key, value in state.items()
-                         if key.startswith(prefix)}
-            if candidate and set(candidate) <= target:
-                stripped = prefix
-                state = candidate
-                break
-        if stripped is None:
-            extra = sorted(set(state) - target)[:5]
-            raise SystemExit('%s does not match the model: unexpected keys %s' % (path, extra))
-        meta['key_prefix_stripped'] = stripped
+    prefixes = []
+    while state:
+        prefix = next((p for p in ('module.','clip.','model.') if all(k.startswith(p) for k in state)),None)
+        if prefix is None:
+            break
+        state = {k[len(prefix):]:v for k,v in state.items()}
+        prefixes.append(prefix)
+    if prefixes:
+        meta['key_prefix_stripped'] = ''.join(prefixes)
 
     if expect_steps is not None:
         got = meta.get('completed_steps')
@@ -85,13 +79,13 @@ def load_student(path, base_model, device, expect_steps=None):
                              % (path, expect_steps))
         if int(got) != int(expect_steps):
             raise SystemExit('%s has completed_steps=%s, expected %d' % (path, got, expect_steps))
-    missing, unexpected = model.load_state_dict(state, strict=True)
-    if list(missing) or list(unexpected):
-        raise SystemExit('strict load failed: missing=%s unexpected=%s' % (missing, unexpected))
-    model = model.to(device).eval()
+    model, preprocess, backbone = load_native_state(state,base_model,device)
+    configured = (meta.get('config') or {}).get('base_model',backbone['base_model'])
+    assert configured == backbone['base_model']
+    meta['backbone'] = backbone
     meta['loaded_tensors'] = len(state)
-    meta['missing_keys'] = list(missing)
-    meta['unexpected_keys'] = list(unexpected)
+    meta['missing_keys'] = []
+    meta['unexpected_keys'] = []
     return model, preprocess, meta
 
 

@@ -2,8 +2,7 @@ import argparse, json, os, sys, time, hashlib
 from pathlib import Path
 import torch
 from PIL import Image
-sys.path.insert(0, '/root/SAID-gap-completion')
-sys.path.insert(0, '/root/SAID-gap-completion/eval/retrieval')
+sys.path.insert(0, str(Path(__file__).resolve().parents[5]))
 from tools.eval_urban1k_cls import load_student
 from model import longclip
 
@@ -47,9 +46,9 @@ def evaluate(model, preprocess, manifest, image_root, device, batch):
     return len(images),len(rows),metric(sim,[x[0] for x in images],[r['positive_image_id'] for r in rows])
 
 def main():
-    ap=argparse.ArgumentParser(); ap.add_argument('--checkpoint',required=True); ap.add_argument('--device',default='cuda:0'); ap.add_argument('--batch-size',type=int,default=64); ap.add_argument('--output-dir',required=True); ap.add_argument('protocols',nargs='+',help='name:manifest:image_root')
-    a=ap.parse_args(); os.makedirs(a.output_dir,exist_ok=True); model,pre,meta=load_student(a.checkpoint,'ViT-B/16','cpu'); model.to(a.device).eval(); allout={}
+    ap=argparse.ArgumentParser(); ap.add_argument('--checkpoint',required=True); ap.add_argument('--device',default='cuda:0'); ap.add_argument('--batch-size',type=int,default=64); ap.add_argument('--base-model',default='auto'); ap.add_argument('--output-dir',required=True); ap.add_argument('protocols',nargs='+',help='name:manifest:image_root')
+    a=ap.parse_args(); os.makedirs(a.output_dir,exist_ok=True); model,pre,meta=load_student(a.checkpoint,a.base_model,'cpu'); model.to(a.device).eval(); allout={}
     for spec in a.protocols:
-        name,manifest,root=spec.split(':',2); t=time.time(); ni,nt,m=evaluate(model,pre,manifest,root,a.device,a.batch_size); out={'protocol':name,'n_images':ni,'n_captions':nt,'metrics':m,'checkpoint_sha256':sha256(a.checkpoint),'manifest_sha256':sha256(manifest),'elapsed_seconds':time.time()-t,'device':a.device,'native_student_only':True}; Path(a.output_dir,f'{name}.json').write_text(json.dumps(out,indent=2),encoding='utf-8'); allout[name]=out; print(json.dumps(out))
+        name,manifest,root=spec.split(':',2); t=time.time(); ni,nt,m=evaluate(model,pre,manifest,root,a.device,a.batch_size); out={'protocol':name,'n_images':ni,'n_captions':nt,'metrics':m,'checkpoint_sha256':sha256(a.checkpoint),'manifest_sha256':sha256(manifest),'elapsed_seconds':time.time()-t,'device':a.device,'native_student_only':True,'backbone':meta['backbone']}; Path(a.output_dir,f'{name}.json').write_text(json.dumps(out,indent=2),encoding='utf-8'); allout[name]=out; print(json.dumps(out))
     Path(a.output_dir,'extended_summary.json').write_text(json.dumps(allout,indent=2),encoding='utf-8')
 if __name__=='__main__': main()

@@ -1,0 +1,16 @@
+{
+  "passed": false,
+  "case": "real_l14_all_valid",
+  "base_model": "ViT-L/14",
+  "precision": "FP32",
+  "distributed_encoder_batch": 1,
+  "reference_encoder_batch": 2,
+  "global_candidates": 2,
+  "failed_parameter": "clip.visual.class_embedding",
+  "gradient_max_abs_rank0": 0.010968446731567383,
+  "gradient_actual_norm": 101.7079086303711,
+  "gradient_reference_norm": 101.72515106201172,
+  "original_gradient_atol": 0.0015,
+  "original_gradient_rtol": 0.0001,
+  "action": "Preserve failure; rerun with identical encoder batch shapes and original tolerances. No gradient or parameter is omitted."
+}

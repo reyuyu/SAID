@@ -1,0 +1,15 @@
+{
+  "passed": false,
+  "case": "real_l14_all_valid",
+  "native_encoder_batch_shape": 1,
+  "reference_mask_branch_batch_shape": 2,
+  "production_mask_branch_batch_shape": 1,
+  "reference_image_forwards_per_global_batch": 1,
+  "failed_parameter": "clip.visual.conv1.weight",
+  "gradient_max_abs": 0.0026092529296875,
+  "gradient_actual_norm": 4143.81396484375,
+  "gradient_reference_norm": 4143.81884765625,
+  "gradient_atol": 0.0015,
+  "gradient_rtol": 0.0001,
+  "action": "Preserve failure; align native and mask branch batch shapes in the numerical reference. No tolerance is increased and all named parameters remain checked."
+}

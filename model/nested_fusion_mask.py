@@ -255,8 +255,11 @@ class NestedFusionMask(nn.Module):
         self.checkpoint_encoders = bool(checkpoint_encoders)
         self.shuffle_seed = shuffle_seed
         width = int(clip.text_projection.shape[0])
+        positions = getattr(clip.visual, 'positional_embedding', None)
+        patches = int(positions.shape[0])-1 if positions is not None else 196
+        assert int(clip.text_projection.shape[1]) == width, 'Mask channels must match native embedding dimension'
         self.fusion_branch = FusionBranch(clip.mask_net.resblocks, int(clip.visual.proj.shape[0]),
-                                          width, fusion, 1 if visual == 'cls' else 196, text_tokens)
+                                          width, fusion, 1 if visual == 'cls' else patches, text_tokens)
         if fusion in ('crossscore_flat', 'cosine_crossscore'):
             clip.mask_net.attn_pool.requires_grad_(False)
         if checkpoint_encoders:

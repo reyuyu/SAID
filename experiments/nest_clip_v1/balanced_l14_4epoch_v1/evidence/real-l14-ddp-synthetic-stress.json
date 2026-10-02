@@ -1,0 +1,11 @@
+{
+  "passed": false,
+  "input_source": "Unnormalized synthetic Gaussian images and unrelated short captions",
+  "native_model": "Real OpenAI ViT-L/14",
+  "gradient_atol": 0.0015,
+  "gradient_rtol": 0.0001,
+  "failed_parameter": "clip.visual.conv1.weight",
+  "deterministic_aligned_branches_max_abs": 0.0029144287109375,
+  "rowwise_loss_reference_max_abs": 0.00429534912109375,
+  "action": "Preserve synthetic stress failures without increasing tolerances. Run the required real-model numerical check on the fixed first two valid actual training samples with original preprocessing/tokens. Tiny-encoder random-input reference cases are already checked separately."
+}

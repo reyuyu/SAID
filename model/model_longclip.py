@@ -679,5 +679,15 @@ def build_model(state_dict: dict, load_from_clip: bool, args=None):
 			del state_dict[key]
 
 	convert_weights(model)
-	model.load_state_dict(state_dict, strict=False)
+	if load_from_clip:
+		initial = model.state_dict()
+		missing = set(initial) - set(state_dict)
+		assert missing == {key for key in initial if key.startswith('mask_net.')}, missing
+		assert not set(state_dict) - set(initial), 'Unexpected pretrained tensors'
+		for key, tensor in state_dict.items():
+			assert initial[key].shape == tensor.shape, f'Pretrained tensor shape mismatch: {key}'
+		initial.update(state_dict)
+		model.load_state_dict(initial, strict=True)
+	else:
+		model.load_state_dict(state_dict, strict=True)
 	return model.eval()
