@@ -1,6 +1,6 @@
 # Balanced L14: Fixed Four-Epoch Migration
 
-Status: `running`. Stage: `6d44ae8d5c34-0-long_dci`.
+Status: `running`. Stage: `6d44ae8d5c34-500-long_dci`.
 
 OpenAI ViT-L/14 at224, text context248, seed0. Faithful Balanced coefficients: fusion_lr2e-4, visual_mask_lr_scale1, view_weights[1,1,1], sparsity_scale1, inclusion_max1. Horizon4868 from a new L14 step0, full4x256 direct logical batch, full1024 candidates (padded sampler tail720), original RandomK and loss definitions.
 
@@ -159,7 +159,7 @@ Passed: `True`. OOM: `False`.
 | B16 reference | 3651 | 4868 | 72.664715 | 76.972525 | 85.345001 |
 | B16 reference | 4868 | 4868 | 72.768147 | 77.070244 | 85.485003 |
 | L14 | 0 | 4868 | 54.511173 | 50.697956 | 59.890001 |
-| L14 | 500 | 4868 | not run | not run | not run |
+| L14 | 500 | 4868 | 74.111940 | 77.491900 | 86.055003 |
 | L14 | 3651 | 4868 | not run | not run | not run |
 | L14 | 4868 | 4868 | not run | not run | not run |
 
@@ -180,6 +180,24 @@ Bare student: `/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/evalua
 | DOCCI | T2I | 60.600000 | 86.280000 | 91.900000 |
 | Long-DCI | I2T | 33.307024 | 51.696922 | 58.563536 |
 | Long-DCI | T2I | 31.320705 | 50.552486 | 58.537227 |
+
+### L14 @500
+
+Full checkpoint: `/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/trials/6d44ae8d5c34438e672287b09f3e6930af01473a4aa4905cd90c02c259b2a4a8/step4868/step000500.pt`; SHA256 `fac325eb1635f19c4ae9ce2532637f99992a20f082c4f28535e472857e6aeb06`.
+Bare student: `/root/lk_projects/SAID-nest-clip-v1/balanced_l14_4epoch_v1/evaluations/step500/student_step500.pt`; SHA256 `67e43b7c4b60afc96b4ca566ca9dac4d042425dfa0f879c5389612d90cb8202a`.
+
+| Dataset | Direction | R1 % | R5 % | R10 % |
+|---|---|---:|---:|---:|
+| COCO | I2T | 64.080000 | 85.600000 | 91.380000 |
+| COCO | T2I | 45.848000 | 70.792000 | 79.876000 |
+| Urban-1k | I2T | 91.700006 | 98.800004 | 99.600005 |
+| Urban-1k | T2I | 90.200007 | 98.500007 | 99.200004 |
+| Flickr30k-test1k | I2T | 90.700000 | 98.900000 | 99.400000 |
+| Flickr30k-test1k | T2I | 75.540000 | 93.440000 | 96.380000 |
+| DOCCI | I2T | 80.740000 | 96.340000 | 98.500000 |
+| DOCCI | T2I | 81.580000 | 96.840000 | 98.580000 |
+| Long-DCI | I2T | 58.379374 | 77.650618 | 83.451723 |
+| Long-DCI | T2I | 62.352013 | 79.650092 | 84.675086 |
 
 The prespecified final result is L14@4868. best_observed is selected only among500/3651/4868 by raw Score5_R1 and is explicitly benchmark-selected; no cross-checkpoint dataset mixing. The auxiliary mask/gate branches are not used in native inference.
 

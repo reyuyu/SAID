@@ -1,0 +1,40 @@
+{
+  "protocol": "docci",
+  "n_images": 5000,
+  "n_captions": 5000,
+  "metrics": {
+    "R@1": {
+      "I2T": 0.8074,
+      "T2I": 0.8158
+    },
+    "R@5": {
+      "I2T": 0.9634,
+      "T2I": 0.9684
+    },
+    "R@10": {
+      "I2T": 0.985,
+      "T2I": 0.9858
+    }
+  },
+  "checkpoint_sha256": "67e43b7c4b60afc96b4ca566ca9dac4d042425dfa0f879c5389612d90cb8202a",
+  "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+  "elapsed_seconds": 306.87700629234314,
+  "device": "cuda:0",
+  "native_student_only": true,
+  "backbone": {
+    "base_model": "ViT-L/14",
+    "input_resolution": 224,
+    "context_length": 248,
+    "visual_tokens": 257,
+    "visual_width": 1024,
+    "text_width": 768,
+    "embedding_dim": 768,
+    "patch_count": 256,
+    "patch_size": 14,
+    "mask_heads": 12,
+    "visual_layers": 24,
+    "text_layers": 12,
+    "visual_heads": 16,
+    "vocab_size": 49408
+  }
+}

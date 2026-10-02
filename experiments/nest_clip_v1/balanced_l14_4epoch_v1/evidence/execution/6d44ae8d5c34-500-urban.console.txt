@@ -1,0 +1,49 @@
+/root/lk_projects/SAID-balanced-l14-4epoch-v1/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+{
+  "protocol": "urban1k-native-cls-v1",
+  "root": "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+  "n_images": 1000,
+  "n_captions": 1000,
+  "image_representation": "legacy_cls",
+  "global_pool": "n/a",
+  "similarity": "normalized features, plain inner product, full 1000-item pool",
+  "positive": "diagonal",
+  "image2text": {
+    "R1": 0.9170000553131104,
+    "R5": 0.9880000352859497,
+    "R10": 0.9960000514984131
+  },
+  "text2image": {
+    "R1": 0.9020000696182251,
+    "R5": 0.9850000739097595,
+    "R10": 0.9920000433921814
+  },
+  "checkpoint_sha256": "67e43b7c4b60afc96b4ca566ca9dac4d042425dfa0f879c5389612d90cb8202a",
+  "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+  "upstream_metrics_reproduced": [
+    "T2I R@1",
+    "I2T R@1"
+  ],
+  "added_here": [
+    "R@5",
+    "R@10"
+  ],
+  "native_only": true,
+  "backbone": {
+    "base_model": "ViT-L/14",
+    "input_resolution": 224,
+    "context_length": 248,
+    "visual_tokens": 257,
+    "visual_width": 1024,
+    "text_width": 768,
+    "embedding_dim": 768,
+    "patch_count": 256,
+    "patch_size": 14,
+    "mask_heads": 12,
+    "visual_layers": 24,
+    "text_layers": 12,
+    "visual_heads": 16,
+    "vocab_size": 49408
+  }
+}
