@@ -1,6 +1,6 @@
 # Three Balanced Followups
 
-Status: `running`. Stage: `6d44ae8d5c34-4868-long_dci`.
+Status: `completed`. Stage: `all-three-followups-completed`.
 
 Experiments1/2 use the latest instruction: full3651 updates, with evaluations at500 and3651. Both keep fusion_lr=2e-4. Experiment3 is confirmed as a fresh four-epoch run from shared step0, with horizon4868 from the first update and evaluations at3651/4868. It waits for both preceding experiments.
 
@@ -67,7 +67,7 @@ Commands and exit codes are recorded in SEARCH_STATE.json and evidence/execution
 
 ### Four-epoch fusion-only
 
-Status: `running`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.0, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 1.0], "visual_mask_lr_scale": 1.0}`.
+Status: `completed`. Parameters: `{"fusion_lr": 0.0002, "inclusion_max": 1.0, "sparsity_scale": 1.0, "view_weights": [1.0, 1.0, 1.0], "visual_mask_lr_scale": 1.0}`.
 
 At3651, Score5_R1 change versus the original three-epoch fusion-only parent: +0.133450 pp.
 
