@@ -52,6 +52,17 @@ def sample_split_k(n, sampling_seed, epoch, sample_id):
     return random.Random(local_seed).randrange(1, n)
 
 
+def sample_detail_indices(n, sampling_seed, epoch, sample_id):
+    """Independent bounded-K draw and ordered, uniform detail subset."""
+    m = n-1
+    if m < 1:
+        return []
+    material = f'{int(sampling_seed)}:{int(epoch)}:{int(sample_id)}:summary_random_detail_v1'.encode('utf-8')
+    rng = random.Random(int.from_bytes(hashlib.sha256(material).digest(), 'big'))
+    k = rng.randint(2, m-1) if m >= 3 else 1
+    return sorted(rng.sample(range(1, n), k))
+
+
 def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                        epoch=0, sample_id=0):
     """Pack F with the unchanged old rule, then optionally resplit ONLY that F.
@@ -61,12 +72,34 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     n=0, K=0 marks the overlong-first-segment fallback (no complete visible
     segment count); n=1, K=0 marks a single visible segment.
     """
-    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail'):
+    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
                   reference_tokens_o=original['tokens_o'],
                   reference_tokens_e=original['tokens_e'])
+    if sampling_mode == 'summary_random_detail':
+        if not original['valid']:
+            padding = torch.zeros_like(original['tokens_f'])
+            result.update(tokens_o=padding, tokens_e=padding.clone(), valid=False,
+                reason='no_visible_detail', views=[original['views'][0], None, None],
+                untruncated_lengths=[original['untruncated_lengths'][0], 0, 0],
+                n=1 if original['reason']=='single_visible_segment' else 0, K=0,
+                detail_pool_size=0, detail_indices=[])
+            return result
+        parts = original['views'][0].split('. ')
+        indices = sample_detail_indices(len(parts), sampling_seed, epoch, sample_id)
+        summary, detail = parts[0], '. '.join(parts[i] for i in indices)
+        assert indices and 0 not in indices and indices == sorted(set(indices))
+        assert len(parts)<4 or 2 <= len(indices) < len(parts)-1
+        lengths = [len(longclip._tokenizer.encode(s))+2 for s in (summary, detail)]
+        assert max(lengths)<=248, ('visible subset token overflow', sample_id, lengths)
+        local = longclip.tokenize([summary, detail], context_length=248, truncate=False)
+        result.update(tokens_o=local[0], tokens_e=local[1], valid=True,
+            reason='summary_random_detail', views=[original['views'][0], summary, detail],
+            untruncated_lengths=[original['untruncated_lengths'][0], *lengths],
+            n=len(parts), K=len(indices), detail_pool_size=len(parts)-1, detail_indices=indices)
+        return result
     if sampling_mode == 'summary_detail':
         # F retains the baseline's exact visible-prefix packing and tokens.
         # S/D use all cleaned raw segments, before context truncation; otherwise
@@ -131,7 +164,8 @@ def sampling_diagnostics(batch):
         if enabled:
             by_n.setdefault(str(n), Counter())[str(k)] += 1
             p_lengths.append(lengths[1]); r_lengths.append(lengths[2])
-            p_counts.append(k); r_counts.append(n-k)
+            p_counts.append(1 if 'detail_indices' in batch else k)
+            r_counts.append(k if 'detail_indices' in batch else n-k)
     histogram = lambda values: dict(sorted(Counter(values).items()))
     reference = dict(sample_ids=ids, views=batch['reference_views'],
                      tokens=[tokens[0], batch['reference_tokens_o'].tolist(),
@@ -146,7 +180,7 @@ def sampling_diagnostics(batch):
                 local_views_sha256=digest(dict(sample_ids=ids, PR=[v[1:] for v in batch['views']], tokens_pr=tokens[1:])),
                 split_sha256=digest(dict(sample_ids=ids, n=ns, K=ks)),
                 fixed_first_reference_stream_sha256=digest(reference))
-    if any(reason in ('summary_detail', 'single_raw_segment') for reason in batch['reason']):
+    if any(reason in ('summary_detail', 'single_raw_segment', 'summary_random_detail', 'no_visible_detail') for reason in batch['reason']):
         # Metadata only; EOT index counts real token ID0 correctly as content.
         eot = longclip._tokenizer.encoder['<|endoftext|>']
         stats = {}
@@ -158,6 +192,16 @@ def sampling_diagnostics(batch):
                 effective_token_histogram=histogram(effective), before_truncation_token_sum=sum(before),
                 truncated_count=sum(n > 248 for n in before))
         result['Full_Summary_Detail_token_statistics'] = stats
+    if 'detail_indices' in batch:
+        choices = [x for x, enabled in zip(batch['detail_indices'], valid) if enabled]
+        pools = [m for m, enabled in zip(batch['detail_pool_size'].tolist(), valid) if enabled]
+        result['random_detail_sampling'] = dict(
+            selected_indices_sha256=digest(dict(sample_ids=ids, choices=batch['detail_indices'])),
+            selected_count_histogram=histogram([len(x) for x in choices]),
+            pool_count_histogram=histogram(pools),
+            k_by_m={str(m):dict(Counter(len(x) for x, p in zip(choices,pools) if p==m)) for m in sorted(set(pools))},
+            k1_count=sum(len(x)==1 for x in choices),
+            all_detail_m_ge3_count=sum(len(x)==m and m>=3 for x,m in zip(choices,pools)))
     return result
 
 
@@ -194,7 +238,7 @@ class NestedDataset(Dataset):
         self.index_dir, self.image_root = Path(index_dir), Path(image_root)
         self.metadata = json.loads((self.index_dir / 'metadata.json').read_text())
         self.transform = reference_view_a_transform()
-        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail'):
+        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
         self._records = self._offsets = self._file = None
@@ -233,4 +277,7 @@ def collate(samples):
         result['reference_views'] = [s['reference_views'] for s in samples]
         for k in ('reference_tokens_o', 'reference_tokens_e'):
             result[k] = torch.stack([s[k] for s in samples])
+    if 'detail_indices' in samples[0]:
+        result['detail_indices'] = [s['detail_indices'] for s in samples]
+        result['detail_pool_size'] = torch.tensor([s['detail_pool_size'] for s in samples])
     return result
