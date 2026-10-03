@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "source_reference": "3da12a3",
+  "checks": {
+    "model/nested_fusion_mask.py": {
+      "unchanged_functions_and_classes_AST": [
+        "pool_summary",
+        "stack_logits",
+        "FusionBranch",
+        "pair_logits",
+        "score_block",
+        "fusion_scores",
+        "NestedFusionMask"
+      ]
+    },
+    "model/balanced_hparam_search.py": {
+      "unchanged_functions_and_classes_AST": [
+        "hparams",
+        "trial_id",
+        "migrate_legacy_optimizer"
+      ],
+      "optimizer_groups_AST_equal": true
+    }
+  },
+  "declared_changes": "fusion_view_terms live ct weighting and BalancedSearch directional normalization only; default loss and gradients covered by bitwise regression"
+}

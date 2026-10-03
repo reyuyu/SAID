@@ -1,9 +1,12 @@
 """Fixed long guard, Score5 and deterministic near-tie decision after four arms."""
+import gzip
 import json
+import math
+import shutil
 from pathlib import Path
 import statistics
 from experiments.nest_clip_v1.four_arm_text_search_500_v1.run import EXP,RUN,ARMS
-from experiments.nest_clip_v1.balanced_summary_random_detail_500_v1.run import dump,load,now
+from experiments.nest_clip_v1.balanced_summary_random_detail_500_v1.run import dump,load,now,records,stream_check
 
 GUARD=.73403324
 BASE_SCORE=.69900394
@@ -35,9 +38,58 @@ def selection(arms,baseline_score=BASE_SCORE):
       'full_training_recommendation':champion or best,'full_training_launched':False}
 
 
+def final_audits(arms,baseline,previous):
+    baseline_rows=records(Path(baseline['root'])/'steps.jsonl')
+    previous_rows=records(Path(previous['checkpoint']).parent/'steps.jsonl')
+    full=load(EXP/'evidence/FULL_TOKEN_LENGTHS.json')
+    core_hashes=None
+    for arm,result in arms.items():
+        if result['status']!='COMPLETE':continue
+        directory=EXP/ARMS[arm][0];root=Path(result['checkpoint']).parent
+        rows=records(root/'steps.jsonl');assert len(rows)==500
+        for row,ref in zip(rows,baseline_rows):stream_check(row,ref)
+        config=result['config']
+        assert config['component_initialization']==baseline['config']['component_initialization']
+        assert config['parameter_counts']==baseline['config']['parameter_counts']
+        if core_hashes is None:core_hashes=config['code_sha256']
+        else:assert core_hashes==config['code_sha256']
+        local_match=arm in 'BC'
+        if local_match:
+            for row,ref in zip(rows,previous_rows):
+                for new,old in zip(row['rank_health'],ref['rank_health']):
+                    for key in ['local_views_sha256','split_sha256']:
+                        assert new['sampling'][key]==old['sampling'][key],(arm,row['step'],key)
+                    assert new['sampling']['random_detail_sampling']['selected_indices_sha256']==old['sampling']['random_detail_sampling']['selected_indices_sha256']
+        errors=[]
+        if arm in 'BC':
+            for row in rows:
+                ce=[(row[v+'_i2t'],row[v+'_t2i']) for v in ['F','O','E']]
+                if arm=='B':align=10/3*sum(w*(ci+ct) for w,(ci,ct) in zip([1.2,.6,1.2],ce))
+                else:align=10/3*12/11*(ce[0][0]+ce[0][1]+ce[1][0]+.5*ce[1][1]+ce[2][0]+ce[2][1])
+                expected=align+(row['F_sparse']+2*row['O_sparse']+2*row['E_sparse'])/3+row['inc_weight']*row['inc']
+                assert math.isclose(expected,row['loss'],rel_tol=1e-5,abs_tol=3e-4),(arm,row['step'],expected,row['loss'])
+                errors.append(abs(expected-row['loss']))
+        dump(directory/'evidence/final-matching-and-objective.json',dict(passed=True,formal_steps=500,ranks=4,
+          ID_F_and_reference_match_baseline=True,local_views_match_previous_all500x4=local_match,
+          same_initial_component_hashes=True,same_parameter_counts=True,same_training_code_hashes_all_arms=True,
+          all500_objective_reconstruction_checked=arm in 'BC',max_objective_float32_rounding_error=max(errors) if errors else None))
+        diag=load(directory/'TRAINING_DIAGNOSTICS.json')
+        for step,v in full['steps'].items():diag['steps'][step]['token_lengths']['Full']=v
+        diag['last50']['token_lengths']['Full']=full['last50']
+        dump(directory/'TRAINING_DIAGNOSTICS.json',diag)
+        # Preserve lossless full step evidence as small compressed logs in Git.
+        for name in ['steps.jsonl','cycle_timing.jsonl']:
+            source=directory/'evidence'/name;target=source.with_suffix(source.suffix+'.gz')
+            if not source.exists() and target.exists():continue
+            with source.open('rb') as src,target.open('wb') as out:
+                with gzip.GzipFile(filename='',mode='wb',fileobj=out,mtime=0,compresslevel=9) as archive:shutil.copyfileobj(src,archive)
+            source.unlink()
+
+
 def generate():
     baseline=load(EXP/'BASELINE.json');previous=load(EXP/'PREVIOUS_SUMMARY_RANDOM_DETAIL.json')
     arms={a:load(EXP/directory/'RESULTS.json') for a,(directory,*_) in ARMS.items()}
+    final_audits(arms,baseline,previous)
     decision=selection(arms,baseline['scores']['Score5_R1'])
     result={'status':decision['status'],'completed_at':now(),'units':'raw fractions in JSON; percentages and percentage-point deltas in Markdown','baseline':baseline,'previous':previous,'arms':arms,'selection':decision}
     dump(EXP/'SEARCH_RESULTS.json',result);dump(EXP/'SELECTION.json',decision)
@@ -78,7 +130,7 @@ def generate():
     report=['# Four-arm text-supervision search','',f'**{decision["status"]}**. Selected eligible champion: **{decision["champion"]}**; best observed Score5: **{decision["best_observed_Score5_arm"]}**.','',
       'Four preregistered arms ran sequentially:5-step smoke followed by fresh500 from identical commonstep0, seed0,4×256 candidates,4868 scheduler horizon. Native inference is unchanged. No baseline retraining, adaptive tuning or4868-step continuation.','',
       'Long guard: J_long3≥73.403324%; Score5 near-ties strictly<0.05pp use J_long3,Urban T2I,Long T2I,Short4. Raw fractions determine selection.','',*table,'',*five,'',*recalls,'',*resources,'',
-      'Correctness:93 initial targeted/regression tests passed, including1000 real-sample exact3da12a3 sampling replay and default-weight bitwise loss/gradients/AdamW. Final additional selection tests are recorded in CORRECTNESS_TESTS.md. All live500×4 ID/Full/token/reference hashes are checked against RandomK. Image augmentation equality is supported by unchanged augmentation/sampler/worker seeds, private sampling RNG and dataset image replay tests; the historical baseline did not record actual image tensor digests, so retrospective500×4 image-byte equality cannot be asserted.','',
+      'Correctness:93 initial targeted/regression tests passed, including1000 real-sample exact3da12a3 sampling replay and default-weight bitwise loss/gradients/AdamW. Five additional selection tests pass (98 unique tests total). A separate1000-real-image replay also passes. All live500×4 ID/Full/token/reference hashes are checked against RandomK. Image equality follows from identical indexed image paths and unchanged deterministic Resize/CenterCrop/Normalize, and is independently verified on1000 actual images. Historical image tensor digests were not recorded; this is source/data/transform equivalence plus actual replay, rather than a retrospective hash comparison. B/C also match previous local strings/tokens/K/indices hashes on all500×4 rank batches; live objective reconstruction checks the declared weight formula on all500 steps.','',
       'Strict exports and frozen five-dataset metadata/checkpoint SHA checks are stored per arm. Long-DCI is7602/7602, manifestSHA8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b.','',
       'Gate/F-D diagnostics are scheduled at1/100/200/500; last50 gate and F-D entries have one observation, while CE/keep/inclusion/S-D IoU use all50 updates. See TRAINING_DIAGNOSTICS.json per arm.','',
       f'Most useful candidate for a future full-training confirmation: {decision["full_training_recommendation"]}. This recommendation does not authorize or launch full training.','',

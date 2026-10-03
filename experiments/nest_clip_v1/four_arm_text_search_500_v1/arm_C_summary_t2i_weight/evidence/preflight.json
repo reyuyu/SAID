@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "checked_at": "2026-10-04T04:32:28.327829+08:00",
+  "baseline_retrained": false,
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "frozen_sources": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "train/said_cvssl_data.py": "3cd78dfe7a82e1482166665ee452eedd15c8342b42268e4e89590ef1ea74339e",
+    "eval/retrieval/coco_retrieval.py": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+    "tools/urban1k_retrieval.py": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+    "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+    "tools/nest_clip.py": "defdd3b1d64f2c2be54c6bdda06f8bf7e4a6a908b1c0a8501e09f3e9a40f7540",
+    "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+  },
+  "frozen_trainer_function_AST": [
+    "build_optimizer",
+    "learning_rates",
+    "optimizer_learning_rates",
+    "training_horizon",
+    "seed_all",
+    "rng_state",
+    "restore_rng_state"
+  ],
+  "historical_sampling_1000": {
+    "passed": true,
+    "samples": 1000,
+    "seed": 0,
+    "epoch": 0,
+    "historical_commit": "3da12a3",
+    "B_C_all_fields_bitwise_equal": true,
+    "A_D_F_raw_and_tokens_equal": true,
+    "digest": "e11a4b13c2c9bdbd36d68bafe488d133c5313ca5b2df541eed496791840df1db"
+  },
+  "all_500x4_sampler_ID_hashes_match": true,
+  "mathematical_changes": {
+    "A": "interior split only",
+    "B": "alignment view weights only",
+    "C": "live Summary T2I weighting and global 12/11 normalization only",
+    "D": "contiguous detail only"
+  },
+  "default_weight_loss_gradients_AdamW_bitwise_test": true,
+  "scheduler_horizon": 4868,
+  "stop_updates": 500
+}

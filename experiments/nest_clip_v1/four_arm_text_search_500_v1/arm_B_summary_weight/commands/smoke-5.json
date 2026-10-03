@@ -1,0 +1,36 @@
+{
+  "argv": [
+    "/root/miniconda3/envs/said-repro/bin/torchrun",
+    "--standalone",
+    "--nnodes=1",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "train.train_nested_semantic_mask",
+    "--config",
+    "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_B_summary_weight/config.json",
+    "--init-state",
+    "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+    "--index-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/data_index",
+    "--image-root",
+    "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/smoke",
+    "--run-type",
+    "smoke",
+    "--max-updates",
+    "5"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+  "env": {
+    "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4"
+  },
+  "started_at": "2026-10-04T05:06:43.954229+08:00",
+  "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/smoke-5.console.txt",
+  "exit_code": 0,
+  "elapsed_seconds": 40.42000216990709,
+  "finished_at": "2026-10-04T05:07:24.374675+08:00"
+}

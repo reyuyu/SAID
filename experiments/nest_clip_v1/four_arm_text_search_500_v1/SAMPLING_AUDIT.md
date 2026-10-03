@@ -1,3 +1,5 @@
 # Sampling audit
 
 A uses a domain-salted private RNG for n≥4 and the exact old RandomK RNG for n2/3. D uses a separate domain-salted private RNG for bounded span length and start. Full packing is unchanged. B/C retain the exact old summary_random_detail sampler. All1000 randomly selected real samples match3da12a3 in every B/C string, token tensor,K and sentence index. All1000 also match Full raw/tokens for A/D. See evidence/sampling-1000.json and live per-arm stream checks. No global Python/NumPy/Torch RNG is consumed by view sampling. Historical baseline does not record image tensor hashes; tests replay actual nonuniform image augmentation with equal seeds.
+
+Additional real-image replay on1000 fixed seed0 training samples passed for RandomK,A,B/C,D. Actual image tensors match bitwise after identical Python/NumPy/Torch pre-image states. Statistics for n,K and token lengths are included in evidence/image-and-sampling-1000.json. This strengthens the induction argument from private sampling RNG and unchanged worker/image transforms; historical image tensors were not recorded.
