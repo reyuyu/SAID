@@ -1,0 +1,1150 @@
+{
+  "A": {
+    "eval-long_dci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:59:02.290796+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/eval-long_dci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 458.46020072698593,
+      "finished_at": "2026-10-04T05:06:40.751466+08:00"
+    },
+    "eval-docci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/docci",
+        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:54:31.954210+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/eval-docci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 270.2671938240528,
+      "finished_at": "2026-10-04T04:59:02.221898+08:00"
+    },
+    "eval-urban": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/urban_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:53:45.758794+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/eval-urban.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.022637970745564,
+      "finished_at": "2026-10-04T04:54:05.781905+08:00"
+    },
+    "export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/step000500.pt",
+        "--expect-updates",
+        "500",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:51:19.415772+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 10.010219231247902,
+      "finished_at": "2026-10-04T04:51:29.426172+08:00"
+    },
+    "smoke-5": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_A_interior_randomk/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/smoke",
+        "--run-type",
+        "smoke",
+        "--max-updates",
+        "5"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:32:28.468675+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/smoke-5.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 40.41808020323515,
+      "finished_at": "2026-10-04T04:33:08.887214+08:00"
+    },
+    "formal-500": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_A_interior_randomk/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:33:09.007749+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/formal-500.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 1089.522449746728,
+      "finished_at": "2026-10-04T04:51:18.530690+08:00"
+    },
+    "verify-export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/step000500.pt",
+        "--bare",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/export-check.json",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:51:29.427359+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/verify-export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 16.017116874456406,
+      "finished_at": "2026-10-04T04:51:45.444771+08:00"
+    },
+    "eval-coco": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/coco_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:51:45.557614+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/eval-coco.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 120.12258069962263,
+      "finished_at": "2026-10-04T04:53:45.680692+08:00"
+    },
+    "eval-flickr_test1k": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/step500/flickr_test1k",
+        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T04:54:05.856778+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_A_interior_randomk/execution/eval-flickr_test1k.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 26.028835028409958,
+      "finished_at": "2026-10-04T04:54:31.886089+08:00"
+    }
+  },
+  "B": {
+    "eval-long_dci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:33:09.905066+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/eval-long_dci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 456.4617728665471,
+      "finished_at": "2026-10-04T05:40:46.367295+08:00"
+    },
+    "eval-docci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/docci",
+        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:28:35.538063+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/eval-docci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 274.2816913202405,
+      "finished_at": "2026-10-04T05:33:09.819974+08:00"
+    },
+    "summary-ambiguity": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.nest_clip_v1.four_arm_text_search_500_v1.text_audit",
+        "--arm",
+        "B",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_B_summary_weight/SUMMARY_AMBIGUITY.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:40:49.652840+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/summary-ambiguity.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.02269870042801,
+      "finished_at": "2026-10-04T05:41:09.675965+08:00"
+    },
+    "eval-urban": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/urban_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:27:49.298622+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/eval-urban.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.022855006158352,
+      "finished_at": "2026-10-04T05:28:09.321987+08:00"
+    },
+    "export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/step000500.pt",
+        "--expect-updates",
+        "500",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:25:22.994016+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 10.011880524456501,
+      "finished_at": "2026-10-04T05:25:33.006089+08:00"
+    },
+    "smoke-5": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_B_summary_weight/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/smoke",
+        "--run-type",
+        "smoke",
+        "--max-updates",
+        "5"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:06:43.954229+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/smoke-5.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 40.42000216990709,
+      "finished_at": "2026-10-04T05:07:24.374675+08:00"
+    },
+    "formal-500": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_B_summary_weight/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:07:24.495823+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/formal-500.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 1077.2928829491138,
+      "finished_at": "2026-10-04T05:25:21.789175+08:00"
+    },
+    "verify-export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/step000500.pt",
+        "--bare",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/export-check.json",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:25:33.007849+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/verify-export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 16.018161192536354,
+      "finished_at": "2026-10-04T05:25:49.026451+08:00"
+    },
+    "eval-coco": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/coco_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:25:49.113811+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/eval-coco.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 120.12344738841057,
+      "finished_at": "2026-10-04T05:27:49.237798+08:00"
+    },
+    "eval-flickr_test1k": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/step500/flickr_test1k",
+        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:28:09.407210+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_B_summary_weight/execution/eval-flickr_test1k.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 26.027139976620674,
+      "finished_at": "2026-10-04T05:28:35.434838+08:00"
+    }
+  },
+  "C": {
+    "eval-long_dci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:07:43.809808+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/eval-long_dci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 462.46275164186954,
+      "finished_at": "2026-10-04T06:15:26.273056+08:00"
+    },
+    "eval-docci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/docci",
+        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:03:07.450853+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/eval-docci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 276.27555707097054,
+      "finished_at": "2026-10-04T06:07:43.726903+08:00"
+    },
+    "summary-ambiguity": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.nest_clip_v1.four_arm_text_search_500_v1.text_audit",
+        "--arm",
+        "C",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/SUMMARY_AMBIGUITY.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:15:29.430770+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/summary-ambiguity.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.020990677177906,
+      "finished_at": "2026-10-04T06:15:49.452218+08:00"
+    },
+    "eval-urban": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/urban_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:02:21.265217+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/eval-urban.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.022620283067226,
+      "finished_at": "2026-10-04T06:02:41.288335+08:00"
+    },
+    "export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/step000500.pt",
+        "--expect-updates",
+        "500",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:59:54.980549+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 10.011729061603546,
+      "finished_at": "2026-10-04T06:00:04.992456+08:00"
+    },
+    "smoke-5": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/smoke",
+        "--run-type",
+        "smoke",
+        "--max-updates",
+        "5"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:41:09.764304+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/smoke-5.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 40.474210783839226,
+      "finished_at": "2026-10-04T05:41:50.238684+08:00"
+    },
+    "formal-500": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T05:41:50.348640+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/formal-500.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 1083.4947335124016,
+      "finished_at": "2026-10-04T05:59:53.843794+08:00"
+    },
+    "verify-export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/step000500.pt",
+        "--bare",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/export-check.json",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:00:04.994365+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/verify-export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 16.017373584210873,
+      "finished_at": "2026-10-04T06:00:21.012193+08:00"
+    },
+    "eval-coco": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/coco_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:00:21.075946+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/eval-coco.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 120.12202090024948,
+      "finished_at": "2026-10-04T06:02:21.198196+08:00"
+    },
+    "eval-flickr_test1k": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/step500/flickr_test1k",
+        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:02:41.368121+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_C_summary_t2i_weight/execution/eval-flickr_test1k.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 26.028823778033257,
+      "finished_at": "2026-10-04T06:03:07.397351+08:00"
+    }
+  },
+  "D": {
+    "eval-long_dci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/long_dci",
+        "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:42:25.217706+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/eval-long_dci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 452.4577362090349,
+      "finished_at": "2026-10-04T06:49:57.675899+08:00"
+    },
+    "eval-docci": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/docci",
+        "docci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/docci/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:37:50.857710+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/eval-docci.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 274.27259593456984,
+      "finished_at": "2026-10-04T06:42:25.130685+08:00"
+    },
+    "summary-ambiguity": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.nest_clip_v1.four_arm_text_search_500_v1.text_audit",
+        "--arm",
+        "D",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/SUMMARY_AMBIGUITY.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:50:00.825235+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/summary-ambiguity.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.022551506757736,
+      "finished_at": "2026-10-04T06:50:20.848203+08:00"
+    },
+    "eval-urban": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/urban_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:37:04.675137+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/eval-urban.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 20.021965242922306,
+      "finished_at": "2026-10-04T06:37:24.697309+08:00"
+    },
+    "export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/step000500.pt",
+        "--expect-updates",
+        "500",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:34:36.364213+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 10.011787556111813,
+      "finished_at": "2026-10-04T06:34:46.376173+08:00"
+    },
+    "smoke-5": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/smoke",
+        "--run-type",
+        "smoke",
+        "--max-updates",
+        "5"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:15:49.538020+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/smoke-5.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 40.403446547687054,
+      "finished_at": "2026-10-04T06:16:29.941946+08:00"
+    },
+    "formal-500": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "train.train_nested_semantic_mask",
+        "--config",
+        "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1/experiments/nest_clip_v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/config.json",
+        "--init-state",
+        "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:16:30.048597+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/formal-500.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 1085.1289705634117,
+      "finished_at": "2026-10-04T06:34:35.178020+08:00"
+    },
+    "verify-export": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/step000500.pt",
+        "--bare",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/export-check.json",
+        "--index-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/data_index",
+        "--image-root",
+        "/root/lk_projects/SAID-assets/training/ShareGPT4V"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:34:46.377947+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/verify-export.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 18.020063415169716,
+      "finished_at": "2026-10-04T06:35:04.398462+08:00"
+    },
+    "eval-coco": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/root/lk_projects/SAID-assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/coco_native.json"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:35:04.479820+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/eval-coco.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 120.12385788559914,
+      "finished_at": "2026-10-04T06:37:04.604107+08:00"
+    },
+    "eval-flickr_test1k": {
+      "argv": [
+        "/root/miniconda3/envs/said-repro/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/step500/flickr_test1k",
+        "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "cwd": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+      "env": {
+        "PYTHONPATH": "/root/lk_projects/SAID-balanced-four-arm-text-search-500-v1",
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4"
+      },
+      "started_at": "2026-10-04T06:37:24.752455+08:00",
+      "console": "/root/lk_projects/SAID-nest-clip-v1/four_arm_text_search_500_v1/arm_D_contiguous_detail/execution/eval-flickr_test1k.console.txt",
+      "exit_code": 0,
+      "elapsed_seconds": 26.028737865388393,
+      "finished_at": "2026-10-04T06:37:50.781654+08:00"
+    }
+  }
+}
