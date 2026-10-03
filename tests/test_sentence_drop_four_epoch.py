@@ -4,10 +4,20 @@ import json
 
 import pytest
 
-from experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.run import compare_streams, STREAM_KEYS
+from experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.run import compare_streams, STREAM_KEYS, Experiment, BASE, hparams
 from experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.report import write_report, DATASETS
 from tests.test_nested_resume import payloads
 from train.train_nested_semantic_mask import validate_resume_payload
+
+
+def test_epoch_boundary_checkpoints_survive_config_materialization(tmp_path):
+    runner = Experiment.__new__(Experiment)
+    runner.base_config = copy.deepcopy(BASE)
+    runner.run_dir = tmp_path/'runtime'
+    runner.experiment_dir = tmp_path/'evidence'
+    tid, path = runner.config(hparams(BASE))
+    assert json.loads(path.read_text())['checkpoint_interval'] == 1217
+    assert runner.config(hparams(BASE)) == (tid, path)
 
 
 def test_sentence_drop500_can_continue_only_with_same_horizon_and_data_code():

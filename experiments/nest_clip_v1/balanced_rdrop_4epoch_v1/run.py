@@ -11,7 +11,7 @@ import statistics
 import subprocess
 
 from experiments.nest_clip_v1.balanced_hparam_search_v1.search import (
-    Search, REPO, PYTHON, hparams, load, native_metrics, now, rows,
+    Search, REPO, PYTHON, hparams, load, native_metrics, now, rows, trial_id,
 )
 from experiments.nest_clip_v1.balanced_rdrop_500_v1.run import summarize_sampling
 from experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.verify import (
@@ -52,6 +52,22 @@ def compare_streams(actual_paths, reference_paths, expected_updates=4868):
 
 
 class Experiment(Search):
+    def config(self, hp):
+        cfg = dict(self.base_config, **hparams(hp))
+        tid = trial_id(hp)
+        cfg.update(hparam_search=True, trial_id=tid, save_initial_checkpoint=False)
+        assert cfg['checkpoint_interval'] == 1217
+        path = self.run_dir/'configs'/f'{tid}.json'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.exists():
+            assert load(path) == cfg
+        else:
+            path.write_text(json.dumps(cfg, indent=2)+'\n')
+        dest = self.experiment_dir/'configs'
+        dest.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, dest/path.name)
+        return tid, path
+
     def __init__(self):
         super().__init__(run_dir=RUN, experiment_dir=EXP, base_config=BASE)
         if not self.state['stages']:
