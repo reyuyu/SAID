@@ -26,6 +26,7 @@ from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
+from model.view_relation import RelationCollapseMonitor
 
 
 def seed_all(seed=0):
@@ -123,7 +124,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
     for key, default in (('image_chunk', 32), ('text_chunk', 64),
                          ('condition_mode', 'text_only'), ('shuffle_seed', 0),
                          ('checkpoint_pair_blocks', True), ('four_epoch_followup', False),
-                         ('remainder_mode','compact')):
+                         ('remainder_mode','compact'),('view_relation',False),('sibling_coefficient',1.)):
         assert old.get(key, default) == current.get(key, default), f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
@@ -232,6 +233,7 @@ def code_manifest():
              'model/longclip.py', 'model/said_cls_cvssl.py']
     if (root/'model/balanced_hparam_search.py').exists():
         paths.append('model/balanced_hparam_search.py')
+    if (root/'model/view_relation.py').exists():paths.append('model/view_relation.py')
     return {p: file_sha(root / p) for p in paths}
 
 
@@ -313,6 +315,8 @@ def main():
     cfg.setdefault('save_initial_checkpoint', True)
     cfg.setdefault('remainder_mode','compact')
     assert cfg['remainder_mode'] in ('compact','prefix_pad','sentence_drop')
+    if cfg.get('view_relation'):
+        assert cfg['remainder_mode']=='compact' and cfg['sibling_coefficient']==1
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
     assert cfg['full_native_mix'] == 0
@@ -358,6 +362,8 @@ def main():
     if cfg.get('hparam_search'):
         module_class=BalancedSearch
         model_options['search_hparams']=hparams(cfg)
+        if cfg.get('view_relation'):
+            model_options.update(view_relation=True,sibling_coefficient=cfg['sibling_coefficient'])
     module = module_class(clip.float(), arm=cfg['arm'],
                           checkpoint_encoders=cfg['checkpoint_encoders'],
                           image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
@@ -462,6 +468,7 @@ def main():
     probe_max_seconds = []
     resource_failure = None
     consecutive_slow = 0
+    relation_monitor = RelationCollapseMonitor(cfg) if cfg.get('relation_collapse_guard') else None
     for epoch in range(cfg['epochs']):
         sampler.set_epoch(epoch)
         dataset.set_epoch(epoch)  # copied into fresh spawn workers before iter(loader)
@@ -577,6 +584,12 @@ def main():
                 if torch.cuda.max_memory_allocated() / 2**30 > 65:
                     resource_failure = 'peak allocated memory exceeded 65 GiB'
                 saturation_limit = cfg.get('saturation_abort_fraction')
+                if relation_monitor is not None and logs['valid_global']>=2:
+                    relation_failure=relation_monitor.update(completed,logs)
+                    if relation_failure:
+                        resource_failure='View relation diagnostic stop: '+relation_failure
+                        if rank==0:
+                            (output/'relation-stop.json').write_text(json.dumps(relation_monitor.last,indent=2)+'\n')
                 if saturation_limit is not None and any(
                         float(value) >= saturation_limit for name, value in logs.items()
                         if name.endswith('_sigmoid_saturation')):

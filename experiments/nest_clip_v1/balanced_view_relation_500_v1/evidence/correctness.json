@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "cpu_tests_passed": 73,
+  "command": "CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 /root/miniconda3/envs/said-repro/bin/python -m pytest -q tests/test_view_relation.py tests/test_balanced_hparams.py tests/test_nested_fusion.py tests/test_nested_randomk.py tests/test_nested_resume.py",
+  "ddp_reference_passed": true,
+  "world_size": 4,
+  "ddp_cases": [
+    "all_valid",
+    "rank0_only_valid",
+    "global1_fallback",
+    "global0_fallback",
+    "tail"
+  ],
+  "no_violation_zero_gradient": true,
+  "cross_mask_stopgrad_both_directions": true,
+  "zero_coefficient_bitwise_loss_gradient_adamw_state": true,
+  "no_new_encoder_calls": true,
+  "original_CE_global_candidates_unchanged": true,
+  "reporting_tests": {
+    "passed": true,
+    "tests_passed": 2,
+    "command": "CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 /root/miniconda3/envs/said-repro/bin/python -m pytest -q tests/test_view_relation_reporting.py"
+  }
+}

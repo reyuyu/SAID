@@ -7,6 +7,7 @@ import math
 import torch
 from model.nested_fusion_mask import NestedFusionMask, fusion_view_terms
 from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_weight, world_rank
+from model.view_relation import sibling_terms
 
 
 DEFAULTS = dict(fusion_lr=1e-4, visual_mask_lr_scale=1., view_weights=[1.,1.,1.],
@@ -30,10 +31,13 @@ def trial_id(config):
 
 
 class BalancedSearch(NestedFusionMask):
-    def __init__(self, clip, *, search_hparams=None, **options):
+    def __init__(self, clip, *, search_hparams=None, view_relation=False, sibling_coefficient=1., **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
+        self.view_relation = bool(view_relation)
+        self.sibling_coefficient = float(sibling_coefficient)
+        assert math.isfinite(self.sibling_coefficient) and self.sibling_coefficient>=0
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -58,8 +62,11 @@ class BalancedSearch(NestedFusionMask):
         z,visual = self.encode_visual(images)
         global_z,global_visual = gather(z),tuple(gather(x) for x in visual)
         diagnostics = completed+1 in DIAGNOSTIC_UPDATES
+        text_embeddings = {}
         def terms(tokens, enabled, enabled_global):
             text,condition = self.encode_view(tokens)
+            if self.view_relation and self.sibling_coefficient>0:
+                text_embeddings[id(tokens)] = text
             values = fusion_view_terms(self,z,text,visual,condition,enabled,enabled_global,
                                        global_z,global_visual,diagnostics)
             logs = values[-1]
@@ -92,16 +99,36 @@ class BalancedSearch(NestedFusionMask):
             align=(10/3*(af+ao+ae) if hp['view_weights']==[1.,1.,1.] else
                    10/(wf+wp+wr)*(wf*af+wp*ao+wr*ae))
             sparse=(sf+2*so+2*se)/3
-            loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*inc_sum
+            if self.view_relation and self.sibling_coefficient>0:
+                sib,cosines=sibling_terms(z,text_embeddings[id(tokens_o)],text_embeddings[id(tokens_e)],mo,me)
+                sib_sum=sib[valid].sum()
+                relation_sum=inc_sum+self.sibling_coefficient*sib_sum
+                loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*relation_sum
+                measurements = torch.stack((sib_sum.detach(),relation_sum.detach(),
+                    *[cosines[key][valid].sum().detach() for key in ('c_PP','c_RP','c_RR','c_PR')],
+                    (cosines['c_RP']>cosines['c_PP'])[valid].float().sum(),
+                    (cosines['c_PR']>cosines['c_RR'])[valid].float().sum(),
+                    cosines['P_violation'][valid].sum().detach(),cosines['R_violation'][valid].sum().detach()))
+                measurements=global_sum(measurements)/valid_count
+                names=('sib_loss','relation_loss','c_PP_mean','c_RP_mean','c_RR_mean','c_PR_mean',
+                       'P_violation_rate','R_violation_rate','P_violation_magnitude','R_violation_magnitude')
+                logs.update(zip(names,measurements))
+            else:
+                loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
             iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)
             extra=global_sum(torch.stack((inc_sum.detach(),violation[valid].sum(),iou[valid].sum())))/valid_count
             logs.update({'O_'+key:value for key,value in lo.items()})
             logs.update({'E_'+key:value for key,value in le.items()})
             logs.update(inc=extra[0],hard_inclusion_violation=extra[1],oe_iou=extra[2])
+            if self.view_relation and self.sibling_coefficient==0:
+                logs.update(sib_loss=0.,relation_loss=extra[0])
         else:
             loss=10*af+hp['sparsity_scale']*sf
             logs.update(inc=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)
+            if self.view_relation:
+                logs.update(sib_loss=0.,relation_loss=0.,P_violation_rate=0.,R_violation_rate=0.,
+                    P_violation_magnitude=0.,R_violation_magnitude=0.,c_PP_mean=0.,c_RP_mean=0.,c_RR_mean=0.,c_PR_mean=0.)
         logs.update(loss=global_sum(loss)/world_rank()[0],inc_weight=weight,valid_global=valid_count,
                     fusion=self.fusion,visual=self.visual,condition_mode=self.condition_mode,shuffle_shift=0,
                     nonfinite=global_sum((~torch.isfinite(loss)).sum()))
