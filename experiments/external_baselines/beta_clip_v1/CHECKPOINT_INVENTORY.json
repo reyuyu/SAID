@@ -1,5 +1,5 @@
 {
-  "status": "stopped_download_failure",
+  "status": "MANUAL_CHECKPOINT_REQUIRED",
   "source": {
     "repo_url": "https://github.com/fzohra/B-CLIP",
     "branch": "v1",
@@ -25,7 +25,7 @@
       "checkpoint": "CE",
       "official_google_drive_id": "1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
       "official_url": "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
-      "status": "download_failed",
+      "status": "MANUAL_CHECKPOINT_REQUIRED",
       "actual_file_name": null,
       "byte_size": null,
       "sha256": null,
@@ -74,14 +74,38 @@
           "status": "connection_timeout",
           "stderr": "Timed out: no response from the server for 20.0 seconds.",
           "completed": true
+        },
+        {
+          "command": [
+            "/root/miniconda3/envs/beta-clip-official/bin/python",
+            "-m",
+            "gdown",
+            "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
+            "--no-cookies",
+            "--timeout",
+            "20",
+            "--output",
+            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
+          ],
+          "exit_code": 1,
+          "status": "connection_timeout",
+          "stderr": "Timed out: no response from the server for 20.0 seconds.",
+          "one_retry_only": true
         }
-      ]
+      ],
+      "path": null,
+      "size_bytes": null,
+      "model": null,
+      "tcil_loss_mode": null,
+      "beta": null,
+      "checkpoint_identity": "unknown",
+      "identity_confidence": "unknown"
     },
     {
       "checkpoint": "BCE",
       "official_google_drive_id": "1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
       "official_url": "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
-      "status": "download_failed",
+      "status": "MANUAL_CHECKPOINT_REQUIRED",
       "actual_file_name": null,
       "byte_size": null,
       "sha256": null,
@@ -130,8 +154,47 @@
           "status": "connection_timeout",
           "stderr": "Timed out: no response from the server for 20.0 seconds.",
           "completed": true
+        },
+        {
+          "command": [
+            "/root/miniconda3/envs/beta-clip-official/bin/python",
+            "-m",
+            "gdown",
+            "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+            "--no-cookies",
+            "--timeout",
+            "20",
+            "--output",
+            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
+          ],
+          "exit_code": 1,
+          "status": "connection_timeout",
+          "stderr": "Timed out: no response from the server for 20.0 seconds.",
+          "one_retry_only": true
         }
-      ]
+      ],
+      "path": null,
+      "size_bytes": null,
+      "model": null,
+      "tcil_loss_mode": null,
+      "beta": null,
+      "checkpoint_identity": "unknown",
+      "identity_confidence": "unknown"
     }
-  ]
+  ],
+  "manual_discovery": {
+    "roots": [
+      "/root/lk_projects/B-CLIP-official",
+      "/root/lk_projects/SAID",
+      "/root",
+      "/tmp"
+    ],
+    "checkpoint_files_ge_1MiB": 390,
+    "included_gitignored_files": true,
+    "candidate_count": 0,
+    "verified_ce_found": false,
+    "verified_bce_found": false,
+    "scan_errors": [],
+    "evidence": "raw_logs/checkpoint-discovery.json"
+  }
 }

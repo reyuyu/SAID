@@ -1,6 +1,6 @@
 # Beta-CLIP versus SAID: comparison unavailable
 
-Official checkpoint downloads failed, so Beta-CLIP native scores and deltas are unavailable. The existing SAID Balanced B16@4868 result is reused, not retrained or re-evaluated. TCI is excluded from the native comparison and Score5. The sole delta direction is BetaCLIP minus SAID.
+Official checkpoint downloads failed, so Beta-CLIP native scores and deltas are unavailable. The existing SAID Balanced B16@4868 result is reused, not retrained or re-evaluated. TCI is excluded from the native comparison and Score5. The sole delta direction is SAID minus BetaCLIP.
 
 | Model | Inference | COCO I2T/T2I % | Urban I2T/T2I % | Flickr I2T/T2I % | DOCCI I2T/T2I % | Long-DCI I2T/T2I % | Score5_R1 % |
 |---|---|---|---|---|---|---|---:|

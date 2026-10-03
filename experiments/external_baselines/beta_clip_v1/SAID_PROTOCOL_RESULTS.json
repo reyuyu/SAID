@@ -1,6 +1,6 @@
 {
-  "status": "stopped_download_failure",
-  "stop_rule": "If official checkpoints cannot be downloaded, retain failure evidence and stop; never substitute another checkpoint.",
+  "status": "MANUAL_CHECKPOINT_REQUIRED",
+  "stop_rule": "Search manual uploads first; if none exists, try official download once; then report MANUAL_CHECKPOINT_REQUIRED and stop.",
   "source": {
     "repo_url": "https://github.com/fzohra/B-CLIP",
     "branch": "v1",
@@ -98,11 +98,26 @@
     "bare_sha256": "f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb",
     "reused": true
   },
-  "delta_direction": "BetaCLIP minus SAID",
+  "delta_direction": "SAID minus BetaCLIP",
   "delta_R1_pp": null,
   "delta_scores_pp": null,
   "no_training_or_finetuning": true,
   "no_model_substitution": true,
   "said_model_code_modified": false,
-  "stopped_utc": "2026-10-03T08:46:11.928426+00:00"
+  "stopped_utc": "2026-10-03T09:20:41.075267+00:00",
+  "manual_discovery": {
+    "roots": [
+      "/root/lk_projects/B-CLIP-official",
+      "/root/lk_projects/SAID",
+      "/root",
+      "/tmp"
+    ],
+    "checkpoint_files_ge_1MiB": 390,
+    "included_gitignored_files": true,
+    "candidate_count": 0,
+    "verified_ce_found": false,
+    "verified_bce_found": false,
+    "scan_errors": [],
+    "evidence": "raw_logs/checkpoint-discovery.json"
+  }
 }
