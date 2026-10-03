@@ -45,4 +45,3 @@ cd /root/lk_projects/SAID-balanced-rdrop-4epoch-v1
 CUDA_VISIBLE_DEVICES='' /root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.verify
 /root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.run --launch
 ```
-

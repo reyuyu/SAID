@@ -68,7 +68,7 @@ def write_report(state, output):
               'cd /root/lk_projects/SAID-balanced-rdrop-4epoch-v1',
               "CUDA_VISIBLE_DEVICES='' /root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.verify",
               '/root/miniconda3/envs/said-repro/bin/python -m experiments.nest_clip_v1.balanced_rdrop_4epoch_v1.run --launch', '```', '']
-    (output/'RDROP_4EPOCH_REPORT.md').write_text('\n'.join(lines)+'\n')
+    (output/'RDROP_4EPOCH_REPORT.md').write_text('\n'.join(lines).rstrip()+'\n')
     (output/'RESULTS.json').write_text(json.dumps(state, indent=2)+'\n')
     if result:
         for key in ('sentence_drop_statistics', 'resource_summary', 'stream_comparison'):
