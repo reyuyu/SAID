@@ -1,0 +1,249 @@
+2026-10-03,12:36:56 | INFO | Running with a single process. Device cuda.
+2026-10-03,12:36:56 | INFO | Loaded ViT-B-16-longclip model config.
+2026-10-03,12:36:59 | INFO | Loading pretrained ViT-B-16 weights (/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt).
+2026-10-03,12:37:01 | INFO | Model:
+2026-10-03,12:37:01 | INFO | CustomCLIP(
+  (visual): CustomVisionTransformer(
+    (conv1): Conv2d(3, 768, kernel_size=(16, 16), stride=(16, 16), bias=False)
+    (patch_dropout): Identity()
+    (ln_pre): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+    (transformer): Transformer(
+      (resblocks): ModuleList(
+        (0-11): 12 x ResidualAttentionBlock(
+          (ln_1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (attn): MultiheadAttention(
+            (out_proj): NonDynamicallyQuantizableLinear(in_features=768, out_features=768, bias=True)
+          )
+          (ls_1): Identity()
+          (ln_2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+          (mlp): Sequential(
+            (c_fc): Linear(in_features=768, out_features=3072, bias=True)
+            (gelu): QuickGELU()
+            (c_proj): Linear(in_features=3072, out_features=768, bias=True)
+          )
+          (ls_2): Identity()
+        )
+      )
+    )
+    (ln_post): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+  )
+  (text): CustomTextTransformer(
+    (token_embedding): Embedding(49408, 512)
+    (transformer): Transformer(
+      (resblocks): ModuleList(
+        (0-11): 12 x ResidualAttentionBlock(
+          (ln_1): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+          (attn): MultiheadAttention(
+            (out_proj): NonDynamicallyQuantizableLinear(in_features=512, out_features=512, bias=True)
+          )
+          (ls_1): Identity()
+          (ln_2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+          (mlp): Sequential(
+            (c_fc): Linear(in_features=512, out_features=2048, bias=True)
+            (gelu): QuickGELU()
+            (c_proj): Linear(in_features=2048, out_features=512, bias=True)
+          )
+          (ls_2): Identity()
+        )
+      )
+    )
+    (ln_final): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+  )
+)
+2026-10-03,12:37:01 | INFO | Params:
+2026-10-03,12:37:01 | INFO |   accum_freq: 1
+2026-10-03,12:37:01 | INFO |   aug_cfg: {}
+2026-10-03,12:37:01 | INFO |   batch_size: 16
+2026-10-03,12:37:01 | INFO |   beta1: 0.9
+2026-10-03,12:37:01 | INFO |   beta2: 0.98
+2026-10-03,12:37:01 | INFO |   cache_dir: None
+2026-10-03,12:37:01 | INFO |   checkpoint_path: /root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/base-full-amp/logs/base-full-amp/checkpoints
+2026-10-03,12:37:01 | INFO |   coca_caption_loss_weight: 2.0
+2026-10-03,12:37:01 | INFO |   coca_contrastive_loss_weight: 1.0
+2026-10-03,12:37:01 | INFO |   comet_ml: False
+2026-10-03,12:37:01 | INFO |   copy_codebase: False
+2026-10-03,12:37:01 | INFO |   csv_caption_key: title
+2026-10-03,12:37:01 | INFO |   csv_img_base_path: /root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data
+2026-10-03,12:37:01 | INFO |   csv_img_key: filepath
+2026-10-03,12:37:01 | INFO |   csv_long_caption_key: description
+2026-10-03,12:37:01 | INFO |   csv_separator:
+2026-10-03,12:37:01 | INFO |   csv_short_caption_key: summary
+2026-10-03,12:37:01 | INFO |   custom_model: None
+2026-10-03,12:37:01 | INFO |   data_root_dir: /root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data
+2026-10-03,12:37:01 | INFO |   dataset_resampled: False
+2026-10-03,12:37:01 | INFO |   dataset_type: auto
+2026-10-03,12:37:01 | INFO |   ddp_static_graph: False
+2026-10-03,12:37:01 | INFO |   debug: False
+2026-10-03,12:37:01 | INFO |   delete_previous_checkpoint: False
+2026-10-03,12:37:01 | INFO |   device: cuda
+2026-10-03,12:37:01 | INFO |   dist_backend: None
+2026-10-03,12:37:01 | INFO |   dist_url: None
+2026-10-03,12:37:01 | INFO |   distill: False
+2026-10-03,12:37:01 | INFO |   distill_model: None
+2026-10-03,12:37:01 | INFO |   distill_pretrained: None
+2026-10-03,12:37:01 | INFO |   distributed: False
+2026-10-03,12:37:01 | INFO |   epochs: 32
+2026-10-03,12:37:01 | INFO |   epochs_cooldown: None
+2026-10-03,12:37:01 | INFO |   eps: 1e-06
+2026-10-03,12:37:01 | INFO |   eval_data: base_full
+2026-10-03,12:37:01 | INFO |   eval_exclude_first_sentence: False
+2026-10-03,12:37:01 | INFO |   eval_sample_mode: None
+2026-10-03,12:37:01 | INFO |   exclude_biases_from_wd: False
+2026-10-03,12:37:01 | INFO |   force_checkpoint_path: None
+2026-10-03,12:37:01 | INFO |   force_custom_clip: True
+2026-10-03,12:37:01 | INFO |   force_custom_text: False
+2026-10-03,12:37:01 | INFO |   force_image_size: None
+2026-10-03,12:37:01 | INFO |   force_longclip_loss: False
+2026-10-03,12:37:01 | INFO |   force_patch_dropout: None
+2026-10-03,12:37:01 | INFO |   force_preprocess_val: False
+2026-10-03,12:37:01 | INFO |   force_quick_gelu: True
+2026-10-03,12:37:01 | INFO |   gather_with_grad: False
+2026-10-03,12:37:01 | INFO |   grad_checkpointing: False
+2026-10-03,12:37:01 | INFO |   grad_clip_norm: None
+2026-10-03,12:37:01 | INFO |   horovod: False
+2026-10-03,12:37:01 | INFO |   image_interpolation: None
+2026-10-03,12:37:01 | INFO |   image_mean: None
+2026-10-03,12:37:01 | INFO |   image_resize_mode: None
+2026-10-03,12:37:01 | INFO |   image_std: None
+2026-10-03,12:37:01 | INFO |   imagenet_v2: None
+2026-10-03,12:37:01 | INFO |   imagenet_val: None
+2026-10-03,12:37:01 | INFO |   label_smoothing: 0.0
+2026-10-03,12:37:01 | INFO |   local_loss: False
+2026-10-03,12:37:01 | INFO |   local_rank: 0
+2026-10-03,12:37:01 | INFO |   lock_image: False
+2026-10-03,12:37:01 | INFO |   lock_image_freeze_bn_stats: False
+2026-10-03,12:37:01 | INFO |   lock_image_unlocked_groups: 0
+2026-10-03,12:37:01 | INFO |   lock_text: False
+2026-10-03,12:37:01 | INFO |   lock_text_freeze_layer_norm: False
+2026-10-03,12:37:01 | INFO |   lock_text_unlocked_layers: 0
+2026-10-03,12:37:01 | INFO |   log_dir: None
+2026-10-03,12:37:01 | INFO |   log_every_n_steps: 100
+2026-10-03,12:37:01 | INFO |   log_level: 20
+2026-10-03,12:37:01 | INFO |   log_local: False
+2026-10-03,12:37:01 | INFO |   log_path: /root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/base-full-amp/logs/base-full-amp/eval/out.log
+2026-10-03,12:37:01 | INFO |   logs: /root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/base-full-amp/logs
+2026-10-03,12:37:01 | INFO |   longclip_keep_length: 20
+2026-10-03,12:37:01 | INFO |   longclip_pca_dim: 32
+2026-10-03,12:37:01 | INFO |   longclip_train_mode: both
+2026-10-03,12:37:01 | INFO |   longclip_unfreeze_all: False
+2026-10-03,12:37:01 | INFO |   loss_dist_impl: None
+2026-10-03,12:37:01 | INFO |   loss_short_split_percent: 0.5
+2026-10-03,12:37:01 | INFO |   lr: 0.0005
+2026-10-03,12:37:01 | INFO |   lr_cooldown_end: 0.0
+2026-10-03,12:37:01 | INFO |   lr_cooldown_power: 1.0
+2026-10-03,12:37:01 | INFO |   lr_scheduler: cosine
+2026-10-03,12:37:01 | INFO |   max_n_sentences: None
+2026-10-03,12:37:01 | INFO |   model: ViT-B-16-longclip
+2026-10-03,12:37:01 | INFO |   momentum: None
+2026-10-03,12:37:01 | INFO |   name: base-full-amp
+2026-10-03,12:37:01 | INFO |   no_set_device_rank: False
+2026-10-03,12:37:01 | INFO |   opt: adamw
+2026-10-03,12:37:01 | INFO |   precision: amp
+2026-10-03,12:37:01 | INFO |   pretrained: /root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt
+2026-10-03,12:37:01 | INFO |   pretrained_from_params: None
+2026-10-03,12:37:01 | INFO |   pretrained_image: False
+2026-10-03,12:37:01 | INFO |   rank: 0
+2026-10-03,12:37:01 | INFO |   remote_sync: None
+2026-10-03,12:37:01 | INFO |   remote_sync_frequency: 300
+2026-10-03,12:37:01 | INFO |   remote_sync_protocol: s3
+2026-10-03,12:37:01 | INFO |   report_to:
+2026-10-03,12:37:01 | INFO |   resume: None
+2026-10-03,12:37:01 | INFO |   save_frequency: 1
+2026-10-03,12:37:01 | INFO |   save_most_recent: False
+2026-10-03,12:37:01 | INFO |   seed: 0
+2026-10-03,12:37:01 | INFO |   siglip: False
+2026-10-03,12:37:01 | INFO |   skip_scheduler: False
+2026-10-03,12:37:01 | INFO |   tensorboard: False
+2026-10-03,12:37:01 | INFO |   tensorboard_path:
+2026-10-03,12:37:01 | INFO |   text_no_causal_masking: False
+2026-10-03,12:37:01 | INFO |   text_sampling_mode: vanilla
+2026-10-03,12:37:01 | INFO |   torchcompile: False
+2026-10-03,12:37:01 | INFO |   torchscript: False
+2026-10-03,12:37:01 | INFO |   trace: False
+2026-10-03,12:37:01 | INFO |   train_data: None
+2026-10-03,12:37:01 | INFO |   train_data_upsampling_factors: None
+2026-10-03,12:37:01 | INFO |   train_num_samples: None
+2026-10-03,12:37:01 | INFO |   use_bn_sync: False
+2026-10-03,12:37:01 | INFO |   use_bnb_linear: None
+2026-10-03,12:37:01 | INFO |   val_data: None
+2026-10-03,12:37:01 | INFO |   val_frequency: 1000
+2026-10-03,12:37:01 | INFO |   val_num_samples: None
+2026-10-03,12:37:01 | INFO |   wandb: False
+2026-10-03,12:37:01 | INFO |   wandb_notes:
+2026-10-03,12:37:01 | INFO |   wandb_project_name: open-clip
+2026-10-03,12:37:01 | INFO |   warmup: 10000
+2026-10-03,12:37:01 | INFO |   wd: 0.2
+2026-10-03,12:37:01 | INFO |   workers: 4
+2026-10-03,12:37:01 | INFO |   world_size: 1
+2026-10-03,12:37:01 | INFO |   zeroshot_frequency: 2
+2026-10-03,12:37:01 | INFO | Short and long retrieval.
+2026-10-03,12:37:01 | INFO | Retrieval evaluation on COCO and Flicker.
+2026-10-03,12:37:01 | INFO | creating dataset list...
+2026-10-03,12:37:01 | INFO | dataset list created, pretokenizing...
+2026-10-03,12:37:04 | INFO | pretokenization finished...
+2026-10-03,12:37:04 | INFO | In validation mode, finish constructing the img_cap mapping dict for retrieval
+2026-10-03,12:37:04 | INFO | reusing pre-tokenized datalist that we get from COCOTextDataset, extracting...
+2026-10-03,12:37:04 | INFO | finish extracting all unique images with img_ids from the whole data_list
+2026-10-03,12:37:04 | INFO | creating dataset list...
+2026-10-03,12:37:23 | INFO | pretokenization finished...
+2026-10-03,12:37:23 | INFO | In validation mode, finish constructing the img_cap mapping dict for retrieval
+2026-10-03,12:37:23 | INFO | reusing pre-tokenized datalist that we get from FlickrTextDataset, extracting...
+2026-10-03,12:37:23 | INFO | finish extracting all unique images with img_ids from the whole data_list
+COCO dataset val set: #captions 25014/25014
+Flickr dataset val set: #images 31014, #captions 155070
+
+
+{"dataset": "COCO", "metrics": {"I2T": {"R@1": 0.613, "R@5": 0.8314, "R@10": 0.8944}, "T2I": {"R@1": 0.42947949148476855, "R@5": 0.68541616694651, "R@10": 0.7800431758215399}}, "counts": [5000, 25014], "precision": "amp"}
+2026-10-03,12:38:20 | INFO | Zeroshot Eval COCO: text_to_image_R@1: 0.4295	text_to_image_R@5: 0.6854	text_to_image_R@10: 0.7800	text_to_image_mean_rank: 15.3685	text_to_image_median_rank: 2.0000	image_to_text_R@1: 0.6130	image_to_text_R@5: 0.8314	image_to_text_R@10: 0.8944	image_to_text_mean_rank: 5.5010	image_to_text_median_rank: 1.0000	epoch: 0.0000	num_text_samples: 25014.0000	num_image_samples: 5000.0000
+
+
+{"dataset": "Flickr-full", "metrics": {"I2T": {"R@1": 0.5661636680208938, "R@5": 0.7901592829044948, "R@10": 0.8579028825691624}, "T2I": {"R@1": 0.36603469400915717, "R@5": 0.5937705552331205, "R@10": 0.6844392854839749}}, "counts": [31014, 155070], "precision": "amp"}
+2026-10-03,13:04:01 | INFO | Zeroshot Eval Flickr: text_to_image_R@1: 0.3660	text_to_image_R@5: 0.5938	text_to_image_R@10: 0.6844	text_to_image_mean_rank: 78.3126	text_to_image_median_rank: 3.0000	image_to_text_R@1: 0.5662	image_to_text_R@5: 0.7902	image_to_text_R@10: 0.8579	image_to_text_mean_rank: 11.7086	image_to_text_median_rank: 1.0000	epoch: 0.0000	num_text_samples: 155070.0000	num_image_samples: 31014.0000
+2026-10-03,13:04:01 | INFO | Long text retrieval evaluation on Urban1k and DOCCI.
+2026-10-03,13:04:01 | INFO | loading test set for flickr
+2026-10-03,13:04:01 | INFO | creating dataset list...
+2026-10-03,13:04:04 | INFO | pretokenization finished...
+2026-10-03,13:04:04 | INFO | In validation mode, finish constructing the img_cap mapping dict for retrieval
+2026-10-03,13:04:04 | INFO | reusing pre-tokenized datalist that we get from DocciTextDataset, extracting...
+2026-10-03,13:04:04 | INFO | finish extracting all unique images with img_ids from the whole data_list
+2026-10-03,13:04:04 | INFO | creating dataset list...
+2026-10-03,13:04:04 | INFO | pretokenization finished...
+2026-10-03,13:04:04 | INFO | In validation mode, finish constructing the img_cap mapping dict for retrieval
+2026-10-03,13:04:04 | INFO | reusing pre-tokenized datalist that we get from Urban1kTextDataset, extracting...
+2026-10-03,13:04:04 | INFO | finish extracting all unique images with img_ids from the whole data_list
+2026-10-03,13:04:04 | INFO | creating dataset list...
+2026-10-03,13:04:12 | INFO | pretokenization finished...
+2026-10-03,13:04:12 | INFO | In validation mode, finish constructing the img_cap mapping dict for retrieval
+2026-10-03,13:04:12 | INFO | reusing pre-tokenized datalist that we get from DCITextDataset, extracting...
+2026-10-03,13:04:12 | INFO | finish extracting all unique images with img_ids from the whole data_list
+Using sample_mode: None
+Using sample mode : None
+
+
+2026-10-03,13:04:34 | INFO | creating dataset list...
+2026-10-03,13:04:35 | INFO | pretokenization finished...
+2026-10-03,13:04:35 | INFO | In validation mode, finish constructing the img_cap mapping dict for retrieval
+2026-10-03,13:04:35 | INFO | reusing pre-tokenized datalist that we get from Urban1kTextDataset, extracting...
+2026-10-03,13:04:35 | INFO | finish extracting all unique images with img_ids from the whole data_list
+Using sample mode : None
+{"dataset": "Urban1k", "metrics": {"I2T": {"R@1": 0.933, "R@5": 0.991, "R@10": 0.997}, "T2I": {"R@1": 0.93, "R@5": 0.988, "R@10": 0.995}}, "counts": [1000, 1000], "precision": "amp"}
+2026-10-03,13:04:35 | INFO | Zeroshot Eval Urban1k: text_to_image_R@1: 0.9300	text_to_image_R@5: 0.9880	text_to_image_R@10: 0.9950	text_to_image_mean_rank: 1.2490	text_to_image_median_rank: 1.0000	image_to_text_R@1: 0.9330	image_to_text_R@5: 0.9910	image_to_text_R@10: 0.9970	image_to_text_mean_rank: 1.2120	image_to_text_median_rank: 1.0000	epoch: 0.0000	num_text_samples: 1000.0000	num_image_samples: 1000.0000
+
+
+{"dataset": "DOCCI", "metrics": {"I2T": {"R@1": 0.7962, "R@5": 0.9624, "R@10": 0.9854}, "T2I": {"R@1": 0.7996, "R@5": 0.9584, "R@10": 0.9828}}, "counts": [5000, 5000], "precision": "amp"}
+2026-10-03,13:05:48 | INFO | Zeroshot Eval Docci: text_to_image_R@1: 0.7996	text_to_image_R@5: 0.9584	text_to_image_R@10: 0.9828	text_to_image_mean_rank: 1.8818	text_to_image_median_rank: 1.0000	image_to_text_R@1: 0.7962	image_to_text_R@5: 0.9624	image_to_text_R@10: 0.9854	image_to_text_mean_rank: 1.7514	image_to_text_median_rank: 1.0000	epoch: 0.0000	num_text_samples: 5000.0000	num_image_samples: 5000.0000
+
+
+{"dataset": "DCI-full", "metrics": {"I2T": {"R@1": 0.6846893017296605, "R@5": 0.857014734144779, "R@10": 0.9050608584240871}, "T2I": {"R@1": 0.6746957078795643, "R@5": 0.8461242793081358, "R@10": 0.8949391415759129}}, "counts": [7805, 7805], "precision": "amp"}
+2026-10-03,13:08:07 | INFO | Zeroshot Eval DCI: text_to_image_R@1: 0.6747	text_to_image_R@5: 0.8461	text_to_image_R@10: 0.8949	text_to_image_mean_rank: 11.5049	text_to_image_median_rank: 1.0000	image_to_text_R@1: 0.6847	image_to_text_R@5: 0.8570	image_to_text_R@10: 0.9051	image_to_text_mean_rank: 8.5430	image_to_text_median_rank: 1.0000	epoch: 0.0000	num_text_samples: 7805.0000	num_image_samples: 7805.0000
+{"status": "COMPLETE", "mode": "base-full-amp", "datasets": ["COCO", "Flickr-full", "Urban1k", "DOCCI", "DCI-full"]}
+I1003 13:08:07.943000 1558724 torch/_inductor/remote_cache.py:417] Cache Metrics: None
+I1003 13:08:07.943000 1558724 torch/_inductor/remote_cache.py:417]
+I1003 13:08:07.944000 1558724 torch/_dynamo/eval_frame.py:475] TorchDynamo attempted to trace the following frames: [
+I1003 13:08:07.944000 1558724 torch/_dynamo/eval_frame.py:475]
+I1003 13:08:07.944000 1558724 torch/_dynamo/eval_frame.py:475] ]
+I1003 13:08:07.945000 1558724 torch/_dynamo/utils.py:765] TorchDynamo compilation metrics:
+I1003 13:08:07.945000 1558724 torch/_dynamo/utils.py:765] Function, Runtimes (s)
+I1003 13:08:07.948000 1558724 torch/_subclasses/fake_tensor.py:2843] FakeTensor cache stats:
+I1003 13:08:07.949000 1558724 torch/_subclasses/fake_tensor.py:2844]   cache_hits: 0
+I1003 13:08:07.949000 1558724 torch/_subclasses/fake_tensor.py:2845]   cache_misses: 0

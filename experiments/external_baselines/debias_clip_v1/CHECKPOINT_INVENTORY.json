@@ -1,0 +1,116 @@
+{
+  "filename": "debias_vitb_3e.pt",
+  "path": "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+  "size_bytes": 1797383582,
+  "sha256": "5cdd75077c35ab4d074a8e430c2f7f182ff48d01858d6c345776bf5f2713aa84",
+  "top_level_keys": [
+    "epoch",
+    "name",
+    "state_dict",
+    "optimizer",
+    "scaler"
+  ],
+  "epoch": 3,
+  "args": null,
+  "state_dict_key_count": 303,
+  "tensor_numel": 149835265,
+  "shapes": {
+    "visual.conv1.weight": [
+      768,
+      3,
+      16,
+      16
+    ],
+    "visual.positional_embedding": [
+      197,
+      768
+    ],
+    "visual.proj": [
+      768,
+      512
+    ],
+    "text.positional_embedding": [
+      248,
+      512
+    ],
+    "text.positional_embedding_res": [
+      248,
+      512
+    ],
+    "text.token_embedding.weight": [
+      49408,
+      512
+    ],
+    "text.text_projection": [
+      512,
+      512
+    ],
+    "logit_scale": []
+  },
+  "logit_scale": 4.604980945587158,
+  "has_optimizer": true,
+  "has_scaler": true,
+  "has_beta_clip_conditioner": false,
+  "status": "COMPLETE_VERIFIED_OFFICIAL_PIPELINE",
+  "architecture": "ViT-B/16",
+  "text_context_length": 248,
+  "logit_scale_exp": 99.9810777503902,
+  "provenance": {
+    "path": "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+    "filename": "debias_vitb_3e.pt",
+    "size_bytes": 1797383582,
+    "sha256": "5cdd75077c35ab4d074a8e430c2f7f182ff48d01858d6c345776bf5f2713aa84",
+    "source": "official author-provided Google Drive checkpoint",
+    "transfer_method": "User manually downloaded official file, shared via USTC cloud disk, and transferred to evaluation server",
+    "transfer_host": "pan.ustc.edu.cn",
+    "elapsed_seconds": 270.5676145553589,
+    "official_google_drive_id": "1MVGMHRmFMTX2EalNOv8a3i1FnxIEyvSW",
+    "identity_status": "verified by transferred file, actual architecture/metadata, strict official load and Urban T2I reproduction"
+  },
+  "strict_loading": [
+    {
+      "strict": true,
+      "tensor_count": 303,
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "equal_effective_official_state": true,
+      "raw_checkpoint_mismatches": [
+        {
+          "key": "text.positional_embedding_res",
+          "max_abs": 0.000978708267211914
+        }
+      ]
+    }
+  ],
+  "checkpoint_metadata_limit": "Checkpoint contains no args/config; training settings must be attributed to the pinned official script, not saved metadata.",
+  "official_loading_preserves_all_raw_tensors": false,
+  "official_loading_discrepancy": "Pinned official loader replaces text.positional_embedding_res with text.positional_embedding for this custom-format checkpoint. Preserve and report behavior; do not fix to improve published-score matching.",
+  "saved_checkpoint_name": "new_vlm_slurm_longclip_v6SOT_wpca_short010_vitb16_openai__2025_11_02-11_21_23",
+  "saved_optimizer_groups": [
+    {
+      "lr": 1.1902423935339357e-14,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08,
+      "weight_decay": 0.01,
+      "initial_lr": null,
+      "parameter_ids_count": 303
+    }
+  ],
+  "actual_model_construction": {
+    "model": "ViT-B-16-longclip",
+    "force_custom_clip": true,
+    "force_quick_gelu": true,
+    "longclip_keep_length": 20,
+    "longclip_pca_dim": 32,
+    "precision": "fp32"
+  },
+  "raw_checkpoint_tensor_mismatches_after_official_loading": [
+    {
+      "key": "text.positional_embedding_res",
+      "max_abs_difference": 0.000978708267211914
+    }
+  ]
+}

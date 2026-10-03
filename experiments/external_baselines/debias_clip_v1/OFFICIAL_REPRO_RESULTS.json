@@ -1,0 +1,907 @@
+{
+  "status": "COMPLETE",
+  "mode": "base-full-amp",
+  "argv": [
+    "--data-root-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+    "--csv-img-base-path",
+    "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+    "--force-custom-clip",
+    "--eval-data",
+    "base_full",
+    "--model",
+    "ViT-B-16-longclip",
+    "--pretrained",
+    "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+    "--force-quick-gelu",
+    "--logs",
+    "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/base-full-amp/logs",
+    "--name",
+    "base-full-amp"
+  ],
+  "datasets": {
+    "COCO": {
+      "dataset": "COCO",
+      "metrics": {
+        "I2T": {
+          "R@1": 0.613,
+          "R@5": 0.8314,
+          "R@10": 0.8944
+        },
+        "T2I": {
+          "R@1": 0.42947949148476855,
+          "R@5": 0.68541616694651,
+          "R@10": 0.7800431758215399
+        }
+      },
+      "official_raw_metrics": {
+        "text_to_image_R@1": 0.42947949148476855,
+        "text_to_image_R@5": 0.68541616694651,
+        "text_to_image_R@10": 0.7800431758215399,
+        "text_to_image_mean_rank": 15.368514060974121,
+        "text_to_image_median_rank": 2.0,
+        "image_to_text_R@1": 0.613,
+        "image_to_text_R@5": 0.8314,
+        "image_to_text_R@10": 0.8944,
+        "image_to_text_mean_rank": 5.500999927520752,
+        "image_to_text_median_rank": 1.0,
+        "epoch": 0,
+        "num_text_samples": 25014,
+        "num_image_samples": 5000
+      },
+      "n_images": 5000,
+      "n_captions": 25014,
+      "image_embedding": {
+        "shape": [
+          5000,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.833240296875374e-08,
+        "norm_min": 0.9999998211860657,
+        "norm_max": 1.0000001192092896
+      },
+      "text_embedding": {
+        "shape": [
+          25014,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 5.4498507040534605e-08,
+        "norm_min": 0.9999997615814209,
+        "norm_max": 1.000000238418579
+      },
+      "similarity_shape": [
+        5000,
+        25014
+      ],
+      "logit_scale_exp": 99.98107147216797,
+      "precision": "amp",
+      "image_encoding_batch": 16,
+      "text_encoding_batch": 16,
+      "official_dataset_type": "COCOTextDataset",
+      "official_evaluator": "training.train.retrieval_on_split / compute_retrieval"
+    },
+    "Flickr-full": {
+      "dataset": "Flickr-full",
+      "metrics": {
+        "I2T": {
+          "R@1": 0.5661636680208938,
+          "R@5": 0.7901592829044948,
+          "R@10": 0.8579028825691624
+        },
+        "T2I": {
+          "R@1": 0.36603469400915717,
+          "R@5": 0.5937705552331205,
+          "R@10": 0.6844392854839749
+        }
+      },
+      "official_raw_metrics": {
+        "text_to_image_R@1": 0.36603469400915717,
+        "text_to_image_R@5": 0.5937705552331205,
+        "text_to_image_R@10": 0.6844392854839749,
+        "text_to_image_mean_rank": 78.31258392333984,
+        "text_to_image_median_rank": 3.0,
+        "image_to_text_R@1": 0.5661636680208938,
+        "image_to_text_R@5": 0.7901592829044948,
+        "image_to_text_R@10": 0.8579028825691624,
+        "image_to_text_mean_rank": 11.708647727966309,
+        "image_to_text_median_rank": 1.0,
+        "epoch": 0,
+        "num_text_samples": 155070,
+        "num_image_samples": 31014
+      },
+      "n_images": 31014,
+      "n_captions": 155070,
+      "image_embedding": {
+        "shape": [
+          31014,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.830036459679832e-08,
+        "norm_min": 0.9999998211860657,
+        "norm_max": 1.0000001192092896
+      },
+      "text_embedding": {
+        "shape": [
+          155070,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 5.221296106583395e-08,
+        "norm_min": 0.9999997019767761,
+        "norm_max": 1.000000238418579
+      },
+      "similarity_shape": [
+        31014,
+        155070
+      ],
+      "logit_scale_exp": 99.98107147216797,
+      "precision": "amp",
+      "image_encoding_batch": 1,
+      "text_encoding_batch": 16,
+      "official_dataset_type": "FlickrTextDataset",
+      "official_evaluator": "training.train.retrieval_on_split / compute_retrieval"
+    },
+    "Urban1k": {
+      "dataset": "Urban1k",
+      "metrics": {
+        "I2T": {
+          "R@1": 0.933,
+          "R@5": 0.991,
+          "R@10": 0.997
+        },
+        "T2I": {
+          "R@1": 0.93,
+          "R@5": 0.988,
+          "R@10": 0.995
+        }
+      },
+      "official_raw_metrics": {
+        "text_to_image_R@1": 0.93,
+        "text_to_image_R@5": 0.988,
+        "text_to_image_R@10": 0.995,
+        "text_to_image_mean_rank": 1.248999997973442,
+        "text_to_image_median_rank": 1.0,
+        "image_to_text_R@1": 0.933,
+        "image_to_text_R@5": 0.991,
+        "image_to_text_R@10": 0.997,
+        "image_to_text_mean_rank": 1.211999997496605,
+        "image_to_text_median_rank": 1.0,
+        "epoch": 0,
+        "num_text_samples": 1000,
+        "num_image_samples": 1000
+      },
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_embedding": {
+        "shape": [
+          1000,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.946426557239647e-08,
+        "norm_min": 0.9999998211860657,
+        "norm_max": 1.0000001192092896
+      },
+      "text_embedding": {
+        "shape": [
+          1000,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.08833322751434e-08,
+        "norm_min": 0.9999998807907104,
+        "norm_max": 1.0000001192092896
+      },
+      "similarity_shape": [
+        1000,
+        1000
+      ],
+      "logit_scale_exp": 99.98107147216797,
+      "precision": "amp",
+      "image_encoding_batch": 1,
+      "text_encoding_batch": 16,
+      "official_dataset_type": "Urban1kTextDataset",
+      "official_evaluator": "training.train.retrieval_on_split / compute_retrieval",
+      "embedding_audit": {
+        "adapter_max_abs": {
+          "image_features": 0.0,
+          "text_features": 0.0
+        },
+        "direct_scaled_score_max_abs": 0.0,
+        "direct_scaled_recall_equal_official": true,
+        "plain_unscaled_recall": {
+          "I2T": {
+            "R@1": 0.933,
+            "R@5": 0.991,
+            "R@10": 0.997
+          },
+          "T2I": {
+            "R@1": 0.93,
+            "R@5": 0.988,
+            "R@10": 0.995
+          }
+        },
+        "plain_vs_scaled_top1_i2t_mismatches": 0,
+        "plain_vs_scaled_top1_t2i_mismatches": 0,
+        "plain_vs_scaled_note": "Global positive scale is rank-invariant in exact arithmetic; finite-precision ties are measured, not assumed."
+      },
+      "published_T2I_R1_percent": 93.0,
+      "delta_to_published_T2I_pp": 0.0,
+      "correct_T2I_queries": 930,
+      "published_equivalent_correct_T2I_queries": 930,
+      "delta_correct_T2I_queries": 0,
+      "classification": "REPRODUCED"
+    },
+    "DOCCI": {
+      "dataset": "DOCCI",
+      "metrics": {
+        "I2T": {
+          "R@1": 0.7962,
+          "R@5": 0.9624,
+          "R@10": 0.9854
+        },
+        "T2I": {
+          "R@1": 0.7996,
+          "R@5": 0.9584,
+          "R@10": 0.9828
+        }
+      },
+      "official_raw_metrics": {
+        "text_to_image_R@1": 0.7996,
+        "text_to_image_R@5": 0.9584,
+        "text_to_image_R@10": 0.9828,
+        "text_to_image_mean_rank": 1.8817999958992004,
+        "text_to_image_median_rank": 1.0,
+        "image_to_text_R@1": 0.7962,
+        "image_to_text_R@5": 0.9624,
+        "image_to_text_R@10": 0.9854,
+        "image_to_text_mean_rank": 1.7513999938964844,
+        "image_to_text_median_rank": 1.0,
+        "epoch": 0,
+        "num_text_samples": 5000,
+        "num_image_samples": 5000
+      },
+      "n_images": 5000,
+      "n_captions": 5000,
+      "image_embedding": {
+        "shape": [
+          5000,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.720919122291889e-08,
+        "norm_min": 0.9999998211860657,
+        "norm_max": 1.0000001192092896
+      },
+      "text_embedding": {
+        "shape": [
+          5000,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.1152912189090785e-08,
+        "norm_min": 0.9999998807907104,
+        "norm_max": 1.0000001192092896
+      },
+      "similarity_shape": [
+        5000,
+        5000
+      ],
+      "logit_scale_exp": 99.98107147216797,
+      "precision": "amp",
+      "image_encoding_batch": 16,
+      "text_encoding_batch": 16,
+      "official_dataset_type": "DocciTextDataset",
+      "official_evaluator": "training.train.retrieval_on_split / compute_retrieval"
+    },
+    "DCI-full": {
+      "dataset": "DCI-full",
+      "metrics": {
+        "I2T": {
+          "R@1": 0.6846893017296605,
+          "R@5": 0.857014734144779,
+          "R@10": 0.9050608584240871
+        },
+        "T2I": {
+          "R@1": 0.6746957078795643,
+          "R@5": 0.8461242793081358,
+          "R@10": 0.8949391415759129
+        }
+      },
+      "official_raw_metrics": {
+        "text_to_image_R@1": 0.6746957078795643,
+        "text_to_image_R@5": 0.8461242793081358,
+        "text_to_image_R@10": 0.8949391415759129,
+        "text_to_image_mean_rank": 11.504932403564453,
+        "text_to_image_median_rank": 1.0,
+        "image_to_text_R@1": 0.6846893017296605,
+        "image_to_text_R@5": 0.857014734144779,
+        "image_to_text_R@10": 0.9050608584240871,
+        "image_to_text_mean_rank": 8.542985439300537,
+        "image_to_text_median_rank": 1.0,
+        "epoch": 0,
+        "num_text_samples": 7805,
+        "num_image_samples": 7805
+      },
+      "n_images": 7805,
+      "n_captions": 7805,
+      "image_embedding": {
+        "shape": [
+          7805,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.527143104837705e-08,
+        "norm_min": 0.9999998211860657,
+        "norm_max": 1.0000001192092896
+      },
+      "text_embedding": {
+        "shape": [
+          7805,
+          512
+        ],
+        "dtype": "torch.float32",
+        "norm_mean": 1.0,
+        "norm_std": 4.1196415168087697e-08,
+        "norm_min": 0.9999998211860657,
+        "norm_max": 1.0000001192092896
+      },
+      "similarity_shape": [
+        7805,
+        7805
+      ],
+      "logit_scale_exp": 99.98107147216797,
+      "precision": "amp",
+      "image_encoding_batch": 1,
+      "text_encoding_batch": 16,
+      "official_dataset_type": "DCITextDataset",
+      "official_evaluator": "training.train.retrieval_on_split / compute_retrieval"
+    }
+  },
+  "strict_loading": [
+    {
+      "strict": true,
+      "tensor_count": 303,
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "equal_effective_official_state": true,
+      "raw_checkpoint_mismatches": [
+        {
+          "key": "text.positional_embedding_res",
+          "max_abs": 0.000978708267211914
+        }
+      ]
+    }
+  ],
+  "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7f2f04b78af0>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+  "official_sources_modified": false,
+  "no_training_or_finetuning": true,
+  "source": {
+    "repo": "https://github.com/TRAILab/DeBias-CLIP",
+    "commit": "18a06c98bcb50018e22c3febca2aefc8c4a12e0d",
+    "source_sha256": {
+      "README.md": "ad9fe262f5ca15124b423ce0d2c59cee63d8ff2ce0380071fd0b5f901c6e215a",
+      "requirements.txt": "18420cb889cda71741adc973efc0423f9bc03a3f07dd3620000933c38ba7b58d",
+      "scripts/test_script.sh": "eadb2d2dadb73ff1f4dd96b2ac0155edfdd40be79689d8d54df3df9efae21d40",
+      "scripts/train_script.sh": "16cbdecd8b3fff4669eb1544aa0a7be997ffdc1ceef5e1357ab0845f4d517579",
+      "data_parsers/data_folder.md": "f20aeff042010eec80cd82235b71a097d1e3c5943963d517d21db9e8f6174475",
+      "data_parsers/parse_flickr30k_captions.py": "9f7eb18b9744ab76371ebe79cb63a5bcdcce9ae42039560b15a6b0fa9fc16a22",
+      "data_parsers/parse_urban1k_captions.py": "6a680aaedea21c42557b42852143dc344c6adfb38c4261cbbf49c36ac5da9d85",
+      "main.py": "13826ce60f6114560b96b5dcd1aadc4cd050319f02dbe6f7ff5fc8e9284dcd4f",
+      "training/data.py": "6fc2e54c2e037efa99de6113d83cc11f88cf7f36e78f4154529383f43c494776",
+      "training/train.py": "661942bf4ad42223c88317035ecb192712f09e642248f4a9ddfd632cb617eb62",
+      "training/params_new.py": "b18059105d2cf60c53170217636144a07895a84f31a459d795adfc3b7e2d6ff0",
+      "local_clip/model.py": "4e63fb526300db6fada6c1a573de3a0fc2b1091ed269b12d104bf0025ffd36a8",
+      "local_clip/factory.py": "63af9d9e3c88559031342fbc886416f24224202445be2a0740e8f4f03097bb4a",
+      "local_clip/transformer.py": "3d60b16ca1ac8411030e0ef1928fc3590e0f246fc596de2f8dcc86eb3b6e0baf",
+      "local_clip/model_configs/ViT-B-16-longclip.json": "b4dec9e3573feb463ab92c326d751afca15ef421b37207be14b3ee1c45938b91"
+    },
+    "working_tree_clean": true
+  },
+  "checkpoint": {
+    "filename": "debias_vitb_3e.pt",
+    "path": "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+    "size_bytes": 1797383582,
+    "sha256": "5cdd75077c35ab4d074a8e430c2f7f182ff48d01858d6c345776bf5f2713aa84",
+    "top_level_keys": [
+      "epoch",
+      "name",
+      "state_dict",
+      "optimizer",
+      "scaler"
+    ],
+    "epoch": 3,
+    "args": null,
+    "state_dict_key_count": 303,
+    "tensor_numel": 149835265,
+    "shapes": {
+      "visual.conv1.weight": [
+        768,
+        3,
+        16,
+        16
+      ],
+      "visual.positional_embedding": [
+        197,
+        768
+      ],
+      "visual.proj": [
+        768,
+        512
+      ],
+      "text.positional_embedding": [
+        248,
+        512
+      ],
+      "text.positional_embedding_res": [
+        248,
+        512
+      ],
+      "text.token_embedding.weight": [
+        49408,
+        512
+      ],
+      "text.text_projection": [
+        512,
+        512
+      ],
+      "logit_scale": []
+    },
+    "logit_scale": 4.604980945587158,
+    "has_optimizer": true,
+    "has_scaler": true,
+    "has_beta_clip_conditioner": false,
+    "status": "VERIFIED_STRICT_OFFICIAL_LOAD_WITH_ONE_RAW_POSITIONAL_MISMATCH",
+    "architecture": "ViT-B/16",
+    "text_context_length": 248,
+    "logit_scale_exp": 99.9810777503902,
+    "provenance": {
+      "path": "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+      "filename": "debias_vitb_3e.pt",
+      "size_bytes": 1797383582,
+      "sha256": "5cdd75077c35ab4d074a8e430c2f7f182ff48d01858d6c345776bf5f2713aa84",
+      "source": "official author-provided Google Drive checkpoint",
+      "transfer_method": "User manually downloaded official file, shared via USTC cloud disk, and transferred to evaluation server",
+      "transfer_host": "pan.ustc.edu.cn",
+      "elapsed_seconds": 270.5676145553589,
+      "official_google_drive_id": "1MVGMHRmFMTX2EalNOv8a3i1FnxIEyvSW",
+      "identity_status": "verified by transferred file, actual architecture/metadata, strict official load and Urban T2I reproduction"
+    },
+    "strict_loading": [
+      {
+        "strict": true,
+        "tensor_count": 303,
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "equal_effective_official_state": true,
+        "raw_checkpoint_mismatches": [
+          {
+            "key": "text.positional_embedding_res",
+            "max_abs": 0.000978708267211914
+          }
+        ]
+      }
+    ],
+    "checkpoint_metadata_limit": "Checkpoint contains no args/config; training settings must be attributed to the pinned official script, not saved metadata.",
+    "official_loading_preserves_all_raw_tensors": false,
+    "official_loading_discrepancy": "Pinned official loader replaces text.positional_embedding_res with text.positional_embedding for this custom-format checkpoint. Preserve and report behavior; do not fix to improve published-score matching.",
+    "saved_checkpoint_name": "new_vlm_slurm_longclip_v6SOT_wpca_short010_vitb16_openai__2025_11_02-11_21_23",
+    "saved_optimizer_groups": [
+      {
+        "lr": 1.1902423935339357e-14,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0.01,
+        "initial_lr": null,
+        "parameter_ids_count": 303
+      }
+    ]
+  },
+  "phase_a_uses_said_manifest": false,
+  "published_reference": {
+    "COCO": {
+      "I2T": 61.3,
+      "T2I": 43.0
+    },
+    "Flickr-full": {
+      "I2T": 56.6,
+      "T2I": 36.6
+    },
+    "Urban1k": {
+      "I2T": 93.1,
+      "T2I": 93.0
+    },
+    "DOCCI": {
+      "I2T": 79.7,
+      "T2I": 80.0
+    },
+    "DCI-full": {
+      "I2T": 68.5,
+      "T2I": 67.6
+    },
+    "Long-DCI (paper)": {
+      "I2T": 57.8,
+      "T2I": 57.4
+    }
+  },
+  "first_urban_sanity": {
+    "status": "COMPLETE",
+    "mode": "urban-amp",
+    "argv": [
+      "--data-root-dir",
+      "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "--csv-img-base-path",
+      "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "--force-custom-clip",
+      "--eval-data",
+      "base_full",
+      "--model",
+      "ViT-B-16-longclip",
+      "--pretrained",
+      "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+      "--force-quick-gelu",
+      "--logs",
+      "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/urban-amp/logs",
+      "--name",
+      "urban-amp"
+    ],
+    "datasets": {
+      "Urban1k": {
+        "dataset": "Urban1k",
+        "metrics": {
+          "I2T": {
+            "R@1": 0.933,
+            "R@5": 0.991,
+            "R@10": 0.997
+          },
+          "T2I": {
+            "R@1": 0.93,
+            "R@5": 0.988,
+            "R@10": 0.995
+          }
+        },
+        "official_raw_metrics": {
+          "text_to_image_R@1": 0.93,
+          "text_to_image_R@5": 0.988,
+          "text_to_image_R@10": 0.995,
+          "text_to_image_mean_rank": 1.248999997973442,
+          "text_to_image_median_rank": 1.0,
+          "image_to_text_R@1": 0.933,
+          "image_to_text_R@5": 0.991,
+          "image_to_text_R@10": 0.997,
+          "image_to_text_mean_rank": 1.211999997496605,
+          "image_to_text_median_rank": 1.0,
+          "epoch": 0,
+          "num_text_samples": 1000,
+          "num_image_samples": 1000
+        },
+        "n_images": 1000,
+        "n_captions": 1000,
+        "image_embedding": {
+          "shape": [
+            1000,
+            512
+          ],
+          "dtype": "torch.float32",
+          "norm_mean": 1.0,
+          "norm_std": 4.946426557239647e-08,
+          "norm_min": 0.9999998211860657,
+          "norm_max": 1.0000001192092896
+        },
+        "text_embedding": {
+          "shape": [
+            1000,
+            512
+          ],
+          "dtype": "torch.float32",
+          "norm_mean": 1.0,
+          "norm_std": 4.08833322751434e-08,
+          "norm_min": 0.9999998807907104,
+          "norm_max": 1.0000001192092896
+        },
+        "similarity_shape": [
+          1000,
+          1000
+        ],
+        "logit_scale_exp": 99.98107147216797,
+        "precision": "amp",
+        "image_encoding_batch": 1,
+        "text_encoding_batch": 16,
+        "official_dataset_type": "Urban1kTextDataset",
+        "official_evaluator": "training.train.retrieval_on_split / compute_retrieval",
+        "embedding_audit": {
+          "adapter_max_abs": {
+            "image_features": 0.0,
+            "text_features": 0.0
+          },
+          "direct_scaled_score_max_abs": 0.0,
+          "direct_scaled_recall_equal_official": true,
+          "plain_unscaled_recall": {
+            "I2T": {
+              "R@1": 0.933,
+              "R@5": 0.991,
+              "R@10": 0.997
+            },
+            "T2I": {
+              "R@1": 0.93,
+              "R@5": 0.988,
+              "R@10": 0.995
+            }
+          },
+          "plain_vs_scaled_top1_i2t_mismatches": 0,
+          "plain_vs_scaled_top1_t2i_mismatches": 0,
+          "plain_vs_scaled_note": "Global positive scale is rank-invariant in exact arithmetic; finite-precision ties are measured, not assumed."
+        },
+        "published_T2I_R1_percent": 93.0,
+        "delta_to_published_T2I_pp": 0.0,
+        "correct_T2I_queries": 930,
+        "published_equivalent_correct_T2I_queries": 930,
+        "delta_correct_T2I_queries": 0,
+        "classification": "REPRODUCED"
+      }
+    },
+    "strict_loading": [
+      {
+        "strict": true,
+        "tensor_count": 303,
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "equal_effective_official_state": true,
+        "raw_checkpoint_mismatches": [
+          {
+            "key": "text.positional_embedding_res",
+            "max_abs": 0.000978708267211914
+          }
+        ]
+      }
+    ],
+    "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7fcd5fbd4af0>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+    "official_sources_modified": false,
+    "no_training_or_finetuning": true
+  },
+  "separate_fp32_urban_diagnostic": {
+    "status": "COMPLETE",
+    "mode": "urban-fp32",
+    "argv": [
+      "--data-root-dir",
+      "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "--csv-img-base-path",
+      "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "--force-custom-clip",
+      "--eval-data",
+      "base_full",
+      "--model",
+      "ViT-B-16-longclip",
+      "--pretrained",
+      "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+      "--force-quick-gelu",
+      "--logs",
+      "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/urban-fp32/logs",
+      "--name",
+      "urban-fp32",
+      "--precision",
+      "fp32"
+    ],
+    "datasets": {
+      "Urban1k": {
+        "dataset": "Urban1k",
+        "metrics": {
+          "I2T": {
+            "R@1": 0.933,
+            "R@5": 0.991,
+            "R@10": 0.997
+          },
+          "T2I": {
+            "R@1": 0.931,
+            "R@5": 0.987,
+            "R@10": 0.995
+          }
+        },
+        "official_raw_metrics": {
+          "text_to_image_R@1": 0.931,
+          "text_to_image_R@5": 0.987,
+          "text_to_image_R@10": 0.995,
+          "text_to_image_mean_rank": 1.248999997973442,
+          "text_to_image_median_rank": 1.0,
+          "image_to_text_R@1": 0.933,
+          "image_to_text_R@5": 0.991,
+          "image_to_text_R@10": 0.997,
+          "image_to_text_mean_rank": 1.210999995470047,
+          "image_to_text_median_rank": 1.0,
+          "epoch": 0,
+          "num_text_samples": 1000,
+          "num_image_samples": 1000
+        },
+        "n_images": 1000,
+        "n_captions": 1000,
+        "image_embedding": {
+          "shape": [
+            1000,
+            512
+          ],
+          "dtype": "torch.float32",
+          "norm_mean": 1.0,
+          "norm_std": 5.0248896599214277e-08,
+          "norm_min": 0.9999998211860657,
+          "norm_max": 1.0000001192092896
+        },
+        "text_embedding": {
+          "shape": [
+            1000,
+            512
+          ],
+          "dtype": "torch.float32",
+          "norm_mean": 1.0,
+          "norm_std": 4.312689583230167e-08,
+          "norm_min": 0.9999998807907104,
+          "norm_max": 1.0000001192092896
+        },
+        "similarity_shape": [
+          1000,
+          1000
+        ],
+        "logit_scale_exp": 99.98107147216797,
+        "precision": "fp32",
+        "image_encoding_batch": 1,
+        "text_encoding_batch": 16,
+        "official_dataset_type": "Urban1kTextDataset",
+        "official_evaluator": "training.train.retrieval_on_split / compute_retrieval",
+        "embedding_audit": {
+          "adapter_max_abs": {
+            "image_features": 0.0,
+            "text_features": 0.0
+          },
+          "direct_scaled_score_max_abs": 0.0,
+          "direct_scaled_recall_equal_official": true,
+          "plain_unscaled_recall": {
+            "I2T": {
+              "R@1": 0.933,
+              "R@5": 0.991,
+              "R@10": 0.997
+            },
+            "T2I": {
+              "R@1": 0.931,
+              "R@5": 0.987,
+              "R@10": 0.995
+            }
+          },
+          "plain_vs_scaled_top1_i2t_mismatches": 0,
+          "plain_vs_scaled_top1_t2i_mismatches": 0,
+          "plain_vs_scaled_note": "Global positive scale is rank-invariant in exact arithmetic; finite-precision ties are measured, not assumed."
+        },
+        "published_T2I_R1_percent": 93.0,
+        "delta_to_published_T2I_pp": 0.10000000000000853,
+        "correct_T2I_queries": 931,
+        "published_equivalent_correct_T2I_queries": 930,
+        "delta_correct_T2I_queries": 1,
+        "classification": "NEAR-REPRODUCED"
+      }
+    },
+    "strict_loading": [
+      {
+        "strict": true,
+        "tensor_count": 303,
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "equal_effective_official_state": true,
+        "raw_checkpoint_mismatches": [
+          {
+            "key": "text.positional_embedding_res",
+            "max_abs": 0.000978708267211914
+          }
+        ]
+      }
+    ],
+    "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7f6490b58af0>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+    "official_sources_modified": false,
+    "no_training_or_finetuning": true
+  },
+  "dataset_protocol_audit": {
+    "COCO": {
+      "image_count": 5000,
+      "unique_image_paths": 5000,
+      "caption_count": 25014,
+      "full_image_candidates": 5000,
+      "full_text_candidates": 25014,
+      "missing_images": 0,
+      "missing_examples": [],
+      "raw_caption_sha256": "745591101873d937cfbd0062cfd8a34c5a611daa550bfe1b629cd3ba43a9dac4",
+      "pair_sha256": "9c70a60f474e996748091110b34a8ffbf0b3f788e8da0a757e6e6abfc017ce90",
+      "root": "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "official_dataset_parser_executed": true,
+      "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9",
+      "said_image_count": 5000,
+      "said_caption_count": 25000,
+      "caption_count_histogram": {
+        "5": 4987,
+        "6": 12,
+        "7": 1
+      },
+      "official_extra_captions": 14,
+      "candidate_order_identical": false,
+      "caption_protocol_equivalent": false
+    },
+    "Flickr-full": {
+      "image_count": 31014,
+      "unique_image_paths": 31014,
+      "caption_count": 155070,
+      "full_image_candidates": 31014,
+      "full_text_candidates": 155070,
+      "missing_images": 0,
+      "missing_examples": [],
+      "raw_caption_sha256": "8ebb8063dd9211ee2da28fdff6c560e62226246168c0869e0cca58f85ad6f978",
+      "pair_sha256": "13c269d3ebdfc8c08de35490b3e78384b90d8332b57f62fd8d1379a844b026c2",
+      "root": "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "official_dataset_parser_executed": true,
+      "said_test1k": [
+        1000,
+        5000
+      ],
+      "composition": "val + train + test from official reader; no split override",
+      "directly_comparable_to_said_test1k": false
+    },
+    "Urban1k": {
+      "image_count": 1000,
+      "unique_image_paths": 1000,
+      "caption_count": 1000,
+      "full_image_candidates": 1000,
+      "full_text_candidates": 1000,
+      "missing_images": 0,
+      "missing_examples": [],
+      "raw_caption_sha256": "d6eaab3a04e133e2b4ef22fd330470f646382e8db4855b9d670e70098f43f586",
+      "pair_sha256": "9abc8cfbbb9174670ac2486994153e73d0acdacb203e0dc5496ce9efd47cd027",
+      "root": "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "official_dataset_parser_executed": true
+    },
+    "DOCCI": {
+      "image_count": 5000,
+      "unique_image_paths": 5000,
+      "caption_count": 5000,
+      "full_image_candidates": 5000,
+      "full_text_candidates": 5000,
+      "missing_images": 0,
+      "missing_examples": [],
+      "raw_caption_sha256": "60d6fee1fb4df7bc7f79b3406443942f6eee1eb4ae5dcca2f9b2233ccebbe02a",
+      "pair_sha256": "5f1f868a5936b6e308f133b4f64f28bd564b159d35aac99f75b86448f1ca5c6b",
+      "root": "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "official_dataset_parser_executed": true,
+      "said_pair_count": 5000,
+      "raw_caption_different_count": 0,
+      "sorted_pairs_identical": true,
+      "first20_diffs": []
+    },
+    "DCI-full": {
+      "image_count": 7805,
+      "unique_image_paths": 7805,
+      "caption_count": 7805,
+      "full_image_candidates": 7805,
+      "full_text_candidates": 7805,
+      "missing_images": 0,
+      "missing_examples": [],
+      "raw_caption_sha256": "2f1623c80b9f3d65e5031267b18f84c8078dadd8e59d9f9b35e4a291c6dc7b7a",
+      "pair_sha256": "c07e50d780449d06c2d3b9c56c3a68ecb8172e17e4d848fc6dcf40f7bac0f31c",
+      "root": "/root/lk_projects/SAID-nest-clip-v1/debias_clip_official_v1/official-data",
+      "official_dataset_parser_executed": true,
+      "annotation_splits_sha256": "49e6f40651ed60c4a6f5ad88ff267616043af3eab326f56343708ec2a4845e38",
+      "caption_construction": "(short_caption + extra_caption).strip(); no inserted separator",
+      "all_splits": true,
+      "said_long_dci_manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "directly_comparable_to_said_long_dci": false
+    }
+  }
+}

@@ -1,0 +1,416 @@
+{
+  "status": "COMPLETE",
+  "checkpoint": {
+    "filename": "debias_vitb_3e.pt",
+    "path": "/root/lk_projects/SAID-assets/external_baselines/debias_clip_v1/checkpoints/debias_vitb_3e.pt",
+    "size_bytes": 1797383582,
+    "sha256": "5cdd75077c35ab4d074a8e430c2f7f182ff48d01858d6c345776bf5f2713aa84",
+    "top_level_keys": [
+      "epoch",
+      "name",
+      "state_dict",
+      "optimizer",
+      "scaler"
+    ],
+    "epoch": 3,
+    "args": null,
+    "state_dict_key_count": 303,
+    "tensor_numel": 149835265,
+    "shapes": {
+      "visual.conv1.weight": [
+        768,
+        3,
+        16,
+        16
+      ],
+      "visual.positional_embedding": [
+        197,
+        768
+      ],
+      "visual.proj": [
+        768,
+        512
+      ],
+      "text.positional_embedding": [
+        248,
+        512
+      ],
+      "text.positional_embedding_res": [
+        248,
+        512
+      ],
+      "text.token_embedding.weight": [
+        49408,
+        512
+      ],
+      "text.text_projection": [
+        512,
+        512
+      ],
+      "logit_scale": []
+    },
+    "logit_scale": 4.604980945587158,
+    "has_optimizer": true,
+    "has_scaler": true,
+    "has_beta_clip_conditioner": false,
+    "official_commit": "18a06c98bcb50018e22c3febca2aefc8c4a12e0d",
+    "strict_load": [
+      {
+        "module": "CustomCLIP",
+        "tensor_count": 303,
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "all_loaded_tensors_equal_effective_official_state": true
+      }
+    ],
+    "construction": {
+      "model": "ViT-B-16-longclip",
+      "force_custom_clip": true,
+      "force_quick_gelu": true,
+      "longclip_keep_length": 20,
+      "longclip_pca_dim": 32,
+      "precision": "fp32"
+    },
+    "tokenizer": "open_clip.tokenizer.SimpleTokenizer",
+    "image_preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_to_rgb at 0x7f008ac8f250>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+    "preprocess_cfg": {
+      "size": [
+        224,
+        224
+      ],
+      "mode": "RGB",
+      "mean": [
+        0.48145466,
+        0.4578275,
+        0.40821073
+      ],
+      "std": [
+        0.26862954,
+        0.26130258,
+        0.27577711
+      ],
+      "interpolation": "bicubic",
+      "resize_mode": "shortest",
+      "fill_color": 0
+    },
+    "raw_checkpoint_tensor_mismatches_after_official_loading": [
+      {
+        "key": "text.positional_embedding_res",
+        "max_abs_difference": 0.000978708267211914
+      }
+    ],
+    "all_loaded_tensors_equal_raw_checkpoint": false,
+    "official_source_modified": false,
+    "no_training": true,
+    "configuration_provenance": "No args in checkpoint; actual shapes plus pinned official test-script defaults. Training flags recorded separately from saved metadata."
+  },
+  "datasets": {
+    "Urban-1k": {
+      "dataset": "Urban-1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "metrics": {
+        "I2T": {
+          "R@1": 0.9330000281333923,
+          "R@5": 0.9910000562667847,
+          "R@10": 0.9970000386238098
+        },
+        "T2I": {
+          "R@1": 0.9310000538825989,
+          "R@5": 0.987000048160553,
+          "R@10": 0.9950000643730164
+        }
+      },
+      "protocol": {
+        "positive": "diagonal",
+        "caption_strings_sha256": "473427e3f0fe30f38e0dbec4fd7f6701d0bbe27ad29ada57bd47883dc1772abb",
+        "metric": "tools.urban1k_retrieval._recall",
+        "encoding_batch_composition": "Official reference batches, then restore unchanged SAID frozen candidate order; no raw text/membership change",
+        "adapter_consistency_gate_passed": true
+      },
+      "elapsed_seconds": 8.692847490310669
+    },
+    "COCO": {
+      "dataset": "COCO",
+      "n_images": 5000,
+      "n_captions": 25000,
+      "metrics": {
+        "I2T": {
+          "R@1": 0.6134,
+          "R@5": 0.8306,
+          "R@10": 0.8948
+        },
+        "T2I": {
+          "R@1": 0.42948,
+          "R@5": 0.6852,
+          "R@10": 0.78004
+        }
+      },
+      "protocol": {
+        "annotation": "/root/lk_projects/SAID-assets/evaluation/coco/annotations/captions_val2017.json",
+        "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9",
+        "sorted_image_ids_sha256": "da6fc732d63651c32997a20b8f1197813a923613f059986297c5ddd5c6325190",
+        "caption_strings_sha256": "8e0595b29c843d75f9e7a5136dda3f94baf1f4588a86b7d8f3d02b5a0bd68a5b",
+        "membership": "sorted image IDs, first 5 captions in source annotation order",
+        "similarity_chunk": 512,
+        "positive": "5 captions/image; unique owner image/caption",
+        "metric": "eval.retrieval.coco_retrieval.retrieval_metrics"
+      },
+      "elapsed_seconds": 76.01988554000854
+    },
+    "Flickr30k-test1k": {
+      "dataset": "Flickr30k-test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "I2T": {
+          "R@1": 0.898,
+          "R@5": 0.979,
+          "R@10": 0.992
+        },
+        "T2I": {
+          "R@1": 0.736,
+          "R@5": 0.9198,
+          "R@10": 0.9536
+        }
+      },
+      "protocol": {
+        "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl",
+        "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+        "caption_strings_sha256": "9cc16de872be66697256a1300c548553c56a60083d6a29fbdd1d97fa746edd13",
+        "positive": "positive_image_id from frozen manifest",
+        "metric": "unchanged eval_extended_real.metric via AST extraction"
+      },
+      "elapsed_seconds": 11.232866048812866
+    },
+    "DOCCI": {
+      "dataset": "DOCCI",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "I2T": {
+          "R@1": 0.7966,
+          "R@5": 0.9626,
+          "R@10": 0.9854
+        },
+        "T2I": {
+          "R@1": 0.7992,
+          "R@5": 0.9584,
+          "R@10": 0.983
+        }
+      },
+      "protocol": {
+        "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl",
+        "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+        "caption_strings_sha256": "60d6fee1fb4df7bc7f79b3406443942f6eee1eb4ae5dcca2f9b2233ccebbe02a",
+        "positive": "positive_image_id from frozen manifest",
+        "metric": "unchanged eval_extended_real.metric via AST extraction"
+      },
+      "elapsed_seconds": 82.495356798172
+    },
+    "Long-DCI": {
+      "dataset": "Long-DCI",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "I2T": {
+          "R@1": 0.5943172849250198,
+          "R@5": 0.7753222836095764,
+          "R@10": 0.8341225993159694
+        },
+        "T2I": {
+          "R@1": 0.5916863983162326,
+          "R@5": 0.769665877400684,
+          "R@10": 0.8253091291765325
+        }
+      },
+      "protocol": {
+        "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl",
+        "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+        "caption_strings_sha256": "ac5cbf100b1885731b004808883a5cbd221fd1a7243df2b81672c187dc6226f5",
+        "positive": "positive_image_id from frozen manifest",
+        "metric": "unchanged eval_extended_real.metric via AST extraction"
+      },
+      "elapsed_seconds": 124.45150256156921
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7322683765257243,
+    "J_long3": 0.7743006275428739,
+    "J_long": 0.8649500205039977
+  },
+  "units": "raw fraction",
+  "precision": "FP32 native encoders, official runtime flags; frozen FP32 metric scoring",
+  "encoder_batches": {
+    "image": 1,
+    "text": 16
+  },
+  "pca_calls": 0,
+  "no_training_or_augmentation_or_reranking": true,
+  "official_default_amp_kept_for_phase_a": true,
+  "said_reference": {
+    "metrics": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.617,
+          "R@5": 0.841,
+          "R@10": 0.903
+        },
+        "T2I": {
+          "R@1": 0.4222,
+          "R@5": 0.68032,
+          "R@10": 0.7772
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.921000063419342,
+          "R@5": 0.984000027179718,
+          "R@10": 0.9930000305175781
+        },
+        "T2I": {
+          "R@1": 0.9110000729560852,
+          "R@5": 0.987000048160553,
+          "R@10": 0.9920000433921814
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.889,
+          "R@5": 0.983,
+          "R@10": 0.994
+        },
+        "T2I": {
+          "R@1": 0.7244,
+          "R@5": 0.9154,
+          "R@10": 0.955
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7876,
+          "R@5": 0.9572,
+          "R@10": 0.9826
+        },
+        "T2I": {
+          "R@1": 0.7998,
+          "R@5": 0.9588,
+          "R@10": 0.982
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.5966850828729282,
+          "R@5": 0.7829518547750592,
+          "R@10": 0.8379373848987108
+        },
+        "T2I": {
+          "R@1": 0.6081294396211523,
+          "R@5": 0.7862404630360431,
+          "R@10": 0.8410944488292554
+        }
+      }
+    },
+    "scores": {
+      "Score5_R1": 0.7276814658869508,
+      "J_long3": 0.770702443144918,
+      "J_long": 0.8548500340938567
+    },
+    "checkpoint_sha256": "42901d24ae3b0e0147213fd45f5d3f663d9193d17b690536957625901e75500c",
+    "bare_sha256": "f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb",
+    "reused": true
+  },
+  "delta_direction": "SAID minus DeBias",
+  "delta_R1_pp": {
+    "COCO": {
+      "I2T": 0.36000000000000476,
+      "T2I": -0.7279999999999953
+    },
+    "Urban-1k": {
+      "I2T": -1.1999964714050293,
+      "T2I": -1.9999980926513672
+    },
+    "Flickr30k-test1k": {
+      "I2T": -0.9000000000000008,
+      "T2I": -1.1599999999999944
+    },
+    "DOCCI": {
+      "I2T": -0.9000000000000008,
+      "T2I": 0.05999999999999339
+    },
+    "Long-DCI": {
+      "I2T": 0.23677979479084232,
+      "T2I": 1.6443041304919692
+    }
+  },
+  "delta_scores_pp": {
+    "Score5_R1": -0.4586910638773478,
+    "J_long3": -0.3598184397955895,
+    "J_long": -1.0099986410140982
+  },
+  "urban_adapter_consistency": {
+    "errors": {
+      "image_max_abs": 5.960464477539063e-08,
+      "text_max_abs": 5.960464477539063e-08
+    },
+    "frozen_metrics": {
+      "I2T": {
+        "R@1": 0.9330000281333923,
+        "R@5": 0.9910000562667847,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.9310000538825989,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "official_fp32_metrics": {
+      "I2T": {
+        "R@1": 0.933,
+        "R@5": 0.991,
+        "R@10": 0.997
+      },
+      "T2I": {
+        "R@1": 0.931,
+        "R@5": 0.987,
+        "R@10": 0.995
+      }
+    },
+    "official_default_amp_metrics": {
+      "I2T": {
+        "R@1": 0.933,
+        "R@5": 0.991,
+        "R@10": 0.997
+      },
+      "T2I": {
+        "R@1": 0.93,
+        "R@5": 0.988,
+        "R@10": 0.995
+      }
+    },
+    "precision_policy": "Phase A keeps official default AMP; Phase B native FP32 is fixed before scores. Official FP32 Urban is a separate adapter consistency diagnostic, not chosen as the primary reproduction result."
+  },
+  "source": {
+    "repo": "https://github.com/TRAILab/DeBias-CLIP",
+    "commit": "18a06c98bcb50018e22c3febca2aefc8c4a12e0d",
+    "source_sha256": {
+      "README.md": "ad9fe262f5ca15124b423ce0d2c59cee63d8ff2ce0380071fd0b5f901c6e215a",
+      "requirements.txt": "18420cb889cda71741adc973efc0423f9bc03a3f07dd3620000933c38ba7b58d",
+      "scripts/test_script.sh": "eadb2d2dadb73ff1f4dd96b2ac0155edfdd40be79689d8d54df3df9efae21d40",
+      "scripts/train_script.sh": "16cbdecd8b3fff4669eb1544aa0a7be997ffdc1ceef5e1357ab0845f4d517579",
+      "data_parsers/data_folder.md": "f20aeff042010eec80cd82235b71a097d1e3c5943963d517d21db9e8f6174475",
+      "data_parsers/parse_flickr30k_captions.py": "9f7eb18b9744ab76371ebe79cb63a5bcdcce9ae42039560b15a6b0fa9fc16a22",
+      "data_parsers/parse_urban1k_captions.py": "6a680aaedea21c42557b42852143dc344c6adfb38c4261cbbf49c36ac5da9d85",
+      "main.py": "13826ce60f6114560b96b5dcd1aadc4cd050319f02dbe6f7ff5fc8e9284dcd4f",
+      "training/data.py": "6fc2e54c2e037efa99de6113d83cc11f88cf7f36e78f4154529383f43c494776",
+      "training/train.py": "661942bf4ad42223c88317035ecb192712f09e642248f4a9ddfd632cb617eb62",
+      "training/params_new.py": "b18059105d2cf60c53170217636144a07895a84f31a459d795adfc3b7e2d6ff0",
+      "local_clip/model.py": "4e63fb526300db6fada6c1a573de3a0fc2b1091ed269b12d104bf0025ffd36a8",
+      "local_clip/factory.py": "63af9d9e3c88559031342fbc886416f24224202445be2a0740e8f4f03097bb4a",
+      "local_clip/transformer.py": "3d60b16ca1ac8411030e0ef1928fc3590e0f246fc596de2f8dcc86eb3b6e0baf",
+      "local_clip/model_configs/ViT-B-16-longclip.json": "b4dec9e3573feb463ab92c326d751afca15ef421b37207be14b3ee1c45938b91"
+    },
+    "working_tree_clean": true
+  }
+}

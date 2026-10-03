@@ -1,0 +1,45 @@
+{"dataset": "Urban-1k", "phase": "start"}
+{"phase": "images", "done": 1, "total": 1000}
+{"phase": "texts", "done": 16, "total": 1000}
+{"dataset": "Urban-1k", "n_images": 1000, "n_captions": 1000, "metrics": {"I2T": {"R@1": 0.9330000281333923, "R@5": 0.9910000562667847, "R@10": 0.9970000386238098}, "T2I": {"R@1": 0.9310000538825989, "R@5": 0.987000048160553, "R@10": 0.9950000643730164}}, "protocol": {"positive": "diagonal", "caption_strings_sha256": "473427e3f0fe30f38e0dbec4fd7f6701d0bbe27ad29ada57bd47883dc1772abb", "metric": "tools.urban1k_retrieval._recall", "encoding_batch_composition": "Official reference batches, then restore unchanged SAID frozen candidate order; no raw text/membership change", "adapter_consistency_gate_passed": true}, "elapsed_seconds": 8.692847490310669}
+{"dataset": "COCO", "phase": "start"}
+{"phase": "images", "done": 1, "total": 5000}
+{"phase": "images", "done": 1001, "total": 5000}
+{"phase": "images", "done": 2001, "total": 5000}
+{"phase": "images", "done": 3001, "total": 5000}
+{"phase": "images", "done": 4001, "total": 5000}
+{"phase": "texts", "done": 16, "total": 25000}
+{"phase": "texts", "done": 4016, "total": 25000}
+{"phase": "texts", "done": 8016, "total": 25000}
+{"phase": "texts", "done": 12016, "total": 25000}
+{"phase": "texts", "done": 16016, "total": 25000}
+{"phase": "texts", "done": 20016, "total": 25000}
+{"phase": "texts", "done": 24016, "total": 25000}
+{"dataset": "COCO", "n_images": 5000, "n_captions": 25000, "metrics": {"I2T": {"R@1": 0.6134, "R@5": 0.8306, "R@10": 0.8948}, "T2I": {"R@1": 0.42948, "R@5": 0.6852, "R@10": 0.78004}}, "protocol": {"annotation": "/root/lk_projects/SAID-assets/evaluation/coco/annotations/captions_val2017.json", "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9", "sorted_image_ids_sha256": "da6fc732d63651c32997a20b8f1197813a923613f059986297c5ddd5c6325190", "caption_strings_sha256": "8e0595b29c843d75f9e7a5136dda3f94baf1f4588a86b7d8f3d02b5a0bd68a5b", "membership": "sorted image IDs, first 5 captions in source annotation order", "similarity_chunk": 512, "positive": "5 captions/image; unique owner image/caption", "metric": "eval.retrieval.coco_retrieval.retrieval_metrics"}, "elapsed_seconds": 76.01988554000854}
+{"dataset": "Flickr30k-test1k", "phase": "start"}
+{"phase": "images", "done": 1, "total": 1000}
+{"phase": "texts", "done": 16, "total": 5000}
+{"phase": "texts", "done": 4016, "total": 5000}
+{"dataset": "Flickr30k-test1k", "n_images": 1000, "n_captions": 5000, "metrics": {"I2T": {"R@1": 0.898, "R@5": 0.979, "R@10": 0.992}, "T2I": {"R@1": 0.736, "R@5": 0.9198, "R@10": 0.9536}}, "protocol": {"manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl", "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc", "caption_strings_sha256": "9cc16de872be66697256a1300c548553c56a60083d6a29fbdd1d97fa746edd13", "positive": "positive_image_id from frozen manifest", "metric": "unchanged eval_extended_real.metric via AST extraction"}, "elapsed_seconds": 11.232866048812866}
+{"dataset": "DOCCI", "phase": "start"}
+{"phase": "images", "done": 1, "total": 5000}
+{"phase": "images", "done": 1001, "total": 5000}
+{"phase": "images", "done": 2001, "total": 5000}
+{"phase": "images", "done": 3001, "total": 5000}
+{"phase": "images", "done": 4001, "total": 5000}
+{"phase": "texts", "done": 16, "total": 5000}
+{"phase": "texts", "done": 4016, "total": 5000}
+{"dataset": "DOCCI", "n_images": 5000, "n_captions": 5000, "metrics": {"I2T": {"R@1": 0.7966, "R@5": 0.9626, "R@10": 0.9854}, "T2I": {"R@1": 0.7992, "R@5": 0.9584, "R@10": 0.983}}, "protocol": {"manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl", "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11", "caption_strings_sha256": "60d6fee1fb4df7bc7f79b3406443942f6eee1eb4ae5dcca2f9b2233ccebbe02a", "positive": "positive_image_id from frozen manifest", "metric": "unchanged eval_extended_real.metric via AST extraction"}, "elapsed_seconds": 82.495356798172}
+{"dataset": "Long-DCI", "phase": "start"}
+{"phase": "images", "done": 1, "total": 7602}
+{"phase": "images", "done": 1001, "total": 7602}
+{"phase": "images", "done": 2001, "total": 7602}
+{"phase": "images", "done": 3001, "total": 7602}
+{"phase": "images", "done": 4001, "total": 7602}
+{"phase": "images", "done": 5001, "total": 7602}
+{"phase": "images", "done": 6001, "total": 7602}
+{"phase": "images", "done": 7001, "total": 7602}
+{"phase": "texts", "done": 16, "total": 7602}
+{"phase": "texts", "done": 4016, "total": 7602}
+{"dataset": "Long-DCI", "n_images": 7602, "n_captions": 7602, "metrics": {"I2T": {"R@1": 0.5943172849250198, "R@5": 0.7753222836095764, "R@10": 0.8341225993159694}, "T2I": {"R@1": 0.5916863983162326, "R@5": 0.769665877400684, "R@10": 0.8253091291765325}}, "protocol": {"manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl", "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b", "caption_strings_sha256": "ac5cbf100b1885731b004808883a5cbd221fd1a7243df2b81672c187dc6226f5", "positive": "positive_image_id from frozen manifest", "metric": "unchanged eval_extended_real.metric via AST extraction"}, "elapsed_seconds": 124.45150256156921}
+{"status": "COMPLETE", "scores_percent": {"Score5_R1": 73.22683765257243, "J_long3": 77.43006275428739, "J_long": 86.49500205039978}}

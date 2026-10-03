@@ -1,0 +1,64 @@
+{
+  "dataset": "DCI-full",
+  "metrics": {
+    "I2T": {
+      "R@1": 0.6846893017296605,
+      "R@5": 0.857014734144779,
+      "R@10": 0.9050608584240871
+    },
+    "T2I": {
+      "R@1": 0.6746957078795643,
+      "R@5": 0.8461242793081358,
+      "R@10": 0.8949391415759129
+    }
+  },
+  "official_raw_metrics": {
+    "text_to_image_R@1": 0.6746957078795643,
+    "text_to_image_R@5": 0.8461242793081358,
+    "text_to_image_R@10": 0.8949391415759129,
+    "text_to_image_mean_rank": 11.504932403564453,
+    "text_to_image_median_rank": 1.0,
+    "image_to_text_R@1": 0.6846893017296605,
+    "image_to_text_R@5": 0.857014734144779,
+    "image_to_text_R@10": 0.9050608584240871,
+    "image_to_text_mean_rank": 8.542985439300537,
+    "image_to_text_median_rank": 1.0,
+    "epoch": 0,
+    "num_text_samples": 7805,
+    "num_image_samples": 7805
+  },
+  "n_images": 7805,
+  "n_captions": 7805,
+  "image_embedding": {
+    "shape": [
+      7805,
+      512
+    ],
+    "dtype": "torch.float32",
+    "norm_mean": 1.0,
+    "norm_std": 4.527143104837705e-08,
+    "norm_min": 0.9999998211860657,
+    "norm_max": 1.0000001192092896
+  },
+  "text_embedding": {
+    "shape": [
+      7805,
+      512
+    ],
+    "dtype": "torch.float32",
+    "norm_mean": 1.0,
+    "norm_std": 4.1196415168087697e-08,
+    "norm_min": 0.9999998211860657,
+    "norm_max": 1.0000001192092896
+  },
+  "similarity_shape": [
+    7805,
+    7805
+  ],
+  "logit_scale_exp": 99.98107147216797,
+  "precision": "amp",
+  "image_encoding_batch": 1,
+  "text_encoding_batch": 16,
+  "official_dataset_type": "DCITextDataset",
+  "official_evaluator": "training.train.retrieval_on_split / compute_retrieval"
+}

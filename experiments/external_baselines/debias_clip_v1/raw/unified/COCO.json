@@ -1,0 +1,28 @@
+{
+  "dataset": "COCO",
+  "n_images": 5000,
+  "n_captions": 25000,
+  "metrics": {
+    "I2T": {
+      "R@1": 0.6134,
+      "R@5": 0.8306,
+      "R@10": 0.8948
+    },
+    "T2I": {
+      "R@1": 0.42948,
+      "R@5": 0.6852,
+      "R@10": 0.78004
+    }
+  },
+  "protocol": {
+    "annotation": "/root/lk_projects/SAID-assets/evaluation/coco/annotations/captions_val2017.json",
+    "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9",
+    "sorted_image_ids_sha256": "da6fc732d63651c32997a20b8f1197813a923613f059986297c5ddd5c6325190",
+    "caption_strings_sha256": "8e0595b29c843d75f9e7a5136dda3f94baf1f4588a86b7d8f3d02b5a0bd68a5b",
+    "membership": "sorted image IDs, first 5 captions in source annotation order",
+    "similarity_chunk": 512,
+    "positive": "5 captions/image; unique owner image/caption",
+    "metric": "eval.retrieval.coco_retrieval.retrieval_metrics"
+  },
+  "elapsed_seconds": 76.01988554000854
+}

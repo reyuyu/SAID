@@ -1,0 +1,90 @@
+{
+  "initial": {
+    "errors": {
+      "image_max_abs": 5.960464477539063e-08,
+      "text_max_abs": 0.00019255280494689941
+    },
+    "frozen_metrics": {
+      "I2T": {
+        "R@1": 0.9330000281333923,
+        "R@5": 0.9910000562667847,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.9310000538825989,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "official_fp32_metrics": {
+      "I2T": {
+        "R@1": 0.933,
+        "R@5": 0.991,
+        "R@10": 0.997
+      },
+      "T2I": {
+        "R@1": 0.931,
+        "R@5": 0.987,
+        "R@10": 0.995
+      }
+    },
+    "official_default_amp_metrics": {
+      "I2T": {
+        "R@1": 0.933,
+        "R@5": 0.991,
+        "R@10": 0.997
+      },
+      "T2I": {
+        "R@1": 0.93,
+        "R@5": 0.988,
+        "R@10": 0.995
+      }
+    },
+    "precision_policy": "Phase A keeps official default AMP; Phase B native FP32 is fixed before scores. Official FP32 Urban is a separate adapter consistency diagnostic, not chosen as the primary reproduction result."
+  },
+  "final": {
+    "errors": {
+      "image_max_abs": 5.960464477539063e-08,
+      "text_max_abs": 5.960464477539063e-08
+    },
+    "frozen_metrics": {
+      "I2T": {
+        "R@1": 0.9330000281333923,
+        "R@5": 0.9910000562667847,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.9310000538825989,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "official_fp32_metrics": {
+      "I2T": {
+        "R@1": 0.933,
+        "R@5": 0.991,
+        "R@10": 0.997
+      },
+      "T2I": {
+        "R@1": 0.931,
+        "R@5": 0.987,
+        "R@10": 0.995
+      }
+    },
+    "official_default_amp_metrics": {
+      "I2T": {
+        "R@1": 0.933,
+        "R@5": 0.991,
+        "R@10": 0.997
+      },
+      "T2I": {
+        "R@1": 0.93,
+        "R@5": 0.988,
+        "R@10": 0.995
+      }
+    },
+    "precision_policy": "Phase A keeps official default AMP; Phase B native FP32 is fixed before scores. Official FP32 Urban is a separate adapter consistency diagnostic, not chosen as the primary reproduction result."
+  },
+  "recalls_unchanged": true,
+  "resolution": "Match official encoder batch composition, including final8 captions, then restore the exact frozen SAID candidate order. Raw text/images/checkpoint/evaluator unchanged; tolerance not loosened."
+}

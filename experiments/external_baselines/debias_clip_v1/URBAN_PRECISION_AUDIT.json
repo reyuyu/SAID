@@ -1,0 +1,32 @@
+{
+  "same_raw_image_caption_rows_and_order": true,
+  "same_checkpoint_and_official_loader": true,
+  "source_patch_applied": false,
+  "primary_published_reproduction_precision": "amp",
+  "separate_adapter_diagnostic_precision": "fp32",
+  "image_feature_max_abs": 0.0015820562839508057,
+  "text_feature_max_abs": 0.0008017420768737793,
+  "scaled_score_max_abs": 0.127244234085083,
+  "directions": {
+    "I2T": {
+      "amp_correct": 933,
+      "fp32_correct": 933,
+      "top1_changed_count": 0,
+      "changes": []
+    },
+    "T2I": {
+      "amp_correct": 930,
+      "fp32_correct": 931,
+      "top1_changed_count": 1,
+      "changes": [
+        {
+          "query_id": "810.jpg",
+          "amp_top1": "205.jpg",
+          "fp32_top1": "810.jpg",
+          "amp_correct": false,
+          "fp32_correct": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "dataset": "Flickr-full",
+  "metrics": {
+    "I2T": {
+      "R@1": 0.5661636680208938,
+      "R@5": 0.7901592829044948,
+      "R@10": 0.8579028825691624
+    },
+    "T2I": {
+      "R@1": 0.36603469400915717,
+      "R@5": 0.5937705552331205,
+      "R@10": 0.6844392854839749
+    }
+  },
+  "official_raw_metrics": {
+    "text_to_image_R@1": 0.36603469400915717,
+    "text_to_image_R@5": 0.5937705552331205,
+    "text_to_image_R@10": 0.6844392854839749,
+    "text_to_image_mean_rank": 78.31258392333984,
+    "text_to_image_median_rank": 3.0,
+    "image_to_text_R@1": 0.5661636680208938,
+    "image_to_text_R@5": 0.7901592829044948,
+    "image_to_text_R@10": 0.8579028825691624,
+    "image_to_text_mean_rank": 11.708647727966309,
+    "image_to_text_median_rank": 1.0,
+    "epoch": 0,
+    "num_text_samples": 155070,
+    "num_image_samples": 31014
+  },
+  "n_images": 31014,
+  "n_captions": 155070,
+  "image_embedding": {
+    "shape": [
+      31014,
+      512
+    ],
+    "dtype": "torch.float32",
+    "norm_mean": 1.0,
+    "norm_std": 4.830036459679832e-08,
+    "norm_min": 0.9999998211860657,
+    "norm_max": 1.0000001192092896
+  },
+  "text_embedding": {
+    "shape": [
+      155070,
+      512
+    ],
+    "dtype": "torch.float32",
+    "norm_mean": 1.0,
+    "norm_std": 5.221296106583395e-08,
+    "norm_min": 0.9999997019767761,
+    "norm_max": 1.000000238418579
+  },
+  "similarity_shape": [
+    31014,
+    155070
+  ],
+  "logit_scale_exp": 99.98107147216797,
+  "precision": "amp",
+  "image_encoding_batch": 1,
+  "text_encoding_batch": 16,
+  "official_dataset_type": "FlickrTextDataset",
+  "official_evaluator": "training.train.retrieval_on_split / compute_retrieval"
+}
