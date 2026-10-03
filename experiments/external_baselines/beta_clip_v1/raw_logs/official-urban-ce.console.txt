@@ -1,0 +1,20 @@
+Resizing positional embedding: 77 -> 248 (context_length=248)
+Resizing positional embedding: 77 -> 248 (context_length=248)
+Resizing positional embedding: 77 -> 248 (context_length=248)
+Resizing positional embedding: 77 -> 248 (context_length=248)
+urban1k_val_dataset loaded, total length: 1000
+urban1k_val_dataset loaded, total length: 1000
+urban1k_val_dataset loaded, total length: 1000
+urban1k_val_dataset loaded, total length: 1000
+Rank 3: Created DistributedSampler, dataset size: 1000
+Rank 0: Created DistributedSampler, dataset size: 1000
+Rank 2: Created DistributedSampler, dataset size: 1000
+Rank 1: Created DistributedSampler, dataset size: 1000
+Urban1K TCI/CLS:   0%|          | 0/1 [00:00<?, ?it/s]Urban1K TCI/CLS: 100%|██████████| 1/1 [00:03<00:00,  3.89s/it]Urban1K TCI/CLS: 100%|██████████| 1/1 [00:03<00:00,  3.89s/it]
+
+Urban1k Validation Results:
+  TCI Text-to-Image (T2I) accuracy: 95.50% (955/1000)
+  TCI Image-to-Text (I2T) accuracy: 85.40% (854/1000)
+  CLS Text-to-Image (T2I) accuracy: 89.00% (890/1000)
+  CLS Image-to-Text (I2T) accuracy: 88.60% (886/1000)
+{"official": {"retrieval_acc_tci_t2i": 95.5, "retrieval_acc_tci_i2t": 85.4, "retrieval_acc_cls_t2i": 89.0, "retrieval_acc_cls_i2t": 88.6}, "adapter": {"I2T_R1": 0.8859999999999999, "T2I_R1": 0.89}, "consistency_passed": true, "reproduction": {"cls": "REPRODUCED", "tci": "NOT_REPRODUCED"}}

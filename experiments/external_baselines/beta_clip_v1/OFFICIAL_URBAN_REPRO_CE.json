@@ -1,11 +1,270 @@
 {
-  "status": "MANUAL_CHECKPOINT_REQUIRED",
-  "published_reference": {
-    "I2T_R1_percent": 88.6,
-    "T2I_R1_percent": 89.0
+  "variant": "ce",
+  "checkpoint": {
+    "checkpoint": "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/ce_checkpoint_10.pt",
+    "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+    "size_bytes": 1835285659,
+    "epoch": 10,
+    "identity": "CE",
+    "actual_tcil_loss_mode": "1_k_positives",
+    "legacy_softmax_mode": true,
+    "args": {
+      "dataset": "sharegpt4v",
+      "root": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data",
+      "metadata": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data/sharegpt4v/share-captioner_coco_lcs_sam_1246k_1107_filtered.json",
+      "output_dir": "ckpts/sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+      "model": "CLIP_VITB16_OPENAI",
+      "resume": "/ibex/project/c2262/CLIP/pretrained/ViT-B-16.pt",
+      "text_conditioning_mode": "attn_pooling_mlp",
+      "use_caption_in_eos": true,
+      "use_caption": true,
+      "use_text_conditioned_patches": true,
+      "use_text_concepts": true,
+      "use_text_tokens": false,
+      "use_text_eos": true,
+      "use_text_conditioned_cls": false,
+      "max_concept_context_length": 30,
+      "max_concepts": 30,
+      "use_negative_text_conditioning": false,
+      "conditioning_negatives_agg_type": null,
+      "num_tc_negative_eos_samples": 0,
+      "num_tc_negative_concept_samples": 0,
+      "use_last_block": false,
+      "use_intermediate_block": false,
+      "global_pool": "",
+      "fg_loss_fn": "cls+tcil",
+      "use_tcl": true,
+      "cls_alpha": 1.0,
+      "tcil_alpha": 1.0,
+      "mps_alpha": 1.0,
+      "detach_vision_for_tcil": false,
+      "use_layer_norm": false,
+      "tcil_loss_mode": "1_k_positives",
+      "use_softmax_for_multi_positives": true,
+      "normalize_weights": false,
+      "tcil_weight": 0.5,
+      "use_adaptive_weight": false,
+      "contrast_strength": "moderate",
+      "target_diagonal_fraction": 0.5,
+      "min_tcil_weight": 0.05,
+      "max_tcil_weight": 0.9,
+      "use_tci_diversity": false,
+      "tci_div_separate": false,
+      "tci_diversity_alpha": 0.5,
+      "use_diversity_hinge": false,
+      "alpha": 1.0,
+      "beta": 0.5,
+      "caption_type": "original",
+      "caption_len": 0,
+      "num_positive_samples": 5,
+      "epochs": 10,
+      "warmup_epochs": 0.01,
+      "start_epoch": 0,
+      "batch_size": 64,
+      "lr": 1e-05,
+      "lr_start": 1e-09,
+      "lr_end": 1e-07,
+      "update_freq": 8,
+      "wd": 0.01,
+      "betas": [
+        0.9,
+        0.98
+      ],
+      "eps": 1e-08,
+      "eval_freq": 1,
+      "disable_amp": false,
+      "context_length": 248,
+      "lr_conditioner": 0.001,
+      "lr_conditioner_end": 0.0001,
+      "clip_grad_norm": null,
+      "clip_grad_vision": null,
+      "clip_grad_text": null,
+      "clip_grad_attention": null,
+      "print_freq": 10,
+      "workers": 8,
+      "evaluate": false,
+      "world_size": 4,
+      "rank": 0,
+      "local_rank": 0,
+      "dist_url": "file:///ibex/project/c2262/SLIP/.ckpts/47bc425ffef14b00b73dee344df96fae_init",
+      "dist_backend": "nccl",
+      "seed": 0,
+      "gpu": 0,
+      "wandb": true,
+      "attn_fn": "softmax",
+      "attn_fn_alpha": 1.0,
+      "attn_fn_alpha_end": 1.5,
+      "attn_fn_sparse_layers_vision": [],
+      "attn_fn_sparse_layers_text": [],
+      "use_delta_attn": false,
+      "delta_gamma": 64,
+      "use_bf16": false,
+      "ngpus": 1,
+      "nodes": 4,
+      "timeout": 999,
+      "job_dir": "/ibex/project/c2262/SLIP/slurm_sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+      "gpu_type": "a100",
+      "job_name": "tcil_1pos",
+      "distributed": true
+    },
+    "construction_kwargs": {
+      "text_conditioning_mode": "attn_pooling_mlp",
+      "use_caption_in_eos": true,
+      "use_caption": true,
+      "use_text_conditioned_patches": true,
+      "use_text_concepts": true,
+      "use_text_tokens": false,
+      "use_text_eos": true,
+      "use_text_conditioned_cls": false,
+      "use_negative_text_conditioning": false,
+      "conditioning_negatives_agg_type": null,
+      "num_tc_negative_eos_samples": 0,
+      "num_tc_negative_concept_samples": 0,
+      "use_last_block": false,
+      "use_intermediate_block": false,
+      "global_pool": "",
+      "detach_vision_for_tcil": false,
+      "use_tci_diversity": false,
+      "tci_div_separate": false,
+      "use_diversity_hinge": false,
+      "context_length": 248,
+      "attn_fn": "softmax",
+      "attn_fn_alpha": 1.0,
+      "attn_fn_sparse_layers_text": []
+    },
+    "official_commit": "7be4476f84654b0febe7224d5788868d61ecae8b",
+    "strict_load": true,
+    "missing_keys": [],
+    "unexpected_keys": [],
+    "official_conversions": [
+      "Strip only leading module.",
+      "Official convert_state_dict (conditioner keys exempt)",
+      "Official resize_text_pos_embed before strict load"
+    ],
+    "all_loaded_tensors_equal_checkpoint": true,
+    "tensors_loaded": 362,
+    "vision_tensors": 151,
+    "text_tensors": 195,
+    "conditioner_tensors": 11,
+    "parameter_shapes": {
+      "visual.pos_embed": [
+        1,
+        197,
+        768
+      ],
+      "visual.patch_embed.proj.weight": [
+        768,
+        3,
+        16,
+        16
+      ],
+      "image_projection": [
+        768,
+        512
+      ],
+      "text_projection": [
+        512,
+        512
+      ],
+      "positional_embedding": [
+        248,
+        512
+      ],
+      "positional_embedding_res": [
+        248,
+        512
+      ]
+    },
+    "timm_bootstrap": [
+      {
+        "model_name": "vit_base_patch16_clip_224.openai",
+        "requested_pretrained": true,
+        "effective_pretrained": false
+      }
+    ],
+    "no_temporary_initializer_weights_retained": true,
+    "no_training": true,
+    "readme_args_difference": {
+      "tcil_loss_mode": {
+        "script": "k_positives_ce",
+        "checkpoint": "1_k_positives"
+      }
+    }
   },
-  "official_CLS": null,
-  "official_TCI": null,
-  "reproduction_classification": null,
-  "reason": "No official CE checkpoint found or downloaded"
+  "official_evaluator": {
+    "checkpoint": "/root/lk_projects/SAID-nest-clip-v1/beta_clip_official_v1/ce-official-urban/checkpoint_10/checkpoint_10.pt",
+    "dataset": "urban1k",
+    "total_samples": 1000,
+    "results": {
+      "retrieval_acc_tci_t2i": 95.5,
+      "retrieval_acc_tci_i2t": 85.4,
+      "retrieval_acc_cls_t2i": 89.0,
+      "retrieval_acc_cls_i2t": 88.6
+    }
+  },
+  "adapter_native_cls": {
+    "I2T_R1": 0.8859999999999999,
+    "T2I_R1": 0.89
+  },
+  "consistency": {
+    "passed": true,
+    "top1_i2t_mismatches": 0,
+    "top1_t2i_mismatches": 0,
+    "scaled_full_ranking_i2t_query_mismatches": 0,
+    "scaled_full_ranking_t2i_query_mismatches": 0,
+    "ranks": [
+      {
+        "rank": 0,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.0994415283203125e-06
+      },
+      {
+        "rank": 1,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.5762786865234375e-06
+      },
+      {
+        "rank": 2,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.0994415283203125e-06
+      },
+      {
+        "rank": 3,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.337860107421875e-06
+      }
+    ],
+    "note": "Native adapter uses official query-independent image-block CLS. TCI never used by adapter."
+  },
+  "urban_caption_audit": {
+    "count": 1000,
+    "official_sha256": "473427e3f0fe30f38e0dbec4fd7f6701d0bbe27ad29ada57bd47883dc1772abb",
+    "said_sha256": "473427e3f0fe30f38e0dbec4fd7f6701d0bbe27ad29ada57bd47883dc1772abb",
+    "different_count": 0
+  },
+  "published_reference": {
+    "I2T_percent": 88.6,
+    "T2I_percent": 89.0,
+    "matched_path": "CLS (established by measured output)",
+    "TCI_reference_available": false
+  },
+  "reproduction_by_path": {
+    "cls": "REPRODUCED",
+    "tci": "NOT_REPRODUCED"
+  },
+  "max_delta_pp_by_path": {
+    "cls": 0.0,
+    "tci": 6.5
+  },
+  "no_training": true,
+  "runtime_precision": "FP32; matmul TF32 disabled; cuDNN convolution TF32 enabled (official runtime default); no autocast",
+  "reproduction_note": "CLS reproduces the published CE pair exactly. TCI does not equal that CLS reference; its comparison label is not evidence of a failed TCI-specific published claim."
 }

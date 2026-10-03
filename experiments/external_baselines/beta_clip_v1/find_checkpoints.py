@@ -2,7 +2,9 @@
 
 The broad scan reads only ZIP pickle metadata, without deserializing objects.
 Only plausible beta-CLIP candidates are SHA256-hashed and loaded on the meta
-device with the restricted weights-only loader. Model tensors are never edited.
+device with the restricted weights-only loader. A separately provenance-verified
+official file may be explicitly inspected with trusted_official=True. Model
+tensors are never edited.
 """
 import argparse
 from datetime import datetime,timezone
@@ -48,20 +50,22 @@ def serializable(value):
     return repr(value)
 
 
-def inspect_candidate(path):
+def inspect_candidate(path, trusted_official=False):
     import torch
     record=dict(path=str(path.resolve()),filename=path.name,size_bytes=path.stat().st_size,
                 sha256=digest(path),checkpoint_identity='unknown',identity_confidence='unknown')
     try:
         with torch.serialization.safe_globals([argparse.Namespace]):
-            payload=torch.load(path,map_location='meta',weights_only=True)
+            payload=torch.load(path,map_location='meta',weights_only=not trusted_official)
+        record['load_mode']='official trusted pickle' if trusted_official else 'restricted weights_only'
         record['torch_load_top_level_keys']=list(payload) if isinstance(payload,dict) else None
         args={}
         for name in ('args','config'):
             source=payload.get(name) if isinstance(payload,dict) else None
             if isinstance(source,argparse.Namespace):source=vars(source)
             if isinstance(source,dict):args.update(source)
-        record.update(epoch=serializable(payload.get('epoch')),args_config=serializable(args))
+        record.update(epoch=serializable(payload.get('epoch')),args_config=serializable(args),
+                      missing_checkpoint_args=not bool(args))
         state=payload.get('state_dict',payload.get('model',payload))
         state={k.removeprefix('module.'):v for k,v in state.items() if torch.is_tensor(v)}
         shapes={k:list(v.shape) for k,v in state.items()}
@@ -71,6 +75,8 @@ def inspect_candidate(path):
             'positional_embedding','positional_embedding_res','text_projection') or
             'text_conditioned_patches_block' in k}
         mode=args.get('tcil_loss_mode');identity={'k_positives_ce':'CE','k_positives_bce':'BCE'}.get(mode,'unknown')
+        legacy_ce=(mode=='1_k_positives' and args.get('use_softmax_for_multi_positives') is True)
+        if legacy_ce:identity='CE'
         conditioned=any('text_conditioned' in key for key in state)
         projection=shapes.get('image_projection',shapes.get('visual.proj'))
         text_projection=shapes.get('text_projection')
@@ -88,7 +94,10 @@ def inspect_candidate(path):
             state_dict_key_count=len(state),state_dict_numel=sum(v.numel() for v in state.values()),
             key_parameter_shapes=key_shapes,is_vit_b16=b16,has_beta_clip_conditioner=conditioned,
             official_release_args_match=matches_release,
-            checkpoint_identity=identity,identity_confidence=('verified' if identity!='unknown' and conditioned and b16 and context==248 and matches_release else
+            checkpoint_identity=identity,
+            identity_basis=('Legacy 1_k_positives with saved multi-positive softmax flag; confirm with official transfer provenance and Urban CLS reproduction.'
+                            if legacy_ce else 'Saved tcil_loss_mode and model/conditioner shapes.'),
+            identity_confidence=('verified' if identity!='unknown' and conditioned and b16 and context==248 and matches_release else
                                                            'partially_verified' if identity!='unknown' or conditioned else 'unknown'))
     except Exception as exc:record.update(load_error=type(exc).__name__+': '+str(exc),checkpoint_identity='unknown')
     return record

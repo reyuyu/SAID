@@ -1,0 +1,31 @@
+{
+  "dataset": "DOCCI",
+  "n_images": 5000,
+  "n_captions": 5000,
+  "metrics": {
+    "I2T": {
+      "R@1": 0.6798,
+      "R@5": 0.8882,
+      "R@10": 0.9262
+    },
+    "T2I": {
+      "R@1": 0.6792,
+      "R@5": 0.8802,
+      "R@10": 0.9196
+    }
+  },
+  "protocol": {
+    "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl",
+    "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+    "caption_strings_sha256": "60d6fee1fb4df7bc7f79b3406443942f6eee1eb4ae5dcca2f9b2233ccebbe02a",
+    "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)",
+    "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+    "positive": "positive_image_id in frozen manifest",
+    "similarity_device": "cpu",
+    "image_order": "first occurrence",
+    "caption_order": "manifest row order"
+  },
+  "elapsed_seconds": 75.12183666229248,
+  "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+  "native_cls_only": true
+}

@@ -1,6 +1,5 @@
 {
-  "status": "MANUAL_CHECKPOINT_REQUIRED",
-  "stop_rule": "Search manual uploads first; if none exists, try official download once; then report MANUAL_CHECKPOINT_REQUIRED and stop.",
+  "status": "COMPLETE_CE_BCE_UNAVAILABLE",
   "source": {
     "repo_url": "https://github.com/fzohra/B-CLIP",
     "branch": "v1",
@@ -19,13 +18,528 @@
     },
     "official_l14_architecture_support": true,
     "official_released_finetuned_l14_checkpoint_found": false,
-    "l14_release_search_scope": "Pinned v1 README and download_ckpts.sh; two CE/BCE links, no separate advertised L14 checkpoint. Weight-internal architecture not verified."
+    "l14_release_search_scope": "Pinned v1 README/download script: no separate fine-tuned L14 link; transferred CE checkpoint is confirmed B/16. BCE absent."
   },
-  "beta_clip_ce": null,
+  "beta_clip_ce": {
+    "status": "COMPLETE",
+    "variant": "CE",
+    "completed_utc": "2026-10-03T11:20:15.182739+00:00",
+    "checkpoint": {
+      "checkpoint": "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/ce_checkpoint_10.pt",
+      "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+      "size_bytes": 1835285659,
+      "epoch": 10,
+      "identity": "CE",
+      "actual_tcil_loss_mode": "1_k_positives",
+      "legacy_softmax_mode": true,
+      "args": {
+        "dataset": "sharegpt4v",
+        "root": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data",
+        "metadata": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data/sharegpt4v/share-captioner_coco_lcs_sam_1246k_1107_filtered.json",
+        "output_dir": "ckpts/sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+        "model": "CLIP_VITB16_OPENAI",
+        "resume": "/ibex/project/c2262/CLIP/pretrained/ViT-B-16.pt",
+        "text_conditioning_mode": "attn_pooling_mlp",
+        "use_caption_in_eos": true,
+        "use_caption": true,
+        "use_text_conditioned_patches": true,
+        "use_text_concepts": true,
+        "use_text_tokens": false,
+        "use_text_eos": true,
+        "use_text_conditioned_cls": false,
+        "max_concept_context_length": 30,
+        "max_concepts": 30,
+        "use_negative_text_conditioning": false,
+        "conditioning_negatives_agg_type": null,
+        "num_tc_negative_eos_samples": 0,
+        "num_tc_negative_concept_samples": 0,
+        "use_last_block": false,
+        "use_intermediate_block": false,
+        "global_pool": "",
+        "fg_loss_fn": "cls+tcil",
+        "use_tcl": true,
+        "cls_alpha": 1.0,
+        "tcil_alpha": 1.0,
+        "mps_alpha": 1.0,
+        "detach_vision_for_tcil": false,
+        "use_layer_norm": false,
+        "tcil_loss_mode": "1_k_positives",
+        "use_softmax_for_multi_positives": true,
+        "normalize_weights": false,
+        "tcil_weight": 0.5,
+        "use_adaptive_weight": false,
+        "contrast_strength": "moderate",
+        "target_diagonal_fraction": 0.5,
+        "min_tcil_weight": 0.05,
+        "max_tcil_weight": 0.9,
+        "use_tci_diversity": false,
+        "tci_div_separate": false,
+        "tci_diversity_alpha": 0.5,
+        "use_diversity_hinge": false,
+        "alpha": 1.0,
+        "beta": 0.5,
+        "caption_type": "original",
+        "caption_len": 0,
+        "num_positive_samples": 5,
+        "epochs": 10,
+        "warmup_epochs": 0.01,
+        "start_epoch": 0,
+        "batch_size": 64,
+        "lr": 1e-05,
+        "lr_start": 1e-09,
+        "lr_end": 1e-07,
+        "update_freq": 8,
+        "wd": 0.01,
+        "betas": [
+          0.9,
+          0.98
+        ],
+        "eps": 1e-08,
+        "eval_freq": 1,
+        "disable_amp": false,
+        "context_length": 248,
+        "lr_conditioner": 0.001,
+        "lr_conditioner_end": 0.0001,
+        "clip_grad_norm": null,
+        "clip_grad_vision": null,
+        "clip_grad_text": null,
+        "clip_grad_attention": null,
+        "print_freq": 10,
+        "workers": 8,
+        "evaluate": false,
+        "world_size": 4,
+        "rank": 0,
+        "local_rank": 0,
+        "dist_url": "file:///ibex/project/c2262/SLIP/.ckpts/47bc425ffef14b00b73dee344df96fae_init",
+        "dist_backend": "nccl",
+        "seed": 0,
+        "gpu": 0,
+        "wandb": true,
+        "attn_fn": "softmax",
+        "attn_fn_alpha": 1.0,
+        "attn_fn_alpha_end": 1.5,
+        "attn_fn_sparse_layers_vision": [],
+        "attn_fn_sparse_layers_text": [],
+        "use_delta_attn": false,
+        "delta_gamma": 64,
+        "use_bf16": false,
+        "ngpus": 1,
+        "nodes": 4,
+        "timeout": 999,
+        "job_dir": "/ibex/project/c2262/SLIP/slurm_sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+        "gpu_type": "a100",
+        "job_name": "tcil_1pos",
+        "distributed": true
+      },
+      "construction_kwargs": {
+        "text_conditioning_mode": "attn_pooling_mlp",
+        "use_caption_in_eos": true,
+        "use_caption": true,
+        "use_text_conditioned_patches": true,
+        "use_text_concepts": true,
+        "use_text_tokens": false,
+        "use_text_eos": true,
+        "use_text_conditioned_cls": false,
+        "use_negative_text_conditioning": false,
+        "conditioning_negatives_agg_type": null,
+        "num_tc_negative_eos_samples": 0,
+        "num_tc_negative_concept_samples": 0,
+        "use_last_block": false,
+        "use_intermediate_block": false,
+        "global_pool": "",
+        "detach_vision_for_tcil": false,
+        "use_tci_diversity": false,
+        "tci_div_separate": false,
+        "use_diversity_hinge": false,
+        "context_length": 248,
+        "attn_fn": "softmax",
+        "attn_fn_alpha": 1.0,
+        "attn_fn_sparse_layers_text": []
+      },
+      "official_commit": "7be4476f84654b0febe7224d5788868d61ecae8b",
+      "strict_load": true,
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "official_conversions": [
+        "Strip only leading module.",
+        "Official convert_state_dict (conditioner keys exempt)",
+        "Official resize_text_pos_embed before strict load"
+      ],
+      "all_loaded_tensors_equal_checkpoint": true,
+      "tensors_loaded": 362,
+      "vision_tensors": 151,
+      "text_tensors": 195,
+      "conditioner_tensors": 11,
+      "parameter_shapes": {
+        "visual.pos_embed": [
+          1,
+          197,
+          768
+        ],
+        "visual.patch_embed.proj.weight": [
+          768,
+          3,
+          16,
+          16
+        ],
+        "image_projection": [
+          768,
+          512
+        ],
+        "text_projection": [
+          512,
+          512
+        ],
+        "positional_embedding": [
+          248,
+          512
+        ],
+        "positional_embedding_res": [
+          248,
+          512
+        ]
+      },
+      "timm_bootstrap": [
+        {
+          "model_name": "vit_base_patch16_clip_224.openai",
+          "requested_pretrained": true,
+          "effective_pretrained": false
+        }
+      ],
+      "no_temporary_initializer_weights_retained": true,
+      "no_training": true,
+      "readme_args_difference": {
+        "tcil_loss_mode": {
+          "script": "k_positives_ce",
+          "checkpoint": "1_k_positives"
+        }
+      }
+    },
+    "datasets": {
+      "Urban-1k": {
+        "dataset": "Urban-1k",
+        "n_images": 1000,
+        "n_captions": 1000,
+        "metrics": {
+          "I2T": {
+            "R@1": 0.8860000371932983,
+            "R@5": 0.9830000400543213,
+            "R@10": 0.9950000643730164
+          },
+          "T2I": {
+            "R@1": 0.89000004529953,
+            "R@5": 0.9830000400543213,
+            "R@10": 0.9910000562667847
+          }
+        },
+        "protocol": {
+          "positive": "diagonal",
+          "caption_strings_sha256": "473427e3f0fe30f38e0dbec4fd7f6701d0bbe27ad29ada57bd47883dc1772abb",
+          "metric_source": "tools/urban1k_retrieval.py:_recall",
+          "metric_source_sha256": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+          "similarity_device": "cuda:0",
+          "text_encoding_batch": 1000,
+          "official_cls_R1_consistency_passed": true
+        },
+        "elapsed_seconds": 5.941650629043579,
+        "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+        "native_cls_only": true
+      },
+      "COCO": {
+        "dataset": "COCO",
+        "n_images": 5000,
+        "n_captions": 25000,
+        "metrics": {
+          "I2T": {
+            "R@1": 0.4558,
+            "R@5": 0.7406,
+            "R@10": 0.8428
+          },
+          "T2I": {
+            "R@1": 0.33196,
+            "R@5": 0.59392,
+            "R@10": 0.70796
+          }
+        },
+        "protocol": {
+          "annotation": "/root/lk_projects/SAID-assets/evaluation/coco/annotations/captions_val2017.json",
+          "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9",
+          "sorted_image_ids_sha256": "da6fc732d63651c32997a20b8f1197813a923613f059986297c5ddd5c6325190",
+          "caption_strings_sha256": "8e0595b29c843d75f9e7a5136dda3f94baf1f4588a86b7d8f3d02b5a0bd68a5b",
+          "membership": "sorted image IDs, first 5 captions in source annotation order",
+          "similarity_chunk": 512,
+          "positive": "5 captions/image; unique owner image/caption",
+          "metric_source": "eval/retrieval/coco_retrieval.py:retrieval_metrics",
+          "metric_source_sha256": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+          "similarity_device": "cpu"
+        },
+        "elapsed_seconds": 77.56608653068542,
+        "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+        "native_cls_only": true
+      },
+      "Flickr30k-test1k": {
+        "dataset": "Flickr30k-test1k",
+        "n_images": 1000,
+        "n_captions": 5000,
+        "metrics": {
+          "I2T": {
+            "R@1": 0.745,
+            "R@5": 0.957,
+            "R@10": 0.986
+          },
+          "T2I": {
+            "R@1": 0.64,
+            "R@5": 0.8792,
+            "R@10": 0.9312
+          }
+        },
+        "protocol": {
+          "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl",
+          "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+          "caption_strings_sha256": "9cc16de872be66697256a1300c548553c56a60083d6a29fbdd1d97fa746edd13",
+          "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)",
+          "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+          "positive": "positive_image_id in frozen manifest",
+          "similarity_device": "cpu",
+          "image_order": "first occurrence",
+          "caption_order": "manifest row order"
+        },
+        "elapsed_seconds": 11.831285953521729,
+        "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+        "native_cls_only": true
+      },
+      "DOCCI": {
+        "dataset": "DOCCI",
+        "n_images": 5000,
+        "n_captions": 5000,
+        "metrics": {
+          "I2T": {
+            "R@1": 0.6798,
+            "R@5": 0.8882,
+            "R@10": 0.9262
+          },
+          "T2I": {
+            "R@1": 0.6792,
+            "R@5": 0.8802,
+            "R@10": 0.9196
+          }
+        },
+        "protocol": {
+          "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl",
+          "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+          "caption_strings_sha256": "60d6fee1fb4df7bc7f79b3406443942f6eee1eb4ae5dcca2f9b2233ccebbe02a",
+          "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)",
+          "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+          "positive": "positive_image_id in frozen manifest",
+          "similarity_device": "cpu",
+          "image_order": "first occurrence",
+          "caption_order": "manifest row order"
+        },
+        "elapsed_seconds": 75.12183666229248,
+        "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+        "native_cls_only": true
+      },
+      "Long-DCI": {
+        "dataset": "Long-DCI",
+        "n_images": 7602,
+        "n_captions": 7602,
+        "metrics": {
+          "I2T": {
+            "R@1": 0.4127861089187056,
+            "R@5": 0.6299657984740857,
+            "R@10": 0.6958695080242041
+          },
+          "T2I": {
+            "R@1": 0.4544856616679821,
+            "R@5": 0.6236516706129965,
+            "R@10": 0.6802157327019206
+          }
+        },
+        "protocol": {
+          "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl",
+          "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+          "caption_strings_sha256": "ac5cbf100b1885731b004808883a5cbd221fd1a7243df2b81672c187dc6226f5",
+          "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)",
+          "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+          "positive": "positive_image_id in frozen manifest",
+          "similarity_device": "cpu",
+          "image_order": "first occurrence",
+          "caption_order": "manifest row order"
+        },
+        "elapsed_seconds": 124.54681611061096,
+        "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+        "native_cls_only": true
+      }
+    },
+    "metrics_unit": "fraction",
+    "scores": {
+      "Score5_R1": 0.6175031853079516,
+      "J_long3": 0.667045308846586,
+      "J_long": 0.7837500206232071
+    },
+    "inference": "query-independent official image-block CLS and text EOS; normalized plain inner product",
+    "official_tokenizer": "tokenizer.SimpleTokenizer(context_length=248)",
+    "image_preprocess": "Resize 224 bicubic, CenterCrop 224, RGB, ToTensor, OpenAI CLIP mean/std",
+    "precision": "FP32; matmul TF32 disabled; cuDNN convolution TF32 enabled (official runtime default); no autocast",
+    "conditioner_forward_calls": 0,
+    "no_training_or_finetuning": true,
+    "no_reranking_or_ensemble": true,
+    "said_reference": {
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.617,
+            "R@5": 0.841,
+            "R@10": 0.903
+          },
+          "T2I": {
+            "R@1": 0.4222,
+            "R@5": 0.68032,
+            "R@10": 0.7772
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.921000063419342,
+            "R@5": 0.984000027179718,
+            "R@10": 0.9930000305175781
+          },
+          "T2I": {
+            "R@1": 0.9110000729560852,
+            "R@5": 0.987000048160553,
+            "R@10": 0.9920000433921814
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.889,
+            "R@5": 0.983,
+            "R@10": 0.994
+          },
+          "T2I": {
+            "R@1": 0.7244,
+            "R@5": 0.9154,
+            "R@10": 0.955
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7876,
+            "R@5": 0.9572,
+            "R@10": 0.9826
+          },
+          "T2I": {
+            "R@1": 0.7998,
+            "R@5": 0.9588,
+            "R@10": 0.982
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5966850828729282,
+            "R@5": 0.7829518547750592,
+            "R@10": 0.8379373848987108
+          },
+          "T2I": {
+            "R@1": 0.6081294396211523,
+            "R@5": 0.7862404630360431,
+            "R@10": 0.8410944488292554
+          }
+        }
+      },
+      "scores": {
+        "Score5_R1": 0.7276814658869508,
+        "J_long3": 0.770702443144918,
+        "J_long": 0.8548500340938567
+      },
+      "checkpoint_sha256": "42901d24ae3b0e0147213fd45f5d3f663d9193d17b690536957625901e75500c",
+      "bare_sha256": "f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb",
+      "reused": true
+    },
+    "delta_direction": "SAID minus BetaCLIP",
+    "delta_R1_pp": {
+      "COCO": {
+        "I2T": 16.12,
+        "T2I": 9.024000000000004
+      },
+      "Urban-1k": {
+        "I2T": 3.50000262260437,
+        "T2I": 2.1000027656555176
+      },
+      "Flickr30k-test1k": {
+        "I2T": 14.400000000000002,
+        "T2I": 8.440000000000003
+      },
+      "DOCCI": {
+        "I2T": 10.780000000000001,
+        "T2I": 12.059999999999993
+      },
+      "Long-DCI": {
+        "I2T": 18.38989739542226,
+        "T2I": 15.364377795317019
+      }
+    },
+    "delta_scores_pp": {
+      "Score5_R1": 11.017828057899926,
+      "J_long3": 10.365713429833201,
+      "J_long": 7.110001347064965
+    }
+  },
   "beta_clip_bce": null,
-  "official_urban_cls": null,
-  "official_urban_tci": null,
-  "native_adapter_validation": null,
+  "bce_availability": {
+    "status": "CHECKPOINT_UNAVAILABLE",
+    "identity": "BCE",
+    "official_google_drive_id": "1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+    "reason": "No BCE checkpoint found in manual discovery; supplied cloud share contained CE only.",
+    "evaluation": null,
+    "blocks_ce": false
+  },
+  "official_urban_cls": {
+    "retrieval_acc_cls_i2t": 88.6,
+    "retrieval_acc_cls_t2i": 89.0
+  },
+  "official_urban_tci": {
+    "retrieval_acc_tci_i2t": 85.4,
+    "retrieval_acc_tci_t2i": 95.5
+  },
+  "native_adapter_validation": {
+    "passed": true,
+    "top1_i2t_mismatches": 0,
+    "top1_t2i_mismatches": 0,
+    "scaled_full_ranking_i2t_query_mismatches": 0,
+    "scaled_full_ranking_t2i_query_mismatches": 0,
+    "ranks": [
+      {
+        "rank": 0,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.0994415283203125e-06
+      },
+      {
+        "rank": 1,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.5762786865234375e-06
+      },
+      {
+        "rank": 2,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.0994415283203125e-06
+      },
+      {
+        "rank": 3,
+        "image_raw_max_abs": 0.0,
+        "text_raw_max_abs": 0.0,
+        "official_scaled_score_max_abs": 0.0,
+        "standard_encode_image_vs_official_cls_max_abs": 3.337860107421875e-06
+      }
+    ],
+    "note": "Native adapter uses official query-independent image-block CLS. TCI never used by adapter."
+  },
   "said_reference": {
     "metrics": {
       "COCO": {
@@ -99,25 +613,34 @@
     "reused": true
   },
   "delta_direction": "SAID minus BetaCLIP",
-  "delta_R1_pp": null,
-  "delta_scores_pp": null,
+  "delta_R1_pp": {
+    "COCO": {
+      "I2T": 16.12,
+      "T2I": 9.024000000000004
+    },
+    "Urban-1k": {
+      "I2T": 3.50000262260437,
+      "T2I": 2.1000027656555176
+    },
+    "Flickr30k-test1k": {
+      "I2T": 14.400000000000002,
+      "T2I": 8.440000000000003
+    },
+    "DOCCI": {
+      "I2T": 10.780000000000001,
+      "T2I": 12.059999999999993
+    },
+    "Long-DCI": {
+      "I2T": 18.38989739542226,
+      "T2I": 15.364377795317019
+    }
+  },
+  "delta_scores_pp": {
+    "Score5_R1": 11.017828057899926,
+    "J_long3": 10.365713429833201,
+    "J_long": 7.110001347064965
+  },
   "no_training_or_finetuning": true,
   "no_model_substitution": true,
-  "said_model_code_modified": false,
-  "stopped_utc": "2026-10-03T09:20:41.075267+00:00",
-  "manual_discovery": {
-    "roots": [
-      "/root/lk_projects/B-CLIP-official",
-      "/root/lk_projects/SAID",
-      "/root",
-      "/tmp"
-    ],
-    "checkpoint_files_ge_1MiB": 390,
-    "included_gitignored_files": true,
-    "candidate_count": 0,
-    "verified_ce_found": false,
-    "verified_bce_found": false,
-    "scan_errors": [],
-    "evidence": "raw_logs/checkpoint-discovery.json"
-  }
+  "said_model_code_modified": false
 }

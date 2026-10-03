@@ -1,5 +1,5 @@
 {
-  "status": "MANUAL_CHECKPOINT_REQUIRED",
+  "status": "CE_VERIFIED_BCE_UNAVAILABLE",
   "source": {
     "repo_url": "https://github.com/fzohra/B-CLIP",
     "branch": "v1",
@@ -18,183 +18,416 @@
     },
     "official_l14_architecture_support": true,
     "official_released_finetuned_l14_checkpoint_found": false,
-    "l14_release_search_scope": "Pinned v1 README and download_ckpts.sh; two CE/BCE links, no separate advertised L14 checkpoint. Weight-internal architecture not verified."
+    "l14_release_search_scope": "Pinned v1 README/download script: no separate fine-tuned L14 link; transferred CE checkpoint is confirmed B/16. BCE absent."
   },
-  "checkpoints": [
-    {
-      "checkpoint": "CE",
-      "official_google_drive_id": "1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
-      "official_url": "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
-      "status": "MANUAL_CHECKPOINT_REQUIRED",
-      "actual_file_name": null,
-      "byte_size": null,
-      "sha256": null,
-      "torch_load_top_level_keys": null,
-      "epoch": null,
-      "args": null,
-      "state_dict_parameter_count": null,
-      "architecture": null,
-      "context_length": null,
-      "training_loss_mode": null,
-      "expected_from_official_scripts": {
-        "model": "CLIP_VITB16_OPENAI",
-        "context_length": 248,
-        "tcil_loss_mode": "k_positives_ce",
-        "beta": 0.5,
-        "K": 36
-      },
-      "download_attempts": [
-        {
-          "command": [
-            "/root/miniconda3/envs/beta-clip-official/bin/python",
-            "-m",
-            "gdown",
-            "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
-            "--output",
-            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
-          ],
-          "exit_code": 1,
-          "status": "connection_timeout",
-          "stderr": "Timed out: no response from the server for None seconds.",
-          "completed": true
-        },
-        {
-          "command": [
-            "/root/miniconda3/envs/beta-clip-official/bin/python",
-            "-m",
-            "gdown",
-            "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
-            "--no-cookies",
-            "--timeout",
-            "20",
-            "--output",
-            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
-          ],
-          "exit_code": 1,
-          "status": "connection_timeout",
-          "stderr": "Timed out: no response from the server for 20.0 seconds.",
-          "completed": true
-        },
-        {
-          "command": [
-            "/root/miniconda3/envs/beta-clip-official/bin/python",
-            "-m",
-            "gdown",
-            "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
-            "--no-cookies",
-            "--timeout",
-            "20",
-            "--output",
-            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
-          ],
-          "exit_code": 1,
-          "status": "connection_timeout",
-          "stderr": "Timed out: no response from the server for 20.0 seconds.",
-          "one_retry_only": true
-        }
-      ],
-      "path": null,
-      "size_bytes": null,
-      "model": null,
-      "tcil_loss_mode": null,
-      "beta": null,
-      "checkpoint_identity": "unknown",
-      "identity_confidence": "unknown"
-    },
-    {
-      "checkpoint": "BCE",
-      "official_google_drive_id": "1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
-      "official_url": "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
-      "status": "MANUAL_CHECKPOINT_REQUIRED",
-      "actual_file_name": null,
-      "byte_size": null,
-      "sha256": null,
-      "torch_load_top_level_keys": null,
-      "epoch": null,
-      "args": null,
-      "state_dict_parameter_count": null,
-      "architecture": null,
-      "context_length": null,
-      "training_loss_mode": null,
-      "expected_from_official_scripts": {
-        "model": "CLIP_VITB16_OPENAI",
-        "context_length": 248,
-        "tcil_loss_mode": "k_positives_bce",
-        "beta": 0.5,
-        "K": 36
-      },
-      "download_attempts": [
-        {
-          "command": [
-            "/root/miniconda3/envs/beta-clip-official/bin/python",
-            "-m",
-            "gdown",
-            "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
-            "--output",
-            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
-          ],
-          "exit_code": 1,
-          "status": "connection_timeout",
-          "stderr": "Timed out: no response from the server for None seconds.",
-          "completed": true
-        },
-        {
-          "command": [
-            "/root/miniconda3/envs/beta-clip-official/bin/python",
-            "-m",
-            "gdown",
-            "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
-            "--no-cookies",
-            "--timeout",
-            "20",
-            "--output",
-            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
-          ],
-          "exit_code": 1,
-          "status": "connection_timeout",
-          "stderr": "Timed out: no response from the server for 20.0 seconds.",
-          "completed": true
-        },
-        {
-          "command": [
-            "/root/miniconda3/envs/beta-clip-official/bin/python",
-            "-m",
-            "gdown",
-            "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
-            "--no-cookies",
-            "--timeout",
-            "20",
-            "--output",
-            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
-          ],
-          "exit_code": 1,
-          "status": "connection_timeout",
-          "stderr": "Timed out: no response from the server for 20.0 seconds.",
-          "one_retry_only": true
-        }
-      ],
-      "path": null,
-      "size_bytes": null,
-      "model": null,
-      "tcil_loss_mode": null,
-      "beta": null,
-      "checkpoint_identity": "unknown",
-      "identity_confidence": "unknown"
-    }
-  ],
-  "manual_discovery": {
-    "roots": [
-      "/root/lk_projects/B-CLIP-official",
-      "/root/lk_projects/SAID",
-      "/root",
-      "/tmp"
+  "CE": {
+    "path": "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/ce_checkpoint_10.pt",
+    "filename": "ce_checkpoint_10.pt",
+    "size_bytes": 1835285659,
+    "sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+    "checkpoint_identity": "CE",
+    "identity_confidence": "verified",
+    "load_mode": "official trusted pickle",
+    "torch_load_top_level_keys": [
+      "epoch",
+      "state_dict",
+      "optimizer",
+      "optimizer_conditioner",
+      "scaler",
+      "best_acc1",
+      "args"
     ],
-    "checkpoint_files_ge_1MiB": 390,
-    "included_gitignored_files": true,
-    "candidate_count": 0,
-    "verified_ce_found": false,
-    "verified_bce_found": false,
-    "scan_errors": [],
-    "evidence": "raw_logs/checkpoint-discovery.json"
-  }
+    "epoch": 10,
+    "args_config": {
+      "dataset": "sharegpt4v",
+      "root": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data",
+      "metadata": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data/sharegpt4v/share-captioner_coco_lcs_sam_1246k_1107_filtered.json",
+      "output_dir": "PosixPath('ckpts/sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10')",
+      "model": "CLIP_VITB16_OPENAI",
+      "resume": "/ibex/project/c2262/CLIP/pretrained/ViT-B-16.pt",
+      "text_conditioning_mode": "attn_pooling_mlp",
+      "use_caption_in_eos": true,
+      "use_caption": true,
+      "use_text_conditioned_patches": true,
+      "use_text_concepts": true,
+      "use_text_tokens": false,
+      "use_text_eos": true,
+      "use_text_conditioned_cls": false,
+      "max_concept_context_length": 30,
+      "max_concepts": 30,
+      "use_negative_text_conditioning": false,
+      "conditioning_negatives_agg_type": null,
+      "num_tc_negative_eos_samples": 0,
+      "num_tc_negative_concept_samples": 0,
+      "use_last_block": false,
+      "use_intermediate_block": false,
+      "global_pool": "",
+      "fg_loss_fn": "cls+tcil",
+      "use_tcl": true,
+      "cls_alpha": 1.0,
+      "tcil_alpha": 1.0,
+      "mps_alpha": 1.0,
+      "detach_vision_for_tcil": false,
+      "use_layer_norm": false,
+      "tcil_loss_mode": "1_k_positives",
+      "use_softmax_for_multi_positives": true,
+      "normalize_weights": false,
+      "tcil_weight": 0.5,
+      "use_adaptive_weight": false,
+      "contrast_strength": "moderate",
+      "target_diagonal_fraction": 0.5,
+      "min_tcil_weight": 0.05,
+      "max_tcil_weight": 0.9,
+      "use_tci_diversity": false,
+      "tci_div_separate": false,
+      "tci_diversity_alpha": 0.5,
+      "use_diversity_hinge": false,
+      "alpha": 1.0,
+      "beta": 0.5,
+      "caption_type": "original",
+      "caption_len": 0,
+      "num_positive_samples": 5,
+      "epochs": 10,
+      "warmup_epochs": 0.01,
+      "start_epoch": 0,
+      "batch_size": 64,
+      "lr": 1e-05,
+      "lr_start": 1e-09,
+      "lr_end": 1e-07,
+      "update_freq": 8,
+      "wd": 0.01,
+      "betas": [
+        0.9,
+        0.98
+      ],
+      "eps": 1e-08,
+      "eval_freq": 1,
+      "disable_amp": false,
+      "context_length": 248,
+      "lr_conditioner": 0.001,
+      "lr_conditioner_end": 0.0001,
+      "clip_grad_norm": null,
+      "clip_grad_vision": null,
+      "clip_grad_text": null,
+      "clip_grad_attention": null,
+      "print_freq": 10,
+      "workers": 8,
+      "evaluate": false,
+      "world_size": 4,
+      "rank": 0,
+      "local_rank": 0,
+      "dist_url": "file:///ibex/project/c2262/SLIP/.ckpts/47bc425ffef14b00b73dee344df96fae_init",
+      "dist_backend": "nccl",
+      "seed": 0,
+      "gpu": 0,
+      "wandb": true,
+      "attn_fn": "softmax",
+      "attn_fn_alpha": 1.0,
+      "attn_fn_alpha_end": 1.5,
+      "attn_fn_sparse_layers_vision": [],
+      "attn_fn_sparse_layers_text": [],
+      "use_delta_attn": false,
+      "delta_gamma": 64,
+      "use_bf16": false,
+      "ngpus": 1,
+      "nodes": 4,
+      "timeout": 999,
+      "job_dir": "/ibex/project/c2262/SLIP/slurm_sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+      "gpu_type": "a100",
+      "job_name": "tcil_1pos",
+      "distributed": true
+    },
+    "missing_checkpoint_args": false,
+    "model": "CLIP_VITB16_OPENAI",
+    "context_length": 248,
+    "tcil_loss_mode": "1_k_positives",
+    "beta": 0.5,
+    "fg_loss_fn": "cls+tcil",
+    "max_concepts": 30,
+    "state_dict_key_count": 362,
+    "state_dict_numel": 152986626,
+    "key_parameter_shapes": {
+      "positional_embedding": [
+        248,
+        512
+      ],
+      "image_projection": [
+        768,
+        512
+      ],
+      "text_projection": [
+        512,
+        512
+      ],
+      "positional_embedding_res": [
+        248,
+        512
+      ],
+      "visual.pos_embed": [
+        1,
+        197,
+        768
+      ],
+      "visual.patch_embed.proj.weight": [
+        768,
+        3,
+        16,
+        16
+      ],
+      "text_conditioned_patches_block.logit_scale": [],
+      "text_conditioned_patches_block.attn.in_proj_weight": [
+        1536,
+        512
+      ],
+      "text_conditioned_patches_block.attn.in_proj_bias": [
+        1536
+      ],
+      "text_conditioned_patches_block.attn.out_proj.weight": [
+        512,
+        512
+      ],
+      "text_conditioned_patches_block.attn.out_proj.bias": [
+        512
+      ],
+      "text_conditioned_patches_block.ln_2.weight": [
+        512
+      ],
+      "text_conditioned_patches_block.ln_2.bias": [
+        512
+      ],
+      "text_conditioned_patches_block.mlp.c_fc.weight": [
+        2048,
+        512
+      ],
+      "text_conditioned_patches_block.mlp.c_fc.bias": [
+        2048
+      ],
+      "text_conditioned_patches_block.mlp.c_proj.weight": [
+        512,
+        2048
+      ],
+      "text_conditioned_patches_block.mlp.c_proj.bias": [
+        512
+      ]
+    },
+    "is_vit_b16": true,
+    "has_beta_clip_conditioner": true,
+    "official_release_args_match": true,
+    "identity_basis": "Legacy 1_k_positives with saved multi-positive softmax flag; confirm with official transfer provenance and Urban CLS reproduction.",
+    "provenance": {
+      "path": "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/ce_checkpoint_10.pt",
+      "filename": "ce_checkpoint_10.pt",
+      "size_bytes": 1835285659,
+      "sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+      "source": "official author-provided Google Drive checkpoint",
+      "transfer_method": "User manually downloaded official file, shared via USTC cloud disk, and transferred to evaluation server",
+      "transfer_host": "pan.ustc.edu.cn",
+      "elapsed_seconds": 393.6397280693054,
+      "official_google_drive_id": "1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
+      "identity_status": "verified: actual checkpoint args/state, strict load and official Urban CLS reproduction"
+    },
+    "strict_load": {
+      "checkpoint": "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/ce_checkpoint_10.pt",
+      "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+      "size_bytes": 1835285659,
+      "epoch": 10,
+      "identity": "CE",
+      "actual_tcil_loss_mode": "1_k_positives",
+      "legacy_softmax_mode": true,
+      "args": {
+        "dataset": "sharegpt4v",
+        "root": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data",
+        "metadata": "/ibex/project/c2262/SLIP/data/ShareGPT4V/data/sharegpt4v/share-captioner_coco_lcs_sam_1246k_1107_filtered.json",
+        "output_dir": "ckpts/sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+        "model": "CLIP_VITB16_OPENAI",
+        "resume": "/ibex/project/c2262/CLIP/pretrained/ViT-B-16.pt",
+        "text_conditioning_mode": "attn_pooling_mlp",
+        "use_caption_in_eos": true,
+        "use_caption": true,
+        "use_text_conditioned_patches": true,
+        "use_text_concepts": true,
+        "use_text_tokens": false,
+        "use_text_eos": true,
+        "use_text_conditioned_cls": false,
+        "max_concept_context_length": 30,
+        "max_concepts": 30,
+        "use_negative_text_conditioning": false,
+        "conditioning_negatives_agg_type": null,
+        "num_tc_negative_eos_samples": 0,
+        "num_tc_negative_concept_samples": 0,
+        "use_last_block": false,
+        "use_intermediate_block": false,
+        "global_pool": "",
+        "fg_loss_fn": "cls+tcil",
+        "use_tcl": true,
+        "cls_alpha": 1.0,
+        "tcil_alpha": 1.0,
+        "mps_alpha": 1.0,
+        "detach_vision_for_tcil": false,
+        "use_layer_norm": false,
+        "tcil_loss_mode": "1_k_positives",
+        "use_softmax_for_multi_positives": true,
+        "normalize_weights": false,
+        "tcil_weight": 0.5,
+        "use_adaptive_weight": false,
+        "contrast_strength": "moderate",
+        "target_diagonal_fraction": 0.5,
+        "min_tcil_weight": 0.05,
+        "max_tcil_weight": 0.9,
+        "use_tci_diversity": false,
+        "tci_div_separate": false,
+        "tci_diversity_alpha": 0.5,
+        "use_diversity_hinge": false,
+        "alpha": 1.0,
+        "beta": 0.5,
+        "caption_type": "original",
+        "caption_len": 0,
+        "num_positive_samples": 5,
+        "epochs": 10,
+        "warmup_epochs": 0.01,
+        "start_epoch": 0,
+        "batch_size": 64,
+        "lr": 1e-05,
+        "lr_start": 1e-09,
+        "lr_end": 1e-07,
+        "update_freq": 8,
+        "wd": 0.01,
+        "betas": [
+          0.9,
+          0.98
+        ],
+        "eps": 1e-08,
+        "eval_freq": 1,
+        "disable_amp": false,
+        "context_length": 248,
+        "lr_conditioner": 0.001,
+        "lr_conditioner_end": 0.0001,
+        "clip_grad_norm": null,
+        "clip_grad_vision": null,
+        "clip_grad_text": null,
+        "clip_grad_attention": null,
+        "print_freq": 10,
+        "workers": 8,
+        "evaluate": false,
+        "world_size": 4,
+        "rank": 0,
+        "local_rank": 0,
+        "dist_url": "file:///ibex/project/c2262/SLIP/.ckpts/47bc425ffef14b00b73dee344df96fae_init",
+        "dist_backend": "nccl",
+        "seed": 0,
+        "gpu": 0,
+        "wandb": true,
+        "attn_fn": "softmax",
+        "attn_fn_alpha": 1.0,
+        "attn_fn_alpha_end": 1.5,
+        "attn_fn_sparse_layers_vision": [],
+        "attn_fn_sparse_layers_text": [],
+        "use_delta_attn": false,
+        "delta_gamma": 64,
+        "use_bf16": false,
+        "ngpus": 1,
+        "nodes": 4,
+        "timeout": 999,
+        "job_dir": "/ibex/project/c2262/SLIP/slurm_sfg_clip/attn_pool+mlp_eos+5+concepts+30_cls+tcil_csk_k_positives_softmax_alpha_1_beta_0.5_bs64_ep10",
+        "gpu_type": "a100",
+        "job_name": "tcil_1pos",
+        "distributed": true
+      },
+      "construction_kwargs": {
+        "text_conditioning_mode": "attn_pooling_mlp",
+        "use_caption_in_eos": true,
+        "use_caption": true,
+        "use_text_conditioned_patches": true,
+        "use_text_concepts": true,
+        "use_text_tokens": false,
+        "use_text_eos": true,
+        "use_text_conditioned_cls": false,
+        "use_negative_text_conditioning": false,
+        "conditioning_negatives_agg_type": null,
+        "num_tc_negative_eos_samples": 0,
+        "num_tc_negative_concept_samples": 0,
+        "use_last_block": false,
+        "use_intermediate_block": false,
+        "global_pool": "",
+        "detach_vision_for_tcil": false,
+        "use_tci_diversity": false,
+        "tci_div_separate": false,
+        "use_diversity_hinge": false,
+        "context_length": 248,
+        "attn_fn": "softmax",
+        "attn_fn_alpha": 1.0,
+        "attn_fn_sparse_layers_text": []
+      },
+      "official_commit": "7be4476f84654b0febe7224d5788868d61ecae8b",
+      "strict_load": true,
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "official_conversions": [
+        "Strip only leading module.",
+        "Official convert_state_dict (conditioner keys exempt)",
+        "Official resize_text_pos_embed before strict load"
+      ],
+      "all_loaded_tensors_equal_checkpoint": true,
+      "tensors_loaded": 362,
+      "vision_tensors": 151,
+      "text_tensors": 195,
+      "conditioner_tensors": 11,
+      "parameter_shapes": {
+        "visual.pos_embed": [
+          1,
+          197,
+          768
+        ],
+        "visual.patch_embed.proj.weight": [
+          768,
+          3,
+          16,
+          16
+        ],
+        "image_projection": [
+          768,
+          512
+        ],
+        "text_projection": [
+          512,
+          512
+        ],
+        "positional_embedding": [
+          248,
+          512
+        ],
+        "positional_embedding_res": [
+          248,
+          512
+        ]
+      },
+      "timm_bootstrap": [
+        {
+          "model_name": "vit_base_patch16_clip_224.openai",
+          "requested_pretrained": true,
+          "effective_pretrained": false
+        }
+      ],
+      "no_temporary_initializer_weights_retained": true,
+      "no_training": true,
+      "readme_args_difference": {
+        "tcil_loss_mode": {
+          "script": "k_positives_ce",
+          "checkpoint": "1_k_positives"
+        }
+      }
+    }
+  },
+  "BCE": {
+    "status": "CHECKPOINT_UNAVAILABLE",
+    "identity": "BCE",
+    "official_google_drive_id": "1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+    "reason": "No BCE checkpoint found in manual discovery; supplied cloud share contained CE only.",
+    "evaluation": null,
+    "blocks_ce": false
+  },
+  "historical_discovery": "raw_logs/checkpoint-discovery.json",
+  "historical_download_failures": "commands/ and raw_logs/*once.console.txt; superseded by manual CE transfer",
+  "no_training_or_finetuning": true,
+  "no_model_substitution": true
 }

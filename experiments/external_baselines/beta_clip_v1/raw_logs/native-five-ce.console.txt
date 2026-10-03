@@ -1,0 +1,40 @@
+Resizing positional embedding: 77 -> 248 (context_length=248)
+{"dataset": "Urban-1k", "phase": "start"}
+{"phase": "images", "done": 64, "total": 1000}
+{"phase": "texts", "done": 1000, "total": 1000}
+{"urban_gate_metrics": {"I2T": {"R@1": 0.8860000371932983, "R@5": 0.9830000400543213, "R@10": 0.9950000643730164}, "T2I": {"R@1": 0.89000004529953, "R@5": 0.9830000400543213, "R@10": 0.9910000562667847}}, "official": {"I2T_R1": 0.8859999999999999, "T2I_R1": 0.89}}
+{"dataset": "Urban-1k", "n_images": 1000, "n_captions": 1000, "metrics": {"I2T": {"R@1": 0.8860000371932983, "R@5": 0.9830000400543213, "R@10": 0.9950000643730164}, "T2I": {"R@1": 0.89000004529953, "R@5": 0.9830000400543213, "R@10": 0.9910000562667847}}, "protocol": {"positive": "diagonal", "caption_strings_sha256": "473427e3f0fe30f38e0dbec4fd7f6701d0bbe27ad29ada57bd47883dc1772abb", "metric_source": "tools/urban1k_retrieval.py:_recall", "metric_source_sha256": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2", "similarity_device": "cuda:0", "text_encoding_batch": 1000, "official_cls_R1_consistency_passed": true}, "elapsed_seconds": 5.941650629043579, "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224", "native_cls_only": true}
+{"dataset": "COCO", "phase": "start"}
+{"phase": "images", "done": 64, "total": 5000}
+{"phase": "images", "done": 2624, "total": 5000}
+{"phase": "texts", "done": 64, "total": 25000}
+{"phase": "texts", "done": 2624, "total": 25000}
+{"phase": "texts", "done": 5184, "total": 25000}
+{"phase": "texts", "done": 7744, "total": 25000}
+{"phase": "texts", "done": 10304, "total": 25000}
+{"phase": "texts", "done": 12864, "total": 25000}
+{"phase": "texts", "done": 15424, "total": 25000}
+{"phase": "texts", "done": 17984, "total": 25000}
+{"phase": "texts", "done": 20544, "total": 25000}
+{"phase": "texts", "done": 23104, "total": 25000}
+{"dataset": "COCO", "n_images": 5000, "n_captions": 25000, "metrics": {"I2T": {"R@1": 0.4558, "R@5": 0.7406, "R@10": 0.8428}, "T2I": {"R@1": 0.33196, "R@5": 0.59392, "R@10": 0.70796}}, "protocol": {"annotation": "/root/lk_projects/SAID-assets/evaluation/coco/annotations/captions_val2017.json", "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9", "sorted_image_ids_sha256": "da6fc732d63651c32997a20b8f1197813a923613f059986297c5ddd5c6325190", "caption_strings_sha256": "8e0595b29c843d75f9e7a5136dda3f94baf1f4588a86b7d8f3d02b5a0bd68a5b", "membership": "sorted image IDs, first 5 captions in source annotation order", "similarity_chunk": 512, "positive": "5 captions/image; unique owner image/caption", "metric_source": "eval/retrieval/coco_retrieval.py:retrieval_metrics", "metric_source_sha256": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086", "similarity_device": "cpu"}, "elapsed_seconds": 77.56608653068542, "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224", "native_cls_only": true}
+{"dataset": "Flickr30k-test1k", "phase": "start"}
+{"phase": "images", "done": 64, "total": 1000}
+{"phase": "texts", "done": 64, "total": 5000}
+{"phase": "texts", "done": 2624, "total": 5000}
+{"dataset": "Flickr30k-test1k", "n_images": 1000, "n_captions": 5000, "metrics": {"I2T": {"R@1": 0.745, "R@5": 0.957, "R@10": 0.986}, "T2I": {"R@1": 0.64, "R@5": 0.8792, "R@10": 0.9312}}, "protocol": {"manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl", "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc", "caption_strings_sha256": "9cc16de872be66697256a1300c548553c56a60083d6a29fbdd1d97fa746edd13", "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)", "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319", "positive": "positive_image_id in frozen manifest", "similarity_device": "cpu", "image_order": "first occurrence", "caption_order": "manifest row order"}, "elapsed_seconds": 11.831285953521729, "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224", "native_cls_only": true}
+{"dataset": "DOCCI", "phase": "start"}
+{"phase": "images", "done": 64, "total": 5000}
+{"phase": "images", "done": 2624, "total": 5000}
+{"phase": "texts", "done": 64, "total": 5000}
+{"phase": "texts", "done": 2624, "total": 5000}
+{"dataset": "DOCCI", "n_images": 5000, "n_captions": 5000, "metrics": {"I2T": {"R@1": 0.6798, "R@5": 0.8882, "R@10": 0.9262}, "T2I": {"R@1": 0.6792, "R@5": 0.8802, "R@10": 0.9196}}, "protocol": {"manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/docci_test.jsonl", "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11", "caption_strings_sha256": "60d6fee1fb4df7bc7f79b3406443942f6eee1eb4ae5dcca2f9b2233ccebbe02a", "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)", "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319", "positive": "positive_image_id in frozen manifest", "similarity_device": "cpu", "image_order": "first occurrence", "caption_order": "manifest row order"}, "elapsed_seconds": 75.12183666229248, "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224", "native_cls_only": true}
+{"dataset": "Long-DCI", "phase": "start"}
+{"phase": "images", "done": 64, "total": 7602}
+{"phase": "images", "done": 2624, "total": 7602}
+{"phase": "images", "done": 5184, "total": 7602}
+{"phase": "texts", "done": 64, "total": 7602}
+{"phase": "texts", "done": 2624, "total": 7602}
+{"phase": "texts", "done": 5184, "total": 7602}
+{"dataset": "Long-DCI", "n_images": 7602, "n_captions": 7602, "metrics": {"I2T": {"R@1": 0.4127861089187056, "R@5": 0.6299657984740857, "R@10": 0.6958695080242041}, "T2I": {"R@1": 0.4544856616679821, "R@5": 0.6236516706129965, "R@10": 0.6802157327019206}}, "protocol": {"manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl", "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b", "caption_strings_sha256": "ac5cbf100b1885731b004808883a5cbd221fd1a7243df2b81672c187dc6226f5", "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)", "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319", "positive": "positive_image_id in frozen manifest", "similarity_device": "cpu", "image_order": "first occurrence", "caption_order": "manifest row order"}, "elapsed_seconds": 124.54681611061096, "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224", "native_cls_only": true}
+{"status": "COMPLETE", "scores_percent": {"Score5_R1": 61.750318530795155, "J_long3": 66.7045308846586, "J_long": 78.3750020623207}}

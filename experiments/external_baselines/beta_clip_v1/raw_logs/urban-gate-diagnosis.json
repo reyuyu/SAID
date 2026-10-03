@@ -1,0 +1,47 @@
+{
+  "normalized_max_abs_image": 0.0022848397493362427,
+  "normalized_max_abs_text": 5.960464477539063e-08,
+  "I2T": {
+    "diff_query_count": 0,
+    "rows": [],
+    "argmax_correct": 886,
+    "topk_correct": 886
+  },
+  "T2I": {
+    "diff_query_count": 1,
+    "rows": [
+      {
+        "query": 125,
+        "official_lex_argmax": 125,
+        "native_argmax": 414,
+        "native_topk": 414,
+        "native_top3": [
+          414,
+          125,
+          287
+        ],
+        "native_values": [
+          0.2258165329694748,
+          0.22574982047080994,
+          0.21709096431732178
+        ],
+        "official_lex_values": [
+          0.2258458435535431,
+          0.22576145827770233,
+          0.2171241194009781
+        ],
+        "official_lex_top3": [
+          125,
+          414,
+          287
+        ]
+      }
+    ],
+    "argmax_correct": 889,
+    "topk_correct": 889
+  },
+  "cause": "Unified harness initially disabled cuDNN TF32 convolution, unlike the official evaluator default. Match the official runtime setting; no model or data change.",
+  "resolution": "PASS: final frozen Urban I2T 88.600004%, T2I 89.000005%; R1 equals official CLS within float32 metric precision.",
+  "final_cudnn_allow_tf32": true,
+  "final_matmul_allow_tf32": false
+}

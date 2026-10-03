@@ -1,19 +1,10 @@
-# Official Urban1K reproduction status
+# Official Urban reproduction
 
-**Not executed: official CE and BCE checkpoint downloads failed.**
-Source reference is the [pinned official README](https://github.com/fzohra/B-CLIP/blob/7be4476f84654b0febe7224d5788868d61ecae8b/README.md).
-These values are published references, not our measured results:
+CE published reference: I2T 88.6%, T2I 89.0%. The untouched official evaluator reproduces this pair in CLS: **REPRODUCED**, delta 0 pp.
 
-| Checkpoint | README T2I % | README I2T % | Measured official CLS | Measured official TCI |
-|---|---:|---:|---|---|
-| CE, beta0.5,K36 |89.0|88.6|unavailable|unavailable|
-| BCE, beta0.5,K36 |91.8|92.3|unavailable|unavailable|
+| Checkpoint | CLS I2T % | CLS T2I % | TCI I2T % | TCI T2I % |
+| --- | --- | --- | --- | --- |
+| CE (measured) | 88.60 | 89.00 | 85.40 | 95.50 |
+| BCE (checkpoint absent) | N/A | N/A | N/A | N/A |
 
-Correct direction mapping for future SAID-format reporting is I2T/T2I88.6/89.0
-for CE and92.3/91.8 for BCE. Their actual checkpoint reproduction and internal
-CLS/TCI attribution are unknown. No protocol adjustment is made to match them.
-
-No model was reconstructed, so strict-load keys, native embedding max errors,
-full1000-pool ranking equality and official-versus-harness recall equality have
-not been validated. Five-dataset comparison remains stopped at this gate.
-See commands/*console.txt for actual failed-download evidence.
+The measured TCI path uses the official evaluator settings (`use_model_text_settings=False`, `use_text_eos=True`, `return_first=True`, `return_avg_tci=False`). TCI is query-dependent and excluded from the fair main table and all aggregates. The supplied README pair matches CLS; it is not a separate TCI reference. BCE published I2T/T2I 92.3/91.8 remains untested.

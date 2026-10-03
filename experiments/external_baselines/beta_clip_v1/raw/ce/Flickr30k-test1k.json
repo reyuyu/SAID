@@ -1,0 +1,31 @@
+{
+  "dataset": "Flickr30k-test1k",
+  "n_images": 1000,
+  "n_captions": 5000,
+  "metrics": {
+    "I2T": {
+      "R@1": 0.745,
+      "R@5": 0.957,
+      "R@10": 0.986
+    },
+    "T2I": {
+      "R@1": 0.64,
+      "R@5": 0.8792,
+      "R@10": 0.9312
+    }
+  },
+  "protocol": {
+    "manifest": "/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl",
+    "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+    "caption_strings_sha256": "9cc16de872be66697256a1300c548553c56a60083d6a29fbdd1d97fa746edd13",
+    "metric_source": "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py:metric (unchanged AST extraction)",
+    "metric_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+    "positive": "positive_image_id in frozen manifest",
+    "similarity_device": "cpu",
+    "image_order": "first occurrence",
+    "caption_order": "manifest row order"
+  },
+  "elapsed_seconds": 11.831285953521729,
+  "checkpoint_sha256": "5d8c007f8d9512ecbf2c4a90d44b339d0241b666f8d6c8aa7615ab0ed904f224",
+  "native_cls_only": true
+}
