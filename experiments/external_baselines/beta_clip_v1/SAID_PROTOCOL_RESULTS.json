@@ -1,0 +1,108 @@
+{
+  "status": "stopped_download_failure",
+  "stop_rule": "If official checkpoints cannot be downloaded, retain failure evidence and stop; never substitute another checkpoint.",
+  "source": {
+    "repo_url": "https://github.com/fzohra/B-CLIP",
+    "branch": "v1",
+    "commit": "7be4476f84654b0febe7224d5788868d61ecae8b",
+    "local_directory": "/root/lk_projects/B-CLIP-official",
+    "working_tree_clean": true,
+    "source_sha256": {
+      "README.md": "bc0ece097918ed7e43a140798e920017fa6b180d392ca7d974eadd5192624e5a",
+      "INSTALL.md": "d508d092f0a482318106d0c9ca2e47afa686bc63c678a263d67e92818388e3d8",
+      "download_ckpts.sh": "adb10fc48f5978768f3477d7891ce58e3c77989c50bea4061ee49236c3571468",
+      "main_clip_ft.py": "a0f2ce508db79c53e635cd47f4519c75792ae336c4852a4e00df9b9914b663c9",
+      "models_tome.py": "726cae65edbf413c02bb27a5e4d41254a67cd8c84c31616e9fa71d78e215cea8",
+      "datasets.py": "ba80f4a64bce035365995df564f95c2afcb864c4d6b26447a318812e2abd6159",
+      "tokenizer.py": "fd47da4949393781e7f1640458f5cad22654de3dad7c2253ed7681e774d39c1d",
+      "validate_urban1k_distributed.py": "f849c2d0c6a206f99e27a3f29f7b706a516ca233b6a24736760fd5837ef189d1"
+    },
+    "official_l14_architecture_support": true,
+    "official_released_finetuned_l14_checkpoint_found": false,
+    "l14_release_search_scope": "Pinned v1 README and download_ckpts.sh; two CE/BCE links, no separate advertised L14 checkpoint. Weight-internal architecture not verified."
+  },
+  "beta_clip_ce": null,
+  "beta_clip_bce": null,
+  "official_urban_cls": null,
+  "official_urban_tci": null,
+  "native_adapter_validation": null,
+  "said_reference": {
+    "metrics": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.617,
+          "R@5": 0.841,
+          "R@10": 0.903
+        },
+        "T2I": {
+          "R@1": 0.4222,
+          "R@5": 0.68032,
+          "R@10": 0.7772
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.921000063419342,
+          "R@5": 0.984000027179718,
+          "R@10": 0.9930000305175781
+        },
+        "T2I": {
+          "R@1": 0.9110000729560852,
+          "R@5": 0.987000048160553,
+          "R@10": 0.9920000433921814
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.889,
+          "R@5": 0.983,
+          "R@10": 0.994
+        },
+        "T2I": {
+          "R@1": 0.7244,
+          "R@5": 0.9154,
+          "R@10": 0.955
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7876,
+          "R@5": 0.9572,
+          "R@10": 0.9826
+        },
+        "T2I": {
+          "R@1": 0.7998,
+          "R@5": 0.9588,
+          "R@10": 0.982
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.5966850828729282,
+          "R@5": 0.7829518547750592,
+          "R@10": 0.8379373848987108
+        },
+        "T2I": {
+          "R@1": 0.6081294396211523,
+          "R@5": 0.7862404630360431,
+          "R@10": 0.8410944488292554
+        }
+      }
+    },
+    "scores": {
+      "Score5_R1": 0.7276814658869508,
+      "J_long3": 0.770702443144918,
+      "J_long": 0.8548500340938567
+    },
+    "checkpoint_sha256": "42901d24ae3b0e0147213fd45f5d3f663d9193d17b690536957625901e75500c",
+    "bare_sha256": "f36438934947ed7f1523fe87e877a0e62dd807dc8a7c89c751eac537e0ab64bb",
+    "reused": true
+  },
+  "delta_direction": "BetaCLIP minus SAID",
+  "delta_R1_pp": null,
+  "delta_scores_pp": null,
+  "no_training_or_finetuning": true,
+  "no_model_substitution": true,
+  "said_model_code_modified": false,
+  "stopped_utc": "2026-10-03T08:46:11.928426+00:00"
+}

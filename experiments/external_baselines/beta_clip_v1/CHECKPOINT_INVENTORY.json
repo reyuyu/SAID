@@ -1,0 +1,137 @@
+{
+  "status": "stopped_download_failure",
+  "source": {
+    "repo_url": "https://github.com/fzohra/B-CLIP",
+    "branch": "v1",
+    "commit": "7be4476f84654b0febe7224d5788868d61ecae8b",
+    "local_directory": "/root/lk_projects/B-CLIP-official",
+    "working_tree_clean": true,
+    "source_sha256": {
+      "README.md": "bc0ece097918ed7e43a140798e920017fa6b180d392ca7d974eadd5192624e5a",
+      "INSTALL.md": "d508d092f0a482318106d0c9ca2e47afa686bc63c678a263d67e92818388e3d8",
+      "download_ckpts.sh": "adb10fc48f5978768f3477d7891ce58e3c77989c50bea4061ee49236c3571468",
+      "main_clip_ft.py": "a0f2ce508db79c53e635cd47f4519c75792ae336c4852a4e00df9b9914b663c9",
+      "models_tome.py": "726cae65edbf413c02bb27a5e4d41254a67cd8c84c31616e9fa71d78e215cea8",
+      "datasets.py": "ba80f4a64bce035365995df564f95c2afcb864c4d6b26447a318812e2abd6159",
+      "tokenizer.py": "fd47da4949393781e7f1640458f5cad22654de3dad7c2253ed7681e774d39c1d",
+      "validate_urban1k_distributed.py": "f849c2d0c6a206f99e27a3f29f7b706a516ca233b6a24736760fd5837ef189d1"
+    },
+    "official_l14_architecture_support": true,
+    "official_released_finetuned_l14_checkpoint_found": false,
+    "l14_release_search_scope": "Pinned v1 README and download_ckpts.sh; two CE/BCE links, no separate advertised L14 checkpoint. Weight-internal architecture not verified."
+  },
+  "checkpoints": [
+    {
+      "checkpoint": "CE",
+      "official_google_drive_id": "1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
+      "official_url": "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
+      "status": "download_failed",
+      "actual_file_name": null,
+      "byte_size": null,
+      "sha256": null,
+      "torch_load_top_level_keys": null,
+      "epoch": null,
+      "args": null,
+      "state_dict_parameter_count": null,
+      "architecture": null,
+      "context_length": null,
+      "training_loss_mode": null,
+      "expected_from_official_scripts": {
+        "model": "CLIP_VITB16_OPENAI",
+        "context_length": 248,
+        "tcil_loss_mode": "k_positives_ce",
+        "beta": 0.5,
+        "K": 36
+      },
+      "download_attempts": [
+        {
+          "command": [
+            "/root/miniconda3/envs/beta-clip-official/bin/python",
+            "-m",
+            "gdown",
+            "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
+            "--output",
+            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
+          ],
+          "exit_code": 1,
+          "status": "connection_timeout",
+          "stderr": "Timed out: no response from the server for None seconds.",
+          "completed": true
+        },
+        {
+          "command": [
+            "/root/miniconda3/envs/beta-clip-official/bin/python",
+            "-m",
+            "gdown",
+            "https://drive.google.com/uc?id=1nNbYLlU_1VcbEioLL7yX_rzARAzxD6q_",
+            "--no-cookies",
+            "--timeout",
+            "20",
+            "--output",
+            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
+          ],
+          "exit_code": 1,
+          "status": "connection_timeout",
+          "stderr": "Timed out: no response from the server for 20.0 seconds.",
+          "completed": true
+        }
+      ]
+    },
+    {
+      "checkpoint": "BCE",
+      "official_google_drive_id": "1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+      "official_url": "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+      "status": "download_failed",
+      "actual_file_name": null,
+      "byte_size": null,
+      "sha256": null,
+      "torch_load_top_level_keys": null,
+      "epoch": null,
+      "args": null,
+      "state_dict_parameter_count": null,
+      "architecture": null,
+      "context_length": null,
+      "training_loss_mode": null,
+      "expected_from_official_scripts": {
+        "model": "CLIP_VITB16_OPENAI",
+        "context_length": 248,
+        "tcil_loss_mode": "k_positives_bce",
+        "beta": 0.5,
+        "K": 36
+      },
+      "download_attempts": [
+        {
+          "command": [
+            "/root/miniconda3/envs/beta-clip-official/bin/python",
+            "-m",
+            "gdown",
+            "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+            "--output",
+            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
+          ],
+          "exit_code": 1,
+          "status": "connection_timeout",
+          "stderr": "Timed out: no response from the server for None seconds.",
+          "completed": true
+        },
+        {
+          "command": [
+            "/root/miniconda3/envs/beta-clip-official/bin/python",
+            "-m",
+            "gdown",
+            "https://drive.google.com/uc?id=1sFQXDQZOzM5XoFkRD_9OYORfQdJrHmN4",
+            "--no-cookies",
+            "--timeout",
+            "20",
+            "--output",
+            "/root/lk_projects/SAID-assets/external_baselines/beta_clip_v1/checkpoints/"
+          ],
+          "exit_code": 1,
+          "status": "connection_timeout",
+          "stderr": "Timed out: no response from the server for 20.0 seconds.",
+          "completed": true
+        }
+      ]
+    }
+  ]
+}
