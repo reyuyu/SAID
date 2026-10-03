@@ -23,6 +23,7 @@ class TinyFusionCLIP(TinyJointCLIP):
             self.token_embedding = nn.Embedding(31, width)
             self.text_projection = nn.Parameter(torch.randn(width, width) * .1)
             self.mask_net = MaskNetwork(width, layers=1, heads=2)
+        self.visual.register_buffer('positional_embedding', torch.zeros(197, width))
 
     def encode_image(self, images, return_hidden=False, return_token_hidden=False):
         hidden = self.visual.hidden(images.float())

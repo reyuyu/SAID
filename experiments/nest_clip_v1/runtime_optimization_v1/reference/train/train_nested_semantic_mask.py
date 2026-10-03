@@ -26,7 +26,6 @@ from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
-from train.runtime_audit import audit_step, finite_gradients, update_rolling_hash, AUDIT_LEVELS
 
 
 def seed_all(seed=0):
@@ -44,10 +43,9 @@ def auxiliary_module(module):
     return joint if joint is not None else getattr(module, 'vcp_query', None)
 
 
-def build_optimizer(module, fused=False):
+def build_optimizer(module):
     if isinstance(module, BalancedSearch):
-        options = {'fused':True} if fused else {}
-        return torch.optim.AdamW(module.optimizer_groups(),betas=(.9,.999),eps=1e-8,**options)
+        return torch.optim.AdamW(module.optimizer_groups(),betas=(.9,.999),eps=1e-8)
     mask_parameters = (module.mask_parameters() if hasattr(module, 'mask_parameters')
                        else module.clip.mask_net.parameters())
     mask_ids = {id(p) for p in mask_parameters if p.requires_grad}
@@ -234,8 +232,6 @@ def code_manifest():
              'model/longclip.py', 'model/said_cls_cvssl.py']
     if (root/'model/balanced_hparam_search.py').exists():
         paths.append('model/balanced_hparam_search.py')
-    for path in ('train/runtime_audit.py','model/runtime_execution.py','model/backbone.py'):
-        if (root/path).exists():paths.append(path)
     return {p: file_sha(root / p) for p in paths}
 
 
@@ -316,10 +312,6 @@ def main():
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
     cfg.setdefault('remainder_mode','compact')
-    cfg.setdefault('base_model','ViT-B/16')
-    cfg.setdefault('audit_level','sparse' if args.run_type=='formal' else 'full')
-    assert cfg['audit_level'] in AUDIT_LEVELS
-    assert cfg['audit_level']!='benchmark' or args.run_type=='probe'
     assert cfg['remainder_mode'] in ('compact','prefix_pad','sentence_drop')
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
@@ -353,11 +345,10 @@ def main():
     assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
     assert len(loader) == min(args.max_updates, full_batches_per_epoch)
     assert args.max_updates <= horizon, 'Stopping point must not exceed the configured horizon'
-    clip, _ = longclip.load_from_clip(cfg['base_model'], device='cpu', args=argparse.Namespace())
+    clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
     initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
     assert initial['completed_steps'] == 0 and initial['provenance']['source'] == 'OpenAI CLIP + original random MaskNetwork'
     assert not initial['optimizer']['state']
-    assert initial['provenance'].get('base_model','ViT-B/16')==cfg['base_model']
     clip.load_state_dict(initial['model'], strict=True)
     construction_rng = rng_state()
     module_class = (NestedFusionMask if cfg['condition_mode'] == 'dual_branch' else
@@ -374,14 +365,6 @@ def main():
                           shuffle_seed=cfg['shuffle_seed'],
                           checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'], **model_options)
     restore_rng_state(construction_rng)
-    if hasattr(module,'configure_runtime'):
-        module.configure_runtime(cfg)
-    if cfg.get('encoder_checkpoint_strategy'):
-        from model.runtime_execution import configure_checkpointing
-        configure_checkpointing(module.clip,cfg['encoder_checkpoint_strategy'])
-        assert cfg['checkpoint_encoders']==(cfg['encoder_checkpoint_strategy']!='none')
-    from model.backbone import validate_backbone
-    validate_backbone(module.clip,cfg['base_model'])
     encoder_checkpoint_active = all(
         getattr(transformer.forward, '__func__', None) is _checkpoint_blocks
         for transformer in (module.clip.visual.transformer, module.clip.transformer))
@@ -390,8 +373,6 @@ def main():
                          checkpoint_encoders=module.checkpoint_encoders,
                          encoder_checkpoint_active=encoder_checkpoint_active,
                          condition_mode=module.condition_mode, arm=module.arm)
-    if cfg.get('encoder_checkpoint_strategy','full') not in ('full','none'):
-        runtime_model['encoder_checkpoint_active']=True
     assert runtime_model == dict(image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
                                  checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'],
                                  checkpoint_encoders=cfg['checkpoint_encoders'],
@@ -408,9 +389,8 @@ def main():
     module = module.cuda().train()
     assert all(p.dtype == torch.float32 for p in module.parameters())
     ddp = DDP(module, device_ids=[local], output_device=local,
-              find_unused_parameters=cfg.get('find_unused_parameters',True),static_graph=cfg.get('static_graph',False),
-              gradient_as_bucket_view=cfg.get('gradient_as_bucket_view',False),bucket_cap_mb=cfg.get('bucket_cap_mb',25))
-    optimizer = build_optimizer(module,fused=cfg.get('fused_adamw',False))
+              find_unused_parameters=True, static_graph=False)
+    optimizer = build_optimizer(module)
     if cfg.get('hparam_search'):
         module._loader_generator=loader.generator
         module._loader_epoch_generator_state=loader.generator.get_state()
@@ -482,8 +462,6 @@ def main():
     probe_max_seconds = []
     resource_failure = None
     consecutive_slow = 0
-    rolling_hash = hashlib.sha256()
-    benchmark_timing = []
     for epoch in range(cfg['epochs']):
         sampler.set_epoch(epoch)
         dataset.set_epoch(epoch)  # copied into fresh spawn workers before iter(loader)
@@ -498,14 +476,6 @@ def main():
                 cycle_start = time.perf_counter()
                 continue
             tick = time.perf_counter()
-            checkpoint_due = args.run_type != 'probe' and (
-                (completed+1)%int(cfg['checkpoint_interval'])==0 or completed+1==args.max_updates)
-            full_audit = audit_step(completed+1,cfg['audit_level'],
-                epoch_boundary=(completed+1)%full_batches_per_epoch==0,
-                checkpoint=checkpoint_due,final=completed+1==args.max_updates)
-            module.runtime_audit_active = full_audit or not cfg.get('skip_observational_model_logs',False)
-            if cfg['audit_level']=='sparse':
-                update_rolling_hash(rolling_hash,batch)
             for k in ('image', 'tokens_f', 'tokens_o', 'tokens_e', 'valid'):
                 batch[k] = batch[k].cuda(non_blocking=True)
             lrs = optimizer_learning_rates(module,completed,horizon)
@@ -522,75 +492,65 @@ def main():
                 raise FloatingPointError(f'Nonfinite loss: {logs}')
             loss.backward()
             norms = {}
+            for group in optimizer.param_groups:
+                norms[group['name']] = gradient_norm(group['params'])
             adapter_norms = {}
-            if full_audit:
-                for group in optimizer.param_groups:
-                    norms[group['name']] = gradient_norm(group['params'])
-                auxiliary = auxiliary_module(module)
-                if auxiliary is not None:
-                    adapter_norms = {name: gradient_norm([parameter]) for name,parameter in auxiliary.named_parameters()}
-                finite = torch.stack([torch.isfinite(v) for v in norms.values()]).all().int()
-                if adapter_norms:
-                    finite = finite * torch.stack([torch.isfinite(v) for v in adapter_norms.values()]).all().int()
-            else:
-                finite = finite_gradients(module)
-            memory_failure = torch.cuda.max_memory_allocated()/2**30>65
-            if memory_failure:
-                finite = finite*0
+            auxiliary = auxiliary_module(module)
+            if auxiliary is not None:
+                adapter_norms = {name: gradient_norm([parameter])
+                                 for name, parameter in auxiliary.named_parameters()}
+            finite = torch.stack([torch.isfinite(v) for v in norms.values()]).all().int()
+            if adapter_norms:
+                finite = finite * torch.stack(
+                    [torch.isfinite(v) for v in adapter_norms.values()]).all().int()
             dist.all_reduce(finite, op=dist.ReduceOp.MIN)
             if not finite.item():
                 if cfg.get('monitor_resources', False):
                     save_emergency(module, optimizer, config, completed, output)
-                memory_any=torch.tensor(int(memory_failure),device='cuda')
-                dist.all_reduce(memory_any,op=dist.ReduceOp.MAX)
-                if memory_any.item():raise RuntimeError('Peak allocated memory exceeded65GiB on at least one rank')
                 raise FloatingPointError('Nonfinite parameter gradient on at least one rank')
             optimizer.step()
             completed += 1
             updates_here += 1
-            if full_audit:
-                torch.cuda.synchronize()
-                stream = json.dumps(dict(sample_ids=batch['sample_id'].tolist(), views=batch['views'],
-                                         tokens=[batch[k].cpu().tolist() for k in ('tokens_f','tokens_o','tokens_e')]),
-                                    ensure_ascii=False, separators=(',', ':')).encode()
-                health = dict(rank=rank, updates=updates_here, batch=len(batch['image']),
-                              valid=int(batch['valid'].sum()), seconds=time.perf_counter()-tick,
-                              peak_allocated_gib=torch.cuda.max_memory_allocated()/2**30,
-                              peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30,
-                              stream_sha256=hashlib.sha256(stream).hexdigest(),
-                              reasons=dict(Counter(batch['reason'])),
-                              gradient_norms={k:float(v) for k,v in norms.items()}, gradients_finite=True,
-                              adapter_gradient_norms={k:float(v) for k,v in adapter_norms.items()},
-                              sampling=sampling_diagnostics(batch),
-                              rolling_sample_K_sha256=rolling_hash.hexdigest() if cfg['audit_level']=='sparse' else None)
-                rank_health = [None]*world
-                dist.all_gather_object(rank_health, health)
-                ids = gather(batch['image_id'].cuda(), False)
-                unique, counts = ids.unique(return_counts=True)
-                duplicates = unique[counts>1].cpu().tolist()
-                if rank == 0:
-                    row = dict(step=completed, s=completed-1, epoch=epoch,
-                               lr_backbone=lrs[0], lr_mask=lrs[1],
-                               lr_adapter=lrs[-1] if len(lrs) >= 3 else 0.,
-                               actual_lrs={g['name']:g['lr'] for g in optimizer.param_groups},
-                               rank_health=rank_health, duplicate_image_ids=duplicates,
-                               **{k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()})
-                    with (output / 'steps.jsonl').open('a') as f:
-                        f.write(json.dumps(row)+'\n')
-                    print(json.dumps({'step':completed, 'loss':row['loss'], 'V':row['valid_global'],
-                                      'seconds':max(x['seconds'] for x in rank_health)}), flush=True)
-                    if completed == 1:
-                        (output / 'text_examples.json').write_text(json.dumps(dict(scope='rank0 first batch; raw full text only for explicit overlong fallback',
-                            views=batch['views'][:8], reasons=batch['reason'][:8],
-                            untruncated_lengths=batch['untruncated_lengths'][:8],
-                            sampling_mode=cfg['sampling_mode'],
-                            local_view_labels=['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration'],
-                            sample_ids=batch['sample_id'][:8].tolist(),
-                            n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
-            if not full_audit and cfg['audit_level']=='sparse' and rank==0 and completed%int(cfg.get('light_log_interval',100))==0:
-                with (output/'light_steps.jsonl').open('a') as handle:
-                    handle.write(json.dumps(dict(step=completed,epoch=epoch,rolling_sample_K_sha256=rolling_hash.hexdigest(),loss=float(logs['loss']),nonfinite=0))+'\n')
-            if args.run_type == 'probe' or (cfg.get('monitor_resources', False) and full_audit):
+            torch.cuda.synchronize()
+            stream = json.dumps(dict(sample_ids=batch['sample_id'].tolist(), views=batch['views'],
+                                     tokens=[batch[k].cpu().tolist() for k in ('tokens_f','tokens_o','tokens_e')]),
+                                ensure_ascii=False, separators=(',', ':')).encode()
+            health = dict(rank=rank, updates=updates_here, batch=len(batch['image']),
+                          valid=int(batch['valid'].sum()), seconds=time.perf_counter()-tick,
+                          peak_allocated_gib=torch.cuda.max_memory_allocated()/2**30,
+                          peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30,
+                          stream_sha256=hashlib.sha256(stream).hexdigest(),
+                          reasons=dict(Counter(batch['reason'])),
+                          gradient_norms={k:float(v) for k,v in norms.items()}, gradients_finite=True,
+                          adapter_gradient_norms={k:float(v) for k,v in adapter_norms.items()},
+                          sampling=sampling_diagnostics(batch))
+            rank_health = [None]*world
+            dist.all_gather_object(rank_health, health)
+            ids = gather(batch['image_id'].cuda(), False)
+            unique, counts = ids.unique(return_counts=True)
+            duplicates = unique[counts>1].cpu().tolist()
+            if rank == 0:
+                row = dict(step=completed, s=completed-1, epoch=epoch,
+                           lr_backbone=lrs[0], lr_mask=lrs[1],
+                           lr_adapter=lrs[-1] if len(lrs) >= 3 else 0.,
+                           actual_lrs={g['name']:g['lr'] for g in optimizer.param_groups},
+                           rank_health=rank_health, duplicate_image_ids=duplicates,
+                           **{k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()})
+                with (output / 'steps.jsonl').open('a') as f:
+                    f.write(json.dumps(row)+'\n')
+                print(json.dumps({'step':completed, 'loss':row['loss'], 'V':row['valid_global'],
+                                  'seconds':max(x['seconds'] for x in rank_health)}), flush=True)
+                if completed == 1:
+                    (output / 'text_examples.json').write_text(json.dumps(dict(scope='rank0 first batch; raw full text only for explicit overlong fallback',
+                        views=batch['views'][:8], reasons=batch['reason'][:8],
+                        untruncated_lengths=batch['untruncated_lengths'][:8],
+                        sampling_mode=cfg['sampling_mode'],
+                        local_view_labels=['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration'],
+                        sample_ids=batch['sample_id'][:8].tolist(),
+                        n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
+            checkpoint_due = args.run_type != 'probe' and (
+                completed % int(cfg['checkpoint_interval']) == 0 or completed == args.max_updates)
+            if args.run_type == 'probe' or cfg.get('monitor_resources', False):
                 # End-to-end cycle: real DataLoader wait, transfer, update, communication,
                 # ordinary logging, then synchronization on the slowest rank.
                 dist.barrier(device_ids=[local])
@@ -601,10 +561,9 @@ def main():
                     probe_max_seconds.append(float(full))
                 if rank == 0:
                     timing_name = 'probe_timing.jsonl' if args.run_type == 'probe' else 'cycle_timing.jsonl'
-                    timing_row=dict(step=completed,warmup=updates_here<=5,four_rank_max_seconds=float(full))
-                    if cfg['audit_level']=='benchmark':benchmark_timing.append(timing_row)
-                    else:
-                        with (output / timing_name).open('a') as f:f.write(json.dumps(timing_row)+'\n')
+                    with (output / timing_name).open('a') as f:
+                        f.write(json.dumps(dict(step=completed, warmup=updates_here <= 5,
+                                                four_rank_max_seconds=float(full)))+'\n')
                 cycle_seconds = float(full)
                 if args.run_type == 'probe':
                     if updates_here > 5 and cycle_seconds > 3:
@@ -665,8 +624,6 @@ def main():
     assert all(x['completed_updates'] == (completed if resource_failure else args.max_updates) for x in results)
     assert all(x['max_parameter_difference_from_rank0'] == 0 for x in results)
     if rank == 0:
-        if cfg['audit_level']=='benchmark':
-            (output/'benchmark_timing.json').write_text(json.dumps(benchmark_timing,indent=2)+'\n')
         speed_gate = None
         passed = resource_failure is None
         if args.run_type == 'probe':

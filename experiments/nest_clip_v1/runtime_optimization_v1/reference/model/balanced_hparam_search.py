@@ -5,9 +5,8 @@ import json
 import math
 
 import torch
-from torch.nn import functional as F
-from model.nested_fusion_mask import NestedFusionMask, fusion_view_terms
-from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_weight, world_rank
+from experiments.nest_clip_v1.runtime_optimization_v1.reference.model.nested_fusion_mask import NestedFusionMask, fusion_view_terms
+from experiments.nest_clip_v1.runtime_optimization_v1.reference.model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_weight, world_rank
 
 
 DEFAULTS = dict(fusion_lr=1e-4, visual_mask_lr_scale=1., view_weights=[1.,1.,1.],
@@ -58,38 +57,9 @@ class BalancedSearch(NestedFusionMask):
         valid_count = int(valid_global.sum())
         z,visual = self.encode_visual(images)
         global_z,global_visual = gather(z),tuple(gather(x) for x in visual)
-        if getattr(self, 'runtime_gate_cache', False):
-            from model.runtime_execution import canonical_projection
-            width = self.fusion_branch.gate.out_features
-            weight_v = self.fusion_branch.gate.weight[:, width:]
-            if self.runtime_gate_backward=='per_use_recompute':
-                with torch.no_grad():
-                    local_projection=F.linear(visual[1],weight_v)
-                    global_projection=canonical_projection(global_visual[1],weight_v,self.runtime_gate_projection_chunk)
-            else:
-                local_projection=F.linear(visual[1],weight_v)
-                global_projection=canonical_projection(global_visual[1],weight_v,self.runtime_gate_projection_chunk)
-            visual = (*visual,local_projection)
-            global_visual = (*global_visual,global_projection)
-        encoded = (self.encode_views((tokens_f,tokens_o,tokens_e))
-                   if valid_count>=2 and getattr(self,'runtime_fused_text',False) else None)
-        view_index = 0
-        diagnostics = completed+1 in DIAGNOSTIC_UPDATES and getattr(self, 'runtime_audit_active', True)
+        diagnostics = completed+1 in DIAGNOSTIC_UPDATES
         def terms(tokens, enabled, enabled_global):
-            nonlocal view_index
-            text,condition = self.encode_view(tokens) if encoded is None else encoded[view_index]
-            view_index += 1
-            if getattr(self, 'runtime_gate_cache', False):
-                width = self.fusion_branch.gate.out_features
-                weight_t=self.fusion_branch.gate.weight[:, :width]
-                if self.runtime_gate_backward=='per_use_recompute':
-                    with torch.no_grad():
-                        negative_projection=canonical_projection(condition[1],weight_t,self.runtime_gate_projection_chunk)
-                        positive_projection=F.linear(condition[1],weight_t)
-                else:
-                    negative_projection=canonical_projection(condition[1],weight_t,self.runtime_gate_projection_chunk)
-                    positive_projection=F.linear(condition[1],weight_t)
-                condition = (*condition,negative_projection,positive_projection)
+            text,condition = self.encode_view(tokens)
             values = fusion_view_terms(self,z,text,visual,condition,enabled,enabled_global,
                                        global_z,global_visual,diagnostics)
             logs = values[-1]
@@ -123,13 +93,12 @@ class BalancedSearch(NestedFusionMask):
                    10/(wf+wp+wr)*(wf*af+wp*ao+wr*ae))
             sparse=(sf+2*so+2*se)/3
             loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*inc_sum
+            violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
+            iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)
+            extra=global_sum(torch.stack((inc_sum.detach(),violation[valid].sum(),iou[valid].sum())))/valid_count
             logs.update({'O_'+key:value for key,value in lo.items()})
             logs.update({'E_'+key:value for key,value in le.items()})
-            if getattr(self,'runtime_audit_active',True):
-                violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
-                iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)
-                extra=global_sum(torch.stack((inc_sum.detach(),violation[valid].sum(),iou[valid].sum())))/valid_count
-                logs.update(inc=extra[0],hard_inclusion_violation=extra[1],oe_iou=extra[2])
+            logs.update(inc=extra[0],hard_inclusion_violation=extra[1],oe_iou=extra[2])
         else:
             loss=10*af+hp['sparsity_scale']*sf
             logs.update(inc=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)

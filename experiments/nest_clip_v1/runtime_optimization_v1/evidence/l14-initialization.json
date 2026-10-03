@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "initial_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/runtime_optimization_v1/shared/l14-step000000.pt",
+  "initial_checkpoint_sha256": "764660137e59075acfbaed231c7531a917f101e47cd2bf753cc92303f23e5b5e",
+  "provenance": {
+    "source": "OpenAI CLIP + original random MaskNetwork",
+    "base_model": "ViT-L/14",
+    "pretrained_url": "https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt",
+    "pretrained_sha256": "b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836",
+    "dimensions": {
+      "base_model": "ViT-L/14",
+      "input_resolution": 224,
+      "context_length": 248,
+      "visual_tokens": 257,
+      "visual_width": 1024,
+      "text_width": 768,
+      "embedding_dim": 768,
+      "patch_count": 256,
+      "patch_size": 14,
+      "mask_heads": 12,
+      "visual_layers": 24,
+      "text_layers": 12,
+      "visual_heads": 16,
+      "vocab_size": 49408
+    },
+    "pretrained_tensors_checked_exactly": 445,
+    "seed": 0,
+    "independent_from_B16": true,
+    "mask_network_sha256": "6a0f8de1711443d6f3a6dd77a2e938814a1019fc81daf82d7def9d01f3ac60b0",
+    "visual_adapter_shape": [
+      768,
+      1024
+    ],
+    "gate_shape": [
+      768,
+      1536
+    ],
+    "mask_dim": 768
+  }
+}

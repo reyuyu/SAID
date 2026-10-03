@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
 
-from model.nested_semantic_mask import (enable_encoder_checkpointing, gather, global_sum,
+from experiments.nest_clip_v1.runtime_optimization_v1.reference.model.nested_semantic_mask import (enable_encoder_checkpointing, gather, global_sum,
                                        hard_st, inclusion, inclusion_weight, world_rank)
 
 
@@ -102,34 +102,18 @@ def pair_logits(module, visual, text, paired=False):
     if module.fusion == 'stack_pool':
         return stack_logits(visual, text, paired)
     if module.fusion == 'balanced_stack':
-        if len(visual)>=3 and len(text)>=3:
-            text_part=text[3] if paired and len(text)>3 else text[2]
-            visual_part=visual[2]
-            if getattr(module,'runtime_gate_backward','cached')=='per_use_recompute':
-                from model.runtime_execution import cached_linear_original_backward
-                width=module.fusion_branch.gate.out_features
-                text_part=cached_linear_original_backward(text_part,text[1],module.fusion_branch.gate.weight[:,:width])
-                visual_part=cached_linear_original_backward(visual_part,visual[1],module.fusion_branch.gate.weight[:,width:])
-            gate = torch.sigmoid(text_part + visual_part if paired else text_part[:, None] + visual_part[None])
-        else:
-            gate = module.fusion_branch.balanced_gate(visual[1], text[1], paired)
+        gate = module.fusion_branch.balanced_gate(visual[1], text[1], paired)
         return (gate * text[1] + (1 - gate) * visual[1] if paired else
                 gate * text[1][:, None] + (1 - gate) * visual[1][None])
     return module.fusion_branch.cross_logits(visual[0], text[0], paired)
 
 
-def score_block(module, z, text, visual, condition, active, collect_diagnostics, normalized_text=False):
+def score_block(module, z, text, visual, condition, active, collect_diagnostics):
     logits = pair_logits(module, visual, condition)
     probability = logits.sigmoid()
     mask = hard_st(probability)
-    normalized = text if normalized_text else F.normalize(text.float(), dim=-1, eps=1e-6)
-    if getattr(module, 'runtime_score_reduction', False):
-        from model.runtime_execution import reduced_masked_score
-        scores = reduced_masked_score(z, normalized, mask)
-    else:
-        scores = 100 * (F.normalize(z[None].float() * mask, dim=-1, eps=1e-6) * normalized[:, None]).sum(-1)
-    if not getattr(module, 'runtime_audit_active', True):
-        return scores, logits.new_zeros(4), logits.new_zeros(9)
+    scores = 100 * (F.normalize(z[None].float() * mask, dim=-1, eps=1e-6) *
+                    F.normalize(text.float(), dim=-1, eps=1e-6)[:, None]).sum(-1)
     with torch.no_grad():
         selected = probability >= .5
         count = active.sum(dtype=torch.float32)
@@ -163,12 +147,6 @@ def score_block(module, z, text, visual, condition, active, collect_diagnostics,
 
 def fusion_scores(module, images, texts, visual, condition, image_valid, text_valid, diagnostics=False):
     rows, summaries, extras = [], [], []
-    normalized = getattr(module, 'runtime_normalize_text', False)
-    original_texts=texts
-    if normalized:
-        if getattr(module,'runtime_normalization_backward','cached')=='per_use_recompute':
-            with torch.no_grad():texts=F.normalize(texts.float(),dim=-1,eps=1e-6)
-        else:texts = F.normalize(texts.float(), dim=-1, eps=1e-6)
     for start_t in range(0, len(texts), module.text_chunk):
         stop_t = min(start_t + module.text_chunk, len(texts))
         row = []
@@ -177,12 +155,8 @@ def fusion_scores(module, images, texts, visual, condition, image_valid, text_va
             vv = tuple(x[start_i:stop_i] for x in visual)
             tt = tuple(x[start_t:stop_t] for x in condition)
             active = text_valid[start_t:stop_t, None] & image_valid[None, start_i:stop_i]
-            raw_text=original_texts[start_t:stop_t]
-            def block(z, t, *args, active=active, nv=len(vv), raw_text=raw_text):
-                if normalized and getattr(module,'runtime_normalization_backward','cached')=='per_use_recompute':
-                    from model.runtime_execution import cached_normalization_original_backward
-                    t=cached_normalization_original_backward(t,raw_text)
-                return score_block(module, z, t, args[:nv], args[nv:], active, diagnostics, normalized_text=normalized)
+            def block(z, t, *args, active=active, nv=len(vv)):
+                return score_block(module, z, t, args[:nv], args[nv:], active, diagnostics)
             arguments = (images[start_i:stop_i], texts[start_t:stop_t], *vv, *tt)
             if module.checkpoint_pair_blocks and torch.is_grad_enabled():
                 scores, summary, extra = checkpoint(block, *arguments, use_reentrant=False)
@@ -219,8 +193,6 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
     probability = logits.sigmoid()
     positive = hard_st(probability)
     sparse = positive[valid].abs().mean(-1).sum()
-    if not getattr(module, 'runtime_audit_active', True):
-        return world / n * (ci + ct + zero), world / n * sparse, positive, probability, {'candidates': n}
     selected = positive.detach() >= .5
     ps = torch.stack((selected.masked_fill(~valid[:, None], False).float().sum(),
                       valid.sum(dtype=torch.float32) * selected.shape[-1],
@@ -283,9 +255,8 @@ class NestedFusionMask(nn.Module):
         self.checkpoint_encoders = bool(checkpoint_encoders)
         self.shuffle_seed = shuffle_seed
         width = int(clip.text_projection.shape[0])
-        patch_count = int(clip.visual.positional_embedding.shape[0])-1
         self.fusion_branch = FusionBranch(clip.mask_net.resblocks, int(clip.visual.proj.shape[0]),
-                                          width, fusion, 1 if visual == 'cls' else patch_count, text_tokens)
+                                          width, fusion, 1 if visual == 'cls' else 196, text_tokens)
         if fusion in ('crossscore_flat', 'cosine_crossscore'):
             clip.mask_net.attn_pool.requires_grad_(False)
         if checkpoint_encoders:
@@ -320,41 +291,6 @@ class NestedFusionMask(nn.Module):
             keys = self.fusion_branch.projected_keys(transformed)
             condition = (self.fusion_branch.contract_keys(keys), keys)
         return text.float(), condition
-
-    def configure_runtime(self, config):
-        self.runtime_fused_text = bool(config.get('fused_text_views', False))
-        self.runtime_gate_cache = bool(config.get('cache_gate_projection', False))
-        self.runtime_normalize_text = bool(config.get('cache_text_normalization', False))
-        self.runtime_score_reduction = bool(config.get('reduced_pair_score', False))
-        self.runtime_skip_observations = bool(config.get('skip_observational_model_logs', False))
-        self.runtime_fused_text_backward = config.get('fused_text_backward','batched')
-        self.runtime_gate_projection_chunk = int(config.get('gate_projection_chunk',128))
-        self.runtime_gate_backward = config.get('gate_backward','cached')
-        self.runtime_normalization_backward = config.get('normalization_backward','cached')
-
-    def encode_views(self, token_views):
-        sizes = [len(tokens) for tokens in token_views]
-        all_tokens = torch.cat(token_views)
-        if getattr(self,'runtime_fused_text_backward','batched')=='per_view_recompute':
-            from model.runtime_execution import encode_fused_with_original_weight_gradients
-            assert len(set(sizes))==1
-            text,hidden=encode_fused_with_original_weight_gradients(self.clip,all_tokens,sizes[0])
-            embeddings=text.split(sizes);hiddens=hidden.split(sizes)
-            pool=self.clip.mask_net.attn_pool.attention
-            result=[]
-            for embedding,view_hidden in zip(embeddings,hiddens):
-                transformed=self.clip.mask_net.resblocks(view_hidden.detach().float().permute(1,0,2)).permute(1,0,2)
-                result.append((embedding,pool_summary(transformed,pool.weight,pool.bias)))
-            return result
-        with torch.autocast('cuda', dtype=torch.bfloat16, enabled=all_tokens.is_cuda):
-            text, hidden = self.clip.encode_text(all_tokens, return_full=True)
-        transformed = self.clip.mask_net.resblocks(hidden.detach().float().permute(1,0,2)).permute(1,0,2)
-        assert self.fusion == 'balanced_stack'
-        pool = self.clip.mask_net.attn_pool.attention
-        condition = pool_summary(transformed, pool.weight, pool.bias)
-        embeddings = text.float().split(sizes)
-        conditions = [x.split(sizes) for x in condition]
-        return [(embeddings[index], tuple(x[index] for x in conditions)) for index in range(len(sizes))]
 
     def forward(self, images, tokens_f, tokens_o, tokens_e, valid, completed=0):
         valid_global = gather(valid, False)
