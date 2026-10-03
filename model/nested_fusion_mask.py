@@ -171,8 +171,13 @@ def fusion_scores(module, images, texts, visual, condition, image_valid, text_va
     return torch.cat(rows), torch.stack(summaries).sum(0), combined
 
 
+def directional_ce(ci, ct, zero, t2i_weight=1.):
+    """Live directional CE; the default preserves the original operation order."""
+    return ci + ct + zero if t2i_weight == 1. else ci + t2i_weight * ct + zero
+
+
 def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
-                      global_z, global_visual, diagnostics=False):
+                      global_z, global_visual, diagnostics=False, t2i_weight=1.):
     world, rank = world_rank()
     n = int(valid_global.sum())
     scores, summary, diagnostic = fusion_scores(module, global_z, text, global_visual, condition,
@@ -236,7 +241,7 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
             alternate = pair_logits(module, replacement_local, condition, paired=True) >= 0
             switch = ((positive.detach() >= .5) != alternate).float().mean(-1)
             logs['replaced_image_mask_switch'] = global_sum(switch[valid].sum()) / n
-    return world / n * (ci + ct + zero), world / n * sparse, positive, probability, logs
+    return world / n * directional_ce(ci, ct, zero, t2i_weight), world / n * sparse, positive, probability, logs
 
 
 class NestedFusionMask(nn.Module):

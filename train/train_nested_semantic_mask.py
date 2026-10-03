@@ -227,7 +227,7 @@ def save_emergency(module, optimizer, config, completed, output):
 def code_manifest():
     root = Path(__file__).resolve().parents[1]
     paths = ['model/nested_semantic_mask.py', 'model/nested_vcp_mask.py', 'model/nested_fusion_mask.py', 'train/nested_semantic_data.py',
-             'train/train_nested_semantic_mask.py', 'model/model_longclip.py',
+             'train/train_nested_semantic_mask.py', 'train/random_detail_observer.py', 'model/model_longclip.py',
              'model/longclip.py', 'model/said_cls_cvssl.py']
     if (root/'model/balanced_hparam_search.py').exists():
         paths.append('model/balanced_hparam_search.py')
@@ -310,8 +310,8 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail')
-    if cfg['sampling_mode']=='summary_random_detail':
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'interior_random_k', 'summary_contiguous_detail')
+    if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
@@ -358,6 +358,8 @@ def main():
     if cfg.get('hparam_search'):
         module_class=BalancedSearch
         model_options['search_hparams']=hparams(cfg)
+        if 'summary_t2i_weight' in cfg:
+            model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
     module = module_class(clip.float(), arm=cfg['arm'],
                           checkpoint_encoders=cfg['checkpoint_encoders'],
                           image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
@@ -546,8 +548,9 @@ def main():
                         untruncated_lengths=batch['untruncated_lengths'][:8],
                         sampling_mode=cfg['sampling_mode'],
                         local_view_labels=(['Summary', 'Random Detail'] if cfg['sampling_mode']=='summary_random_detail' else
+                                           ['Summary', 'Contiguous Detail'] if cfg['sampling_mode']=='summary_contiguous_detail' else
                                            ['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
-                                           ['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration']),
+                                           ['prefix', 'remainder'] if cfg['sampling_mode'] in ('random_k', 'interior_random_k') else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),
                         n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
             checkpoint_due = args.run_type != 'probe' and (

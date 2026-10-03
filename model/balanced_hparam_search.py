@@ -34,6 +34,8 @@ class BalancedSearch(NestedFusionMask):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
+        self.summary_t2i_weight = float((search_hparams or {}).get("summary_t2i_weight", 1.))
+        assert 0 < self.summary_t2i_weight <= 1.
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -58,10 +60,11 @@ class BalancedSearch(NestedFusionMask):
         z,visual = self.encode_visual(images)
         global_z,global_visual = gather(z),tuple(gather(x) for x in visual)
         diagnostics = completed+1 in DIAGNOSTIC_UPDATES
-        def terms(tokens, enabled, enabled_global):
+        def terms(tokens, enabled, enabled_global, t2i_weight=1.):
             text,condition = self.encode_view(tokens)
             values = fusion_view_terms(self,z,text,visual,condition,enabled,enabled_global,
-                                       global_z,global_visual,diagnostics)
+                                       global_z,global_visual,diagnostics,
+                                       **({"t2i_weight": t2i_weight} if t2i_weight != 1. else {}))
             logs = values[-1]
             if diagnostics:
                 gate=logs['_diagnostic_gate']
@@ -79,7 +82,7 @@ class BalancedSearch(NestedFusionMask):
         hp=self.search_hparams
         weight=hp['inclusion_max']*inclusion_weight(self.arm,completed) if valid_count>=2 else 0.
         if valid_count>=2:
-            ao,so,mo,po,lo=terms(tokens_o,valid,valid_global)
+            ao,so,mo,po,lo=terms(tokens_o,valid,valid_global,self.summary_t2i_weight)
             ae,se,me,pe,le=terms(tokens_e,valid,valid_global)
             gate_o,gate_e=lo.pop('_diagnostic_gate',None),le.pop('_diagnostic_gate',None)
             if gate_f is not None:
@@ -91,6 +94,9 @@ class BalancedSearch(NestedFusionMask):
             wf,wp,wr=hp['view_weights']
             align=(10/3*(af+ao+ae) if hp['view_weights']==[1.,1.,1.] else
                    10/(wf+wp+wr)*(wf*af+wp*ao+wr*ae))
+            if self.summary_t2i_weight != 1.:
+                assert hp["view_weights"] == [1.,1.,1.]
+                align = align * (6/(5+self.summary_t2i_weight))
             sparse=(sf+2*so+2*se)/3
             loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
