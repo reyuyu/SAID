@@ -61,12 +61,35 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     n=0, K=0 marks the overlong-first-segment fallback (no complete visible
     segment count); n=1, K=0 marks a single visible segment.
     """
-    if sampling_mode not in ('fixed_first', 'random_k'):
+    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
                   reference_tokens_o=original['tokens_o'],
                   reference_tokens_e=original['tokens_e'])
+    if sampling_mode == 'summary_detail':
+        # F retains the baseline's exact visible-prefix packing and tokens.
+        # S/D use all cleaned raw segments, before context truncation; otherwise
+        # "all detail" would silently discard sentences outside the packed F.
+        cleaned = caption.replace('\n', ' ').strip()
+        parts = [x.strip() for x in cleaned.split('. ') if x.strip()]
+        if len(parts) < 2:
+            # Collation-only PAD tensors, not empty captions or copied views.
+            # The unchanged valid mask excludes these local views from training.
+            padding = torch.zeros_like(original['tokens_f'])
+            result.update(tokens_o=padding, tokens_e=padding.clone(), valid=False,
+                          reason='single_raw_segment', views=[original['views'][0], None, None],
+                          untruncated_lengths=[original['untruncated_lengths'][0], 0, 0],
+                          n=len(parts), K=0)
+            return result
+        summary, detail = parts[0], '. '.join(parts[1:])
+        lengths = [len(longclip._tokenizer.encode(s)) + 2 for s in (summary, detail)]
+        local = longclip.tokenize([summary, detail], context_length=248, truncate=True)
+        result.update(tokens_o=local[0], tokens_e=local[1], valid=True,
+                      reason='summary_detail', views=[original['views'][0], summary, detail],
+                      untruncated_lengths=[original['untruncated_lengths'][0], *lengths],
+                      n=len(parts), K=1)
+        return result
     if not original['valid']:
         result.update(n=1 if original['reason'] == 'single_visible_segment' else 0, K=0)
         return result
@@ -113,7 +136,7 @@ def sampling_diagnostics(batch):
     reference = dict(sample_ids=ids, views=batch['reference_views'],
                      tokens=[tokens[0], batch['reference_tokens_o'].tolist(),
                              batch['reference_tokens_e'].tolist()])
-    return dict(sample_ids=ids, n=ns, K=ks, valid_count=sum(valid),
+    result = dict(sample_ids=ids, n=ns, K=ks, valid_count=sum(valid),
                 k1_count=sum(k == 1 and enabled for k, enabled in zip(ks, valid)),
                 K_histogram_by_n={n: dict(v) for n, v in by_n.items()},
                 prefix_segments=histogram(p_counts), remainder_segments=histogram(r_counts),
@@ -123,6 +146,19 @@ def sampling_diagnostics(batch):
                 local_views_sha256=digest(dict(sample_ids=ids, PR=[v[1:] for v in batch['views']], tokens_pr=tokens[1:])),
                 split_sha256=digest(dict(sample_ids=ids, n=ns, K=ks)),
                 fixed_first_reference_stream_sha256=digest(reference))
+    if any(reason in ('summary_detail', 'single_raw_segment') for reason in batch['reason']):
+        # Metadata only; EOT index counts real token ID0 correctly as content.
+        eot = longclip._tokenizer.encoder['<|endoftext|>']
+        stats = {}
+        for j, label in enumerate(('Full', 'Summary', 'Detail')):
+            chosen = [i for i, enabled in enumerate(valid) if j == 0 or enabled]
+            effective = [tokens[j][i].index(eot)+1 for i in chosen]
+            before = [batch['untruncated_lengths'][i][j] for i in chosen]
+            stats[label] = dict(samples=len(chosen), effective_token_sum=sum(effective),
+                effective_token_histogram=histogram(effective), before_truncation_token_sum=sum(before),
+                truncated_count=sum(n > 248 for n in before))
+        result['Full_Summary_Detail_token_statistics'] = stats
+    return result
 
 
 def file_sha(path):
@@ -158,7 +194,7 @@ class NestedDataset(Dataset):
         self.index_dir, self.image_root = Path(index_dir), Path(image_root)
         self.metadata = json.loads((self.index_dir / 'metadata.json').read_text())
         self.transform = reference_view_a_transform()
-        if sampling_mode not in ('fixed_first', 'random_k'):
+        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
         self._records = self._offsets = self._file = None

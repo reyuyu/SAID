@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "reference_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "baseline_retrained": false,
+  "baseline_full_sha256_verified": "f44e3ab0566a12e189514a92fedac3416299f87ca129b649a2c76a63b222b3f8",
+  "baseline_bare_sha256_verified": "90e60b028a7d8c038b41512c295bcede21ccc5cb57d7b31c3b3bd42af75dcf6e",
+  "unchanged_model_optimizer_scheduler_evaluator_sources": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "7e3852e034a8139e0c889ee35171cd282417567f385bca75f5dc87af7c308bbe",
+    "model/balanced_hparam_search.py": "9f6743c5608b0391149bd70d316c87fb999a65ebcc681d77b51837b3b3b4072b",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "train/said_cvssl_data.py": "3cd78dfe7a82e1482166665ee452eedd15c8342b42268e4e89590ef1ea74339e",
+    "eval/retrieval/coco_retrieval.py": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+    "tools/urban1k_retrieval.py": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2"
+  },
+  "unchanged_trainer_functions_AST": [
+    "build_optimizer",
+    "learning_rates",
+    "optimizer_learning_rates",
+    "training_horizon",
+    "seed_all",
+    "rng_state",
+    "restore_rng_state"
+  ],
+  "indexed_training_data_SHA256_verified": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+  "all_500x4_sampler_id_hashes_match": true,
+  "F_1000_equivalence": {
+    "passed": true,
+    "samples": 1000,
+    "F_raw_equal_count": 1000,
+    "F_tokens_bitwise_equal_count": 1000,
+    "seed": 0,
+    "digest": "e5f2ee0df342ada1bc67a587d3aebfa3c4de60f509973c49b52af5fe3de61f71"
+  },
+  "only_training_behavior_difference": "summary_detail text construction and its specified raw-sentence validity rule",
+  "no_view_relation_or_sentence_drop": true,
+  "stop_updates": 500,
+  "scheduler_horizon": 4868,
+  "checked_at": "2026-10-04T00:54:26.046313+08:00"
+}

@@ -1,0 +1,165 @@
+{
+  "status": "COMPLETE",
+  "corpus": {
+    "annotation": "/root/lk_projects/SAID-assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+    "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+    "original_records": 1246901,
+    "training_records": 1245901,
+    "skip": 1000,
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+  },
+  "training_records": 1245901,
+  "parser": "unchanged literal . split and cleanup",
+  "token_length_definition": "Actual CLIP BPE, SOT/EOT included; coverage excludes SOT/EOT",
+  "Full_definition": "Exactly baseline visible-prefix F; whole-corpus raw-F length is separately labeled",
+  "local_view_definition": "Summary=first raw cleaned segment; Detail=all subsequent raw segments compactly retokenized with248 truncation",
+  "sentence_count": {
+    "count": 1245901,
+    "mean": 8.158626568242582,
+    "p10": 6.0,
+    "p25": 6.0,
+    "p50": 8.0,
+    "p75": 10.0,
+    "p90": 11.0,
+    "p95": 12.0,
+    "median": 8.0
+  },
+  "single_sentence_fraction": 1.7657903798134844e-05,
+  "two_sentence_fraction": 0.0001244079585777682,
+  "three_plus_sentence_fraction": 0.9998579341376241,
+  "summary_tokens_before_truncation": {
+    "count": 1245901,
+    "mean": 18.62666375578798,
+    "p50": 18.0,
+    "p90": 26.0,
+    "p95": 28.0,
+    "p99": 34.0,
+    "median": 18.0
+  },
+  "detail_tokens_before_truncation_valid_only": {
+    "count": 1245879,
+    "mean": 157.35960474492308,
+    "p50": 152.0,
+    "p90": 219.0,
+    "p95": 236.0,
+    "p99": 277.0,
+    "median": 152.0
+  },
+  "full_raw_tokens_before_packing": {
+    "count": 1245901,
+    "mean": 174.94568107738897,
+    "p50": 169.0,
+    "p90": 235.0,
+    "p95": 252.0,
+    "p99": 295.0,
+    "median": 169.0
+  },
+  "summary_truncated_fraction_valid": 0.0,
+  "detail_truncated_fraction_valid": 0.029238794457567708,
+  "raw_valid_fraction": 0.9999823420962018,
+  "F_equivalence": {
+    "passed": true,
+    "samples": 1000,
+    "F_raw_equal_count": 1000,
+    "F_tokens_bitwise_equal_count": 1000,
+    "seed": 0,
+    "digest": "e5f2ee0df342ada1bc67a587d3aebfa3c4de60f509973c49b52af5fe3de61f71"
+  },
+  "subset_count": 100000,
+  "subset_sha256": "2282c3ee9b3c023d970e08622fba8a04f4504684aa08b69f25dce6ef55dbc31f",
+  "subset_epoch": 0,
+  "sampling_seed": 0,
+  "matched_subset": {
+    "old_prefix_tokens": {
+      "count": 99988,
+      "mean": 83.49659959195104,
+      "p50": 79.0,
+      "p90": 153.0,
+      "p95": 175.0,
+      "p99": 206.0,
+      "median": 79.0
+    },
+    "old_remainder_tokens": {
+      "count": 99988,
+      "mean": 89.11432371884626,
+      "p50": 83.0,
+      "p90": 162.0,
+      "p95": 184.0,
+      "p99": 214.0,
+      "median": 83.0
+    },
+    "old_prefix_sentences": {
+      "count": 99988,
+      "mean": 4.020992519102292,
+      "p50": 4.0,
+      "p90": 7.0,
+      "p95": 8.0,
+      "p99": 10.0,
+      "median": 4.0
+    },
+    "old_remainder_sentences": {
+      "count": 99988,
+      "mean": 4.036424370924511,
+      "p50": 4.0,
+      "p90": 7.0,
+      "p95": 8.0,
+      "p99": 10.0,
+      "median": 4.0
+    },
+    "actual_full_tokens": {
+      "count": 100000,
+      "mean": 171.57019,
+      "p50": 169.0,
+      "p90": 230.0,
+      "p95": 238.0,
+      "p99": 246.0,
+      "median": 169.0
+    },
+    "new_summary_tokens": {
+      "count": 99999,
+      "mean": 18.602476024760247,
+      "p50": 18.0,
+      "p90": 26.0,
+      "p95": 28.0,
+      "p99": 34.0,
+      "median": 18.0
+    },
+    "new_detail_tokens": {
+      "count": 99999,
+      "mean": 157.38638386383863,
+      "p50": 152.0,
+      "p90": 219.0,
+      "p95": 236.0,
+      "p99": 276.0,
+      "median": 152.0
+    },
+    "new_detail_sentences": {
+      "count": 99999,
+      "mean": 7.158031580315803,
+      "p50": 7.0,
+      "p90": 10.0,
+      "p95": 11.0,
+      "p99": 13.0,
+      "median": 7.0
+    },
+    "new_summary_sentences": {
+      "count": 99999,
+      "mean": 1.0,
+      "p50": 1.0,
+      "p90": 1.0,
+      "p95": 1.0,
+      "p99": 1.0,
+      "median": 1.0
+    }
+  },
+  "random_k_valid_fraction_subset": 0.99988,
+  "summary_detail_valid_fraction_subset": 0.99999,
+  "old_R_non_summary_detail_coverage_mean": 0.5704145933909043,
+  "new_D_detail_coverage_before_truncation_mean": 1.0,
+  "new_D_effective_detail_coverage_after_truncation_mean": 0.9964532338625381,
+  "detail_extends_visible_F_fraction_subset": 0.05794057940579406,
+  "validity_difference_count_subset": 11,
+  "elapsed_seconds": 128.78047728538513,
+  "audit_workers": 32
+}

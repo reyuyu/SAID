@@ -310,7 +310,7 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k')
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail')
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
     assert cfg['full_native_mix'] == 0
     assert int(cfg['checkpoint_interval']) > 0
@@ -542,7 +542,8 @@ def main():
                         views=batch['views'][:8], reasons=batch['reason'][:8],
                         untruncated_lengths=batch['untruncated_lengths'][:8],
                         sampling_mode=cfg['sampling_mode'],
-                        local_view_labels=['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration'],
+                        local_view_labels=(['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
+                                           ['prefix', 'remainder'] if cfg['sampling_mode']=='random_k' else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),
                         n=batch['n'][:8].tolist(), K=batch['K'][:8].tolist()), indent=2))
             checkpoint_due = args.run_type != 'probe' and (
