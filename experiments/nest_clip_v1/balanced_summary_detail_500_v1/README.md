@@ -1,23 +1,13 @@
-# Summary–Detail single-variable 500-update experiment
+# Summary–Detail@500: NEGATIVE
 
-Base:14653c92c6da9d552a2b624ab169eaaa275cdde8. Full remains the baseline visible-prefix
-string/tokens bitwise. Summary is the first cleaned raw sentence segment; Detail is all remaining
-raw segments in order, compactly retokenized at248. Invalid raw captions with fewer than2 segments
-have no constructed local caption; collated PAD sentinels are excluded by the unchanged valid masks.
+Fixed Summary–Detail decomposition does not improve the matched RandomK baseline at500.
+All500 updates and five frozen native retrieval datasets completed. Matched baseline is reused;
+common step0 and horizon4868 are preserved. No full4868 run is started.
 
-Only text construction changes. Frozen Balanced-Stack-Patch B/16 model/loss/optimizer/scheduler/evaluators
-remain unchanged. Common step0 is reused. One smoke5, then an independent500 from step0 with horizon4868,
-then all five frozen native datasets; no baseline retraining or automatic4868 run.
-
-Baseline:69.900394% Score5_R1. Config, preflight, sampling correctness and whole-corpus statistics
-are included. Data audit distinguishes raw captions, baseline visible Full and truncated effective Detail.
-About5.79% of raw Detail strings extend beyond the packed visible Full; this is explicit,
-not an assumption that their post-budget token sets are nested. Mathematical inclusion loss is unchanged.
-
-Run stages with the said-repro Python environment:
-python -m experiments.nest_clip_v1.balanced_summary_detail_500_v1.run preflight
-python -m experiments.nest_clip_v1.balanced_summary_detail_500_v1.run smoke
-python -m experiments.nest_clip_v1.balanced_summary_detail_500_v1.run formal
-python -m experiments.nest_clip_v1.balanced_summary_detail_500_v1.run evaluate
-
-Large checkpoints/indexes/data/embedding caches remain in /root/lk_projects/SAID-nest-clip-v1 and SAID-assets.
+Read [SUMMARY_DETAIL_500_REPORT.md](SUMMARY_DETAIL_500_REPORT.md) and [RESULTS.json](RESULTS.json)
+for every directional R1/R5/R10, deltas, checkpoint hashes, matching and resource evidence.
+[DATA_SAMPLING_AUDIT.md](DATA_SAMPLING_AUDIT.md) distinguishes raw captions from packed Full,
+and records complete-corpus quantiles and actual Detail truncation/coverage.
+Code/logs use tokens_o/e as unchanged internal slots; method/report names are Full/Summary/Detail.
+Commands are structured arrays in commands/. Source base14653c9, branch
+codex/nest-balanced-summary-detail-500-v1. Large weights/data/caches are outside Git.
