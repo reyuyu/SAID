@@ -18,5 +18,6 @@ def main():
         ax.legend(fontsize=8)
     fig.suptitle('Summary alignment dose: one seed, matched500 updates');fig.tight_layout()
     fig.savefig(EXP/'DOSE_CURVE.png',dpi=160);fig.savefig(EXP/'DOSE_CURVE.svg');plt.close(fig)
+    svg=EXP/'DOSE_CURVE.svg';svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
 
 if __name__=='__main__':main()

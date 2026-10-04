@@ -89,7 +89,7 @@ def generate():
     dump(EXP/'DOSE_RESULTS.json',dict(status='COMPLETE',curve=compact,RandomK_baseline=baseline,gradient_spot8_curve=gradients,decision=decision))
     dump(EXP/'DECISION.json',decision)
     with (EXP/'DOSE_CURVE.csv').open('w',newline='') as f:
-        writer=csv.writer(f);writer.writerow(['S_weight','F_weight','D_weight',*METRICS])
+        writer=csv.writer(f,lineterminator="\n");writer.writerow(['S_weight','F_weight','D_weight',*METRICS])
         for r in curve:writer.writerow([r['S_weight'],r['weights'][0],r['weights'][2],*[100*r['scores'][k] for k in METRICS]])
     plot(curve,baseline)
     lines=['# Arm B Summary alignment-dose500 report','',f'**{decision["interpretation"]}**. E1/E2 completed fresh500, strict export, frozen native5 and read-only diagnostics.','',
