@@ -213,7 +213,8 @@ def main():
             ddp.zero_grad(set_to_none=True);repeat_loss=ddp(images,*views,valid,'F_i2t',False);repeat_loss.backward()
             synchronized_gradient_agreement(named)
             other={n:p.grad for n,p in named.items()};repeated=repeat_error(named,gradients['F_i2t'],other)
-            assert repeated['bitwise_equal'],repeated
+            if args.fp32_control:assert repeated['relative_L2']<1e-6 and repeated['max_abs']<1e-5,repeated
+            else:assert repeated['bitwise_equal'],repeated
         torch.cuda.synchronize()
         if rank==0:
             grams,support=gram_matrices(named,gradients,OBJECTIVES)

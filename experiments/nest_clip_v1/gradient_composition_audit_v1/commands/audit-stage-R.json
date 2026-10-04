@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/root/miniconda3/envs/said-repro/bin/torchrun",
+    "--standalone",
+    "--nnodes=1",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "experiments.nest_clip_v1.gradient_composition_audit_v1.run_audit",
+    "--stage",
+    "R",
+    "--batches",
+    "32"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-gradient-audit-v1",
+  "env": {
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4",
+    "PYTHONPATH": "/root/lk_projects/SAID-balanced-gradient-audit-v1"
+  },
+  "started_unix": 1791078584.5506506,
+  "exit_code": 0,
+  "elapsed_seconds": 761.0772943496704
+}
