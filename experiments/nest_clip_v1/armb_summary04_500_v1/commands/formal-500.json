@@ -1,0 +1,36 @@
+{
+  "argv": [
+    "/root/miniconda3/envs/said-repro/bin/torchrun",
+    "--standalone",
+    "--nnodes=1",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "train.train_nested_semantic_mask",
+    "--config",
+    "/root/lk_projects/SAID-balanced-armb-summary04-500-v1/experiments/nest_clip_v1/armb_summary04_500_v1/config.json",
+    "--init-state",
+    "/root/lk_projects/SAID-nest-clip-v1/shared/step000000.pt",
+    "--index-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/data_index",
+    "--image-root",
+    "/root/lk_projects/SAID-assets/training/ShareGPT4V",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary04_500_v1/step500",
+    "--run-type",
+    "formal",
+    "--max-updates",
+    "500"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-armb-summary04-500-v1",
+  "env": {
+    "PYTHONPATH": "/root/lk_projects/SAID-balanced-armb-summary04-500-v1",
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4"
+  },
+  "started_at": "2026-10-04T11:14:27.391619+08:00",
+  "console": "/root/lk_projects/SAID-nest-clip-v1/armb_summary04_500_v1/execution/formal-500.console.txt",
+  "exit_code": 0,
+  "elapsed_seconds": 1078.6103941127658,
+  "finished_at": "2026-10-04T11:32:26.002217+08:00"
+}

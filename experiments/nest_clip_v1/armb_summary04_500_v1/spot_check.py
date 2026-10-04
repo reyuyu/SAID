@@ -71,6 +71,7 @@ def main():
             rows.append(row)
         dist.barrier();del gradients;ddp.zero_grad(set_to_none=True)
         after=state_digest(model.state_dict());assert after==before==immutable
+        assert calls=={'optimizer_step':0,'scaler_step':0}
         states=[None]*4;dist.all_gather_object(states,dict(rank=rank,before=before,after=after,update_calls=dict(calls)))
         if rank==0:
             proofs.append(dict(batch=index+1,states=states,DDP_gradient_agreements=agreements))
