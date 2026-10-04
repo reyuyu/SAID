@@ -17,7 +17,8 @@ DIAGNOSTIC_UPDATES = (1,100,200,500,1217,2000,3000,3651,4868)
 def hparams(config):
     result = {key: copy.deepcopy(config.get(key,value)) for key,value in DEFAULTS.items()}
     result['view_weights'] = [float(value) for value in result['view_weights']]
-    assert len(result['view_weights']) == 3 and all(math.isfinite(v) and v>0 for v in result['view_weights'])
+    assert len(result['view_weights']) == 3 and all(math.isfinite(v) and v>=0 for v in result['view_weights'])
+    assert sum(result['view_weights']) > 0, 'Alignment weights must have positive total'
     for key in DEFAULTS:
         if key != 'view_weights':
             result[key] = float(result[key])
