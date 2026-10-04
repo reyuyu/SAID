@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/step500/student_step500.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/step500/long_dci",
+    "long_dci:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/dci/images"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-armb-summary-dose-500-v1",
+  "env": {
+    "PYTHONPATH": "/root/lk_projects/SAID-balanced-armb-summary-dose-500-v1",
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4"
+  },
+  "started_at": "2026-10-04T12:41:49.326902+08:00",
+  "console": "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/execution/eval-long_dci.console.txt",
+  "exit_code": 0,
+  "elapsed_seconds": 458.45530251413584,
+  "finished_at": "2026-10-04T12:49:27.782375+08:00"
+}

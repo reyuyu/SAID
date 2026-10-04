@@ -1,0 +1,1429 @@
+{
+  "batches": [
+    {
+      "batch_position": 1,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 2,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 3,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 4,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 5,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 6,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 7,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    },
+    {
+      "batch_position": 8,
+      "state_checks": [
+        {
+          "rank": 0,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 1,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 2,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        },
+        {
+          "rank": 3,
+          "before": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "after": "6aef81ee81fd9dbbe22782710eed716f28c87549619fe579a3ff92011d539017",
+          "update_calls": {
+            "optimizer_step": 0,
+            "scaler_step": 0
+          }
+        }
+      ],
+      "gradient_agreements": {
+        "F_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "O_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "E_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "align_actual": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "fusion_branch.visual_blocks.0.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.mask_net.resblocks.0.mlp.c_fc.bias"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        },
+        "native_combined": {
+          "tested_tensors": 20,
+          "tensor_names": [
+            "clip.transformer.resblocks.3.mlp.c_fc.bias",
+            "clip.transformer.resblocks.5.attn.in_proj_bias",
+            "clip.visual.transformer.resblocks.1.attn.in_proj_weight",
+            "clip.visual.transformer.resblocks.10.ln_1.weight",
+            "clip.transformer.resblocks.8.ln_2.bias",
+            "clip.transformer.resblocks.7.ln_2.weight",
+            "clip.transformer.resblocks.4.ln_1.bias",
+            "clip.transformer.resblocks.0.attn.in_proj_bias",
+            "clip.transformer.resblocks.7.mlp.c_fc.weight",
+            "clip.transformer.resblocks.2.ln_1.bias",
+            "clip.token_embedding.weight",
+            "clip.visual.transformer.resblocks.8.mlp.c_fc.bias",
+            "clip.transformer.resblocks.8.mlp.c_proj.weight",
+            "clip.visual.transformer.resblocks.5.attn.out_proj.bias",
+            "clip.visual.transformer.resblocks.11.ln_1.weight",
+            "clip.visual.transformer.resblocks.3.ln_1.weight",
+            "clip.visual.transformer.resblocks.10.attn.in_proj_weight",
+            "clip.transformer.resblocks.9.ln_2.weight",
+            "clip.visual.transformer.resblocks.5.mlp.c_fc.bias",
+            "clip.transformer.resblocks.0.ln_1.weight"
+          ],
+          "four_rank_max_abs_gradient_difference": 0.0,
+          "DDP_synchronized": true
+        }
+      }
+    }
+  ],
+  "optimizer_steps": 0
+}

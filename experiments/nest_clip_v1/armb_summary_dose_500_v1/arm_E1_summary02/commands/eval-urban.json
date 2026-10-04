@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "tools.eval_nest_native",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/step500/student_step500.pt",
+    "--dataset",
+    "urban",
+    "--root",
+    "/root/lk_projects/SAID-assets/evaluation/Urban1k/Urban1k",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/step500/urban_native.json"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-armb-summary-dose-500-v1",
+  "env": {
+    "PYTHONPATH": "/root/lk_projects/SAID-balanced-armb-summary-dose-500-v1",
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4"
+  },
+  "started_at": "2026-10-04T12:36:26.785211+08:00",
+  "console": "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/execution/eval-urban.console.txt",
+  "exit_code": 0,
+  "elapsed_seconds": 20.02345959842205,
+  "finished_at": "2026-10-04T12:36:46.809194+08:00"
+}

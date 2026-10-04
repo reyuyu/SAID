@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "/root/miniconda3/envs/said-repro/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E2_summary00/step500/student_step500.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E2_summary00/step500/flickr_test1k",
+    "flickr_test1k:/root/lk_projects/SAID-assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/root/lk_projects/SAID-assets/retrieval_benchmarks/flickr30k/images"
+  ],
+  "cwd": "/root/lk_projects/SAID-balanced-armb-summary-dose-500-v1",
+  "env": {
+    "PYTHONPATH": "/root/lk_projects/SAID-balanced-armb-summary-dose-500-v1",
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4"
+  },
+  "started_at": "2026-10-04T13:19:19.094337+08:00",
+  "console": "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E2_summary00/execution/eval-flickr_test1k.console.txt",
+  "exit_code": 0,
+  "elapsed_seconds": 26.028767503798008,
+  "finished_at": "2026-10-04T13:19:45.123621+08:00"
+}

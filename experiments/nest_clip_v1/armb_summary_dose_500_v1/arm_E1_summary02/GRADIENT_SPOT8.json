@@ -1,0 +1,300 @@
+{
+  "passed": true,
+  "arm": "E1",
+  "scope": "spot8",
+  "batches": 8,
+  "batch_positions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "weights": [
+    1.4,
+    0.2,
+    1.4
+  ],
+  "checkpoint_sha256": "a15c5360fa34991fd0e9767ff158c232c97f1414762b7f58540ec40701e7769e",
+  "checkpoint_before_after_SHA_equal": true,
+  "model_digest_unchanged": true,
+  "optimizer_steps": 0,
+  "groups": {
+    "G1_vision_backbone": {
+      "raw_norm_means": {
+        "F_combined": 8.925959673250654,
+        "O_combined": 26.751511893228496,
+        "E_combined": 19.841843517659512,
+        "align_actual": 119.64831708921537,
+        "native_combined": 6.793222196688241
+      },
+      "weighted_norm_means": {
+        "F_combined": 12.496343542550914,
+        "O_combined": 5.3503023786457,
+        "E_combined": 27.778580924723315
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.27308261376794696,
+        "O_combined": 0.1174213505217258,
+        "E_combined": 0.6094960357103272
+      },
+      "actual_alignment_native_cosine_mean": 0.5767160869043444,
+      "actual_alignment_native_projection_mean": 10.209896355877207
+    },
+    "G2_text_backbone": {
+      "raw_norm_means": {
+        "F_combined": 6.84176932847325,
+        "O_combined": 16.768014923609822,
+        "E_combined": 15.314952635579223,
+        "align_actual": 84.81909836222994,
+        "native_combined": 5.640416464523686
+      },
+      "weighted_norm_means": {
+        "F_combined": 9.57847705986255,
+        "O_combined": 3.353602984721965,
+        "E_combined": 21.44093368981091
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.2788056810000199,
+        "O_combined": 0.0975928032590663,
+        "E_combined": 0.6236015157409137
+      },
+      "actual_alignment_native_cosine_mean": 0.42225863842891403,
+      "actual_alignment_native_projection_mean": 6.362510947566227
+    },
+    "G3_text_mask_blocks": {
+      "raw_norm_means": {
+        "F_combined": 0.17283603594701294,
+        "O_combined": 0.7681099733363868,
+        "E_combined": 0.3880399863402177,
+        "align_actual": 2.0654137469438476,
+        "native_combined": 0.0
+      },
+      "weighted_norm_means": {
+        "F_combined": 0.2419704503258181,
+        "O_combined": 0.15362199466727736,
+        "E_combined": 0.5432559808763048
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.257634894558898,
+        "O_combined": 0.16446733762230104,
+        "E_combined": 0.577897767818801
+      },
+      "actual_alignment_native_cosine_mean": null,
+      "actual_alignment_native_projection_mean": null
+    },
+    "G4_shared_attention_pool": {
+      "raw_norm_means": {
+        "F_combined": 0.02989938869794737,
+        "O_combined": 0.07502414878751519,
+        "E_combined": 0.048176986729567606,
+        "align_actual": 0.289180264591329,
+        "native_combined": 0.0
+      },
+      "weighted_norm_means": {
+        "F_combined": 0.041859144177126315,
+        "O_combined": 0.015004829757503039,
+        "E_combined": 0.06744778142139464
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.3307763288101716,
+        "O_combined": 0.12219396147497051,
+        "E_combined": 0.5470297097148579
+      },
+      "actual_alignment_native_cosine_mean": null,
+      "actual_alignment_native_projection_mean": null
+    },
+    "G5_visual_mask_blocks": {
+      "raw_norm_means": {
+        "F_combined": 0.08646198801756722,
+        "O_combined": 0.3494502881469073,
+        "E_combined": 0.21534944838198822,
+        "align_actual": 1.2029328332505684,
+        "native_combined": 0.0
+      },
+      "weighted_norm_means": {
+        "F_combined": 0.12104678322459408,
+        "O_combined": 0.06989005762938147,
+        "E_combined": 0.3014892277347835
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.24580163527060336,
+        "O_combined": 0.14222470091208322,
+        "E_combined": 0.6119736638173134
+      },
+      "actual_alignment_native_cosine_mean": null,
+      "actual_alignment_native_projection_mean": null
+    },
+    "G6_visual_adapter": {
+      "raw_norm_means": {
+        "F_combined": 0.09901219839325227,
+        "O_combined": 0.4119099358978323,
+        "E_combined": 0.24263068491398956,
+        "align_actual": 1.346037329285924,
+        "native_combined": 0.0
+      },
+      "weighted_norm_means": {
+        "F_combined": 0.13861707775055318,
+        "O_combined": 0.08238198717956648,
+        "E_combined": 0.3396829588795854
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.2471922074767742,
+        "O_combined": 0.14770817196510264,
+        "E_combined": 0.6050996205581232
+      },
+      "actual_alignment_native_cosine_mean": null,
+      "actual_alignment_native_projection_mean": null
+    },
+    "G7_balanced_gate": {
+      "raw_norm_means": {
+        "F_combined": 0.27333078058783467,
+        "O_combined": 1.1262586016891762,
+        "E_combined": 0.604564384398189,
+        "align_actual": 3.282386113944855,
+        "native_combined": 0.0
+      },
+      "weighted_norm_means": {
+        "F_combined": 0.3826630928229685,
+        "O_combined": 0.22525172033783525,
+        "E_combined": 0.8463901381574646
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.2643127857803334,
+        "O_combined": 0.15469444437243327,
+        "E_combined": 0.5809927698472334
+      },
+      "actual_alignment_native_cosine_mean": null,
+      "actual_alignment_native_projection_mean": null
+    },
+    "G8_total_trainable": {
+      "raw_norm_means": {
+        "F_combined": 11.275842597336108,
+        "O_combined": 31.633308437904365,
+        "E_combined": 25.09809527877824,
+        "align_actual": 146.9846236485335,
+        "native_combined": 8.836934309425368
+      },
+      "weighted_norm_means": {
+        "F_combined": 15.78617963627055,
+        "O_combined": 6.326661687580874,
+        "E_combined": 35.137333390289534
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.27549495103028565,
+        "O_combined": 0.11054332099629814,
+        "E_combined": 0.6139617279734162
+      },
+      "actual_alignment_native_cosine_mean": 0.5192654044374528,
+      "actual_alignment_native_projection_mean": 8.686013637763978
+    },
+    "native_backbone_total": {
+      "raw_norm_means": {
+        "F_combined": 11.270216874350854,
+        "O_combined": 31.594140242796474,
+        "E_combined": 25.085164272894296,
+        "align_actual": 146.92053738399468,
+        "native_combined": 8.836934309425368
+      },
+      "weighted_norm_means": {
+        "F_combined": 15.778303624091194,
+        "O_combined": 6.318828048559295,
+        "E_combined": 35.11922998205201
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.27552186860019734,
+        "O_combined": 0.11046930880051695,
+        "E_combined": 0.6140088225992858
+      },
+      "actual_alignment_native_cosine_mean": 0.5194951627117147,
+      "actual_alignment_native_projection_mean": 8.686013637763978
+    },
+    "total_trainable_native_comparable": {
+      "raw_norm_means": {
+        "F_combined": 11.270216874350854,
+        "O_combined": 31.594140242796474,
+        "E_combined": 25.085164272894296,
+        "align_actual": 146.92053738399468,
+        "native_combined": 8.836934309425368
+      },
+      "weighted_norm_means": {
+        "F_combined": 15.778303624091194,
+        "O_combined": 6.318828048559295,
+        "E_combined": 35.11922998205201
+      },
+      "weighted_norm_share_means": {
+        "F_combined": 0.27552186860019734,
+        "O_combined": 0.11046930880051695,
+        "E_combined": 0.6140088225992858
+      },
+      "actual_alignment_native_cosine_mean": 0.5194951627117147,
+      "actual_alignment_native_projection_mean": 8.686013637763978
+    }
+  },
+  "scope_note": "Final step500 frozen model gradients on selected input batches. last50 refers to training-input positions451..500, not saved per-update gradients. Norm shares are not optimizer displacement contributions.",
+  "hardware": [
+    {
+      "rank": 0,
+      "local_rank": 0,
+      "pid": 1639526,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7761114239692688
+    },
+    {
+      "rank": 1,
+      "local_rank": 1,
+      "pid": 1639527,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7950800359249115
+    },
+    {
+      "rank": 2,
+      "local_rank": 2,
+      "pid": 1639528,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7550853714346886
+    },
+    {
+      "rank": 3,
+      "local_rank": 3,
+      "pid": 1639529,
+      "hostname": "interactive93293",
+      "gpu_name": "NVIDIA A100 80GB PCIe",
+      "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+      "total_memory": 84974239744,
+      "nccl_all_reduce": 10.0,
+      "nccl_seconds": 0.7348778024315834
+    }
+  ],
+  "identity": {
+    "checkpoint_optimizer_steps": [
+      500.0
+    ],
+    "optimizer_step_metadata_digest": "37136dd7b53c92c11d17de50d1fb08688dd6968cba6639b7fbfbc685b985b0e2",
+    "parameter_groups": {
+      "G1_vision_backbone": 86192640,
+      "G2_text_backbone": 63515649,
+      "G3_text_mask_blocks": 3152384,
+      "G4_shared_attention_pool": 513,
+      "G5_visual_mask_blocks": 3152384,
+      "G6_visual_adapter": 393216,
+      "G7_balanced_gate": 524288
+    },
+    "total_trainable": 156931074
+  }
+}

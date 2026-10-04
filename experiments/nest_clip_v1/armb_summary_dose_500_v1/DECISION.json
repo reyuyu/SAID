@@ -1,0 +1,24 @@
+{
+  "interpretation": "LOW_DOSE_SUMMARY_OBSERVED_BEST",
+  "best_Score5_dose": 0.2,
+  "best_Jlong3_dose": 0.0,
+  "Score5_monotonic_as_S_decreases": false,
+  "Jlong3_monotonic_as_S_decreases": true,
+  "actual_alignment_native_cosine_monotonic": false,
+  "observed_joint_nonzero_best": false,
+  "best_score_and_long_same_dose": false,
+  "Short4_zero_minus_S04_pp": -0.22800000000000598,
+  "Short4_zero_minus_S02_pp": -0.40200000000000236,
+  "recommendation": "Observed S0.2 wins Score5 and S0.0 drops; supports a low but nonzero Summary CE dose in this500-step seed. Check the separate J_long3 optimum before full confirmation.",
+  "long_guard": {
+    "1.0": false,
+    "0.6": false,
+    "0.4": true,
+    "0.2": true,
+    "0.0": true
+  },
+  "no_extra_weights_tested": true,
+  "no_full_training": true,
+  "stop_updates": 500,
+  "limits": "Only one seed and500 updates. An observed nonzero optimum is not proof of a population optimum or a4868-step outcome. Gradient last50 shares are final-checkpoint input replays, not historical training-update gradients."
+}
