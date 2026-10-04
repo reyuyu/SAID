@@ -1,0 +1,16 @@
+/root/lk_projects/SAID-balanced-armb-summary02-4epoch-v1/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import packaging
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/root/miniconda3/envs/said-repro/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/root/lk_projects/SAID-balanced-armb-summary02-4epoch-v1/experiments/nest_clip_v1/armb_summary02_4epoch_v1/run.py", line 175, in <module>
+    if __name__=='__main__':main()
+  File "/root/lk_projects/SAID-balanced-armb-summary02-4epoch-v1/experiments/nest_clip_v1/armb_summary02_4epoch_v1/run.py", line 173, in main
+    def main():preflight();train();evaluate()
+  File "/root/lk_projects/SAID-balanced-armb-summary02-4epoch-v1/experiments/nest_clip_v1/armb_summary02_4epoch_v1/run.py", line 51, in preflight
+    before_parent_rng=[{'python_present':'python' in r,'torch_sha256':hashlib.sha256(r['torch'].numpy().tobytes()).hexdigest(),
+  File "/root/lk_projects/SAID-balanced-armb-summary02-4epoch-v1/experiments/nest_clip_v1/armb_summary02_4epoch_v1/run.py", line 51, in <listcomp>
+    before_parent_rng=[{'python_present':'python' in r,'torch_sha256':hashlib.sha256(r['torch'].numpy().tobytes()).hexdigest(),
+KeyError: 'torch'

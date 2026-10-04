@@ -1,0 +1,65 @@
+{
+  "passed": true,
+  "parent_checkpoint": "/root/lk_projects/SAID-nest-clip-v1/armb_summary_dose_500_v1/arm_E1_summary02/step500/step000500.pt",
+  "parent_sha256": "a15c5360fa34991fd0e9767ff158c232c97f1414762b7f58540ec40701e7769e",
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "start_updates": 500,
+  "stop_updates": 4868,
+  "updates_to_run": 4368,
+  "epochs": 4,
+  "batches_per_epoch": 1217,
+  "scheduler_horizon": 4868,
+  "optimizer_state_steps": [
+    500.0
+  ],
+  "optimizer_state_group_parameter_counts": {
+    "backbone": 302,
+    "text_mask_and_shared_pool": 14,
+    "visual_mask": 12,
+    "fusion_adapter": 2
+  },
+  "parent_rng_per_rank": [
+    {
+      "python_present": true,
+      "torch_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "1ccf17250133dec5e96478acd63e13d728d0dbbabb30389415a302c6f872f81f"
+    },
+    {
+      "python_present": true,
+      "torch_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "1ccf17250133dec5e96478acd63e13d728d0dbbabb30389415a302c6f872f81f"
+    },
+    {
+      "python_present": true,
+      "torch_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "1ccf17250133dec5e96478acd63e13d728d0dbbabb30389415a302c6f872f81f"
+    },
+    {
+      "python_present": true,
+      "torch_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "1ccf17250133dec5e96478acd63e13d728d0dbbabb30389415a302c6f872f81f"
+    }
+  ],
+  "resume_payload_validator_pass": true,
+  "production_source_hashes": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "train/nested_semantic_data.py": "ba58e15f20e9e43e8f59e376363f49c052696eb3a8d62e2b14cc517b07f18393",
+    "train/train_nested_semantic_mask.py": "56eaa83f7ee3ea9fa97a754a52288fc61adb28dd41129015ec39b129b82c57e3",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
+  },
+  "checkpoint_IO_only_change": "checkpoint_interval1217 saves complete full checkpoints at epoch boundaries",
+  "no_math_sampling_optimizer_scheduler_or_inference_changes": true,
+  "full_epoch_tail_local_batch": 180,
+  "normal_local_batch": 256,
+  "tail_note": "Original full DistributedSampler tail remains180/rank,global720,once per epoch; ordinary global batches1024."
+}

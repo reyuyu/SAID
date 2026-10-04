@@ -48,7 +48,7 @@ def preflight():
     assert checkpoint['next_epoch']==0 and checkpoint['next_batch']==500
     assert all('loader_generator' in state for state in checkpoint['rng_per_rank'])
     optimizer_shapes={group['name']:len(group['params']) for group in checkpoint['optimizer']['param_groups']}
-    before_parent_rng=[{'python_present':'python' in r,'torch_sha256':hashlib.sha256(r['torch'].numpy().tobytes()).hexdigest(),
+    before_parent_rng=[{'python_present':'python' in r,'torch_sha256':hashlib.sha256(r['cpu'].numpy().tobytes()).hexdigest(),
       'cuda_sha256':hashlib.sha256(r['cuda'].numpy().tobytes()).hexdigest(),'loader_generator_sha256':hashlib.sha256(r['loader_generator'].numpy().tobytes()).hexdigest()} for r in checkpoint['rng_per_rank']]
     del checkpoint
     assert base.load(base.INDEX/'metadata.json')==parent['config']['data']
