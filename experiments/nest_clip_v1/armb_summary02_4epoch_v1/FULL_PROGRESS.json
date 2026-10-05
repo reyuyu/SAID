@@ -13,11 +13,11 @@
   "first_stage_stop": 500,
   "horizon": 4868,
   "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
-  "updated_at": "2026-10-05T21:47:34.803671+00:00",
+  "updated_at": "2026-10-05T21:55:18.045748+00:00",
   "phase_telemetry": "/tmp/said-s02-full-phase-resource-v2/step500",
   "stage": "train500",
   "stage_started_at": "2026-10-05T21:43:31.078851+00:00",
-  "active_pid": 54601,
+  "active_pid": null,
   "latest_loss": 13.782869338989258,
   "latest_update_seconds": 8.30683570355177,
   "peak_allocated_gib": 27.759881019592285,
@@ -86,5 +86,27 @@
     "step": 55,
     "threshold_seconds": 3,
     "consecutive_updates": 3
+  },
+  "training_process_running": false,
+  "last_training_pid": 54601,
+  "checkpoint_audit": {
+    "passed": true,
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_resource_v2/step500/step000055.pt",
+    "sha256": "d390a2c4a5e5b49f7c8b31f6eabf90dba2d629913a6ea7c1f799b15857626ed9",
+    "global_step": 55,
+    "optimizer_steps": [
+      55
+    ],
+    "scheduler_horizon": 4868,
+    "four_rank_rng_complete": true,
+    "data_cursor": {
+      "next_epoch": 0,
+      "next_batch": 55
+    },
+    "all_model_and_optimizer_tensors_finite": true,
+    "fresh_common_step0": true,
+    "native_source_unchanged": true,
+    "modified": false,
+    "resume_authorized": false
   }
 }

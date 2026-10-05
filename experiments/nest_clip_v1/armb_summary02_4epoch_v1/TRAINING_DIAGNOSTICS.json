@@ -1,5 +1,5 @@
 {
-  "status": "TRAINING",
+  "status": "RESOURCE_STALL_RECURRED_BEFORE_500",
   "observed_updates": 55,
   "latest": {
     "step": 55,
@@ -210,5 +210,23 @@
   },
   "last50_loss_mean": 14.341231460571288,
   "raw_per_update_metrics": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_resource_v2/training_metrics.jsonl",
-  "native_soft_gate_diagnostic_schedule": "Unchanged; hard gate openness/keep logged each update"
+  "native_soft_gate_diagnostic_schedule": "Unchanged; hard gate openness/keep logged each update",
+  "horizon": 4868,
+  "phase_diagnosis": {
+    "primary_observed_phase": "DATA_WAIT_WITH_DOWNSTREAM_FORWARD_SYNCHRONIZATION_WAIT",
+    "slowest_data_wait_s": 12.190608128905296,
+    "data_plus_forward_s_by_rank": {
+      "0": 12.701927555561067,
+      "1": 12.703717992186546,
+      "2": 12.70210968720913,
+      "3": 12.701820664227009
+    },
+    "intrinsic_backward_optimizer_slowdown_observed": false,
+    "NFS_vs_CPU_reclaim_vs_worker_decode_cause": "NOT_YET_ISOLATED",
+    "host_PSI_not_cgroup_PSI": true,
+    "method_failure": false
+  },
+  "method_failure": false,
+  "automatic_retry": false,
+  "recent20_evidence": "RESOURCE_STALL_RECURRENCE.json"
 }
