@@ -1,36 +1,32 @@
 # Ready to resume
 
-**NOT_READY_TO_RESUME_RESEARCH**
+**READY_TO_RESUME_RESEARCH**
 
-Status refreshed on2026-10-05. See `RECOVERY_STATUS_2026-10-05.md` for the
-timestamped evidence scope. Inventory completeness is not a substitute for the
-final whole-index physical existence/full decode audit, which passed at
-2026-10-05T15:18:47UTC. Current data gate: `DATA_AUDIT_PASS`.
-The slow NFS directory scan is stopped. Its replacement directly checks the
-frozen required-path manifest; see `FINAL_IMAGE_AUDIT.json` for live exact-path
-existence and full-decode counts and `FINAL_MANIFEST_AUDIT.md` for benchmark data.
+S02-specific gate: **READY_TO_START_S02_FULL**, from the authorized five-update
+Summary+RandomDetail smoke, weights `[1.4,0.2,1.4]`, common step0, H4868.
+See `S02_SMOKE_REPORT.md` for per-step metrics and startup timing investigation.
+All smoke artifacts are quarantined and must not be used as full-run resume.
+No full training is authorized; wait for a new explicit instruction, then start
+only from common step0, not any smoke or old500 checkpoint.
 
 | Requirement | Verified |
 | --- | --- |
 | code | PASS |
 | environment | PASS |
 | configs | PASS |
-| training_data | PASS:1245901/1245901 exact paths; missing0 |
+| training_data | PASS |
 | five_evaluation_sets | PASS |
-| training_image_decode_completeness | PASS:1245901 full PIL/RGB decodes; corrupt0; IO failures0 |
-| original_sam_shards | 47 intact;4 original-container anomalies with all required JPEGs recovered |
+| training_image_decode_completeness | PASS |
+| original_sam_shards | PASS |
 | step0 | PASS |
 | cpu_tests | PASS |
 | sampling | PASS |
 | model_config_construction | PASS |
-| four_gpu_five_step_smoke | MISSING / NOT VERIFIED |
-| native_export | MISSING / NOT VERIFIED |
+| four_gpu_five_step_smoke | PASS |
+| native_export | PASS |
 | native_evaluator_subset | PASS |
 
 No 500/4868-update training has been started or authorized by this recovery.
-No smoke is launched. The latest instruction conditionally permits the existing
-five-update smoke only after `DATA_AUDIT_PASS`. `READY_TO_START_S02_FULL` is not
-claimed; that five-update acceptance gate and smoke-checkpoint native export remain.
 
 Trained checkpoint/optimizer/RNG states cannot be recovered from metrics or reports. A new run from step0 is not historical continuation.
 

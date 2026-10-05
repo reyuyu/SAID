@@ -1,6 +1,19 @@
 # SAID recovery status: 2026-10-05
 
-## Latest: full data audit passed
+## Latest: S02 five-update smoke gate passed
+
+The authorized S=0.2 smoke completed exactly five optimizer updates on four
+A10080GB GPUs. Final DDP parameter difference0, all5120 sample streams replayed
+exactly, finite loss/gradients, step5 AdamW states verified, strict bare export
+and native image/text similarity forward passed. Median post-first full cycle
+2.040678seconds; peak allocated27.759881GiB. Initial startup/warmup timing is
+investigated separately in `S02_SMOKE_REPORT.md`, not excluded silently.
+
+**READY_TO_START_S02_FULL**. Smoke artifacts are quarantined and must never be
+used for full resume. No4868/500 training has started or been authorized. Full
+training must start from the common step0 only after a new explicit instruction.
+
+## Earlier: full data audit passed (before smoke)
 
 At2026-10-05T15:18:47UTC the frozen exact-path audit completed successfully:
 **DATA_AUDIT_PASS**. SAM569486, COCO118287 and LLaVA558128 each reach100% exact

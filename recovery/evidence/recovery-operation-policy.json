@@ -1,9 +1,15 @@
 {
   "instruction_date_utc": "2026-10-05",
-  "scope": "Exact frozen-manifest image audit; no formal training",
-  "reason": "User replaces slow NFS directory scan with exact-path existence and full-decode audit",
+  "scope": "S=0.2 final smoke gate only; no downloads, no data re-audit, no formal training",
+  "reason": "Authorized five-update S02 smoke finished; no further updates without a new instruction",
   "smoke_authorized": false,
-  "conditional_smoke_authorized": true,
+  "smoke_config": "recovery/configs/summary02.json",
+  "smoke_view_weights": [
+    1.4,
+    0.2,
+    1.4
+  ],
+  "conditional_smoke_authorized": false,
   "maximum_smoke_updates": 5,
   "scheduler_horizon": 4868,
   "formal_training_authorized": false,
@@ -18,5 +24,7 @@
     16,
     32
   ],
-  "smoke_condition": "DATA_AUDIT_PASS; four A100; common step0; H4868; exactly5 updates"
+  "smoke_condition": "DATA_AUDIT_PASS; four A100; common step0; H4868; exactly5 updates",
+  "smoke_gate_status": "READY_TO_START_S02_FULL",
+  "smoke_completed": true
 }
