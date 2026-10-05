@@ -1,9 +1,9 @@
 {
   "instruction_date_utc": "2026-10-05",
-  "scope": "Authorized fresh S02 step0->500 at H4868; conditional same-checkpoint500->4868 only after REPRODUCTION_PASS",
-  "reason": "New user instruction: frozen S02, unchanged3sx3resource guard, capture20-step recurrence evidence, no implicit retry",
-  "reproduction_gate_authorized": false,
-  "reproduction_gate_runtime": "runtime/SAID-nest-clip-v1/armb_summary02_500gate_resource_v2",
+  "scope": "Latest user: hash-verified localSSD first500 mirror; fresh common0->500 atH4868; after retrievalPASS, paused full local staging before exact same500->4868 resume",
+  "reason": "IO-only root override; no algorithm, sampling, preprocessing, optimizer, worker or resource threshold changes; no automatic training retry",
+  "reproduction_gate_authorized": true,
+  "reproduction_gate_runtime": "runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3",
   "first_stage_stop_updates": 500,
   "smoke_authorized": false,
   "smoke_config": "recovery/configs/summary02.json",
@@ -15,7 +15,7 @@
   "conditional_smoke_authorized": false,
   "maximum_smoke_updates": 5,
   "scheduler_horizon": 4868,
-  "formal_training_authorized": false,
+  "formal_training_authorized": true,
   "existing_download_supervisors_must_continue": false,
   "maximum_global_odl_concurrency": 3,
   "full_decode_workers": 64,
@@ -35,15 +35,19 @@
   "authorized_experiments": [
     "ArmB-Summary0.2-4epoch"
   ],
-  "full_gate_status": "RESOURCE_STALL_RECURRED_BEFORE_500",
-  "full_completed_updates": 55,
+  "full_gate_status": "LOCAL_SSD_FIRST500_STAGING",
+  "full_completed_updates": 0,
   "resource_diagnostic_authorized": false,
   "maximum_diagnostic_updates": 40,
   "resource_safety_gate": "unchanged:3 consecutive full cycles>3seconds",
   "resource_diagnostic_completed": true,
-  "resource_gate_status": "RESOURCE_GATE_NOT_READY_FOR_500",
-  "training_held_for_new_instruction": true,
+  "resource_gate_status": "LOCAL_SSD_ADMISSION_PENDING",
+  "training_held_for_new_instruction": false,
   "resource_phase_timing_required": true,
   "resource_recurrence_status": "RESOURCE_STALL_RECURRED_BEFORE_500",
-  "automatic_training_retry_allowed": false
+  "automatic_training_retry_allowed": false,
+  "no_remaining_images_copy_during_500": true,
+  "local_training_image_root": "/root/SAID_train_cache/ShareGPT4V",
+  "resource_stall_root_cause_previously_unresolved": true,
+  "prior_resource_stop_updates": 55
 }
