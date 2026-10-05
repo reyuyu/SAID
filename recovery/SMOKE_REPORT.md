@@ -2,7 +2,11 @@
 
 Four-GPU smoke executed: False.
 Four-GPU smoke passed: False.
-Blocked prerequisites: ['training-audit.json'].
+The prior training-data blocker is cleared: `training-audit.json` and the final
+1245901-image exact-path/full PIL/RGB audit passed at2026-10-05T15:18:47UTC.
+Smoke has not been executed; data acceptance is not smoke/DDP/export acceptance.
+Only the previously authorized four-A100 five-update smoke may follow; no
+500/4868-update training is authorized or automatically launched.
 Original CPU/unit tests passed: True.
 Passing original suites: research 93 core +11 legacy; canonical 69 core +11 legacy.
 The legacy retrieval tests run separately because their old sys.path change shadows the train package in spawned workers.

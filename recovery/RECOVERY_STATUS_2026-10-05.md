@@ -1,5 +1,25 @@
 # SAID recovery status: 2026-10-05
 
+## Latest: full data audit passed
+
+At2026-10-05T15:18:47UTC the frozen exact-path audit completed successfully:
+**DATA_AUDIT_PASS**. SAM569486, COCO118287 and LLaVA558128 each reach100% exact
+regular-file existence and strict full PIL/RGB decode,1245901 total. Missing0,
+corrupt0, IO failures0 and IO retries0. Elapsed6761.1seconds (1h52m41s), including
+manifest construction, benchmarks and restart-preserved audit work. The old
+NFS directory scanner was terminated; no directory inventory or new image
+download was used for this final gate. Encoded image bytes were never changed.
+
+Final reports: `FINAL_IMAGE_AUDIT.json` and `FINAL_MANIFEST_AUDIT.md`.
+`TRAIN_IMAGE_COMPLETENESS.json` and `evidence/training-audit.json` now pass.
+The audit process finished; no smoke or formal training was launched.
+Four-A100 five-update smoke, DDP/sample-stream/finite-loss acceptance and native
+smoke-checkpoint export remain unexecuted. `READY_TO_START_S02_FULL` is not
+claimed. The next allowed training action is only the previously authorized
+five-update smoke with common step0 and H4868; never automatic500/4868 training.
+
+## Earlier status snapshot (superseded)
+
 Snapshot checked at2026-10-05T10:51:47UTC. This report concerns data restoration
 only and grants no permission to train or run smoke.
 

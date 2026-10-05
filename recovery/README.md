@@ -5,8 +5,11 @@
 All referenced images are installed: SAM569486, COCO118287, LLaVA558128;
 the immutable1245901-record index has zero missing paths in the verified
 installation inventories. All four container-invalid shards have their required
-original JPEGs recovered. The separate final whole-index physical existence and
-full decode audit is still running; it is not yet a passed gate.
+original JPEGs recovered. The independent exact-path existence and strict full
+PIL/RGB decode audit passed at2026-10-05T15:18:47UTC:1245901/1245901 paths and
+decodes, zero missing/corrupt/persistent IO failures and zero IO retries.
+Current data gate: `DATA_AUDIT_PASS`. Smoke and formal-training readiness are
+separate gates; neither has been claimed by the data audit.
 The old NFS directory scanner has been terminated and replaced by
 `final_manifest_audit.py`: frozen exact-path manifest, local-SSD SQLite restart
 checkpoint,8/16/32-worker120-second benchmarks and visible five-second progress.

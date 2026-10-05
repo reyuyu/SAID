@@ -4,7 +4,8 @@
 
 Status refreshed on2026-10-05. See `RECOVERY_STATUS_2026-10-05.md` for the
 timestamped evidence scope. Inventory completeness is not a substitute for the
-final whole-index physical existence/full decode audit, which remains running.
+final whole-index physical existence/full decode audit, which passed at
+2026-10-05T15:18:47UTC. Current data gate: `DATA_AUDIT_PASS`.
 The slow NFS directory scan is stopped. Its replacement directly checks the
 frozen required-path manifest; see `FINAL_IMAGE_AUDIT.json` for live exact-path
 existence and full-decode counts and `FINAL_MANIFEST_AUDIT.md` for benchmark data.
@@ -14,9 +15,9 @@ existence and full-decode counts and `FINAL_MANIFEST_AUDIT.md` for benchmark dat
 | code | PASS |
 | environment | PASS |
 | configs | PASS |
-| training_data | INSTALLED:1245901/1245901; inventory missing0 |
+| training_data | PASS:1245901/1245901 exact paths; missing0 |
 | five_evaluation_sets | PASS |
-| training_image_decode_completeness | FINAL WHOLE-INDEX AUDIT RUNNING; NOT YET PASS |
+| training_image_decode_completeness | PASS:1245901 full PIL/RGB decodes; corrupt0; IO failures0 |
 | original_sam_shards | 47 intact;4 original-container anomalies with all required JPEGs recovered |
 | step0 | PASS |
 | cpu_tests | PASS |
@@ -29,7 +30,7 @@ existence and full-decode counts and `FINAL_MANIFEST_AUDIT.md` for benchmark dat
 No 500/4868-update training has been started or authorized by this recovery.
 No smoke is launched. The latest instruction conditionally permits the existing
 five-update smoke only after `DATA_AUDIT_PASS`. `READY_TO_START_S02_FULL` is not
-claimed; final image audit and that five-update acceptance gate remain.
+claimed; that five-update acceptance gate and smoke-checkpoint native export remain.
 
 Trained checkpoint/optimizer/RNG states cannot be recovered from metrics or reports. A new run from step0 is not historical continuation.
 

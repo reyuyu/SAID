@@ -1,7 +1,7 @@
 # Final manifest-driven image audit
 
-Checked UTC: 2026-10-05T13:53:19.801617+00:00.
-Status: **DECODE_AUDIT**.
+Checked UTC: 2026-10-05T15:18:47.457854+00:00.
+Status: **DATA_AUDIT_PASS**.
 
 Frozen ShareGPT4V required paths only; no filesystem directory enumeration, recursive glob, find or os.walk.
 Index SHA256: `0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8`.
@@ -12,13 +12,13 @@ PIL full load and RGB conversion are in memory only; encoded image bytes are nev
 
 | Family | Required | Existence checked | Exists | Missing | Decode checked | Decoded | Corrupt | IO errors | IO retries |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sam | 569486 | 569486 | 569486 | 0 | 54812 | 54812 | 0 | 0 | 0 |
-| coco | 118287 | 118287 | 118287 | 0 | 26935 | 26935 | 0 | 0 | 0 |
-| llava | 558128 | 558128 | 558128 | 0 | 26935 | 26935 | 0 | 0 | 0 |
+| sam | 569486 | 569486 | 569486 | 0 | 569486 | 569486 | 0 | 0 | 0 |
+| coco | 118287 | 118287 | 118287 | 0 | 118287 | 118287 | 0 | 0 | 0 |
+| llava | 558128 | 558128 | 558128 | 0 | 558128 | 558128 | 0 | 0 | 0 |
 
 Required paths total: 1245901; existence checked: 1245901; missing: 0.
-Decoded: 108682; corrupt: 0; persistent IO errors: 0; IO retries: 0.
-Elapsed seconds: 1633.4.
+Decoded: 1245901; corrupt: 0; persistent IO errors: 0; IO retries: 0.
+Elapsed seconds: 6761.1.
 
 ## Concurrency benchmarks
 
