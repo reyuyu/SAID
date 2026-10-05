@@ -1,5 +1,5 @@
 {
-  "status": "STOPPED_ERROR",
+  "status": "STOPPED_BEFORE_500_RESOURCE_GATE",
   "started_at": "2026-10-05T17:33:52.704513+00:00",
   "supervisor_pid": 46137,
   "branch": "codex/nest-balanced-armb-summary02-4epoch-recovery-v1",
@@ -14,9 +14,9 @@
   "horizon": 4868,
   "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
   "updated_at": "2026-10-05T17:37:27.455745+00:00",
-  "stage": "train500",
+  "stage": "Stopped at33; resource gate before500",
   "stage_started_at": "2026-10-05T17:33:53.674862+00:00",
-  "active_pid": 46186,
+  "active_pid": null,
   "latest_loss": 13.200170516967773,
   "latest_update_seconds": 6.616196662187576,
   "peak_allocated_gib": 27.759881019592285,
@@ -78,5 +78,6 @@
     }
   },
   "error": "RuntimeError: train500 failed; see /opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1/train500.log",
-  "failed_at": "2026-10-05T17:37:27.455711+00:00"
+  "failed_at": "2026-10-05T17:37:27.455711+00:00",
+  "resource_audit": "RESOURCE_STOP_AUDIT.json"
 }

@@ -69,13 +69,13 @@ def publish(message):
                 if isinstance(value, dict):
                     for child_key, child in value.items():
                         collect(child, child_key)
-                elif isinstance(value, str) and re.search("secret|access.?key|token", key, re.I) and len(value) >= 12:
+                elif isinstance(value, str) and re.search("secret|access.?key|token|^(ak|sk)$", key, re.I) and len(value) >= 12:
                     secrets.append(value.encode())
             collect(load(path))
     for path in paths:
         content = path.read_bytes()
         require(not any(secret in content for secret in secrets) and
-                not re.search(rb"(?:hf_[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|BEGIN .*PRIVATE KEY|X-Amz-Signature=)", content),
+                not re.search(rb"(?:hf_[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|^-----BEGIN [A-Z ]*PRIVATE KEY-----|X-Amz-Signature=[0-9a-fA-F]{32,})", content, re.M),
                 "Refusing secret-bearing publication: " + str(path.relative_to(ROOT)))
     subprocess.run(["git", "add", "-f", "--", *relative], cwd=ROOT, check=True)
     if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT).returncode:

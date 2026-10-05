@@ -62,6 +62,10 @@ def checkpoint_invariants(current, reference):
     config = current["config"]
     require(config["start_updates"] == 0 and config["resume"] is None and
             config["init_sha256"] == STEP0_SHA, "Not a fresh common-step0 trajectory")
+    frozen = json.loads((ROOT / "recovery/configs/summary02.json").read_text())
+    for key in frozen:
+        if key in reference["config"]:
+            require(config.get(key) == reference["config"][key], "Frozen hyperparameter drift: " + key)
     for key in ("seed", "sampling_seed", "shuffle_seed", "view_weights", "hparams", "trial_id",
                 "code_sha256", "component_initialization", "data", "horizon", "batch_size",
                 "world_size", "accumulation", "optimizer_groups"):

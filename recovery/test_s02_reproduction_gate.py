@@ -59,6 +59,17 @@ def test_cross_run_model_and_moment_variation_allowed():
     assert gate.checkpoint_invariants(actual, reference)["passed"]
 
 
+@pytest.mark.parametrize("name", ["seed", "sparsity_scale", "inclusion_max", "workers", "checkpoint_encoders", "fusion"])
+def test_every_frozen_config_field_is_checked(name):
+    reference = reference_checkpoint()
+    frozen = pipeline.load(pipeline.ROOT / "recovery/configs/summary02.json")
+    reference["config"][name] = frozen[name]
+    actual = copy.deepcopy(reference)
+    actual["config"][name] = "changed"
+    with pytest.raises(RuntimeError, match="Frozen hyperparameter drift"):
+        gate.checkpoint_invariants(actual, reference)
+
+
 @pytest.mark.parametrize("mutation", ["counter", "weights", "resume", "horizon", "nonfinite", "groups"])
 def test_checkpoint_hard_invariants(mutation):
     reference = reference_checkpoint()
