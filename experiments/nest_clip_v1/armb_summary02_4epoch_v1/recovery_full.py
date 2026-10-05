@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import statistics
 import subprocess
 import time
@@ -57,6 +58,10 @@ def sha(path):
 
 
 def preflight():
+    policy = load(ROOT / "recovery/evidence/recovery-operation-policy.json")
+    require(policy.get("formal_training_authorized") is True and policy.get("allowed_full_updates") == 4868
+            and policy.get("resume_allowed") is False,
+            "Current instruction/policy does not authorize a fresh full4868 attempt")
     require(subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip() == BRANCH,
             "Wrong formal experiment branch")
     require(load(ROOT / "recovery/evidence/s02-smoke-audit.json")["status"] == "READY_TO_START_S02_FULL",
@@ -127,6 +132,9 @@ class Supervisor:
         dump(EXP / "FULL_PROGRESS.json", self.state)
 
     def collect(self):
+        gate_path = RUN / "first-five-gate.json"
+        if gate_path.exists():
+            require(load(gate_path)["passed"], "Synchronous first-five gate rejected; no continuation")
         path = TRAIN / "steps.jsonl"
         if not path.exists():
             return
@@ -169,7 +177,9 @@ class Supervisor:
         log = RUN / (name + ".log")
         with log.open("w") as handle:
             process = subprocess.Popen(command, cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT,
-                                       env=dict(os.environ, OMP_NUM_THREADS="8", OPENBLAS_NUM_THREADS="1"))
+                                       start_new_session=True,
+                                       env=dict(os.environ, OMP_NUM_THREADS="8", OPENBLAS_NUM_THREADS="1",
+                                                SAID_FULL_SUPERVISOR_PID=str(os.getpid())))
             self.state["active_pid"] = process.pid
             if training:
                 self.state["formal_training_started"] = True
@@ -186,11 +196,11 @@ class Supervisor:
                 require(process.returncode == 0, name + " failed; see " + str(log))
             except BaseException:
                 if process.poll() is None:
-                    process.terminate()
+                    os.killpg(process.pid, signal.SIGTERM)
                     try:
                         process.wait(timeout=30)
                     except subprocess.TimeoutExpired:
-                        process.kill()
+                        os.killpg(process.pid, signal.SIGKILL)
                         process.wait()
                 raise
 
@@ -335,6 +345,10 @@ def main():
             supervisor.run()
         except BaseException as error:
             supervisor.state.update(status="FAILED", error=type(error).__name__ + ": " + str(error), failed_at=now())
+            if (RUN / "first-five-gate.json").exists():
+                supervisor.state.update(status="BLOCKED_PREFIX_GATE", completed_updates=5,
+                                        first_five_gate=load(RUN / "first-five-gate.json"))
+            supervisor.state["formal_training_authorized"] = False
             supervisor.save()
             dump(EXP / "FULL_RESULTS.json", dict(supervisor.state, evaluated=False))
             (EXP / "FULL_RESULTS.md").write_text("# S02 full recovery blocked\n\n" + supervisor.state["error"] +

@@ -1,0 +1,27 @@
+{
+  "command": [
+    "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+    "--standalone",
+    "--nnodes=1",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "experiments.nest_clip_v1.armb_summary02_4epoch_v1.recovery_train_gate",
+    "--config",
+    "/opt/data/private/lklk/SAID/recovery/configs/summary02.json",
+    "--init-state",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "--index-dir",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/data_index",
+    "--image-root",
+    "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V",
+    "--output-dir",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_4epoch_recovery_v1/train",
+    "--run-type",
+    "formal",
+    "--max-updates",
+    "4868"
+  ],
+  "cwd": "/opt/data/private/lklk/SAID",
+  "started_at": "2026-10-05T16:11:11.599684+00:00"
+}

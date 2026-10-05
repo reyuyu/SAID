@@ -1,5 +1,10 @@
 # Authorized S02 full recovery run
 
+Current state: `BLOCKED_PREFIX_GATE`, five updates only. See
+`PREFIX_REPRODUCIBILITY.md`. Current policy blocks fresh runs; the preserved
+failed run cannot be automatically restarted or resumed. The authorization
+below describes the original attempt, not an authorization to bypass its gate.
+
 Authorization: user instruction on2026-10-05, after DATA_AUDIT_PASS and S02
 five-update smoke. Branch `codex/nest-balanced-armb-summary02-4epoch-recovery-v1`.
 

@@ -432,15 +432,24 @@ def status():
         "model_config_construction": "construction-audit.json",
         "four_gpu_five_step_smoke": "smoke-audit.json", "native_export": "export-audit.json",
         "native_evaluator_subset": "native-evaluator-subset.json"}.items()}
+    full_dir = RECOVERY.parent / "experiments/nest_clip_v1/armb_summary02_4epoch_v1"
+    full_progress = load(full_dir / "FULL_PROGRESS.json", {})
+    if full_progress:
+        required["s02_full_prefix"] = load(full_dir / "FIRST_FIVE_GATE.json", {}).get("passed", False)
     ready = all(required.values())
     result = dict(status="READY_TO_RESUME_RESEARCH" if ready else "NOT_READY_TO_RESUME_RESEARCH",
                   requirements=required, blocked_requirements=[name for name, passed in required.items() if not passed],
-                  formal_training_started=False, formal_training_authorized=False,
+                  formal_training_started=full_progress.get("formal_training_started", False),
+                  formal_training_authorized=load(EVIDENCE / "recovery-operation-policy.json", {}).get("formal_training_authorized", False),
+                  s02_full_status=full_progress.get("status"),
                   lost_history="Trained checkpoint/optimizer/RNG states cannot be recovered from metrics or reports. A new run from step0 is not historical continuation.")
     dump(EVIDENCE / "readiness.json", result)
     lines = ["# Ready to resume", "", "**" + result["status"] + "**", "", "| Requirement | Verified |", "| --- | --- |"]
     lines.extend(f"| {name} | {'PASS' if passed else 'MISSING / NOT VERIFIED'} |" for name, passed in required.items())
-    lines.extend(["", "No 500/4868-update training has been started or authorized by this recovery.", "", result["lost_history"], "",
+    full_note = (f"S02 full status: {result['s02_full_status']}; completed updates: {full_progress.get('completed_updates', 0)}. "
+                 "See experiments/nest_clip_v1/armb_summary02_4epoch_v1/FULL_RESULTS.md; no automatic restart/resume."
+                 if full_progress else "No 500/4868-update training has been started or authorized by this recovery.")
+    lines.extend(["", full_note, "", result["lost_history"], "",
                   "`native_export` means the trained five-update smoke checkpoint's verified bare export.",
                   "The separate step0 bare export/native evaluator subset has already passed when `native_evaluator_subset` is PASS.", "",
                   "Use `.venv/bin/python recovery/audit.py status` to re-evaluate the fail-closed gate."])

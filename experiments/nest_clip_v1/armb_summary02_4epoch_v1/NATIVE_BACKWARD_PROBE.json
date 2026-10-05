@@ -1,0 +1,82 @@
+{
+  "optimizer_updates": 0,
+  "training": false,
+  "no_checkpoint_modified": true,
+  "no_dataset_read": true,
+  "original_block": "Native CLIP text ResidualAttentionBlock0 loaded strictly from common step0",
+  "shape": [
+    248,
+    128,
+    512
+  ],
+  "autocast": "bfloat16",
+  "master_parameters": "float32",
+  "deterministic_algorithms": false,
+  "flash_enabled": true,
+  "memory_efficient_enabled": true,
+  "cudnn_sdp_enabled": true,
+  "results": [
+    {
+      "repeat": 0,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::_efficient_attention_backward"
+      ]
+    },
+    {
+      "repeat": 1,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::_efficient_attention_backward"
+      ]
+    },
+    {
+      "repeat": 2,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::_efficient_attention_backward"
+      ]
+    },
+    {
+      "repeat": 3,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::_efficient_attention_backward"
+      ]
+    },
+    {
+      "repeat": 4,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_efficient_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_efficient_attention_backward",
+        "aten::_efficient_attention_backward"
+      ]
+    }
+  ],
+  "repeated_identical_input_backward_bitwise_reproducible": true,
+  "note": "Operator diagnostic only, not full-training replay or evidence of statistical instability"
+}

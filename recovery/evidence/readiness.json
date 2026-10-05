@@ -1,5 +1,5 @@
 {
-  "status": "READY_TO_RESUME_RESEARCH",
+  "status": "NOT_READY_TO_RESUME_RESEARCH",
   "requirements": {
     "code": true,
     "environment": true,
@@ -14,10 +14,14 @@
     "model_config_construction": true,
     "four_gpu_five_step_smoke": true,
     "native_export": true,
-    "native_evaluator_subset": true
+    "native_evaluator_subset": true,
+    "s02_full_prefix": false
   },
-  "blocked_requirements": [],
-  "formal_training_started": false,
+  "blocked_requirements": [
+    "s02_full_prefix"
+  ],
+  "formal_training_started": true,
   "formal_training_authorized": false,
+  "s02_full_status": "BLOCKED_PREFIX_GATE",
   "lost_history": "Trained checkpoint/optimizer/RNG states cannot be recovered from metrics or reports. A new run from step0 is not historical continuation."
 }

@@ -78,3 +78,30 @@ def test_model_or_optimizer_drift_rejected(mutation):
         full["scheduler_horizon"] = 5
     with pytest.raises((RuntimeError, AssertionError)):
         gate.compare_checkpoint(full, smoke)
+
+
+def test_missing_supervisor_prevents_unmonitored_updates():
+    with pytest.raises(RuntimeError, match="Missing full supervisor"):
+        gate.require_live_supervisor(0)
+
+
+def test_dead_supervisor_prevents_unmonitored_updates(monkeypatch):
+    def disappeared(pid, flag):
+        raise ProcessLookupError()
+    monkeypatch.setattr(gate.os, "kill", disappeared)
+    with pytest.raises(RuntimeError, match="supervisor disappeared"):
+        gate.require_live_supervisor(123)
+
+
+@pytest.mark.parametrize("policy", [dict(formal_training_authorized=False),
+    dict(formal_training_authorized=True, allowed_full_updates=500, resume_allowed=False),
+    dict(formal_training_authorized=True, allowed_full_updates=4868, resume_allowed=True)])
+def test_full_preflight_respects_current_authorization(tmp_path, monkeypatch, policy):
+    import json
+    full = importlib.import_module("experiments.nest_clip_v1.armb_summary02_4epoch_v1.recovery_full")
+    monkeypatch.setattr(full, "ROOT", tmp_path)
+    path = tmp_path / "recovery/evidence/recovery-operation-policy.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps(policy))
+    with pytest.raises(RuntimeError, match="does not authorize"):
+        full.preflight()

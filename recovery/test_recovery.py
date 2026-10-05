@@ -16,6 +16,23 @@ def test_missing_assets_never_mark_ready(tmp_path, monkeypatch):
     assert not result["formal_training_authorized"]
 
 
+def test_failed_formal_prefix_does_not_claim_no_training_started(tmp_path, monkeypatch):
+    recovery = tmp_path / "recovery"
+    monkeypatch.setattr(audit, "RECOVERY", recovery)
+    monkeypatch.setattr(audit, "EVIDENCE", recovery / "evidence")
+    full = tmp_path / "experiments/nest_clip_v1/armb_summary02_4epoch_v1"
+    full.mkdir(parents=True)
+    (full / "FULL_PROGRESS.json").write_text(json.dumps(dict(status="BLOCKED_PREFIX_GATE", completed_updates=5,
+                                                            formal_training_started=True)))
+    (full / "FIRST_FIVE_GATE.json").write_text(json.dumps(dict(passed=False)))
+    audit.status()
+    result = json.loads((recovery / "evidence/readiness.json").read_text())
+    assert result["formal_training_started"]
+    assert not result["formal_training_authorized"]
+    assert not result["requirements"]["s02_full_prefix"]
+    assert result["s02_full_status"] == "BLOCKED_PREFIX_GATE"
+
+
 def test_smoke_refuses_missing_prerequisites(tmp_path, monkeypatch):
     monkeypatch.setattr(validate, "EVIDENCE", tmp_path)
     calls = []

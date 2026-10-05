@@ -1,0 +1,224 @@
+{
+  "checked_at": "2026-10-05T16:19:56.168219+00:00",
+  "model": {
+    "keys": 317,
+    "exact_tensors": 46,
+    "different_tensors": 271,
+    "max_abs": 0.000523972965311259,
+    "nonfinite": 0,
+    "largest_differences": [
+      {
+        "name": "mask_net.attn_pool.attention.bias",
+        "max_abs": 0.000523972965311259,
+        "reference_max_abs": 0.000202294482733123
+      },
+      {
+        "name": "mask_net.resblocks.0.attn.in_proj_weight",
+        "max_abs": 0.00045070983469486237,
+        "reference_max_abs": 0.22180569171905518
+      },
+      {
+        "name": "mask_net.resblocks.0.mlp.c_proj.weight",
+        "max_abs": 0.00035724416375160217,
+        "reference_max_abs": 0.15228430926799774
+      },
+      {
+        "name": "mask_net.resblocks.0.mlp.c_fc.weight",
+        "max_abs": 0.0002675112336874008,
+        "reference_max_abs": 0.1529952883720398
+      },
+      {
+        "name": "mask_net.resblocks.0.attn.out_proj.weight",
+        "max_abs": 0.00014379434287548065,
+        "reference_max_abs": 0.14880719780921936
+      },
+      {
+        "name": "mask_net.resblocks.0.mlp.c_fc.bias",
+        "max_abs": 5.078315734863281e-05,
+        "reference_max_abs": 0.04758676141500473
+      },
+      {
+        "name": "mask_net.resblocks.0.attn.in_proj_bias",
+        "max_abs": 4.642736166715622e-05,
+        "reference_max_abs": 0.004776360467076302
+      },
+      {
+        "name": "mask_net.resblocks.0.ln_1.weight",
+        "max_abs": 3.409385681152344e-05,
+        "reference_max_abs": 1.0043977499008179
+      },
+      {
+        "name": "mask_net.resblocks.0.mlp.c_proj.bias",
+        "max_abs": 3.221537917852402e-05,
+        "reference_max_abs": 0.026038609445095062
+      },
+      {
+        "name": "mask_net.attn_pool.attention.weight",
+        "max_abs": 2.6908237487077713e-05,
+        "reference_max_abs": 0.13941222429275513
+      }
+    ]
+  },
+  "adapter": {
+    "keys": 14,
+    "exact_tensors": 0,
+    "different_tensors": 14,
+    "max_abs": 0.00043617282062768936,
+    "nonfinite": 0,
+    "largest_differences": [
+      {
+        "name": "visual_blocks.0.mlp.c_proj.weight",
+        "max_abs": 0.00043617282062768936,
+        "reference_max_abs": 0.15289601683616638
+      },
+      {
+        "name": "visual_blocks.0.mlp.c_fc.weight",
+        "max_abs": 0.00033144839107990265,
+        "reference_max_abs": 0.1519702672958374
+      },
+      {
+        "name": "visual_blocks.0.attn.in_proj_weight",
+        "max_abs": 0.00025422126054763794,
+        "reference_max_abs": 0.2212357372045517
+      },
+      {
+        "name": "visual_blocks.0.attn.out_proj.weight",
+        "max_abs": 0.0002293810248374939,
+        "reference_max_abs": 0.1495441049337387
+      },
+      {
+        "name": "gate.weight",
+        "max_abs": 0.00014517398085445166,
+        "reference_max_abs": 0.0010042032226920128
+      },
+      {
+        "name": "visual_adapter.weight",
+        "max_abs": 0.00010503455996513367,
+        "reference_max_abs": 0.06936322897672653
+      },
+      {
+        "name": "visual_blocks.0.mlp.c_fc.bias",
+        "max_abs": 4.848465323448181e-05,
+        "reference_max_abs": 0.04728468507528305
+      },
+      {
+        "name": "visual_blocks.0.attn.in_proj_bias",
+        "max_abs": 4.839181201532483e-05,
+        "reference_max_abs": 0.0040716808289289474
+      },
+      {
+        "name": "visual_blocks.0.mlp.c_proj.bias",
+        "max_abs": 3.7519726902246475e-05,
+        "reference_max_abs": 0.026119012385606766
+      },
+      {
+        "name": "visual_blocks.0.attn.out_proj.bias",
+        "max_abs": 2.8656155336648226e-05,
+        "reference_max_abs": 0.0048019494861364365
+      }
+    ]
+  },
+  "optimizer": {
+    "parameter_states": 329,
+    "param_groups_exact": true,
+    "all_counters_5": true,
+    "state_shape_dtype_keys_match": true,
+    "all_states_finite": true,
+    "max_abs_by_state": {
+      "step": 0.0,
+      "exp_avg": 0.2606884837150574,
+      "exp_avg_sq": 0.03643608093261719
+    },
+    "different_tensors_by_state": {
+      "step": 0,
+      "exp_avg": 329,
+      "exp_avg_sq": 329
+    },
+    "largest_differences": [
+      {
+        "parameter_id": 6,
+        "state": "exp_avg",
+        "max_abs": 0.2606884837150574,
+        "reference_max_abs": 1.9975913763046265
+      },
+      {
+        "parameter_id": 4,
+        "state": "exp_avg",
+        "max_abs": 0.24414277076721191,
+        "reference_max_abs": 1.0689269304275513
+      },
+      {
+        "parameter_id": 39,
+        "state": "exp_avg",
+        "max_abs": 0.1935126781463623,
+        "reference_max_abs": 1.777478814125061
+      },
+      {
+        "parameter_id": 3,
+        "state": "exp_avg",
+        "max_abs": 0.13726568222045898,
+        "reference_max_abs": 1.0689269304275513
+      },
+      {
+        "parameter_id": 0,
+        "state": "exp_avg",
+        "max_abs": 0.07773721218109131,
+        "reference_max_abs": 7.391684055328369
+      },
+      {
+        "parameter_id": 9,
+        "state": "exp_avg",
+        "max_abs": 0.07539649307727814,
+        "reference_max_abs": 0.7530215978622437
+      },
+      {
+        "parameter_id": 45,
+        "state": "exp_avg",
+        "max_abs": 0.07306640595197678,
+        "reference_max_abs": 0.7706334590911865
+      },
+      {
+        "parameter_id": 179,
+        "state": "exp_avg",
+        "max_abs": 0.06654834747314453,
+        "reference_max_abs": 26.554636001586914
+      },
+      {
+        "parameter_id": 167,
+        "state": "exp_avg",
+        "max_abs": 0.060614585876464844,
+        "reference_max_abs": 14.319087028503418
+      },
+      {
+        "parameter_id": 35,
+        "state": "exp_avg",
+        "max_abs": 0.060189515352249146,
+        "reference_max_abs": 0.523068368434906
+      }
+    ]
+  },
+  "training_updates": 5,
+  "diagnostic_optimizer_updates": 0,
+  "rng_per_rank_equal": [
+    {
+      "cpu": true,
+      "cuda": true,
+      "loader_generator": true
+    },
+    {
+      "cpu": true,
+      "cuda": true,
+      "loader_generator": true
+    },
+    {
+      "cpu": true,
+      "cuda": true,
+      "loader_generator": true
+    },
+    {
+      "cpu": true,
+      "cuda": true,
+      "loader_generator": true
+    }
+  ]
+}

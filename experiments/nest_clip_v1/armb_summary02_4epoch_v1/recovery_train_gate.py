@@ -24,6 +24,14 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def require_live_supervisor(pid):
+    require(pid > 0, "Missing full supervisor identity; refusing unmonitored training")
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError as error:
+        raise RuntimeError("Full supervisor disappeared; refusing further optimizer updates") from error
+
+
 def rows(path):
     return [json.loads(line) for line in Path(path).read_text().splitlines() if line]
 
@@ -107,6 +115,13 @@ def synchronous_gate(module, optimizer):
             result = dict(passed=False, gate="BEFORE_UPDATE6", error=type(error).__name__ + ": " + str(error))
         (RUN / "first-five-gate.json").write_text(json.dumps(result, indent=2) + "\n")
         (EXP / "FIRST_FIVE_GATE.json").write_text(json.dumps(result, indent=2) + "\n")
+        if not result["passed"]:
+            failed = dict(status="BLOCKED_PREFIX_GATE", completed_updates=5,
+                          stop_updates=4868, formal_training_started=True,
+                          formal_training_authorized=False, gate=result,
+                          error=result["error"], resume=None)
+            for path in (RUN / "state.json", EXP / "FULL_PROGRESS.json", EXP / "FULL_RESULTS.json"):
+                path.write_text(json.dumps(failed, indent=2) + "\n")
         print(json.dumps(dict(event="first_five_gate", **result)), flush=True)
     payload = [result]
     dist.broadcast_object_list(payload, src=0)
@@ -118,6 +133,8 @@ def main():
     original_optimizer = trainer.build_optimizer
     original_learning_rates = trainer.optimizer_learning_rates
     context = dict(optimizer=None, checked=False)
+    supervisor_pid = int(os.environ.get("SAID_FULL_SUPERVISOR_PID", "0"))
+    require_live_supervisor(supervisor_pid)
 
     def capture_optimizer(module):
         optimizer = original_optimizer(module)
@@ -125,6 +142,7 @@ def main():
         return optimizer
 
     def guarded_learning_rates(module, completed, horizon):
+        require_live_supervisor(supervisor_pid)
         require(horizon == 4868, "Scheduler horizon drift")
         if completed == 5 and not context["checked"]:
             synchronous_gate(module, context["optimizer"])
@@ -135,7 +153,11 @@ def main():
     require(os.environ.get("WORLD_SIZE") == "4", "Full requires four-rank torchrun")
     trainer.build_optimizer = capture_optimizer
     trainer.optimizer_learning_rates = guarded_learning_rates
-    trainer.main()
+    try:
+        trainer.main()
+    finally:
+        if dist.is_initialized():
+            dist.destroy_process_group()
 
 
 if __name__ == "__main__":

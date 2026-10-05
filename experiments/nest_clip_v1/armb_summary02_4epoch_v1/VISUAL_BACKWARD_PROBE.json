@@ -1,0 +1,79 @@
+{
+  "optimizer_updates": 0,
+  "training": false,
+  "no_checkpoint_modified": true,
+  "no_dataset_read": true,
+  "original_block": "Native CLIP visual ResidualAttentionBlock0 loaded strictly from common step0",
+  "shape": [
+    197,
+    128,
+    768
+  ],
+  "autocast": "bfloat16",
+  "master_parameters": "float32",
+  "deterministic_algorithms": false,
+  "results": [
+    {
+      "repeat": 0,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_flash_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_flash_attention_backward",
+        "aten::_flash_attention_backward"
+      ]
+    },
+    {
+      "repeat": 1,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_flash_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_flash_attention_backward",
+        "aten::_flash_attention_backward"
+      ]
+    },
+    {
+      "repeat": 2,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_flash_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_flash_attention_backward",
+        "aten::_flash_attention_backward"
+      ]
+    },
+    {
+      "repeat": 3,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_flash_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_flash_attention_backward",
+        "aten::_flash_attention_backward"
+      ]
+    },
+    {
+      "repeat": 4,
+      "forward_bitwise_equal": true,
+      "different_gradients": {},
+      "operators": [
+        "aten::scaled_dot_product_attention",
+        "aten::_scaled_dot_product_flash_attention",
+        "aten::native_layer_norm_backward",
+        "aten::_scaled_dot_product_flash_attention_backward",
+        "aten::_flash_attention_backward"
+      ]
+    }
+  ],
+  "repeated_identical_input_backward_bitwise_reproducible": true,
+  "note": "Single-block operator diagnostic only; not a full four-rank reproduction"
+}

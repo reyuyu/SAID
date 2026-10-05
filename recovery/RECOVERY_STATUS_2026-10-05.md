@@ -1,5 +1,18 @@
 # SAID recovery status: 2026-10-05
 
+## Latest: authorized full attempt stopped at five-update gate
+
+S02 full was started at2026-10-05T16:11:11UTC, from common step0, H4868, no resume.
+All5120 sample IDs and F/S/D string/token streams matched smoke, but update4/5
+losses differed by0.005729675/0.011646271. The synchronous barrier rejected the
+prefix before update6; all four GPU workers stopped. An unchanged native
+five-update smoke replay reproduced cross-run differences (update4 matches the
+stopped full instead of the original smoke). Optimizer counters/LR/groups/RNG
+match, but parameter/moment tensor contents do not. This is not yet permission
+to relax the numerical gate or claim a full result. Current formal request:
+**BLOCKED_PREFIX_GATE**. Full report/proofs are in
+`experiments/nest_clip_v1/armb_summary02_4epoch_v1/`.
+
 ## Latest: S02 five-update smoke gate passed
 
 The authorized S=0.2 smoke completed exactly five optimizer updates on four

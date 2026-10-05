@@ -1,7 +1,7 @@
 {
   "instruction_date_utc": "2026-10-05",
-  "scope": "S=0.2 final smoke gate only; no downloads, no data re-audit, no formal training",
-  "reason": "Authorized five-update S02 smoke finished; no further updates without a new instruction",
+  "scope": "One authorized S02 full4868 run from step0 and final frozen native five-set eval",
+  "reason": "S02 full prefix rejected; no automatic tolerance bypass, restart or checkpoint resume",
   "smoke_authorized": false,
   "smoke_config": "recovery/configs/summary02.json",
   "smoke_view_weights": [
@@ -26,5 +26,12 @@
   ],
   "smoke_condition": "DATA_AUDIT_PASS; four A100; common step0; H4868; exactly5 updates",
   "smoke_gate_status": "READY_TO_START_S02_FULL",
-  "smoke_completed": true
+  "smoke_completed": true,
+  "allowed_full_updates": 4868,
+  "resume_allowed": false,
+  "authorized_experiments": [
+    "ArmB-Summary0.2-4epoch"
+  ],
+  "full_gate_status": "BLOCKED_PREFIX_GATE",
+  "full_completed_updates": 5
 }
