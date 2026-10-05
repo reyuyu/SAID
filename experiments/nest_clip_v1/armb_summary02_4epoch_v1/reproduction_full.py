@@ -309,6 +309,8 @@ class Supervisor(native_pipeline.Supervisor):
             self.execute("local-copy500", [PYTHON, "-m", "recovery.local_ssd_stage", "copy500"])
         self.execute("local-verify500", [PYTHON, "-m", "recovery.local_ssd_stage", "verify"])
         require(load(local_stage.META / "stage500-ready.json")["passed"], "Local mirror admission failed")
+        require(not subprocess.check_output(["nvidia-smi", "--query-compute-apps=pid", "--format=csv,noheader"], text=True).strip(),
+                "GPUs became occupied during staging")
         self.sync("Record hash-verified local first500 mirror and unchanged native resource guard")
         dump(EXP / "CONTINUATION_GATE.json", dict(status="PENDING_AT_500", horizon=4868, passed=False, thresholds_percent=THRESHOLDS))
         dump(EXP / "STEP500_RESULTS.json", dict(status="PENDING_AT_500", evaluated=False, scores_percent=None,

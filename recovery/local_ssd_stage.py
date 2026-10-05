@@ -281,6 +281,12 @@ def copy_images(full=False):
 
 def verify():
     from train.said_cvssl_data import reference_view_a_transform
+    proof = json.loads((META / "manifest-proof.json").read_text())
+    copied = json.loads((META / "stage500-copy-ready.json").read_text())
+    assert proof["manifest_sha256"] == digest(META / "step1_500_images.jsonl")
+    assert copied["checked"] == copied["source_destination_SHA256_matches"] == proof["unique_images_count"] == 512000
+    assert copied["families"] == proof["family_counts"] and copied["payload_bytes"] == proof["total_bytes"]
+    assert copied["copy_workers_exited"]
     torch.set_num_threads(1)
     groups = {family: [] for family in EXPECTED}
     for row in manifest_rows(META / "step1_500_images.jsonl"):
@@ -317,6 +323,7 @@ def verify():
     result = dict(passed=ready, status="LOCAL_SSD_STAGE500_READY" if ready else "LOCAL_SSD_MEMORY_NEAR_LIMIT_HOLD",
         equivalence_samples=1000, byte_RGB_preprocess_exact_equal=True, copy_workers_exited=True,
         system=snapshot, process_audit=processes, local_storage=check_disk(), global_drop_caches=False,
+        manifest_sha256=proof["manifest_sha256"], all512000_source_destination_SHA256_matches=True,
         local_images=str(IMAGES), local_index=str(INDEX), no_remaining_images_background_copy=True)
     dump(EXP / "LOCAL_SSD_STAGE500_READY.json", result)
     dump(META / "stage500-ready.json", result)

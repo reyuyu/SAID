@@ -1,6 +1,6 @@
 # Local SSD first500 staging and reproduction
 
-Updated UTC: 2026-10-05T23:36:18.173196+00:00
+Updated UTC: 2026-10-05T23:39:31.236096+00:00
 
 Trajectory: `/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3`; status: `LOCAL_SSD_COPY_IN_PROGRESS`.
 
@@ -15,7 +15,7 @@ Family counts: `{"sam": 234294, "coco": 48588, "llava": 229118}`.
 Payload bytes: `250901003778`.
 Payload GB / GiB: `250.901 / 233.67`.
 Full historical500 sample-ID stream / first5 FSD+tokens: `{"historical_sample_ids_matched": 512000, "historical_FSD_string_token_samples_matched": 5120, "offline_global_RNG_unchanged": true}`.
-Copy: `{"status": "COPYING", "checked": 46080, "total": 512000, "copied": 32565, "families": {"sam": 46080}, "source_destination_SHA256_matches": 46080, "payload_bytes": 45644899377, "newly_written_bytes": 32309844423, "elapsed_s": 314.44239714741707, "average_payload_MiB_s": 138.4367013026701, "workers": 16, "source_read": "NFS O_DIRECT; empirically byte-verified", "global_drop_caches": false, "private_local_cache_advice": "fsync + file-scoped DONTNEED on our new mirror only; no source-cache advice"}`.
+Copy: `{"status": "COPYING", "checked": 66560, "total": 512000, "copied": 53045, "families": {"sam": 66560}, "source_destination_SHA256_matches": 66560, "payload_bytes": 65938744021, "newly_written_bytes": 52603689067, "elapsed_s": 508.4796145185828, "average_payload_MiB_s": 123.67081163804596, "workers": 16, "source_read": "NFS O_DIRECT; empirically byte-verified", "global_drop_caches": false, "private_local_cache_advice": "fsync + file-scoped DONTNEED on our new mirror only; no source-cache advice"}`.
 Every required first500 image source SHA256 compared with SSD reread SHA256; atomic raw-byte copy. O_DIRECT source reads; private destination-file cache advice only. No global drop_caches, no source-cache eviction.
 
 1000-example byte/RGB/native preprocess proof and cgroup/process admission: `{}`.
