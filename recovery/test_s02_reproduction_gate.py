@@ -146,3 +146,21 @@ def test_scheduler_and_scaler_metadata_do_not_introduce_new_training_math():
     assert result["scheduler"]["horizon"] == 4868
     assert result["scaler"] == dict(enabled=False, dtype="bfloat16", state=None)
     assert result["data_cursor"] == dict(next_epoch=0, next_batch=5)
+
+
+@pytest.mark.parametrize("values,trigger", [
+    ([10, 2, 2, 2], False),
+    ([2, 3, 3, 3], False),
+    ([2, 3.01, 3.01, 3.01], True),
+    ([2, 4, 2, 4, 4, 2], False),
+    ([10, 4, 4, 4], True),
+])
+def test_native_resource_recurrence_guard_is_unchanged(values, trigger):
+    cycles = [dict(step=index, four_rank_max_seconds=value) for index, value in enumerate(values, start=1)]
+    assert pipeline.resource_recurrence(cycles)["triggered"] is trigger
+
+
+def test_continuation_first_update_uses_native_updates_here_semantics():
+    cycles = [dict(step=step, four_rank_max_seconds=value) for step, value in
+              zip(range(501, 505), [100, 4, 4, 2])]
+    assert not pipeline.resource_recurrence(cycles)["triggered"]

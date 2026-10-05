@@ -16,7 +16,7 @@ from . import recovery_full as native_pipeline
 ROOT = native_pipeline.ROOT
 EXP = native_pipeline.EXP
 RUNTIME = native_pipeline.RUNTIME
-RUN = RUNTIME / "armb_summary02_500gate_recovery_v1"
+RUN = RUNTIME / "armb_summary02_500gate_resource_v2"
 PYTHON = native_pipeline.PYTHON
 ASSETS = native_pipeline.ASSETS
 MODULE = native_pipeline.MODULE
@@ -27,6 +27,16 @@ require = native_pipeline.require
 now = native_pipeline.now
 REFERENCE = dict(Score5_R1=70.364367, J_long3=73.726611, J_long=82.765002, Short4_R1=65.321)
 THRESHOLDS = dict(Score5_R1=70.164367, J_long3=73.403324, Urban_I2T=89.1, Urban_T2I=87.)
+
+
+def resource_recurrence(cycles):
+    consecutive = 0
+    for update, cycle in enumerate(cycles, start=1):
+        if update > 1:
+            consecutive = consecutive + 1 if cycle["four_rank_max_seconds"] > 3 else 0
+            if consecutive >= 3:
+                return dict(triggered=True, step=cycle["step"], threshold_seconds=3, consecutive_updates=3)
+    return dict(triggered=False, threshold_seconds=3, consecutive_updates=3)
 
 
 def reproduction_gate(percent, metrics, historical):
@@ -53,7 +63,8 @@ def reproduction_gate(percent, metrics, historical):
 def publish(message):
     names = ("FULL_PROGRESS.json", "FULL_PREFLIGHT.json", "FIRST_FIVE_GATE.json", "TRAINING_DIAGNOSTICS.json",
              "STEP500_REPRODUCTION.md", "STEP500_RESULTS.json", "CONTINUATION_GATE.json", "STEP500_RESUME_AUDIT.json",
-             "FULL_RESULTS.md", "FULL_RESULTS.json", "CHECKPOINT_SHA256.json", "STRICT_EXPORT_PROVENANCE.json")
+             "FULL_RESULTS.md", "FULL_RESULTS.json", "CHECKPOINT_SHA256.json", "STRICT_EXPORT_PROVENANCE.json",
+             "RESOURCE_STALL_RECURRENCE.json", "RESOURCE_STALL_RECURRENCE.md")
     paths = [EXP / name for name in names if (EXP / name).is_file()]
     paths.extend((EXP / "commands").glob("*-500gate.json"))
     paths.extend((EXP / "evidence/reproduction").glob("*.json"))
@@ -95,6 +106,11 @@ class Supervisor(native_pipeline.Supervisor):
 
     def execute(self, name, command, training=False):
         os.environ["SAID_S02_STAGE"] = self.train.name
+        if training:
+            local = Path("/tmp/said-s02-full-phase-resource-v2") / self.train.name
+            local.mkdir(parents=True, exist_ok=False)
+            os.environ["SAID_S02_PHASE_LOCAL"] = str(local)
+            self.state["phase_telemetry"] = str(local)
         super().execute(name, command, training)
         old = EXP / "commands" / (name + "-recovery.json")
         if old.exists():
@@ -162,6 +178,62 @@ class Supervisor(native_pipeline.Supervisor):
             self.state["github_sync_error"] = type(error).__name__ + ": " + str(error)
             self.save()
 
+    def resource_stop(self, error):
+        cycle_path = self.train / "cycle_timing.jsonl"
+        if not cycle_path.exists():
+            return False
+        cycles = [json.loads(line) for line in cycle_path.read_text().splitlines() if line]
+        recurrence = resource_recurrence(cycles)
+        if not recurrence["triggered"]:
+            return False
+        status = "RESOURCE_STALL_RECURRED_BEFORE_500" if self.train.name == "step500" else "RESOURCE_STALL_RECURRED_DURING_FULL"
+        local = Path(self.state["phase_telemetry"])
+        phases = {}
+        for rank in range(4):
+            path = local / f"rank{rank}.jsonl"
+            phases[rank] = {row["step"]: row for row in
+                            ([json.loads(line) for line in path.read_text().splitlines() if line] if path.exists() else [])}
+        recent = [dict(step=row["step"], full_cycle_s=row["four_rank_max_seconds"],
+                       ranks=[phases[rank].get(row["step"], dict(rank=rank, timing_unavailable=True)) for rank in range(4)])
+                  for row in cycles[-20:]]
+        proof = dict(status=status, method_failure=False, automatic_retry=False, trigger=recurrence,
+                     completed_updates=self.state["completed_updates"], horizon=4868,
+                     recent20_steps=recent, phase_telemetry=str(local), native_cycle_log=str(cycle_path),
+                     error=type(error).__name__ + ": " + str(error), checkpoint_resume_authorized=False,
+                     root_cause_previously_unresolved=True)
+        dump(EXP / "RESOURCE_STALL_RECURRENCE.json", proof)
+        dump(RUN / "resource-stall-recurrence.json", proof)
+        destination = RUN / "phase-evidence" / self.train.name
+        destination.mkdir(parents=True, exist_ok=True)
+        for rank in range(4):
+            path = local / f"rank{rank}.jsonl"
+            if path.exists():
+                shutil.copyfile(path, destination / path.name)
+        (EXP / "RESOURCE_STALL_RECURRENCE.md").write_text(
+            "# S02 resource protection stop\n\n**" + status + "**\n\n" +
+            f"Stopped at optimizer update{self.state['completed_updates']}; horizon4868. Native3-second x3 consecutive gate unchanged.\n\n" +
+            "This is a resource/environment stop, not a retrieval/method failure. No automatic retry or continuation. " +
+            "Last20 full cycles and per-rank data/H2D/forward/backward-DDP/optimizer/cgroup/file-cache/PSI/GPU samples are in RESOURCE_STALL_RECURRENCE.json.\n")
+        self.state.update(status=status, formal_training_authorized=False, method_failure=False,
+                          automatic_retry=False, failed_at=now(), resource_trigger=recurrence)
+        self.save()
+        dump(EXP / "FULL_RESULTS.json", dict(self.state, full_evaluated=False))
+        (EXP / "FULL_RESULTS.md").write_text("# S02 trajectory stopped\n\n**" + status + "**\n\nResource gate, not method failure. No automatic restart; logs/checkpoint preserved.\n")
+        if self.train.name == "step500":
+            dump(EXP / "STEP500_RESULTS.json", dict(status=status, completed_updates=self.state["completed_updates"],
+                                                    evaluated=False, scores_percent=None, method_failure=False, horizon=4868))
+            dump(EXP / "CONTINUATION_GATE.json", dict(status=status, passed=False, evaluated=False,
+                                                       automatic_retry=False, horizon=4868, thresholds_percent=THRESHOLDS))
+            (EXP / "STEP500_REPRODUCTION.md").write_text("# S02 step500 reproduction\n\n**" + status + "**\n\nStep500 was not reached/evaluated. Retrieval reproduction cannot be judged. See RESOURCE_STALL_RECURRENCE.md.\n")
+        policy_path = ROOT / "recovery/evidence/recovery-operation-policy.json"
+        policy = load(policy_path)
+        policy.update(formal_training_authorized=False, reproduction_gate_authorized=False,
+                      resume_allowed=False, full_gate_status=status, full_completed_updates=self.state["completed_updates"],
+                      training_held_for_new_instruction=True)
+        dump(policy_path, policy)
+        self.sync("Report S02 resource stall recurrence; preserve20-step phase evidence and stop without retry")
+        return True
+
     def run(self):
         policy_path = ROOT / "recovery/evidence/recovery-operation-policy.json"
         policy = load(policy_path)
@@ -173,6 +245,9 @@ class Supervisor(native_pipeline.Supervisor):
                          modifications="Read-only minimal invariant gate; faithful native scheduler/scaler checkpoint metadata; conditional exact resume at500")
         dump(EXP / "FULL_PREFLIGHT.json", preflight)
         dump(EXP / "CONTINUATION_GATE.json", dict(status="PENDING_AT_500", horizon=4868, passed=False, thresholds_percent=THRESHOLDS))
+        dump(EXP / "STEP500_RESULTS.json", dict(status="PENDING_AT_500", evaluated=False, scores_percent=None,
+                                                horizon=4868, runtime=str(RUN)))
+        (EXP / "STEP500_REPRODUCTION.md").write_text("# S02 step500 reproduction\n\nPENDING_AT_500. Fresh common step0, horizon4868; no retrieval result claimed. Native resource protection unchanged.\n")
         dump(EXP / "FULL_RESULTS.json", dict(status="RUNNING_0_TO_500", evaluated=False, horizon=4868, runtime=str(RUN)))
         (EXP / "FULL_RESULTS.md").write_text("# S02 full trajectory\n\nFresh common step0 ->500, horizon4868. Retrieval gate pending; no full result claimed.\n")
         acceptance500 = self.train_stage(500)
@@ -279,6 +354,8 @@ def main():
         try:
             supervisor.run()
         except BaseException as error:
+            if isinstance(error, Exception) and supervisor.resource_stop(error):
+                return
             supervisor.state.update(status="STOPPED_ERROR", error=type(error).__name__ + ": " + str(error),
                                     formal_training_authorized=False, failed_at=now())
             supervisor.save()
