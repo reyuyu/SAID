@@ -11,12 +11,13 @@ import statistics
 import subprocess
 
 from . import recovery_full as native_pipeline
+from recovery import local_ssd_stage as local_stage
 
 
 ROOT = native_pipeline.ROOT
 EXP = native_pipeline.EXP
 RUNTIME = native_pipeline.RUNTIME
-RUN = RUNTIME / "armb_summary02_500gate_resource_v2"
+RUN = RUNTIME / "armb_summary02_500gate_localssd_v3"
 PYTHON = native_pipeline.PYTHON
 ASSETS = native_pipeline.ASSETS
 MODULE = native_pipeline.MODULE
@@ -64,11 +65,14 @@ def publish(message):
     names = ("FULL_PROGRESS.json", "FULL_PREFLIGHT.json", "FIRST_FIVE_GATE.json", "TRAINING_DIAGNOSTICS.json",
              "STEP500_REPRODUCTION.md", "STEP500_RESULTS.json", "CONTINUATION_GATE.json", "STEP500_RESUME_AUDIT.json",
              "FULL_RESULTS.md", "FULL_RESULTS.json", "CHECKPOINT_SHA256.json", "STRICT_EXPORT_PROVENANCE.json",
-             "RESOURCE_STALL_RECURRENCE.json", "RESOURCE_STALL_RECURRENCE.md")
+             "RESOURCE_STALL_RECURRENCE.json", "RESOURCE_STALL_RECURRENCE.md", "LOCAL_SSD_STAGE500_REPORT.md",
+             "LOCAL_SSD_STAGE500_READY.json", "LOCAL_SSD_MANIFEST_PROOF.json", "LOCAL_SSD_COPY_PROGRESS.json",
+             "reproduction_full.py", "reproduction_train_gate.py", "local_image_dataset.py")
     paths = [EXP / name for name in names if (EXP / name).is_file()]
     paths.extend((EXP / "commands").glob("*-500gate.json"))
     paths.extend((EXP / "evidence/reproduction").glob("*.json"))
     paths.append(ROOT / "recovery/evidence/recovery-operation-policy.json")
+    paths.extend(ROOT / "recovery" / name for name in ("local_ssd_stage.py", "test_local_ssd_stage.py"))
     relative = [str(path.relative_to(ROOT)) for path in paths]
     require(not subprocess.check_output(["git", "diff", "--cached", "--name-only"], cwd=ROOT, text=True).strip(),
             "Refusing publication with unrelated staged changes")
@@ -107,11 +111,13 @@ class Supervisor(native_pipeline.Supervisor):
     def execute(self, name, command, training=False):
         os.environ["SAID_S02_STAGE"] = self.train.name
         if training:
-            local = Path("/tmp/said-s02-full-phase-resource-v2") / self.train.name
+            local = Path("/tmp/said-s02-full-phase-localssd-v3") / self.train.name
             local.mkdir(parents=True, exist_ok=False)
             os.environ["SAID_S02_PHASE_LOCAL"] = str(local)
             self.state["phase_telemetry"] = str(local)
         super().execute(name, command, training)
+        self.state.update(active_pid=None, training_process_running=False)
+        self.save()
         old = EXP / "commands" / (name + "-recovery.json")
         if old.exists():
             old.replace(EXP / "commands" / (name + "-500gate.json"))
@@ -122,8 +128,8 @@ class Supervisor(native_pipeline.Supervisor):
         self.offset = 0
         command = [str(ROOT / ".venv/bin/torchrun"), "--standalone", "--nnodes=1", "--nproc-per-node=4", "--max-restarts=0",
                    "-m", MODULE + ".reproduction_train_gate", "--config", str(ROOT / "recovery/configs/summary02.json"),
-                   "--init-state", str(RUNTIME / "shared/step000000.pt"), "--index-dir", str(RUNTIME / "data_index"),
-                   "--image-root", str(ASSETS / "training/ShareGPT4V"), "--output-dir", str(self.train),
+                   "--init-state", str(RUNTIME / "shared/step000000.pt"), "--index-dir", str(local_stage.INDEX),
+                   "--image-root", str(local_stage.IMAGES), "--output-dir", str(self.train),
                    "--run-type", "formal", "--max-updates", str(stop)]
         if resume:
             require(stop == 4868 and resume == RUN / "step500/step000500.pt", "Invalid continuation checkpoint")
@@ -172,11 +178,63 @@ class Supervisor(native_pipeline.Supervisor):
                     step=step, horizon=4868, native_full_caption_only=True, finished_at=now())
 
     def sync(self, message):
+        self.local_report()
         try:
             publish(message)
         except Exception as error:
             self.state["github_sync_error"] = type(error).__name__ + ": " + str(error)
             self.save()
+
+    def local_report(self):
+        manifest = load(EXP / "LOCAL_SSD_MANIFEST_PROOF.json") if (EXP / "LOCAL_SSD_MANIFEST_PROOF.json").exists() else {}
+        copied = load(local_stage.META / "stage500-copy-ready.json") if (local_stage.META / "stage500-copy-ready.json").exists() else {}
+        if not copied and (local_stage.META / "stage500-copy-progress.json").exists():
+            copied = load(local_stage.META / "stage500-copy-progress.json")
+        ready = load(local_stage.META / "stage500-ready.json") if (local_stage.META / "stage500-ready.json").exists() else {}
+        result = load(EXP / "STEP500_RESULTS.json") if (EXP / "STEP500_RESULTS.json").exists() else {}
+        if self.state["status"] == "LOCAL_SSD_COPY_IN_PROGRESS":
+            result = {}
+        lines = ["# Local SSD first500 staging and reproduction", "", "Updated UTC: " + now(), "",
+                 "Trajectory: `" + str(RUN) + "`; status: `" + self.state["status"] + "`.", "",
+                 "IO-only override; frozen sampling/preprocessing/model/loss/optimizer and horizon4868 unchanged. "
+                 "Native3 consecutive full cycles>3s protection unchanged. Fresh common step0; no resume of diagnostic or stopped runs.", "",
+                 "Local block-backed root-overlay/NVMe mirror: `" + str(local_stage.IMAGES) + "`.", "",
+                 "## Manifest and copy", "",
+                 "512000 records requested (500 x1024), de-duplicated images: `" + str(manifest.get("unique_images_count", "PENDING")) + "`.",
+                 "Family counts: `" + json.dumps(manifest.get("family_counts", {})) + "`.",
+                 "Payload bytes: `" + str(manifest.get("total_bytes", "PENDING")) + "`.",
+                 "Payload GB / GiB: `" + str(round(manifest.get("total_bytes", 0) / 10**9, 3)) + " / " +
+                     str(round(manifest.get("total_bytes", 0) / local_stage.GIB, 3)) + "`.",
+                 "Full historical500 sample-ID stream / first5 FSD+tokens: `" + json.dumps({key:manifest.get(key) for key in
+                     ("historical_sample_ids_matched", "historical_FSD_string_token_samples_matched", "offline_global_RNG_unchanged")}) + "`.",
+                 "Copy: `" + json.dumps(copied) + "`.",
+                 "Every required first500 image source SHA256 compared with SSD reread SHA256; atomic raw-byte copy. "
+                 "O_DIRECT source reads; private destination-file cache advice only. No global drop_caches, no source-cache eviction.", "",
+                 "1000-example byte/RGB/native preprocess proof and cgroup/process admission: `" + json.dumps(ready) + "`."]
+        proof = []
+        phase_root = Path("/tmp/said-s02-full-phase-localssd-v3")
+        for stage in ("step500", "step4868"):
+            for path in (phase_root / stage).glob("image-paths-*.jsonl"):
+                proof.extend(json.loads(line) for line in path.read_text().splitlines() if line)
+        if proof:
+            require(all(row["resolved_image_path"].startswith(str(local_stage.IMAGES) + "/") and
+                        row["path_from_NFS"] is False for row in proof), "Actual worker path is not local")
+            dump(EXP / "evidence/reproduction/local-image-path-proof.json", dict(passed=True, samples=len(proof), rows=proof))
+        lines.extend(["", "## Training and retrieval", "",
+                      f"Actual native worker resolved-path proofs: {len(proof)} samples, ranks: {sorted({row['rank'] for row in proof})}.",
+                      "Phase telemetry: `" + str(phase_root) + "`; data_wait/H2D/forward/backward/DDP/optimizer/cgroup/PSI recorded."])
+        cycle_path = RUN / "step500/cycle_timing.jsonl"
+        if cycle_path.exists():
+            from recovery.resource_stall_v2 import summary
+            rows = [json.loads(line) for line in cycle_path.read_text().splitlines() if line]
+            steady = [row["four_rank_max_seconds"] for row in rows if row["step"] >= 7]
+            lines.append("Step7+ full cycles: `" + json.dumps(summary(steady)) + "`; protection: `" + json.dumps(resource_recurrence(rows)) + "`.")
+        lines.extend(["Retrieval status: `" + str(result.get("status", "PENDING")) + "`; evaluated: `" + str(result.get("step") == 500 and "metrics" in result) + "`.",
+                      "Scores percent: `" + json.dumps(result.get("scores_percent")) + "`.", "",
+                      "Remaining images are NOT copied during500 training/evaluation. Only after REPRODUCTION_PASS: paused training, "
+                      "manifest-driven full local coverage+SHA verification, unchanged same500 checkpoint, then exact-state continuation. "
+                      "Old stall root cause is not claimed repaired; resource guard retained."])
+        (EXP / "LOCAL_SSD_STAGE500_REPORT.md").write_text("\n".join(lines) + "\n")
 
     def resource_stop(self, error):
         cycle_path = self.train / "cycle_timing.jsonl"
@@ -214,7 +272,8 @@ class Supervisor(native_pipeline.Supervisor):
             f"Stopped at optimizer update{self.state['completed_updates']}; horizon4868. Native3-second x3 consecutive gate unchanged.\n\n" +
             "This is a resource/environment stop, not a retrieval/method failure. No automatic retry or continuation. " +
             "Last20 full cycles and per-rank data/H2D/forward/backward-DDP/optimizer/cgroup/file-cache/PSI/GPU samples are in RESOURCE_STALL_RECURRENCE.json.\n")
-        self.state.update(status=status, formal_training_authorized=False, method_failure=False,
+        self.state.update(status=status, formal_training_authorized=False, method_failure=False, active_pid=None,
+                          training_process_running=False,
                           automatic_retry=False, failed_at=now(), resource_trigger=recurrence)
         self.save()
         dump(EXP / "FULL_RESULTS.json", dict(self.state, full_evaluated=False))
@@ -244,6 +303,13 @@ class Supervisor(native_pipeline.Supervisor):
                          supervisor_sha256=sha(EXP / "reproduction_full.py"), first_stage_stop=500,
                          modifications="Read-only minimal invariant gate; faithful native scheduler/scaler checkpoint metadata; conditional exact resume at500")
         dump(EXP / "FULL_PREFLIGHT.json", preflight)
+        if not (local_stage.META / "manifest-proof.json").exists():
+            self.execute("local-manifest", [PYTHON, "-m", "recovery.local_ssd_stage", "prepare"])
+        if not (local_stage.META / "stage500-copy-ready.json").exists():
+            self.execute("local-copy500", [PYTHON, "-m", "recovery.local_ssd_stage", "copy500"])
+        self.execute("local-verify500", [PYTHON, "-m", "recovery.local_ssd_stage", "verify"])
+        require(load(local_stage.META / "stage500-ready.json")["passed"], "Local mirror admission failed")
+        self.sync("Record hash-verified local first500 mirror and unchanged native resource guard")
         dump(EXP / "CONTINUATION_GATE.json", dict(status="PENDING_AT_500", horizon=4868, passed=False, thresholds_percent=THRESHOLDS))
         dump(EXP / "STEP500_RESULTS.json", dict(status="PENDING_AT_500", evaluated=False, scores_percent=None,
                                                 horizon=4868, runtime=str(RUN)))
@@ -254,7 +320,7 @@ class Supervisor(native_pipeline.Supervisor):
         result500 = self.evaluate(500)
         gate = reproduction_gate(result500["scores_percent"], result500["metrics"], load(EXP / "PARENT_500.json")["metrics"])
         gate.update(checkpoint_sha256=result500["checkpoint_sha256"], evaluated_at=now())
-        result500.update(status=gate["status"], gate=gate, native_acceptance=acceptance500)
+        result500.update(status=gate["status"], gate=gate, native_acceptance=acceptance500, runtime=str(RUN))
         dump(EXP / "STEP500_RESULTS.json", result500)
         dump(EXP / "CONTINUATION_GATE.json", gate)
         lines = ["# S02 step500 retrieval reproduction", "", "**" + gate["status"] + "**", "",
@@ -279,6 +345,20 @@ class Supervisor(native_pipeline.Supervisor):
             self.sync("Report S02 step500 reproduction failure; stop trajectory")
             return
         self.save()
+        policy.update(resume_allowed=False, full_gate_status="REPRODUCTION_PASS_LOCAL_FULL_COPY_PENDING", full_completed_updates=500)
+        dump(policy_path, policy)
+        self.state.update(status="REPRODUCTION_PASS_LOCAL_FULL_COPY_PENDING", stage="Training paused; full local mirror required before501")
+        self.save()
+        self.sync("Report S02 reproduction pass; pause at500 for full local staging")
+        self.execute("local-copyfull", [PYTHON, "-m", "recovery.local_ssd_stage", "copyfull"])
+        full_ready = load(local_stage.META / "full-copy-ready.json")
+        require(full_ready["checked"] == 1245901 and full_ready["families"] == local_stage.EXPECTED and
+                full_ready["source_destination_SHA256_matches"] == 1245901 and full_ready["copy_workers_exited"],
+                "Full local mirror incomplete")
+        require(local_stage.process_audit()["workers_all_exited"], "Copy/audit workers remain")
+        snapshot = local_stage.system_snapshot()
+        require(snapshot["memory_current"] < .98 * int(snapshot["memory_max"]), "Cgroup still near limit after full local copy")
+        dump(EXP / "evidence/reproduction/full-local-ready.json", dict(full_ready, system=snapshot))
         policy.update(resume_allowed=True, permitted_resume_checkpoint=gate["continuation_checkpoint"],
                       permitted_resume_sha256=gate["checkpoint_sha256"], full_gate_status="REPRODUCTION_PASS", full_completed_updates=500)
         dump(policy_path, policy)
@@ -356,7 +436,8 @@ def main():
         except BaseException as error:
             if isinstance(error, Exception) and supervisor.resource_stop(error):
                 return
-            supervisor.state.update(status="STOPPED_ERROR", error=type(error).__name__ + ": " + str(error),
+            supervisor.state.update(status="STOPPED_ERROR", error=type(error).__name__ + ": " + str(error), active_pid=None,
+                                    training_process_running=False,
                                     formal_training_authorized=False, failed_at=now())
             supervisor.save()
             dump(EXP / "FULL_RESULTS.json", dict(supervisor.state, full_evaluated=False))

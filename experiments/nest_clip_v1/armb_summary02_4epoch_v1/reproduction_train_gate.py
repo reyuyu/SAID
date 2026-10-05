@@ -15,7 +15,7 @@ from . import recovery_train_gate as historical
 
 ROOT = historical.ROOT
 EXP = historical.EXP
-RUN = ROOT / "runtime/SAID-nest-clip-v1/armb_summary02_500gate_resource_v2"
+RUN = ROOT / "runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3"
 STEP0_SHA = historical.STEP0_SHA
 
 
@@ -208,6 +208,8 @@ def main():
     trainer.validate_resume_payload = validate
     trainer.restore_rng_state = restore
     trainer.optimizer_learning_rates = learning_rates
+    from .local_image_dataset import LocalImageDataset
+    trainer.NestedDataset = LocalImageDataset
     from .training_phase_timing import install
     recorder = install(os.environ["SAID_S02_PHASE_LOCAL"], int(os.environ["RANK"]))
     try:
