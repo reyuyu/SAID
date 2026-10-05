@@ -1,7 +1,10 @@
 {
   "instruction_date_utc": "2026-10-05",
-  "scope": "One authorized S02 full4868 run from step0 and final frozen native five-set eval",
-  "reason": "S02 full prefix rejected; no automatic tolerance bypass, restart or checkpoint resume",
+  "scope": "Fresh S02 step0->500 at horizon4868; retrieval gate; conditional same-checkpoint500->4868",
+  "reason": "Latest explicit user authorization replaces cross-run numerical prefix gate with500-step retrieval reproduction gate",
+  "reproduction_gate_authorized": true,
+  "reproduction_gate_runtime": "runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1",
+  "first_stage_stop_updates": 500,
   "smoke_authorized": false,
   "smoke_config": "recovery/configs/summary02.json",
   "smoke_view_weights": [
@@ -12,7 +15,7 @@
   "conditional_smoke_authorized": false,
   "maximum_smoke_updates": 5,
   "scheduler_horizon": 4868,
-  "formal_training_authorized": false,
+  "formal_training_authorized": true,
   "existing_download_supervisors_must_continue": false,
   "maximum_global_odl_concurrency": 3,
   "full_decode_workers": 64,
@@ -32,6 +35,6 @@
   "authorized_experiments": [
     "ArmB-Summary0.2-4epoch"
   ],
-  "full_gate_status": "BLOCKED_PREFIX_GATE",
-  "full_completed_updates": 5
+  "full_gate_status": "AUTHORIZED_FRESH_500_REPRODUCTION_GATE",
+  "full_completed_updates": 0
 }

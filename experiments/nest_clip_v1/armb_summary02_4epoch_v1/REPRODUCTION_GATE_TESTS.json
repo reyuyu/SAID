@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "command": ".venv/bin/python -m pytest recovery/test_s02_reproduction_gate.py recovery/test_s02_full_gate.py recovery/test_s02_smoke_gate.py -q",
+  "passed_tests": 59,
+  "duration_seconds": 8.62,
+  "native_training_code_modified": false,
+  "checks": [
+    "Finite cross-run loss/model/moment variation is allowed",
+    "Exact input/LR/group/seed/source and AdamW counter invariants fail closed",
+    "500 retrieval thresholds inclusive; no near-boundary tolerance bypass",
+    "Obvious dataset collapse rejects continuation",
+    "Exact same-checkpoint resume state differs from cross-run numeric comparisons",
+    "Checkpoint manual scheduler/scaler metadata does not modify model or optimizer"
+  ],
+  "warning": "Existing pkg_resources deprecation; no dependency upgrade"
+}
