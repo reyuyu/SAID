@@ -1,0 +1,63 @@
+{
+  "checked_utc": "2026-10-05T10:34:16.427655+00:00",
+  "training_index_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+  "training_records": 1245901,
+  "filtered_records": 1245901,
+  "families": {
+    "sam": {
+      "required_paths": 569486,
+      "recovered_paths": 569486,
+      "missing_paths": 0,
+      "duplicate_training_index_paths": 0,
+      "missing_examples": [],
+      "audit_evidence": "/opt/data/private/lklk/SAID/recovery/evidence/sam-independent-namespace-audit.json"
+    },
+    "coco": {
+      "required_paths": 118287,
+      "recovered_paths": 118287,
+      "missing_paths": 0,
+      "duplicate_training_index_paths": 0,
+      "missing_examples": []
+    },
+    "llava": {
+      "required_paths": 558128,
+      "recovered_paths": 558128,
+      "missing_paths": 0,
+      "duplicate_training_index_paths": 0,
+      "missing_examples": []
+    }
+  },
+  "recovered_training_paths": 1245901,
+  "missing_training_paths": 0,
+  "training_index_missing": 0,
+  "duplicate_training_index_paths": 0,
+  "sam_duplicate_source_paths": [],
+  "sam_extracted_inventory_images": 167790,
+  "sam_original_image_files_present": 167790,
+  "decode_audit": {
+    "executed": false,
+    "passed": false
+  },
+  "passed": false,
+  "required_sam_image_ids": {
+    "count": 569486,
+    "minimum": 1,
+    "maximum": 570590,
+    "source_path_list": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-required-training-paths.txt",
+    "recovered_count": 167524,
+    "missing_paths_file": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-missing-training-paths.txt"
+  },
+  "family_checked_utc": {
+    "sam": "2026-10-05T01:06:10.034468+00:00",
+    "coco": "2026-10-04T21:19:38.927198+00:00",
+    "llava": "2026-10-04T21:19:38.927198+00:00"
+  },
+  "shard14_forensics": {
+    "status": "QUARANTINED_ARCHIVE_INVALID",
+    "required_images": 11168,
+    "missing_required_images": 11168,
+    "missing_ids_path": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-000014-forensics/required-missing-image-ids.txt",
+    "evidence": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-000014-forensics.json"
+  },
+  "update_scope": "Byte-verified installed-image inventories joined to immutable index; avoids blocking downloads on large NFS directory scans; final full physical existence/type/decode audit mandatory; unchanged verified COCO/LLaVA snapshots retained"
+}

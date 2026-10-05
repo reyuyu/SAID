@@ -1,0 +1,113 @@
+{
+  "filename": "sa_000016.tar",
+  "started_utc": "2026-10-05T04:57:47.737415+00:00",
+  "required_images": 11164,
+  "required_id_range": [
+    179000,
+    190187
+  ],
+  "training_index_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+  "original_archive": "/opt/data/private/lklk/SAID/local_assets/downloads/sa1b/140d15308aff47dae3b00214083838d56a4319c6/sa_000016.tar",
+  "original_present": true,
+  "original_archive_modified": false,
+  "full_original_redownload": false,
+  "expected_md5": "441129d8f0cbed260c8eafaac98b3965",
+  "expected_sha256": "fb8963c07d3808b229c2df44daca9079a9610322ff15a6e48a5d228928778889",
+  "tests": [
+    {
+      "tool": "gnu-ignore-zeros",
+      "returncode": 2,
+      "stderr": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000016/gnu-ignore-zeros.stderr.txt",
+      "original_jpeg_staging": "/tmp/said-sa1b-corrupt-rescue/sa_000016/gnu-ignore-zeros"
+    },
+    {
+      "tool": "bsdtar",
+      "returncode": 1,
+      "stderr": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000016/bsdtar.stderr.txt",
+      "original_jpeg_staging": "/tmp/said-sa1b-corrupt-rescue/sa_000016/bsdtar"
+    },
+    {
+      "tool": "python-normal",
+      "returncode": 1,
+      "error_type": "error",
+      "error": "Error -3 while decompressing data: invalid block type",
+      "extracted_members": 0,
+      "last_member": "./sa_179758.jpg",
+      "offset": 11992660480
+    },
+    {
+      "tool": "python-stream",
+      "returncode": 1,
+      "error_type": "ReadError",
+      "error": "invalid compressed data",
+      "extracted_members": 0,
+      "last_member": "./sa_179758.jpg",
+      "offset": 11992660480
+    },
+    {
+      "tool": "python-stream-ignore-zeros",
+      "returncode": 1,
+      "error_type": "ReadError",
+      "error": "invalid compressed data",
+      "extracted_members": 0,
+      "last_member": "./sa_179758.jpg",
+      "offset": 11992660480
+    },
+    {
+      "tool": "7z",
+      "status": "NOT_AVAILABLE"
+    }
+  ],
+  "original_checksum_audit": {
+    "size_bytes": 11403943964,
+    "observed_md5": "441129d8f0cbed260c8eafaac98b3965",
+    "observed_sha256": "fb8963c07d3808b229c2df44daca9079a9610322ff15a6e48a5d228928778889",
+    "md5_matches_checklist": true,
+    "checksum_algorithm_verified": true,
+    "verified_utc": "2026-10-05T04:58:23.711801+00:00"
+  },
+  "file_size_modulo512": 28,
+  "compression": "gzip",
+  "last4kb_sha256": "9fcf08431a5f7f56aa187cbe49d7f0e9806f4e7aaa73c81fac246946e090b692",
+  "last4kb_zero_bytes": 17,
+  "original_inode": 10282577423,
+  "original_mtime_ns": 1791164303000000000,
+  "tail_repair": {
+    "attempted": false,
+    "reason": "Compressed stream error; appending zeros to gzip is not a valid tar EOF repair"
+  },
+  "finished_utc": "2026-10-05T05:22:25.696074+00:00",
+  "recovered_required_images": 11164,
+  "missing_required_image_ids": [],
+  "duplicate_ids": [],
+  "remaining_decode_failures": 0,
+  "extraction_decode_failures": [
+    {
+      "basename": "sa_179758.jpg",
+      "source": "gnu-ignore-zeros",
+      "error_type": "OSError"
+    }
+  ],
+  "image_inventory": "/opt/data/private/lklk/SAID/recovery/evidence/modelscope-sa1b/installed-inventories/sa_000016.priority.images.jsonl",
+  "image_inventory_sha256": "9f14976838fe2425670c8c8e07a37eb200b562799ce4527c68876c35cb1674cf",
+  "status": "TRAINING_IMAGES_FULLY_RECOVERED",
+  "acceptance_reason": "Original JPEGs independently decoded and byte hashed; container validity is not required for training",
+  "image_transform": "NONE",
+  "original_rescue_inventory": {
+    "path": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000016/images.jsonl",
+    "sha256": "89df1feac9e5fb88ff5f80ef816b3139de80a2c42e8987d9b0c9e1eb695e2470"
+  },
+  "models_scope_repair": {
+    "installed_ids": [
+      180100,
+      181740,
+      188079,
+      189639
+    ],
+    "repo": "Tongyi-DataEngine/SA1B-Paired-Captions-Images",
+    "revision": "4859a29a7aa78102d3364852755c7818e7583366",
+    "equivalence_audit": "/opt/data/private/lklk/SAID/recovery/evidence/modelscope-sa1b/equivalence-audit.json",
+    "equivalence_audit_sha256": "a601aa7e919eaea9712884f6d2292b03ba48887af6916a4b5e3ca2c5e93bd168"
+  },
+  "last_repaired_utc": "2026-10-05T07:41:52.893753+00:00"
+}

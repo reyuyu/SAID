@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "configurations": {
+    "randomk": {
+      "passed": true,
+      "source_commit": "14653c92c6da9d552a2b624ab169eaaa275cdde8",
+      "cpu_only": true,
+      "optimizer_updates": 0,
+      "context_length": 248,
+      "sampling_mode": "random_k",
+      "view_weights": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "horizon": 4868,
+      "updates_per_epoch": 1217,
+      "optimizer_state_empty": true,
+      "clip_initializer_unchanged": true,
+      "optimizer_groups": [
+        {
+          "name": "backbone",
+          "lr": 1e-06,
+          "weight_decay": 0.01,
+          "parameter_tensors": 302,
+          "parameters": 149708289
+        },
+        {
+          "name": "text_mask_and_shared_pool",
+          "lr": 0.001,
+          "weight_decay": 0.0,
+          "parameter_tensors": 14,
+          "parameters": 3152897
+        },
+        {
+          "name": "visual_mask",
+          "lr": 0.001,
+          "weight_decay": 0.0,
+          "parameter_tensors": 12,
+          "parameters": 3152384
+        },
+        {
+          "name": "fusion_adapter",
+          "lr": 0.0002,
+          "weight_decay": 0.0,
+          "parameter_tensors": 2,
+          "parameters": 917504
+        }
+      ],
+      "model_state_sha256": "17a665a256d785e307d492e9983dbea30f6981534a11852f2bd57e8ebb011fd1"
+    },
+    "summary02": {
+      "passed": true,
+      "source_commit": "52bb7ae2d77aae8c2b1f69877aed5f7cc5d85b18",
+      "cpu_only": true,
+      "optimizer_updates": 0,
+      "context_length": 248,
+      "sampling_mode": "summary_random_detail",
+      "view_weights": [
+        1.4,
+        0.2,
+        1.4
+      ],
+      "horizon": 4868,
+      "updates_per_epoch": 1217,
+      "optimizer_state_empty": true,
+      "clip_initializer_unchanged": true,
+      "optimizer_groups": [
+        {
+          "name": "backbone",
+          "lr": 1e-06,
+          "weight_decay": 0.01,
+          "parameter_tensors": 302,
+          "parameters": 149708289
+        },
+        {
+          "name": "text_mask_and_shared_pool",
+          "lr": 0.001,
+          "weight_decay": 0.0,
+          "parameter_tensors": 14,
+          "parameters": 3152897
+        },
+        {
+          "name": "visual_mask",
+          "lr": 0.001,
+          "weight_decay": 0.0,
+          "parameter_tensors": 12,
+          "parameters": 3152384
+        },
+        {
+          "name": "fusion_adapter",
+          "lr": 0.0002,
+          "weight_decay": 0.0,
+          "parameter_tensors": 2,
+          "parameters": 917504
+        }
+      ],
+      "model_state_sha256": "17a665a256d785e307d492e9983dbea30f6981534a11852f2bd57e8ebb011fd1"
+    }
+  }
+}

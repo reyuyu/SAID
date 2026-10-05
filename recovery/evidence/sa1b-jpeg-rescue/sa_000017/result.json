@@ -1,0 +1,175 @@
+{
+  "filename": "sa_000017.tar",
+  "started_utc": "2026-10-05T05:22:29.008913+00:00",
+  "required_images": 11168,
+  "required_id_range": [
+    190188,
+    201375
+  ],
+  "training_index_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+  "original_archive": "/opt/data/private/lklk/SAID/local_assets/downloads/sa1b/140d15308aff47dae3b00214083838d56a4319c6/sa_000017.tar",
+  "original_present": true,
+  "original_archive_modified": false,
+  "full_original_redownload": true,
+  "expected_md5": "dade5977ae2736a79dbbed4e9a550ec4",
+  "expected_sha256": "59337466a068271e966145fc13f8e61255484978dfa829eacad92cf5d979d479",
+  "tests": [
+    {
+      "tool": "gnu-ignore-zeros",
+      "returncode": 2,
+      "stderr": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000017/gnu-ignore-zeros.stderr.txt",
+      "original_jpeg_staging": "/tmp/said-sa1b-corrupt-rescue/sa_000017/gnu-ignore-zeros"
+    },
+    {
+      "tool": "bsdtar",
+      "returncode": 1,
+      "stderr": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000017/bsdtar.stderr.txt",
+      "original_jpeg_staging": "/tmp/said-sa1b-corrupt-rescue/sa_000017/bsdtar"
+    },
+    {
+      "tool": "python-normal",
+      "returncode": 1,
+      "error_type": "error",
+      "error": "Error -3 while decompressing data: invalid block type",
+      "extracted_members": 0,
+      "last_member": "./sa_198798.jpg",
+      "offset": 11880808960
+    },
+    {
+      "tool": "python-stream",
+      "returncode": 1,
+      "error_type": "ReadError",
+      "error": "invalid compressed data",
+      "extracted_members": 0,
+      "last_member": "./sa_198798.jpg",
+      "offset": 11880808960
+    },
+    {
+      "tool": "python-stream-ignore-zeros",
+      "returncode": 1,
+      "error_type": "ReadError",
+      "error": "invalid compressed data",
+      "extracted_members": 0,
+      "last_member": "./sa_198798.jpg",
+      "offset": 11880808960
+    },
+    {
+      "tool": "7z",
+      "status": "NOT_AVAILABLE"
+    }
+  ],
+  "original_checksum_audit": {
+    "size_bytes": 11294495309,
+    "observed_md5": "dade5977ae2736a79dbbed4e9a550ec4",
+    "observed_sha256": "59337466a068271e966145fc13f8e61255484978dfa829eacad92cf5d979d479",
+    "md5_matches_checklist": true,
+    "checksum_algorithm_verified": true,
+    "verified_utc": "2026-10-05T05:23:04.281836+00:00"
+  },
+  "file_size_modulo512": 77,
+  "compression": "gzip",
+  "last4kb_sha256": "d93a1281f202297e1e7fa8ea91361ac78e1fd357454299f4575fd2e42b0a4284",
+  "last4kb_zero_bytes": 2,
+  "original_inode": 10282577679,
+  "original_mtime_ns": 1791164385000000000,
+  "tail_repair": {
+    "attempted": false,
+    "reason": "Compressed stream error; appending zeros to gzip is not a valid tar EOF repair"
+  },
+  "finished_utc": "2026-10-05T05:57:38.217275+00:00",
+  "recovered_required_images": 11168,
+  "missing_required_image_ids": [],
+  "duplicate_ids": [],
+  "remaining_decode_failures": 0,
+  "extraction_decode_failures": [
+    {
+      "basename": "sa_198798.jpg",
+      "source": "gnu-ignore-zeros",
+      "error_type": "OSError"
+    }
+  ],
+  "image_inventory": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-wallclock/focused-rescue/sa_000017/tail/installed-8cd5806a1b42c54b856858ab32049958496ece32bfb8b1d8e999806d0cb2fc4d.jsonl",
+  "image_inventory_sha256": "8cd5806a1b42c54b856858ab32049958496ece32bfb8b1d8e999806d0cb2fc4d",
+  "status": "TRAINING_IMAGES_FULLY_RECOVERED",
+  "acceptance_reason": "Original JPEGs independently decoded and byte hashed; container validity is not required for training",
+  "image_transform": "NONE",
+  "original_rescue_inventory": {
+    "path": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000017/images.jsonl",
+    "sha256": "8ee3b201ed8bf381dd325d2ae1e5f6fbf9232e286f085f78c207f8a37b49ca80"
+  },
+  "models_scope_repair": {
+    "installed_ids": [
+      191706,
+      194058
+    ],
+    "repo": "Tongyi-DataEngine/SA1B-Paired-Captions-Images",
+    "revision": "4859a29a7aa78102d3364852755c7818e7583366",
+    "equivalence_audit": "/opt/data/private/lklk/SAID/recovery/evidence/modelscope-sa1b/equivalence-audit.json",
+    "equivalence_audit_sha256": "a601aa7e919eaea9712884f6d2292b03ba48887af6916a4b5e3ca2c5e93bd168"
+  },
+  "last_repaired_utc": "2026-10-05T09:47:09.491410+00:00",
+  "focused_original_archive_rescue": {
+    "filename": "sa_000017.tar",
+    "source": "tail",
+    "archive": "recovery/evidence/sa1b-wallclock/forensic/sa_000017/download/OpenDataLab___SA-1B/raw/sa_000017.tar",
+    "started_utc": "2026-10-05T09:47:07.717776+00:00",
+    "finished_utc": "2026-10-05T09:47:09.427765+00:00",
+    "requested_missing_count": 1,
+    "recovered": 1,
+    "missing_required_image_ids": [],
+    "tests": [
+      {
+        "tool": "bounded-read-only-deflate-tail-resync",
+        "status": "RECOVERED",
+        "recovered_members": [
+          "sa_195618.jpg"
+        ],
+        "attempts": 9,
+        "scan_window_bytes": 67108864,
+        "original_archive_modified": false,
+        "compression_specification": "RFC1951 stored blocks, LEN/NLEN and32768-byte distance window",
+        "maximum_seconds": 180,
+        "maximum_attempts": 1024,
+        "maximum_decoded_suffix_bytes": 268435456,
+        "member_proofs": [
+          {
+            "basename": "sa_195618.jpg",
+            "compressed_resync_offset": 11293750687,
+            "first_stored_block_bytes": 32929,
+            "initial_dictionary": "EMPTY; never guessed",
+            "raw_deflate_eof": true,
+            "gzip_footer_exact": true,
+            "tar_header_checksum_valid": true,
+            "suffix_tar_header_offset": 433162,
+            "size_bytes": 445138,
+            "sha256": "223d9ba1af7b3aab55458f9440a0f0b25eb1c1d5e386b2cdc598ad642301f07c"
+          }
+        ]
+      }
+    ],
+    "decode_failures": [],
+    "original_archive_modified": false,
+    "archive_identity": {
+      "size": 11294495309,
+      "mtime_ns": 1791191159000000000,
+      "inode": 6855747585
+    },
+    "image_transform": "NONE"
+  },
+  "independent_forensic_archive": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-wallclock/forensic/sa_000017/download/OpenDataLab___SA-1B/raw/sa_000017.tar",
+  "independent_forensic_checksum": {
+    "size_bytes": 11294495309,
+    "observed_md5": "dade5977ae2736a79dbbed4e9a550ec4",
+    "observed_sha256": "59337466a068271e966145fc13f8e61255484978dfa829eacad92cf5d979d479",
+    "md5_matches_checklist": true,
+    "checksum_algorithm_verified": true,
+    "verified_utc": "2026-10-05T09:20:42.169902+00:00",
+    "filename": "sa_000017.tar",
+    "archive": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-wallclock/forensic/sa_000017/download/OpenDataLab___SA-1B/raw/sa_000017.tar",
+    "source": "OpenDataLab/SA-1B",
+    "source_dataset_id": 6248,
+    "independent_forensic_copy": true,
+    "container_validity_not_a_rescue_precondition": true,
+    "attempt": 1
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "filename": "sa_000017.tar",
+  "source": "tail",
+  "archive": "recovery/evidence/sa1b-wallclock/forensic/sa_000017/download/OpenDataLab___SA-1B/raw/sa_000017.tar",
+  "started_utc": "2026-10-05T09:47:07.717776+00:00",
+  "finished_utc": "2026-10-05T09:47:09.427765+00:00",
+  "requested_missing_count": 1,
+  "recovered": 1,
+  "missing_required_image_ids": [],
+  "tests": [
+    {
+      "tool": "bounded-read-only-deflate-tail-resync",
+      "status": "RECOVERED",
+      "recovered_members": [
+        "sa_195618.jpg"
+      ],
+      "attempts": 9,
+      "scan_window_bytes": 67108864,
+      "original_archive_modified": false,
+      "compression_specification": "RFC1951 stored blocks, LEN/NLEN and32768-byte distance window",
+      "maximum_seconds": 180,
+      "maximum_attempts": 1024,
+      "maximum_decoded_suffix_bytes": 268435456,
+      "member_proofs": [
+        {
+          "basename": "sa_195618.jpg",
+          "compressed_resync_offset": 11293750687,
+          "first_stored_block_bytes": 32929,
+          "initial_dictionary": "EMPTY; never guessed",
+          "raw_deflate_eof": true,
+          "gzip_footer_exact": true,
+          "tar_header_checksum_valid": true,
+          "suffix_tar_header_offset": 433162,
+          "size_bytes": 445138,
+          "sha256": "223d9ba1af7b3aab55458f9440a0f0b25eb1c1d5e386b2cdc598ad642301f07c"
+        }
+      ]
+    }
+  ],
+  "decode_failures": [],
+  "original_archive_modified": false,
+  "archive_identity": {
+    "size": 11294495309,
+    "mtime_ns": 1791191159000000000,
+    "inode": 6855747585
+  },
+  "image_transform": "NONE"
+}

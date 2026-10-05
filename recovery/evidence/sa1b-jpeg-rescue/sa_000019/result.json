@@ -1,0 +1,81 @@
+{
+  "filename": "sa_000019.tar",
+  "started_utc": "2026-10-05T05:26:06.300630+00:00",
+  "required_images": 11164,
+  "required_id_range": [
+    212562,
+    223749
+  ],
+  "training_index_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+  "original_archive": "/opt/data/private/lklk/SAID/local_assets/downloads/sa1b/140d15308aff47dae3b00214083838d56a4319c6/sa_000019.tar",
+  "original_present": true,
+  "original_archive_modified": false,
+  "full_original_redownload": false,
+  "expected_md5": "05f1a621b3f685e5213602b99613eaf6",
+  "expected_sha256": "8625f1643bcbb5ac803534859a5b7ad4543274fc6b80a08a558cee99df721a3c",
+  "tests": [
+    {
+      "tool": "gnu-ignore-zeros",
+      "returncode": 2,
+      "stderr": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000019/gnu-ignore-zeros.stderr.txt",
+      "original_jpeg_staging": "/tmp/said-sa1b-corrupt-rescue/sa_000019/gnu-ignore-zeros"
+    },
+    {
+      "tool": "bsdtar",
+      "returncode": 1,
+      "stderr": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000019/bsdtar.stderr.txt",
+      "original_jpeg_staging": "/tmp/said-sa1b-corrupt-rescue/sa_000019/bsdtar"
+    },
+    {
+      "tool": "python-normal",
+      "status": "NOT_NEEDED_ALL_REQUIRED_JPEGS_RECOVERED"
+    },
+    {
+      "tool": "python-stream",
+      "status": "NOT_NEEDED_ALL_REQUIRED_JPEGS_RECOVERED"
+    },
+    {
+      "tool": "python-stream-ignore-zeros",
+      "status": "NOT_NEEDED_ALL_REQUIRED_JPEGS_RECOVERED"
+    },
+    {
+      "tool": "7z",
+      "status": "NOT_NEEDED"
+    }
+  ],
+  "original_checksum_audit": {
+    "size_bytes": 11354886075,
+    "observed_md5": "05f1a621b3f685e5213602b99613eaf6",
+    "observed_sha256": "8625f1643bcbb5ac803534859a5b7ad4543274fc6b80a08a558cee99df721a3c",
+    "md5_matches_checklist": true,
+    "checksum_algorithm_verified": true,
+    "verified_utc": "2026-10-05T05:26:42.264834+00:00"
+  },
+  "file_size_modulo512": 443,
+  "compression": "gzip",
+  "last4kb_sha256": "823c694c2166ad533fad64730dabfefbc6f567d9a3611fe6e0a93ac9d3eaee7a",
+  "last4kb_zero_bytes": 5,
+  "original_inode": 25977830149,
+  "original_mtime_ns": 1791175150000000000,
+  "tail_repair": {
+    "attempted": false,
+    "reason": "Compressed stream error; appending zeros to gzip is not a valid tar EOF repair"
+  },
+  "finished_utc": "2026-10-05T05:55:15.786046+00:00",
+  "recovered_required_images": 11164,
+  "missing_required_image_ids": [],
+  "duplicate_ids": [],
+  "remaining_decode_failures": 0,
+  "extraction_decode_failures": [
+    {
+      "basename": "sa_220593.jpg",
+      "source": "gnu-ignore-zeros",
+      "error_type": "OSError"
+    }
+  ],
+  "image_inventory": "/opt/data/private/lklk/SAID/recovery/evidence/sa1b-jpeg-rescue/sa_000019/images.jsonl",
+  "image_inventory_sha256": "570fd606073b7fa33f1e1f608cce89fa291819b3edeef085f408265cb958df4f",
+  "status": "TRAINING_IMAGES_FULLY_RECOVERED",
+  "acceptance_reason": "Original JPEGs independently decoded and byte hashed; container validity is not required for training",
+  "image_transform": "NONE"
+}

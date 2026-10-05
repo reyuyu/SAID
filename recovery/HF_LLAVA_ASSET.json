@@ -1,0 +1,112 @@
+{
+  "started_utc": "2026-10-04T18:36:39.081057+00:00",
+  "assets": {
+    "llava": {
+      "asset": "llava",
+      "repo": "332F/LLaVA-Pretrain",
+      "revision": "698a737896f11f8cd9548d2989d2c2875405e955",
+      "filename": "images.zip",
+      "expected_size_bytes": 27356108382,
+      "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+      "endpoint": "https://hf-mirror.com",
+      "head_etag": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+      "xet_enabled": true,
+      "xet_metadata_available": false,
+      "discovered_utc": "2026-10-04T15:38:10.086143+00:00",
+      "source_history": [
+        {
+          "asset": "llava",
+          "repo": "liuhaotian/LLaVA-Pretrain",
+          "revision": "70f9d1e5e1a697fe35830875cfc7de1dd590d727",
+          "filename": "images.zip",
+          "expected_size_bytes": 27356108382,
+          "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "endpoint": "https://hf-mirror.com",
+          "head_etag": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "xet_enabled": true,
+          "xet_metadata_available": false,
+          "discovered_utc": "2026-10-04T15:38:10.086143+00:00",
+          "started_utc": "2026-10-04T15:48:22.445518+00:00",
+          "status": "STOPPED_SLOW_SOURCE",
+          "stopped_utc": "2026-10-04T16:06:54.471195+00:00"
+        },
+        {
+          "repo": "liuhaotian/LLaVA-Pretrain",
+          "revision": "70f9d1e5e1a697fe35830875cfc7de1dd590d727",
+          "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "endpoint": "https://huggingface.co",
+          "started_utc": "2026-10-04T18:05:53.546985+00:00",
+          "action": "Official HF endpoint, not old slow mirror URL",
+          "status": "STOPPED_SLOW_SOURCE",
+          "stopped_utc": "2026-10-04T18:15:55.249793+00:00"
+        },
+        {
+          "repo": "332F/LLaVA-Pretrain",
+          "revision": "698a737896f11f8cd9548d2989d2c2875405e955",
+          "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "started_utc": "2026-10-04T18:36:39.081033+00:00",
+          "status": "complete",
+          "reason": "Official source stopped after 600 seconds below 1MiB/s; explicitly approved copy passed path and sampled encoded-image identity checks"
+        }
+      ],
+      "status": "complete",
+      "worker_pid": 19769,
+      "started_utc": "2026-10-04T18:36:39.383737+00:00",
+      "worker": {
+        "asset": "llava",
+        "repo": "332F/LLaVA-Pretrain",
+        "revision": "698a737896f11f8cd9548d2989d2c2875405e955",
+        "pid": 19769,
+        "archive": "/opt/data/private/lklk/SAID/local_assets/downloads/hf_training/llava/332F--LLaVA-Pretrain/698a737896f11f8cd9548d2989d2c2875405e955/images.zip",
+        "received_bytes": 27356108382,
+        "phase": "complete",
+        "started_utc": "2026-10-04T18:36:40.478754+00:00",
+        "xet_enabled": true,
+        "xet_metadata_available": false,
+        "throughput_metric": "SDK progress callback payload bytes; never sparse file length",
+        "resumed_payload_bytes": 0,
+        "updated_utc": "2026-10-04T21:06:29.936198+00:00",
+        "attempt": 1,
+        "actual_size_bytes": 27356108382,
+        "actual_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+        "sha256_passed": true,
+        "zip_integrity_passed": true,
+        "zip_integrity": {
+          "method": "Python standard library ZipFile.testzip",
+          "bad_member": null,
+          "checked_images": 558128,
+          "passed": true
+        },
+        "archive_images": 558128,
+        "extracted_images": 558128,
+        "completed": true,
+        "finished_utc": "2026-10-04T21:06:29.936163+00:00",
+        "required_images": 558128,
+        "recovered_required_images": 558128,
+        "index_missing": 0,
+        "physical_image_count": 558128,
+        "original_bytes_preserved": true
+      },
+      "rate_mib_s": 0.0,
+      "previous_received_bytes": 27356108382,
+      "rolling_600s_mib_s": 15.339006250871495,
+      "stopped_utc": "2026-10-04T18:15:55.249776+00:00",
+      "stop_reason": "600-second payload average or consecutive rates below 1MiB/s; SDK incomplete preserved",
+      "alternative_source_status": "332F_IDENTITY_AUDIT_NOT_PASSED",
+      "duplicate_identity_audit": "/opt/data/private/lklk/SAID/recovery/evidence/llava-copy-identity-audit.json"
+    }
+  },
+  "old_partials_preserved": [
+    {
+      "path": "/opt/data/private/lklk/SAID/local_assets/downloads/train2017.zip.part",
+      "size_bytes": 56911609
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/local_assets/downloads/llava_pretrain_images.zip.part",
+      "size_bytes": 12611121407
+    }
+  ],
+  "supervisor_pid": 19766,
+  "finished_utc": "2026-10-04T21:19:41.632685+00:00",
+  "completed": true
+}

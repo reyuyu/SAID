@@ -1,0 +1,195 @@
+{
+  "started_utc": "2026-10-04T15:44:43.612295+00:00",
+  "supervisor_pid": null,
+  "old_partials_preserved": [
+    {
+      "path": "/opt/data/private/lklk/SAID/local_assets/downloads/train2017.zip.part",
+      "size_bytes": 56911609
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/local_assets/downloads/llava_pretrain_images.zip.part",
+      "size_bytes": 12611121407
+    }
+  ],
+  "assets": {
+    "coco": {
+      "asset": "coco",
+      "repo": "danasone/coco2017",
+      "revision": "2e5331942f3d99a6f3f09591cdf4694abf2642e5",
+      "filename": "train2017.zip",
+      "expected_size_bytes": 19336861798,
+      "expected_sha256": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+      "endpoint": "https://hf-mirror.com",
+      "head_etag": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+      "xet_enabled": true,
+      "xet_metadata_available": false,
+      "discovered_utc": "2026-10-04T15:38:04.324669+00:00",
+      "source_history": [
+        {
+          "asset": "coco",
+          "repo": "pcuenq/coco-2017-mirror",
+          "revision": "a4cd8b69bd45a35e9a0a9c8692f3a7f4f23321fe",
+          "filename": "train2017.zip",
+          "expected_size_bytes": 19336861798,
+          "expected_sha256": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+          "endpoint": "https://hf-mirror.com",
+          "head_etag": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+          "xet_enabled": true,
+          "xet_metadata_available": false,
+          "discovered_utc": "2026-10-04T15:38:04.324669+00:00",
+          "status": "STOPPED_SLOW_SOURCE",
+          "stopped_utc": "2026-10-04T15:58:23.494620+00:00"
+        },
+        {
+          "repo": "danasone/coco2017",
+          "revision": "2e5331942f3d99a6f3f09591cdf4694abf2642e5",
+          "expected_sha256": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+          "status": "failed",
+          "started_utc": "2026-10-04T15:58:53.589615+00:00"
+        },
+        {
+          "repo": "g292725651/coco2017",
+          "revision": "60b5dd60fe58abb068d65594320b2c8b835a4d90",
+          "expected_sha256": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+          "status": "STOPPED_SLOW_SOURCE",
+          "started_utc": "2026-10-04T16:06:24.390636+00:00",
+          "stopped_utc": "2026-10-04T16:24:56.872839+00:00"
+        },
+        {
+          "repo": "danasone/coco2017",
+          "revision": "2e5331942f3d99a6f3f09591cdf4694abf2642e5",
+          "expected_sha256": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+          "started_utc": "2026-10-04T18:05:53.546961+00:00",
+          "action": "Validate existing complete ZIP with standard library; no redownload",
+          "status": "complete",
+          "finished_utc": "2026-10-04T18:54:13.618443+00:00"
+        }
+      ],
+      "status": "complete",
+      "worker_pid": 19347,
+      "started_utc": "2026-10-04T18:05:53.894485+00:00",
+      "worker": {
+        "asset": "coco",
+        "repo": "danasone/coco2017",
+        "revision": "2e5331942f3d99a6f3f09591cdf4694abf2642e5",
+        "pid": null,
+        "archive": "/opt/data/private/lklk/SAID/local_assets/downloads/hf_training/coco/danasone--coco2017/2e5331942f3d99a6f3f09591cdf4694abf2642e5/train2017.zip",
+        "received_bytes": 0,
+        "phase": "complete",
+        "started_utc": "2026-10-04T18:05:54.784610+00:00",
+        "xet_enabled": true,
+        "xet_metadata_available": false,
+        "throughput_metric": "SDK progress callback payload bytes; never sparse file length",
+        "resumed_payload_bytes": 0,
+        "updated_utc": "2026-10-04T18:43:40.519331+00:00",
+        "attempt": 1,
+        "actual_size_bytes": 19336861798,
+        "actual_sha256": "69a8bb58ea5f8f99d24875f21416de2e9ded3178e903f1f7603e283b9e06d929",
+        "sha256_passed": true,
+        "zip_integrity_passed": true,
+        "zip_integrity": {
+          "method": "Python standard library ZipFile.testzip",
+          "bad_member": null,
+          "checked_images": 118287,
+          "passed": true
+        },
+        "archive_images": 118287,
+        "extracted_images": 118287,
+        "completed": true,
+        "original_download_extraction_pid": 19347,
+        "physical_image_count": 118287,
+        "recovered_required_images": 118287,
+        "required_images": 118287,
+        "index_missing": 0,
+        "finished_utc": "2026-10-04T18:54:13.618443+00:00",
+        "independent_audit_evidence": "/opt/data/private/lklk/SAID/recovery/evidence/coco-independent-index-audit.json",
+        "completion_method": "Exact physical directory entry set = verified original ZIP file set = frozen index; regular original files proven by all successful atomic extraction writes"
+      },
+      "rate_mib_s": 0.0,
+      "previous_received_bytes": 0,
+      "archive_override": "/opt/data/private/lklk/SAID/local_assets/downloads/hf_training/coco/danasone--coco2017/2e5331942f3d99a6f3f09591cdf4694abf2642e5/train2017.zip",
+      "post_extraction_read_only_handoff": "/opt/data/private/lklk/SAID/recovery/evidence/coco-index-audit-handoff.json"
+    },
+    "llava": {
+      "asset": "llava",
+      "repo": "332F/LLaVA-Pretrain",
+      "revision": "698a737896f11f8cd9548d2989d2c2875405e955",
+      "filename": "images.zip",
+      "expected_size_bytes": 27356108382,
+      "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+      "endpoint": "https://hf-mirror.com",
+      "head_etag": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+      "xet_enabled": true,
+      "xet_metadata_available": false,
+      "discovered_utc": "2026-10-04T15:38:10.086143+00:00",
+      "source_history": [
+        {
+          "asset": "llava",
+          "repo": "liuhaotian/LLaVA-Pretrain",
+          "revision": "70f9d1e5e1a697fe35830875cfc7de1dd590d727",
+          "filename": "images.zip",
+          "expected_size_bytes": 27356108382,
+          "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "endpoint": "https://hf-mirror.com",
+          "head_etag": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "xet_enabled": true,
+          "xet_metadata_available": false,
+          "discovered_utc": "2026-10-04T15:38:10.086143+00:00",
+          "started_utc": "2026-10-04T15:48:22.445518+00:00",
+          "status": "STOPPED_SLOW_SOURCE",
+          "stopped_utc": "2026-10-04T16:06:54.471195+00:00"
+        },
+        {
+          "repo": "liuhaotian/LLaVA-Pretrain",
+          "revision": "70f9d1e5e1a697fe35830875cfc7de1dd590d727",
+          "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "endpoint": "https://huggingface.co",
+          "started_utc": "2026-10-04T18:05:53.546985+00:00",
+          "action": "Official HF endpoint, not old slow mirror URL",
+          "status": "STOPPED_SLOW_SOURCE",
+          "stopped_utc": "2026-10-04T18:15:55.249793+00:00"
+        },
+        {
+          "repo": "332F/LLaVA-Pretrain",
+          "revision": "698a737896f11f8cd9548d2989d2c2875405e955",
+          "expected_sha256": "05459d8cb059bd32322b1c466c1cbd4568b09b1ce1db748425b7977236912660",
+          "started_utc": "2026-10-04T18:36:39.081033+00:00",
+          "status": "pending",
+          "reason": "Official source stopped after 600 seconds below 1MiB/s; explicitly approved copy passed path and sampled encoded-image identity checks"
+        }
+      ],
+      "status": "running",
+      "worker_pid": 19769,
+      "started_utc": "2026-10-04T18:36:39.383737+00:00",
+      "worker": {
+        "asset": "llava",
+        "repo": "332F/LLaVA-Pretrain",
+        "revision": "698a737896f11f8cd9548d2989d2c2875405e955",
+        "pid": 19769,
+        "archive": "/opt/data/private/lklk/SAID/local_assets/downloads/hf_training/llava/332F--LLaVA-Pretrain/698a737896f11f8cd9548d2989d2c2875405e955/images.zip",
+        "received_bytes": 21653094400,
+        "phase": "downloading",
+        "started_utc": "2026-10-04T18:36:40.478754+00:00",
+        "xet_enabled": true,
+        "xet_metadata_available": false,
+        "throughput_metric": "SDK progress callback payload bytes; never sparse file length",
+        "resumed_payload_bytes": 0,
+        "updated_utc": "2026-10-04T18:59:10.160833+00:00",
+        "attempt": 1
+      },
+      "rate_mib_s": 15.316110147058444,
+      "previous_received_bytes": 21653094400,
+      "rolling_600s_mib_s": 14.77517727950965,
+      "stopped_utc": "2026-10-04T18:15:55.249776+00:00",
+      "stop_reason": "600-second payload average or consecutive rates below 1MiB/s; SDK incomplete preserved",
+      "alternative_source_status": "332F_IDENTITY_AUDIT_NOT_PASSED",
+      "duplicate_identity_audit": "/opt/data/private/lklk/SAID/recovery/evidence/llava-copy-identity-audit.json",
+      "live_asset_state": "/opt/data/private/lklk/SAID/recovery/HF_LLAVA_ASSET.json",
+      "state_snapshot_utc": "2026-10-04T18:59:31.797231+00:00"
+    }
+  },
+  "completed": false,
+  "finished_utc": "2026-10-04T18:56:45.246975+00:00",
+  "last_reconciled_utc": "2026-10-04T18:59:31.797276+00:00",
+  "note": "COCO complete; the independent pinned LLaVA state is authoritative for live progress; original SA1B supervisor unchanged"
+}
