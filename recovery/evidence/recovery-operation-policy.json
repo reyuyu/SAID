@@ -1,14 +1,22 @@
 {
   "instruction_date_utc": "2026-10-05",
-  "scope": "Minimum-wall-clock SA-1B recovery; no training",
-  "reason": "Latest user instruction forbids training, including smoke; migrate slow HF ownership while preserving partials",
+  "scope": "Exact frozen-manifest image audit; no formal training",
+  "reason": "User replaces slow NFS directory scan with exact-path existence and full-decode audit",
   "smoke_authorized": false,
-  "conditional_smoke_authorized": false,
+  "conditional_smoke_authorized": true,
   "maximum_smoke_updates": 5,
   "scheduler_horizon": 4868,
   "formal_training_authorized": false,
   "existing_download_supervisors_must_continue": false,
   "maximum_global_odl_concurrency": 3,
   "full_decode_workers": 64,
-  "confirmed_modelscope_404_retry_allowed": false
+  "confirmed_modelscope_404_retry_allowed": false,
+  "final_manifest_audit_authorized": true,
+  "recursive_filesystem_inventory_allowed": false,
+  "final_audit_worker_candidates": [
+    8,
+    16,
+    32
+  ],
+  "smoke_condition": "DATA_AUDIT_PASS; four A100; common step0; H4868; exactly5 updates"
 }

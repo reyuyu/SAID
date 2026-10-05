@@ -7,9 +7,18 @@ the immutable1245901-record index has zero missing paths in the verified
 installation inventories. All four container-invalid shards have their required
 original JPEGs recovered. The separate final whole-index physical existence and
 full decode audit is still running; it is not yet a passed gate.
-No smoke or formal training is authorized. See `RECOVERY_STATUS_2026-10-05.md`
+The old NFS directory scanner has been terminated and replaced by
+`final_manifest_audit.py`: frozen exact-path manifest, local-SSD SQLite restart
+checkpoint,8/16/32-worker120-second benchmarks and visible five-second progress.
+Current status: `FINAL_IMAGE_AUDIT.json`; procedure/results:
+`FINAL_MANIFEST_AUDIT.md`. No directory inventory is needed for this final gate.
+No smoke or formal training has been started. See `RECOVERY_STATUS_2026-10-05.md`
 for the timestamped status; commands below are recovery references, not permission
 to launch a second supervisor or a smoke run.
+
+The later exact-path-audit instruction conditionally permits only the existing
+four-A100 five-update smoke after `DATA_AUDIT_PASS`; the data auditor never
+launches that trainer itself and never permits500/4868-step training.
 
 The main checkout is the pinned S=0.2 preflight source. Canonical RandomK must use
 `worktrees/randomk`, detached at `14653c92c6da9d552a2b624ab169eaaa275cdde8`.

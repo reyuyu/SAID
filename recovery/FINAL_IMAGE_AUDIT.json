@@ -1,0 +1,140 @@
+{
+  "checked_utc": "2026-10-05T13:42:19.508214+00:00",
+  "status": "EXISTENCE_AUDIT",
+  "training_index_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+  "manifest_sha256": "60106915fb9ba11ba4686081d7bddb42536d9779b0d32ae3df83166d1e456c2f",
+  "required_paths_total": 1245901,
+  "families": {
+    "sam": {
+      "required": 569486,
+      "existence_checked": 569486,
+      "exists": 569486,
+      "missing": 0,
+      "existence_io_errors": 0,
+      "decode_checked": 0,
+      "decoded": 0,
+      "corrupt": 0,
+      "decode_missing": 0,
+      "decode_io_errors": 0,
+      "io_retry_count": 0
+    },
+    "coco": {
+      "required": 118287,
+      "existence_checked": 118287,
+      "exists": 118287,
+      "missing": 0,
+      "existence_io_errors": 0,
+      "decode_checked": 0,
+      "decoded": 0,
+      "corrupt": 0,
+      "decode_missing": 0,
+      "decode_io_errors": 0,
+      "io_retry_count": 0
+    },
+    "llava": {
+      "required": 558128,
+      "existence_checked": 480166,
+      "exists": 480166,
+      "missing": 0,
+      "existence_io_errors": 0,
+      "decode_checked": 0,
+      "decoded": 0,
+      "corrupt": 0,
+      "decode_missing": 0,
+      "decode_io_errors": 0,
+      "io_retry_count": 0
+    }
+  },
+  "existence_checked": 1167939,
+  "exists_count": 1167939,
+  "missing_count": 0,
+  "decode_checked": 0,
+  "decoded_count": 0,
+  "corrupt_count": 0,
+  "io_retry_count": 0,
+  "io_error_count": 0,
+  "decode_missing_count": 0,
+  "elapsed_seconds": 973.1285219192505,
+  "active_workers": 16,
+  "benchmarks": {
+    "existence": {
+      "runs": [
+        {
+          "stage": "existence",
+          "workers": 8,
+          "completed": 143292,
+          "duration_seconds": 120.0121523886919,
+          "requested_seconds": 120,
+          "paths_per_second": 1193.9790858504896,
+          "io_retry_count": 0,
+          "io_errors": 0,
+          "timeouts": 0,
+          "image_failures": 0,
+          "mean_nfs_operation_latency_seconds": 0.001945883011481748,
+          "p95_nfs_operation_latency_seconds": 0.002660021185874939,
+          "latency_scope": "Exact-path stat",
+          "stable": true,
+          "sampled_families": [
+            "sam",
+            "coco",
+            "llava"
+          ]
+        },
+        {
+          "stage": "existence",
+          "workers": 16,
+          "completed": 307296,
+          "duration_seconds": 120.01904528588057,
+          "requested_seconds": 120,
+          "paths_per_second": 2560.393638093298,
+          "io_retry_count": 0,
+          "io_errors": 0,
+          "timeouts": 0,
+          "image_failures": 0,
+          "mean_nfs_operation_latency_seconds": 0.0004993799056661532,
+          "p95_nfs_operation_latency_seconds": 0.0017926767468452454,
+          "latency_scope": "Exact-path stat",
+          "stable": true,
+          "sampled_families": [
+            "sam",
+            "coco",
+            "llava"
+          ]
+        },
+        {
+          "stage": "existence",
+          "workers": 32,
+          "completed": 548352,
+          "duration_seconds": 120.02343688160181,
+          "requested_seconds": 120,
+          "paths_per_second": 4568.707697821774,
+          "io_retry_count": 0,
+          "io_errors": 0,
+          "timeouts": 0,
+          "image_failures": 0,
+          "mean_nfs_operation_latency_seconds": 0.0004057852117446696,
+          "p95_nfs_operation_latency_seconds": 0.0023941323161125183,
+          "latency_scope": "Exact-path stat",
+          "stable": true,
+          "sampled_families": [
+            "sam",
+            "coco",
+            "llava"
+          ]
+        }
+      ],
+      "selected_workers": 32
+    }
+  },
+  "recursive_filesystem_scan": false,
+  "image_transform": "NONE",
+  "rgb_conversion_in_memory_only": true,
+  "smoke_started": false,
+  "formal_training_started": false,
+  "error": null,
+  "passed": false,
+  "manifest_source": "/opt/data/private/lklk/SAID/recovery/required_training_images.jsonl",
+  "checkpoint": "/root/.cache/said-recovery/final-manifest-audit/checkpoint.sqlite3",
+  "benchmark_io_retry_count": 0,
+  "training_index_missing": 0
+}

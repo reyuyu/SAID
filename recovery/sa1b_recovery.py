@@ -388,24 +388,22 @@ def requirements():
 
 
 def image_completeness(families, ownership=None, decode=False):
+    if decode:
+        from final_manifest_audit import run as exact_path_audit
+
+        result = exact_path_audit()
+        if not result["passed"]:
+            raise RuntimeError("Final exact-path existence/full decode audit did not pass")
+        return load(RECOVERY / "TRAIN_IMAGE_COMPLETENESS.json")
     root = ASSETS / "training/ShareGPT4V"
-    directory_cache = {}
     results = {}
-    all_present = []
     for family, paths in families.items():
         present = 0
         missing = []
         for relative in sorted(paths):
             path = PurePosixPath(relative)
-            parent = str(path.parent)
-            if parent not in directory_cache:
-                directory = root / parent
-                directory_cache[parent] = ({entry.name for entry in os.scandir(directory) if entry.is_file()}
-                                           if directory.is_dir() else set())
-            if path.name in directory_cache[parent]:
+            if (root / path).is_file():
                 present += 1
-                if decode:
-                    all_present.append(root / relative)
             else:
                 missing.append(relative)
         results[family] = dict(required_paths=len(paths), recovered_paths=present, missing_paths=len(missing),
@@ -423,39 +421,13 @@ def image_completeness(families, ownership=None, decode=False):
         training_index_missing=sum(row["missing_paths"] for row in results.values()),
         duplicate_training_index_paths=0, sam_duplicate_source_paths=duplicates,
         sam_extracted_inventory_images=inventory_count,
-        sam_original_image_files_present=sum(bool(re.fullmatch(r"sa_\d+\.(jpg|jpeg|png|webp)", name))
-            for name in directory_cache.get("sam/images", set())),
+        sam_original_image_files_present=results["sam"]["recovered_paths"],
+        sam_namespace_scope="Required exact paths only; no directory enumeration",
         decode_audit=dict(executed=False, passed=False), passed=False)
     sam_ids = [int(PurePosixPath(path).stem.removeprefix("sa_")) for path in families["sam"]]
     record["required_sam_image_ids"] = dict(count=len(sam_ids), minimum=min(sam_ids), maximum=max(sam_ids),
         source_path_list=str(EVIDENCE / "sa1b-required-training-paths.txt"),
         recovered_count=results["sam"]["recovered_paths"], missing_paths_file=str(EVIDENCE / "sa1b-missing-training-paths.txt"))
-    if decode and record["missing_training_paths"] == 0:
-        def check_image(path):
-            from PIL import Image
-
-            try:
-                with Image.open(path) as image:
-                    image.load()
-                    if image.width <= 0 or image.height <= 0:
-                        raise ValueError("Empty image dimensions")
-                return None
-            except Exception as error:
-                return dict(path=str(path), error=str(error))
-
-        failures = []
-        checked = 0
-        policy = load(EVIDENCE / "recovery-operation-policy.json", {})
-        decode_workers = min(64, os.cpu_count() or 1, max(1, int(policy.get("full_decode_workers", 16))))
-        with concurrent.futures.ThreadPoolExecutor(max_workers=decode_workers) as executor:
-            for offset in range(0, len(all_present), 2048):
-                batch = all_present[offset:offset+2048]
-                failures.extend(result for result in executor.map(check_image, batch) if result is not None)
-                checked += len(batch)
-                atomic_json(EVIDENCE / "training-image-decode-progress.json", dict(checked=checked,
-                            required=1245901, decode_failures=len(failures), checked_utc=now()))
-        record["decode_audit"] = dict(executed=True, checked_images=checked, workers=decode_workers, failures=failures,
-                                      passed=checked == 1245901 and not failures)
     record["passed"] = record["missing_training_paths"] == 0 and record["decode_audit"]["passed"] and not duplicates
     atomic_json(RECOVERY / "TRAIN_IMAGE_COMPLETENESS.json", record)
     atomic_json(EVIDENCE / "training-image-completeness-audit.json", record)
@@ -688,7 +660,11 @@ def main():
     elif args.command == "run":
         run(args.smoke_on_ready, args.downloads_only, args.concurrency)
     elif args.command == "audit":
-        report(completeness=image_completeness(requirements(), decode=True))
+        from final_manifest_audit import run as exact_path_audit
+
+        result = exact_path_audit()
+        if result["passed"]:
+            report(completeness=load(RECOVERY / "TRAIN_IMAGE_COMPLETENESS.json"))
     else:
         report()
 

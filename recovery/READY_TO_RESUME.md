@@ -5,6 +5,9 @@
 Status refreshed on2026-10-05. See `RECOVERY_STATUS_2026-10-05.md` for the
 timestamped evidence scope. Inventory completeness is not a substitute for the
 final whole-index physical existence/full decode audit, which remains running.
+The slow NFS directory scan is stopped. Its replacement directly checks the
+frozen required-path manifest; see `FINAL_IMAGE_AUDIT.json` for live exact-path
+existence and full-decode counts and `FINAL_MANIFEST_AUDIT.md` for benchmark data.
 
 | Requirement | Verified |
 | --- | --- |
@@ -24,8 +27,9 @@ final whole-index physical existence/full decode audit, which remains running.
 | native_evaluator_subset | PASS |
 
 No 500/4868-update training has been started or authorized by this recovery.
-No smoke is currently authorized or launched. `READY_TO_START_S02_FULL` is not
-claimed; final image audit and the authorized five-update acceptance gate remain.
+No smoke is launched. The latest instruction conditionally permits the existing
+five-update smoke only after `DATA_AUDIT_PASS`. `READY_TO_START_S02_FULL` is not
+claimed; final image audit and that five-update acceptance gate remain.
 
 Trained checkpoint/optimizer/RNG states cannot be recovered from metrics or reports. A new run from step0 is not historical continuation.
 
