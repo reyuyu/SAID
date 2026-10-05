@@ -1,0 +1,311 @@
+{
+  "process_audit": {
+    "processes": [
+      {
+        "pid": 1,
+        "ppid": 0,
+        "comm": "pod"
+      },
+      {
+        "pid": 11,
+        "ppid": 0,
+        "comm": "tini"
+      },
+      {
+        "pid": 23,
+        "ppid": 11,
+        "comm": "startup.sh"
+      },
+      {
+        "pid": 28,
+        "ppid": 23,
+        "comm": "sshd"
+      },
+      {
+        "pid": 29,
+        "ppid": 0,
+        "comm": "sidecar-worker"
+      },
+      {
+        "pid": 344,
+        "ppid": 11,
+        "comm": "sh"
+      },
+      {
+        "pid": 348,
+        "ppid": 344,
+        "comm": "node"
+      },
+      {
+        "pid": 400,
+        "ppid": 348,
+        "comm": "node"
+      },
+      {
+        "pid": 11181,
+        "ppid": 28,
+        "comm": "sshd"
+      },
+      {
+        "pid": 11192,
+        "ppid": 11181,
+        "comm": "bash"
+      },
+      {
+        "pid": 11196,
+        "ppid": 11192,
+        "comm": "sh"
+      },
+      {
+        "pid": 11214,
+        "ppid": 11196,
+        "comm": "code-ddc367ed5c"
+      },
+      {
+        "pid": 11341,
+        "ppid": 348,
+        "comm": "node"
+      },
+      {
+        "pid": 11353,
+        "ppid": 348,
+        "comm": "node"
+      },
+      {
+        "pid": 11384,
+        "ppid": 11214,
+        "comm": "sh"
+      },
+      {
+        "pid": 11458,
+        "ppid": 11341,
+        "comm": "codex"
+      },
+      {
+        "pid": 11589,
+        "ppid": 11341,
+        "comm": "node"
+      },
+      {
+        "pid": 49823,
+        "ppid": 11196,
+        "comm": "sleep"
+      }
+    ],
+    "residual_audit_or_training_workers": [],
+    "open_training_or_audit_files": [],
+    "workers_all_exited": true,
+    "killed_processes": [],
+    "removed_images": 0
+  },
+  "cache_reclaim": {
+    "attempted": false,
+    "successful": false,
+    "before": {
+      "timestamp_utc": "2026-10-05T18:40:31.000539+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 497153269760,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 483911802880,
+        "rss": 1061277696,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 175988736,
+        "dirty": 540672,
+        "writeback": 6352896,
+        "pgpgin": 1033787832,
+        "pgpgout": 915388844,
+        "pgfault": 512226660,
+        "pgmajfault": 25773,
+        "inactive_anon": 0,
+        "active_anon": 1062481920,
+        "inactive_file": 45833256960,
+        "active_file": 438074863616,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 483911802880,
+        "total_rss": 1061277696,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 175988736,
+        "total_dirty": 540672,
+        "total_writeback": 6352896,
+        "total_pgpgin": 1033787832,
+        "total_pgpgout": 915388844,
+        "total_pgfault": 512226660,
+        "total_pgmajfault": 25773,
+        "total_inactive_anon": 0,
+        "total_active_anon": 1062481920,
+        "total_inactive_file": 45833256960,
+        "total_active_file": 438074863616,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 19174861
+      },
+      "file": 483911802880,
+      "inactive_file": 45833256960,
+      "active_file": 438074863616,
+      "anon": 1061277696,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 1081304,
+        "nr_throttled": 1,
+        "throttled_time": 2053033755
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27400908309
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22036230709
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.18,
+          "avg300": 0.12,
+          "total": 485246041844
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.18,
+          "avg300": 0.12,
+          "total": 479907865941
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "target_bytes": 0,
+    "global_drop_caches": false,
+    "image_files_modified": false,
+    "reason": "Current cgroup has no writable memory.reclaim; no system-level cache operation",
+    "after": {
+      "timestamp_utc": "2026-10-05T18:40:31.001240+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 497153269760,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 483911802880,
+        "rss": 1061277696,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 175988736,
+        "dirty": 540672,
+        "writeback": 6352896,
+        "pgpgin": 1033787832,
+        "pgpgout": 915388844,
+        "pgfault": 512226660,
+        "pgmajfault": 25773,
+        "inactive_anon": 0,
+        "active_anon": 1062481920,
+        "inactive_file": 45833256960,
+        "active_file": 438074863616,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 483911802880,
+        "total_rss": 1061277696,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 175988736,
+        "total_dirty": 540672,
+        "total_writeback": 6352896,
+        "total_pgpgin": 1033787832,
+        "total_pgpgout": 915388844,
+        "total_pgfault": 512226660,
+        "total_pgmajfault": 25773,
+        "total_inactive_anon": 0,
+        "total_active_anon": 1062481920,
+        "total_inactive_file": 45833256960,
+        "total_active_file": 438074863616,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 19174861
+      },
+      "file": 483911802880,
+      "inactive_file": 45833256960,
+      "active_file": 438074863616,
+      "anon": 1061277696,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 1081304,
+        "nr_throttled": 1,
+        "throttled_time": 2053033755
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27400908309
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22036230709
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.18,
+          "avg300": 0.12,
+          "total": 485246041844
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.18,
+          "avg300": 0.12,
+          "total": 479907865941
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "observed_usage_reduction_bytes": 0
+  },
+  "disks": {
+    "lsblk": "NAME        TYPE  SIZE ROTA FSTYPE MOUNTPOINT\nloop1       loop 44.7M    0        \nloop2       loop 63.8M    0        \nloop3       loop 63.8M    0        \nloop4       loop 92.2M    0        \nloop5       loop 92.2M    0        \nloop6       loop 50.3M    0        \nnvme1n1     disk  1.8T    0        \n\u2514\u2500nvme1n1p1 part  1.8T    0        \nnvme2n1     disk  1.8T    0        \n\u251c\u2500nvme2n1p1 part  1.1G    0        \n\u2514\u2500nvme2n1p2 part  1.8T    0        /tmp/nvidia-mps\nnvme3n1     disk  1.8T    0        \n\u2514\u2500nvme3n1p1 part  1.8T    0        \nnvme4n1     disk  1.8T    0        \n\u2514\u2500nvme4n1p1 part  1.8T    0        \nnvme0n1     disk  1.8T    0        \n\u2514\u2500nvme0n1p1 part  1.8T    0        \n",
+    "df": "Filesystem                                                                                              Type      Size  Used Avail Use% Mounted on\noverlay                                                                                                 overlay   1.8T  988G  682G  60% /\ntmpfs                                                                                                   tmpfs      64M     0   64M   0% /dev\ntmpfs                                                                                                   tmpfs     504G     0  504G   0% /dev/shm\n/dev/nvme2n1p2                                                                                          ext4      1.8T  988G  682G  60% /etc/hosts\ntmpfs                                                                                                   tmpfs     504G  4.0K  504G   1% /opt/data/host-dev-shm\n192.168.210.100:/mnt/fs1/openpai/ZONES/llm/PROJECTS/bigdata/PRIVATE/zhoujiajun                          nfs       828T  261T  568T  32% /opt/data/private\n10.32.0.10:/opt/data/default/ZONES/llm/PROJECTS/bigdata/COMMON                                          nfs        15T   14T  609G  96% /opt/data/projectcommon\n10.32.0.10:/opt/data/default/ZONES/llm/COMMON                                                           nfs        15T   14T  609G  96% /opt/data/zonecommon\ntmpfs                                                                                                   tmpfs     504G     0  504G   0% /sys/fs/cgroup\n192.168.210.100:/mnt/fs1/openpai/common                                                                 nfs       828T  261T  568T  32% /opt/data/common/bigdata\n10.32.0.10:/opt/data/default/common                                                                     nfs        15T   14T  609G  96% /opt/data/common/default\ntmpfs                                                                                                   tmpfs     504G   12K  504G   1% /run/secrets/kubernetes.io/serviceaccount\n10.32.0.10:/opt/data/default/ZONES/llm/PROJECTS/llmsource/PRIVATE/zhoujiajun/.cache                     nfs        15T   14T  609G  96% /opt/data/share/zhoujiajun/llm/llmsource/.cache\n10.32.0.10:/opt/data/default/ZONES/llm/PROJECTS/llmsource/PRIVATE/zhoujiajun/Miniforge3-Linux-x86_64.sh nfs        15T   14T  609G  96% /opt/data/share/zhoujiajun/llm/llmsource/Miniforge3-Linux-x86_64.sh\n10.32.0.10:/opt/data/default/ZONES/llm/PROJECTS/llmsource/PRIVATE/zhoujiajun/RoboTwin2.0                nfs        15T   14T  609G  96% /opt/data/share/zhoujiajun/llm/llmsource/RoboTwin2.0\n10.32.0.10:/opt/data/default/ZONES/llm/PROJECTS/llmsource/PRIVATE/zhoujiajun/data                       nfs        15T   14T  609G  96% /opt/data/share/zhoujiajun/llm/llmsource/data\ntmpfs                                                                                                   tmpfs     504G   12K  504G   1% /proc/driver/nvidia\ntmpfs                                                                                                   tmpfs     504G  4.0K  504G   1% /etc/nvidia/nvidia-application-profiles-rc.d\nudev                                                                                                    devtmpfs  504G     0  504G   0% /dev/nvidia1\ntmpfs                                                                                                   tmpfs     504G     0  504G   0% /proc/acpi\ntmpfs                                                                                                   tmpfs     504G     0  504G   0% /proc/scsi\ntmpfs                                                                                                   tmpfs     504G     0  504G   0% /sys/firmware\n"
+  },
+  "data_audit_repeated": false,
+  "data_moved": false,
+  "formal500_or_full_authorized": false,
+  "native_source_sha256": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "train/nested_semantic_data.py": "ba58e15f20e9e43e8f59e376363f49c052696eb3a8d62e2b14cc517b07f18393",
+    "train/train_nested_semantic_mask.py": "56eaa83f7ee3ea9fa97a754a52288fc61adb28dd41129015ec39b129b82c57e3",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "tools/nest_clip.py": "defdd3b1d64f2c2be54c6bdda06f8bf7e4a6a908b1c0a8501e09f3e9a40f7540"
+  },
+  "frozen_config_sha256": "7a8b37927b19ca5a3241ce5308a52dfea09dadc69141645f1bf8deac2936cce3",
+  "local_telemetry": "/tmp/said-resource-stall-v2/20261005T184030Z",
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/resource-stall-v2-20261005T184030Z",
+  "maximum_updates": 40,
+  "horizon": 4868
+}

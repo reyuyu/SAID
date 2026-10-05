@@ -1,8 +1,8 @@
 {
   "instruction_date_utc": "2026-10-05",
-  "scope": "Fresh S02 step0->500 at horizon4868; retrieval gate; conditional same-checkpoint500->4868",
-  "reason": "Native resource guard stopped before500; no metric gate evaluated or automatic restart authorized",
-  "reproduction_gate_authorized": true,
+  "scope": "Completed resource-only40 diagnostic; hold all500/full until a new instruction",
+  "reason": "User authorizes one fresh common-step0 diagnostic replay, never500/full",
+  "reproduction_gate_authorized": false,
   "reproduction_gate_runtime": "runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1",
   "first_stage_stop_updates": 500,
   "smoke_authorized": false,
@@ -20,7 +20,7 @@
   "maximum_global_odl_concurrency": 3,
   "full_decode_workers": 64,
   "confirmed_modelscope_404_retry_allowed": false,
-  "final_manifest_audit_authorized": true,
+  "final_manifest_audit_authorized": false,
   "recursive_filesystem_inventory_allowed": false,
   "final_audit_worker_candidates": [
     8,
@@ -36,5 +36,11 @@
     "ArmB-Summary0.2-4epoch"
   ],
   "full_gate_status": "STOPPED_BEFORE_500_RESOURCE_GATE",
-  "full_completed_updates": 33
+  "full_completed_updates": 33,
+  "resource_diagnostic_authorized": false,
+  "maximum_diagnostic_updates": 40,
+  "resource_safety_gate": "unchanged:3 consecutive full cycles>3seconds",
+  "resource_diagnostic_completed": true,
+  "resource_gate_status": "RESOURCE_GATE_READY_FOR_500",
+  "training_held_for_new_instruction": true
 }
