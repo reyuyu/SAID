@@ -1,5 +1,3 @@
-# Step500 reproduction: NOT RUN
+# S02 step500 reproduction
 
-First5 hard invariants passed; native resource monitor stopped at33. No step500 checkpoint or retrieval results exist. No score deltas or reproduction PASS/FAIL are claimed.
-
-See RESOURCE_STOP_AUDIT.md/json. Horizon stayed4868 and all frozen hyperparameters matched. Training is stopped; step33 is not an authorized resume point.
+PENDING_AT_500. Fresh common step0, horizon4868; no retrieval result claimed. Native resource protection unchanged.

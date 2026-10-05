@@ -1,24 +1,25 @@
 {
-  "status": "STOPPED_BEFORE_500_RESOURCE_GATE",
-  "started_at": "2026-10-05T17:33:52.704513+00:00",
-  "supervisor_pid": 46137,
+  "status": "TRAINING",
+  "started_at": "2026-10-05T21:43:29.966618+00:00",
+  "supervisor_pid": 54595,
   "branch": "codex/nest-balanced-armb-summary02-4epoch-recovery-v1",
-  "completed_updates": 33,
+  "completed_updates": 14,
   "stop_updates": 4868,
-  "formal_training_authorized": false,
+  "formal_training_authorized": true,
   "formal_training_started": true,
   "resume": null,
   "scheduled_evaluation": "Pause at500; native five-set reproduction gate; then conditional4868",
-  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1",
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_resource_v2",
   "first_stage_stop": 500,
   "horizon": 4868,
   "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
-  "updated_at": "2026-10-05T17:37:27.455745+00:00",
-  "stage": "Stopped at33; resource gate before500",
-  "stage_started_at": "2026-10-05T17:33:53.674862+00:00",
-  "active_pid": null,
-  "latest_loss": 13.200170516967773,
-  "latest_update_seconds": 6.616196662187576,
+  "updated_at": "2026-10-05T21:45:02.134994+00:00",
+  "phase_telemetry": "/tmp/said-s02-full-phase-resource-v2/step500",
+  "stage": "train500",
+  "stage_started_at": "2026-10-05T21:43:31.078851+00:00",
+  "active_pid": 54601,
+  "latest_loss": 15.368927955627441,
+  "latest_update_seconds": 2.0589408725500107,
   "peak_allocated_gib": 27.759881019592285,
   "first_five_gate": {
     "passed": true,
@@ -76,8 +77,5 @@
       "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
       "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
     }
-  },
-  "error": "RuntimeError: train500 failed; see /opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1/train500.log",
-  "failed_at": "2026-10-05T17:37:27.455711+00:00",
-  "resource_audit": "RESOURCE_STOP_AUDIT.json"
+  }
 }
