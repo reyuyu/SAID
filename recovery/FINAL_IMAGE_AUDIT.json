@@ -1,6 +1,6 @@
 {
-  "checked_utc": "2026-10-05T13:42:19.508214+00:00",
-  "status": "EXISTENCE_AUDIT",
+  "checked_utc": "2026-10-05T13:53:19.801617+00:00",
+  "status": "DECODE_AUDIT",
   "training_index_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
   "manifest_sha256": "60106915fb9ba11ba4686081d7bddb42536d9779b0d32ae3df83166d1e456c2f",
   "required_paths_total": 1245901,
@@ -11,8 +11,8 @@
       "exists": 569486,
       "missing": 0,
       "existence_io_errors": 0,
-      "decode_checked": 0,
-      "decoded": 0,
+      "decode_checked": 54812,
+      "decoded": 54812,
       "corrupt": 0,
       "decode_missing": 0,
       "decode_io_errors": 0,
@@ -24,8 +24,8 @@
       "exists": 118287,
       "missing": 0,
       "existence_io_errors": 0,
-      "decode_checked": 0,
-      "decoded": 0,
+      "decode_checked": 26935,
+      "decoded": 26935,
       "corrupt": 0,
       "decode_missing": 0,
       "decode_io_errors": 0,
@@ -33,29 +33,29 @@
     },
     "llava": {
       "required": 558128,
-      "existence_checked": 480166,
-      "exists": 480166,
+      "existence_checked": 558128,
+      "exists": 558128,
       "missing": 0,
       "existence_io_errors": 0,
-      "decode_checked": 0,
-      "decoded": 0,
+      "decode_checked": 26935,
+      "decoded": 26935,
       "corrupt": 0,
       "decode_missing": 0,
       "decode_io_errors": 0,
       "io_retry_count": 0
     }
   },
-  "existence_checked": 1167939,
-  "exists_count": 1167939,
+  "existence_checked": 1245901,
+  "exists_count": 1245901,
   "missing_count": 0,
-  "decode_checked": 0,
-  "decoded_count": 0,
+  "decode_checked": 108682,
+  "decoded_count": 108682,
   "corrupt_count": 0,
   "io_retry_count": 0,
   "io_error_count": 0,
   "decode_missing_count": 0,
-  "elapsed_seconds": 973.1285219192505,
-  "active_workers": 16,
+  "elapsed_seconds": 1633.421899318695,
+  "active_workers": 32,
   "benchmarks": {
     "existence": {
       "runs": [
@@ -121,6 +121,80 @@
             "coco",
             "llava"
           ]
+        }
+      ],
+      "selected_workers": 32
+    },
+    "decode": {
+      "runs": [
+        {
+          "stage": "decode",
+          "workers": 8,
+          "completed": 20175,
+          "duration_seconds": 120.05534999072552,
+          "requested_seconds": 120,
+          "paths_per_second": 168.04748810909763,
+          "io_retry_count": 0,
+          "io_errors": 0,
+          "timeouts": 0,
+          "image_failures": 0,
+          "mean_nfs_operation_latency_seconds": 0.044326895519334,
+          "p95_nfs_operation_latency_seconds": 0.09105610102415085,
+          "latency_scope": "Exact-path stat/open/full decode and in-memory RGB",
+          "stable": true,
+          "sampled_families": [
+            "sam",
+            "coco",
+            "llava"
+          ],
+          "unique_required_paths_added": 20175,
+          "repeats_only_after_all_required_paths_checked": false
+        },
+        {
+          "stage": "decode",
+          "workers": 16,
+          "completed": 28158,
+          "duration_seconds": 120.10774275660515,
+          "requested_seconds": 120,
+          "paths_per_second": 234.4395070104795,
+          "io_retry_count": 0,
+          "io_errors": 0,
+          "timeouts": 0,
+          "image_failures": 0,
+          "mean_nfs_operation_latency_seconds": 0.0644747933488088,
+          "p95_nfs_operation_latency_seconds": 0.12213806062936783,
+          "latency_scope": "Exact-path stat/open/full decode and in-memory RGB",
+          "stable": true,
+          "sampled_families": [
+            "sam",
+            "coco",
+            "llava"
+          ],
+          "unique_required_paths_added": 28158,
+          "repeats_only_after_all_required_paths_checked": false
+        },
+        {
+          "stage": "decode",
+          "workers": 32,
+          "completed": 32473,
+          "duration_seconds": 120.16502188891172,
+          "requested_seconds": 120,
+          "paths_per_second": 270.2367085658265,
+          "io_retry_count": 0,
+          "io_errors": 0,
+          "timeouts": 0,
+          "image_failures": 0,
+          "mean_nfs_operation_latency_seconds": 0.112935338945644,
+          "p95_nfs_operation_latency_seconds": 0.20751070976257324,
+          "latency_scope": "Exact-path stat/open/full decode and in-memory RGB",
+          "stable": true,
+          "sampled_families": [
+            "sam",
+            "coco",
+            "llava"
+          ],
+          "unique_required_paths_added": 32473,
+          "repeats_only_after_all_required_paths_checked": false
         }
       ],
       "selected_workers": 32

@@ -502,7 +502,8 @@ def full_stage(connection, stage, workers, counts, identity, benchmarks):
     recent = []
     completed = 0
     slow_windows = 0
-    baseline_rate = next(row["paths_per_second"] for row in benchmarks[stage]["runs"] if row["workers"] == workers)
+    baseline_rate = None
+    previous_family = None
     try:
         while not exhausted or pool.busy():
             results = pool.poll()
@@ -517,16 +518,23 @@ def full_stage(connection, stage, workers, counts, identity, benchmarks):
             if time.monotonic()-window_started >= 15 and len(recent) >= 50:
                 io_count = sum(row["io_errors"] for row in recent)
                 rate = len(recent)/(time.monotonic()-window_started)
-                slow_windows = slow_windows+1 if rate < baseline_rate*.7 else 0
+                family_sizes = Counter(row["family"] for row in recent)
+                dominant_family = max(family_sizes,key=family_sizes.get)
+                if baseline_rate is None or dominant_family != previous_family:
+                    baseline_rate = rate
+                    slow_windows = 0
+                else:
+                    slow_windows = slow_windows+1 if rate < baseline_rate*.7 else 0
                 if io_count/len(recent) > .01 or any(row["timeouts"] for row in recent) or slow_windows >= 2:
                     previous_limit = pool.limit
                     pool.limit = max(1, pool.limit//2)
                     atomic_json(LOCAL / "concurrency-backoff.json", dict(checked_utc=now(), stage=stage,
                         previous_workers=previous_limit, new_workers=pool.limit,
                         reason="NFS IO retries/timeouts or sustained throughput drop", results=len(recent), paths_per_second=rate))
-                    baseline_rate = min(baseline_rate, rate)
+                    baseline_rate = None
                     slow_windows = 0
                     print("NFS protection: reduce concurrency to", pool.limit, flush=True)
+                previous_family = dominant_family
                 recent.clear()
                 window_started = time.monotonic()
             if time.monotonic()-last_publish >= 5 or completed >= CHUNK_SIZE:

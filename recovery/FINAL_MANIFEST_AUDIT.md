@@ -1,7 +1,7 @@
 # Final manifest-driven image audit
 
-Checked UTC: 2026-10-05T13:42:19.508214+00:00.
-Status: **EXISTENCE_AUDIT**.
+Checked UTC: 2026-10-05T13:53:19.801617+00:00.
+Status: **DECODE_AUDIT**.
 
 Frozen ShareGPT4V required paths only; no filesystem directory enumeration, recursive glob, find or os.walk.
 Index SHA256: `0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8`.
@@ -12,13 +12,13 @@ PIL full load and RGB conversion are in memory only; encoded image bytes are nev
 
 | Family | Required | Existence checked | Exists | Missing | Decode checked | Decoded | Corrupt | IO errors | IO retries |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sam | 569486 | 569486 | 569486 | 0 | 0 | 0 | 0 | 0 | 0 |
-| coco | 118287 | 118287 | 118287 | 0 | 0 | 0 | 0 | 0 | 0 |
-| llava | 558128 | 480166 | 480166 | 0 | 0 | 0 | 0 | 0 | 0 |
+| sam | 569486 | 569486 | 569486 | 0 | 54812 | 54812 | 0 | 0 | 0 |
+| coco | 118287 | 118287 | 118287 | 0 | 26935 | 26935 | 0 | 0 | 0 |
+| llava | 558128 | 558128 | 558128 | 0 | 26935 | 26935 | 0 | 0 | 0 |
 
-Required paths total: 1245901; existence checked: 1167939; missing: 0.
-Decoded: 0; corrupt: 0; persistent IO errors: 0; IO retries: 0.
-Elapsed seconds: 973.1.
+Required paths total: 1245901; existence checked: 1245901; missing: 0.
+Decoded: 108682; corrupt: 0; persistent IO errors: 0; IO retries: 0.
+Elapsed seconds: 1633.4.
 
 ## Concurrency benchmarks
 
@@ -28,6 +28,10 @@ Elapsed seconds: 973.1.
 | existence | 16 | 120.0 | 2560.39 | 0.50 | 1.79 | 0 | 0 | True |
 | existence | 32 | 120.0 | 4568.71 | 0.41 | 2.39 | 0 | 0 | True |
 Selected existence workers: 32; choose lowest stable concurrency within5% of peak throughput.
+| decode | 8 | 120.1 | 168.05 | 44.33 | 91.06 | 0 | 0 | True |
+| decode | 16 | 120.1 | 234.44 | 64.47 | 122.14 | 0 | 0 | True |
+| decode | 32 | 120.2 | 270.24 | 112.94 | 207.51 | 0 | 0 | True |
+Selected decode workers: 32; choose lowest stable concurrency within5% of peak throughput.
 
 Full decode starts only after exact-path existence reaches100% with zero missing/persistent IO errors.
 DATA_AUDIT_PASS requires all three exact frozen family counts to exist and decode, zero missing/corrupt/IO failures.
