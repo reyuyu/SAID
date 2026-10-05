@@ -1,23 +1,82 @@
 {
-  "status": "BLOCKED_PREFIX_GATE",
-  "started_at": "2026-10-05T16:11:10.628830+00:00",
-  "supervisor_pid": 39947,
+  "status": "STOPPED_ERROR",
+  "started_at": "2026-10-05T17:33:52.704513+00:00",
+  "supervisor_pid": 46137,
   "branch": "codex/nest-balanced-armb-summary02-4epoch-recovery-v1",
-  "completed_updates": 5,
+  "completed_updates": 33,
   "stop_updates": 4868,
   "formal_training_authorized": false,
   "formal_training_started": true,
   "resume": null,
-  "scheduled_evaluation": "Frozen native five sets after strict step4868 export only",
-  "updated_at": "2026-10-05T16:11:11.615059+00:00",
-  "stage": "full-train4868",
-  "stage_started_at": "2026-10-05T16:11:11.573051+00:00",
-  "active_pid": null,
-  "worker_processes_running": false,
-  "supervisor_process_running": false,
-  "error": "RuntimeError: Unexplained loss drift at update4: 18.690505981445312 vs 18.684776306152344",
-  "reconciled_at": "2026-10-05T16:38:50.780170+00:00",
-  "reconciliation_reason": "Rejected synchronous gate, exact five-row native log, no live training processes; prior TRAINING0 snapshot stale",
-  "evaluation_started": false,
-  "full_result_classification": null
+  "scheduled_evaluation": "Pause at500; native five-set reproduction gate; then conditional4868",
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1",
+  "first_stage_stop": 500,
+  "horizon": 4868,
+  "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
+  "updated_at": "2026-10-05T17:37:27.455745+00:00",
+  "stage": "train500",
+  "stage_started_at": "2026-10-05T17:33:53.674862+00:00",
+  "active_pid": 46186,
+  "latest_loss": 13.200170516967773,
+  "latest_update_seconds": 6.616196662187576,
+  "peak_allocated_gib": 27.759881019592285,
+  "first_five_gate": {
+    "passed": true,
+    "samples": 5120,
+    "exact_sample_ids": true,
+    "exact_FSD_strings_tokens": true,
+    "exact_LR": true,
+    "losses": [
+      60.99950408935547,
+      23.328746795654297,
+      20.395172119140625,
+      18.690505981445312,
+      21.600372314453125
+    ],
+    "cross_run_numeric_comparison": false,
+    "checkpoint": {
+      "passed": true,
+      "optimizer_steps": [
+        5
+      ],
+      "scheduler_horizon": 4868,
+      "cross_run_model_and_moment_comparison": false,
+      "scaler": "Historical BF16; no GradScaler"
+    },
+    "rank_parameter_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ],
+    "gate": "BEFORE_UPDATE6",
+    "stop_updates": 500,
+    "horizon": 4868,
+    "source_sha256": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "ba58e15f20e9e43e8f59e376363f49c052696eb3a8d62e2b14cc517b07f18393",
+      "train/train_nested_semantic_mask.py": "56eaa83f7ee3ea9fa97a754a52288fc61adb28dd41129015ec39b129b82c57e3",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
+    }
+  },
+  "error": "RuntimeError: train500 failed; see /opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_recovery_v1/train500.log",
+  "failed_at": "2026-10-05T17:37:27.455711+00:00"
 }

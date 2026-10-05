@@ -1,6 +1,6 @@
 {
   "passed": true,
-  "checked_at": "2026-10-05T16:11:11.542965+00:00",
+  "checked_at": "2026-10-05T17:33:53.618437+00:00",
   "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
   "resume": null,
   "start_updates": 0,
@@ -95,12 +95,13 @@
     "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
     "tools/nest_clip.py": "defdd3b1d64f2c2be54c6bdda06f8bf7e4a6a908b1c0a8501e09f3e9a40f7540"
   },
-  "runtime_guard_sha256": "dd3b2326aae281ace9b57395c687137ba2c6189f2b831c0fd2165ba98c281235",
-  "supervisor_sha256": "3428306c28cd0ddbd758332a039360b3271ad1fbd215b03b51403cc18d76ca85",
+  "runtime_guard_sha256": "0af106a9a3b223ed56b9e94e36a07d82401340f74fdf0079a2def4e5888cf5f3",
+  "supervisor_sha256": "129938f4c5eb13f1fcdc7124a8504d0e4753cab1a29d705ecc4f7bb1a72bc6ab",
   "data_audit_sha256": "82848ad5eaba0c41c7a8cce46199e750a1b8338cb1f3af177ae56905b981b743",
-  "git_commit": "7af244f17a115cbbd3e1e57c80fcd05737b0da25",
+  "git_commit": "1a7c798c900c7467176fb6fb8dff060651648cd0",
   "resource_monitor_unchanged": true,
   "recursive_data_scan": false,
-  "modifications": "Read-only first-five comparison plus synchronous step5 checkpoint before update6; no model/objective/sampling/LR changes",
-  "normal_tail": "Historical DistributedSampler epoch tail180/rank/global720 retained"
+  "modifications": "Read-only minimal invariant gate; faithful native scheduler/scaler checkpoint metadata; conditional exact resume at500",
+  "normal_tail": "Historical DistributedSampler epoch tail180/rank/global720 retained",
+  "first_stage_stop": 500
 }
