@@ -1,3 +1,5 @@
 # S02 step500 reproduction
 
-PENDING_AT_500. Fresh common step0, horizon4868; no retrieval result claimed. Native resource protection unchanged.
+**RESOURCE_STALL_RECURRED_BEFORE_500**
+
+Step500 was not reached/evaluated. Retrieval reproduction cannot be judged. See RESOURCE_STALL_RECURRENCE.md.

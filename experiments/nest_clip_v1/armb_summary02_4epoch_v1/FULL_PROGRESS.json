@@ -1,11 +1,11 @@
 {
-  "status": "TRAINING",
+  "status": "RESOURCE_STALL_RECURRED_BEFORE_500",
   "started_at": "2026-10-05T21:43:29.966618+00:00",
   "supervisor_pid": 54595,
   "branch": "codex/nest-balanced-armb-summary02-4epoch-recovery-v1",
-  "completed_updates": 14,
+  "completed_updates": 55,
   "stop_updates": 4868,
-  "formal_training_authorized": true,
+  "formal_training_authorized": false,
   "formal_training_started": true,
   "resume": null,
   "scheduled_evaluation": "Pause at500; native five-set reproduction gate; then conditional4868",
@@ -13,13 +13,13 @@
   "first_stage_stop": 500,
   "horizon": 4868,
   "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
-  "updated_at": "2026-10-05T21:45:02.134994+00:00",
+  "updated_at": "2026-10-05T21:47:34.803671+00:00",
   "phase_telemetry": "/tmp/said-s02-full-phase-resource-v2/step500",
   "stage": "train500",
   "stage_started_at": "2026-10-05T21:43:31.078851+00:00",
   "active_pid": 54601,
-  "latest_loss": 15.368927955627441,
-  "latest_update_seconds": 2.0589408725500107,
+  "latest_loss": 13.782869338989258,
+  "latest_update_seconds": 8.30683570355177,
   "peak_allocated_gib": 27.759881019592285,
   "first_five_gate": {
     "passed": true,
@@ -77,5 +77,14 @@
       "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
       "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
     }
+  },
+  "method_failure": false,
+  "automatic_retry": false,
+  "failed_at": "2026-10-05T21:47:34.803656+00:00",
+  "resource_trigger": {
+    "triggered": true,
+    "step": 55,
+    "threshold_seconds": 3,
+    "consecutive_updates": 3
   }
 }
