@@ -1,0 +1,72 @@
+{
+  "status": "CHAIN_OBJECTIVE_VERIFIED",
+  "inclusion_edges": [
+    "Dall->F",
+    "Ds->Dall"
+  ],
+  "detached_child": true,
+  "Ds_to_F_direct_edge": false,
+  "sibling_constraint": false,
+  "orthogonality": false,
+  "union_loss": false,
+  "formula": "0.5*(relu(Dall.detach()-F).mean(-1)+relu(Ds.detach()-Dall).mean(-1))",
+  "sparsity": "(Omega_F+2*Omega_Dall+2*Omega_Ds)/3",
+  "ramp_steps": 200,
+  "max_weight": 1,
+  "last50": {
+    "inc": 0.02100301768630743,
+    "inc_weight": 1.0,
+    "F_Dall_mask_iou": 0.9752176523208618,
+    "Dall_Ds_mask_iou": 0.8865243077278138,
+    "Dall_F_hard_violation": 0.010655472651124001,
+    "Ds_Dall_hard_violation": 0.03916573382914066
+  },
+  "selected_steps": {
+    "1": {
+      "inc": 0.025757474824786186,
+      "inc_weight": 0.0,
+      "F_Dall_mask_iou": 0.8696568608283997,
+      "Dall_Ds_mask_iou": 0.6948280334472656,
+      "Dall_F_hard_violation": 0.03306770324707031,
+      "Ds_Dall_hard_violation": 0.08680534362792969
+    },
+    "100": {
+      "inc": 0.006987981032580137,
+      "inc_weight": 0.495,
+      "F_Dall_mask_iou": 0.9921422004699707,
+      "Dall_Ds_mask_iou": 0.9673035740852356,
+      "Dall_F_hard_violation": 0.0032253265380859375,
+      "Ds_Dall_hard_violation": 0.010540008544921875
+    },
+    "200": {
+      "inc": 0.006760347634553909,
+      "inc_weight": 0.995,
+      "F_Dall_mask_iou": 0.995355486869812,
+      "Dall_Ds_mask_iou": 0.9634624123573303,
+      "Dall_F_hard_violation": 0.00214385986328125,
+      "Ds_Dall_hard_violation": 0.010107040405273438
+    },
+    "500": {
+      "inc": 0.022063516080379486,
+      "inc_weight": 1.0,
+      "F_Dall_mask_iou": 0.9740835428237915,
+      "Dall_Ds_mask_iou": 0.886908769607544,
+      "Dall_F_hard_violation": 0.010944366455078125,
+      "Ds_Dall_hard_violation": 0.03983306884765625
+    }
+  },
+  "note": "Soft inclusion encourages nesting; hard masks need not have zero violation",
+  "delta_vs_nested_low_Ds": {
+    "inc": 0.0030471534468233565,
+    "inc_weight": 0.0,
+    "F_Dall_mask_iou": 0.007839710712432835,
+    "Dall_Ds_mask_iou": 0.10184239268302919,
+    "Dall_F_hard_violation": -0.0005133871175348748,
+    "Ds_Dall_hard_violation": -0.0012584517151117344
+  },
+  "keep_ratio_delta_vs_nested_low_Ds": {
+    "F": 0.035221900939941375,
+    "Dall": 0.040187287330627486,
+    "Ds": 0.12578909516334524
+  }
+}
