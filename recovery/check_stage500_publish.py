@@ -4,6 +4,20 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/nested_detail_d3_balanced_full.py',
+    'recovery/nested_detail_d3_balanced_full_evidence.py',
+    'tests/test_nested_detail_d3_balanced_full.py',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/config.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/CPU_TESTS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/DEBIAS_REFERENCE.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/FULL_RESULTS.md',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/RESULTS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/TRAINING_DIAGNOSTICS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/SAMPLING_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/MASK_HIERARCHY_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/RUNTIME_STATS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/EXPORT_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/VALIDATION.json',
     'recovery/nested_detail_d3_balanced500.py',
     'recovery/nested_detail_d3_balanced_gradients.py',
     'recovery/review_nested_detail_d3_balanced500.py',
