@@ -310,8 +310,8 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'interior_random_k', 'summary_contiguous_detail')
-    if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail'):
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'interior_random_k', 'summary_contiguous_detail')
+    if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
@@ -554,6 +554,7 @@ def main():
                         sampling_mode=cfg['sampling_mode'],
                         local_view_labels=(['Summary', 'Random Detail'] if cfg['sampling_mode']=='summary_random_detail' else
                                            ['Summary', 'Contiguous Detail'] if cfg['sampling_mode']=='summary_contiguous_detail' else
+                                           ['Summary', 'All Detail'] if cfg['sampling_mode']=='summary_all_detail' else
                                            ['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
                                            ['prefix', 'remainder'] if cfg['sampling_mode'] in ('random_k', 'interior_random_k') else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),

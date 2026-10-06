@@ -4,6 +4,11 @@ import re
 import subprocess
 
 ALLOWED = {
+    'train/nested_semantic_data.py', 'tests/test_summary_all_detail.py',
+    'recovery/s02_all_detail500.py', 'recovery/test_all_detail500.py',
+    'recovery/configs/summary02_all_detail500.json',
+    'recovery/ALL_DETAIL500_RESULTS.md', 'recovery/ALL_DETAIL500_RESULTS.json',
+    'recovery/ALL_DETAIL500_DIAGNOSTICS.json', 'recovery/ALL_DETAIL500_RUNTIME_STATS.json',
     'recovery/evaluate_epoch3.py', 'recovery/EPOCH3_RESULTS.md', 'recovery/EPOCH3_RESULTS.json',
     'recovery/s02_local_full.py', 'recovery/test_s02_local_full.py',
     'recovery/full_evidence.py', 'recovery/FULL_RESULTS.md', 'recovery/FULL_RESULTS.json',

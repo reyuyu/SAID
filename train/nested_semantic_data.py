@@ -90,13 +90,13 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     n=0, K=0 marks the overlong-first-segment fallback (no complete visible
     segment count); n=1, K=0 marks a single visible segment.
     """
-    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'interior_random_k', 'summary_contiguous_detail'):
+    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'interior_random_k', 'summary_contiguous_detail'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
                   reference_tokens_o=original['tokens_o'],
                   reference_tokens_e=original['tokens_e'])
-    if sampling_mode in ('summary_random_detail', 'summary_contiguous_detail'):
+    if sampling_mode in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         if not original['valid']:
             padding = torch.zeros_like(original['tokens_f'])
             result.update(tokens_o=padding, tokens_e=padding.clone(), valid=False,
@@ -106,11 +106,15 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                 detail_pool_size=0, detail_indices=[])
             return result
         parts = original['views'][0].split('. ')
-        draw = sample_detail_indices if sampling_mode == 'summary_random_detail' else sample_contiguous_detail_indices
-        indices = draw(len(parts), sampling_seed, epoch, sample_id)
+        if sampling_mode == 'summary_all_detail':
+            # The baseline's visible sentence pool and fallback stay unchanged.
+            indices = list(range(1, len(parts)))
+        else:
+            draw = sample_detail_indices if sampling_mode == 'summary_random_detail' else sample_contiguous_detail_indices
+            indices = draw(len(parts), sampling_seed, epoch, sample_id)
         summary, detail = parts[0], '. '.join(parts[i] for i in indices)
         assert indices and 0 not in indices and indices == sorted(set(indices))
-        assert len(parts)<4 or 2 <= len(indices) < len(parts)-1
+        assert sampling_mode == 'summary_all_detail' or len(parts)<4 or 2 <= len(indices) < len(parts)-1
         lengths = [len(longclip._tokenizer.encode(s))+2 for s in (summary, detail)]
         assert max(lengths)<=248, ('visible subset token overflow', sample_id, lengths)
         local = longclip.tokenize([summary, detail], context_length=248, truncate=False)
@@ -197,10 +201,11 @@ def sampling_diagnostics(batch):
                 prefix_token_lengths=histogram(p_lengths), remainder_token_lengths=histogram(r_lengths),
                 sample_id_sha256=digest(ids),
                 full_view_sha256=digest(dict(sample_ids=ids, F=[v[0] for v in batch['views']], tokens_f=tokens[0])),
+                summary_view_sha256=digest(dict(sample_ids=ids, S=[v[1] for v in batch['views']], tokens_s=tokens[1])),
                 local_views_sha256=digest(dict(sample_ids=ids, PR=[v[1:] for v in batch['views']], tokens_pr=tokens[1:])),
                 split_sha256=digest(dict(sample_ids=ids, n=ns, K=ks)),
                 fixed_first_reference_stream_sha256=digest(reference))
-    if any(reason in ('summary_detail', 'single_raw_segment', 'summary_random_detail', 'summary_contiguous_detail', 'no_visible_detail') for reason in batch['reason']):
+    if any(reason in ('summary_detail', 'single_raw_segment', 'summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail', 'no_visible_detail') for reason in batch['reason']):
         # Metadata only; EOT index counts real token ID0 correctly as content.
         eot = longclip._tokenizer.encoder['<|endoftext|>']
         stats = {}
@@ -212,7 +217,21 @@ def sampling_diagnostics(batch):
                 effective_token_histogram=histogram(effective), before_truncation_token_sum=sum(before),
                 truncated_count=sum(n > 248 for n in before))
         result['Full_Summary_Detail_token_statistics'] = stats
+        pairs = [(tokens[2][i].index(eot)-1, tokens[0][i].index(eot)-1)
+                 for i, enabled in enumerate(valid) if enabled]
+        result['detail_full_token_coverage'] = dict(
+            samples=len(pairs), detail_content_token_sum=sum(d for d, f in pairs),
+            full_content_token_sum=sum(f for d, f in pairs),
+            per_sample_ratio_sum=sum(d/f for d, f in pairs))
     if 'detail_indices' in batch:
+        result['summary_baseline_exact'] = all(
+            batch['views'][i][1] == (batch['reference_views'][i][1] if enabled else None)
+            and tokens[1][i] == (batch['reference_tokens_o'][i].tolist()
+                                  if enabled else [0]*len(tokens[1][i]))
+            for i, enabled in enumerate(valid))
+        result['all_detail_selection_complete'] = all(
+            indices == list(range(1, pool+1))
+            for indices, pool in zip(batch['detail_indices'], batch['detail_pool_size'].tolist()))
         choices = [x for x, enabled in zip(batch['detail_indices'], valid) if enabled]
         pools = [m for m, enabled in zip(batch['detail_pool_size'].tolist(), valid) if enabled]
         result['random_detail_sampling'] = dict(
@@ -258,7 +277,7 @@ class NestedDataset(Dataset):
         self.index_dir, self.image_root = Path(index_dir), Path(image_root)
         self.metadata = json.loads((self.index_dir / 'metadata.json').read_text())
         self.transform = reference_view_a_transform()
-        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'interior_random_k', 'summary_contiguous_detail'):
+        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'interior_random_k', 'summary_contiguous_detail'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
         self._records = self._offsets = self._file = None
