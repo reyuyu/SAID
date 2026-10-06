@@ -567,12 +567,14 @@ class Stage:
         self.phase,self.workers = 'LOCAL_DECODE_AUDIT',16
         def decode(row):
             ordinal,name = row
-            with Image.open(local_path(name)) as im:
-                im.load()
-                rgb = im.convert('RGB')
-                rgb.load()
-                if min(rgb.size)<=0:
-                    raise RuntimeError('Empty local image')
+            with local_path(name).open('rb') as handle:
+                with Image.open(handle) as im:
+                    im.load()
+                    rgb = im.convert('RGB')
+                    rgb.load()
+                    if min(rgb.size)<=0:
+                        raise RuntimeError('Empty local image')
+                advise(handle.fileno())
             return ordinal
         iterator = iter(self.db.execute('SELECT ordinal,relative FROM images WHERE decoded=0 ORDER BY family,parent,relative'))
         with ThreadPoolExecutor(max_workers=16) as pool:
