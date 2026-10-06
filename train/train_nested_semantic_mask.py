@@ -114,6 +114,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
     old = previous['config']
     if current.get('hparam_search',False):
         assert hparams(old)==hparams(current), 'Resume hyperparameters changed'
+        assert old.get('inclusion_hierarchy','siblings') == current.get('inclusion_hierarchy','siblings'), 'Resume inclusion hierarchy changed'
         if not allow_legacy_b0:
             assert old.get('trial_id')==current.get('trial_id'), 'Resume trial identity changed'
     for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
@@ -310,7 +311,9 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'interior_random_k', 'summary_contiguous_detail')
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'interior_random_k', 'summary_contiguous_detail')
+    if cfg['sampling_mode'] == 'nested_detail':
+        assert cfg.get('inclusion_hierarchy') == 'detail_chain' and cfg['view_weights'] == [1.4,1.4,.2]
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
@@ -358,6 +361,8 @@ def main():
     if cfg.get('hparam_search'):
         module_class=BalancedSearch
         model_options['search_hparams']=hparams(cfg)
+        if 'inclusion_hierarchy' in cfg:
+            model_options['inclusion_hierarchy']=cfg['inclusion_hierarchy']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
     module = module_class(clip.float(), arm=cfg['arm'],
@@ -555,6 +560,7 @@ def main():
                         local_view_labels=(['Summary', 'Random Detail'] if cfg['sampling_mode']=='summary_random_detail' else
                                            ['Summary', 'Contiguous Detail'] if cfg['sampling_mode']=='summary_contiguous_detail' else
                                            ['Summary', 'All Detail'] if cfg['sampling_mode']=='summary_all_detail' else
+                                           ['All Detail', 'Atomic Detail'] if cfg['sampling_mode']=='nested_detail' else
                                            ['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
                                            ['prefix', 'remainder'] if cfg['sampling_mode'] in ('random_k', 'interior_random_k') else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),

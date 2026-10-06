@@ -74,6 +74,8 @@ def main():
         if config.get('hparam_search'):
             module_class=BalancedSearch
             model_options['search_hparams']=hparams(config)
+            if 'inclusion_hierarchy' in config:
+                model_options['inclusion_hierarchy']=config['inclusion_hierarchy']
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),

@@ -30,13 +30,21 @@ def trial_id(config):
     return hashlib.sha256(json.dumps(hparams(config),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
+def detail_chain_inclusion(pf, dall, ds):
+    """Only Dall->F and Ds->Dall; each child is detached on its edge."""
+    return .5 * (torch.relu(dall.detach()-pf).mean(-1) +
+                 torch.relu(ds.detach()-dall).mean(-1))
+
+
 class BalancedSearch(NestedFusionMask):
-    def __init__(self, clip, *, search_hparams=None, **options):
+    def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings', **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
         self.summary_t2i_weight = float((search_hparams or {}).get("summary_t2i_weight", 1.))
         assert 0 < self.summary_t2i_weight <= 1.
+        assert inclusion_hierarchy in ('siblings', 'detail_chain')
+        self.inclusion_hierarchy = inclusion_hierarchy
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -67,6 +75,13 @@ class BalancedSearch(NestedFusionMask):
                                        global_z,global_visual,diagnostics,
                                        **({"t2i_weight": t2i_weight} if t2i_weight != 1. else {}))
             logs = values[-1]
+            if self.inclusion_hierarchy == 'detail_chain':
+                # Read-only gate moments on every update, including last50.
+                with torch.no_grad():
+                    g = self.fusion_branch.balanced_gate(visual[1].detach(), condition[1].detach(), paired=True)[enabled]
+                    moments = global_sum(torch.stack((g.sum(), g.square().sum(),
+                        ((g<.05)|(g>.95)).float().sum()))) / (int(enabled_global.sum())*g.shape[-1])
+                    logs.update(g_mean=moments[0],g_variance=moments[1]-moments[0].square(),g_saturation=moments[2])
             if diagnostics:
                 gate=logs['_diagnostic_gate']
                 ut,uv = condition[1].detach(),visual[1].detach()
@@ -91,7 +106,8 @@ class BalancedSearch(NestedFusionMask):
                                               (gate_f-gate_e).abs().mean(-1)[valid].sum(),
                                               (gate_o-gate_e).abs().mean(-1)[valid].sum())))/valid_count
                 logs.update(g_F_P_abs_difference=values[0],g_F_R_abs_difference=values[1],g_P_R_abs_difference=values[2])
-            inc_sum=inclusion(pf,po,pe)[valid].sum()
+            inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
+                     else inclusion(pf,po,pe))[valid].sum()
             wf,wp,wr=hp['view_weights']
             align=(10/3*(af+ao+ae) if hp['view_weights']==[1.,1.,1.] else
                    10/(wf+wp+wr)*(wf*af+wp*ao+wr*ae))
@@ -106,6 +122,17 @@ class BalancedSearch(NestedFusionMask):
             logs.update({'O_'+key:value for key,value in lo.items()})
             logs.update({'E_'+key:value for key,value in le.items()})
             logs.update(inc=extra[0],hard_inclusion_violation=extra[1],oe_iou=extra[2])
+            if self.inclusion_hierarchy == 'detail_chain':
+                with torch.no_grad():
+                    f,o,e = mf.detach(),mo.detach(),me.detach()
+                    fo_iou = (f*o).sum(-1)/((f+o)>0).sum(-1).clamp_min(1)
+                    fo_violation = (o>f).float().mean(-1)
+                    oe_violation = (e>o).float().mean(-1)
+                    chain = global_sum(torch.stack((fo_iou[valid].sum(),fo_violation[valid].sum(),
+                        oe_violation[valid].sum())))/valid_count
+                logs.update(F_Dall_mask_iou=chain[0],Dall_Ds_mask_iou=extra[2],
+                    Dall_F_hard_violation=chain[1],Ds_Dall_hard_violation=chain[2],
+                    hard_inclusion_violation=.5*(chain[1]+chain[2]))
         else:
             loss=10*af+hp['sparsity_scale']*sf
             logs.update(inc=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)

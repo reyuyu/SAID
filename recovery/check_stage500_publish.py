@@ -4,6 +4,18 @@ import re
 import subprocess
 
 ALLOWED = {
+    'model/balanced_hparam_search.py','tools/nest_clip.py','tests/test_nested_detail.py',
+    'recovery/nested_detail500.py','recovery/nested_detail_gradients.py','recovery/test_nested_detail500.py',
+    'recovery/review_nested_detail500.py',
+    'experiments/nest_clip_v1/nested_detail_500_v1/config.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/REPORT.md',
+    'experiments/nest_clip_v1/nested_detail_500_v1/RESULTS.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/TRAINING_DIAGNOSTICS.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/SAMPLING_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/MASK_HIERARCHY_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/GRADIENT_SPOTCHECK.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/RUNTIME_STATS.json',
+    'experiments/nest_clip_v1/nested_detail_500_v1/VALIDATION.json',
     'recovery/review_all_detail500.py',
     'train/nested_semantic_data.py', 'tests/test_summary_all_detail.py',
     'recovery/s02_all_detail500.py', 'recovery/test_all_detail500.py',
