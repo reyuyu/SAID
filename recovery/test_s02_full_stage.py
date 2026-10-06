@@ -79,6 +79,10 @@ def test_local_resolver_rejects_NFS_symlink_and_traversal(tmp_path):
     for name in ['../coco/a.jpg','/coco/a.jpg','sam/images/a.jpg']:
         with pytest.raises((RuntimeError,ValueError)):
             stage.local_path(name,root)
+    alias=tmp_path/'cache_alias'
+    alias.symlink_to(external)
+    with pytest.raises(RuntimeError,match='root itself'):
+        stage.local_path('coco/train2017/a.jpg',alias)
 
 
 def test_worker_selection_prefers_lower_when_gain_under15percent():

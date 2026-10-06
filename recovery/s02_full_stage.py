@@ -70,6 +70,8 @@ def relative(name):
 
 
 def local_path(name, root=IMAGES):
+    if Path(root).resolve()!=Path(root).absolute():
+        raise RuntimeError('Local cache root itself redirects through a symlink')
     p = Path(root) / relative(name)
     if not p.parent.resolve().is_relative_to(Path(root).resolve()) or p.is_symlink():
         raise RuntimeError('Local path symlink/escape; no NFS fallback')

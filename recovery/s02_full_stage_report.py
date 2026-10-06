@@ -94,6 +94,10 @@ def finalize():
             artifacts.append(dict(path=str(path),bytes=path.stat().st_size,sha256=sha(path),
                 time_range_utc=[result.get('copy',{}).get('started_utc',result['prepared_utc']),result.get('finished_utc',now())],
                 uploaded=False))
+            artifacts[-1]['time_scope']='Associated copy/validation run; not an inference from filesystem mtimes'
+            if path.name=='required_training_images.jsonl':
+                artifacts[-1]['time_range_utc']=[None,result['prepared_utc']]
+                artifacts[-1]['time_scope']='Byte-exact reconstruction finished before preflight; precise start was not separately logged'
     for path in (OLD_LEDGER,DB):
         if path.exists():
             artifacts.append(dict(path=str(path),bytes=path.stat().st_size,sha256=sha(path),uploaded=False))
@@ -121,6 +125,14 @@ def finalize():
     dump(RESULT,result)
     dump(ROOT/'recovery/S02_LOCAL_FULL_RESOURCE_SUMMARY.json',summary)
     copy=result.get('copy',{})
+    copy_seconds=sum(b['elapsed_s'] for b in copy.get('benchmarks',[]))+copy.get('sustained_copy',{}).get('elapsed_s',0)
+    if 'sustained_copy' not in copy:
+        copy_seconds=copy.get('elapsed_s',copy_seconds)
+    result['copy_elapsed_s']=copy_seconds
+    result['copy_mean_MiB_s']=copy.get('newly_copied_bytes',0)/max(copy_seconds,.001)/2**20
+    result['validation_elapsed_s']=max(0,copy.get('elapsed_s',0)-copy_seconds)
+    result['elapsed_scope']='Copy benchmarks + sustained copy + validation; preflight reconstruction/inventory time is separate'
+    dump(RESULT,result)
     lines=['# S=0.2 full local training cache','',f"Status: `{result['status']}`. Training started: false.",'',
         f'Local images: `{IMAGES}`. Ephemeral Docker overlay; the user explicitly accepts cache loss after pod rebuild.',
         f'NFS source of truth: `{result["source_of_truth"]}`. Original images remain intact. Never treat `/root` as the only copy.',
@@ -129,6 +141,7 @@ def finalize():
         f"Payload: {result['total_bytes']} bytes = {result['total_GB']:.6f} GB = {result['total_GiB']:.6f} GiB. Earlier568 referred to GiB, not decimalGB.",
         f"Initial verified local images: {result['local_existing_images']} ({result['local_existing_bytes']} bytes). Exact initial missing: {result['remaining_images']} / {result['remaining_bytes']} bytes.",
         f"Reused old images: {result.get('reused_old_files')}; newly copied: {result.get('newly_copied_files')}; elapsed seconds: {copy.get('elapsed_s')}.",
+        f"Copy elapsed seconds / mean MiB/s: {copy_seconds:.3f} / {result['copy_mean_MiB_s']:.3f}. Validation elapsed seconds: {result['validation_elapsed_s']:.3f}. Preflight time is separate.",
         'Queue: family COCO/LLaVA/SAM, source parent, filename. Each new file has one streamed NFS read with SHA256, preserved partial prefix, atomic rename; destination filesystem flush and persistent ledger fsync are batched every2000 files.', '',
         '| Workers | Duration s | MiB/s | Files/s | Files | Healthy |', '|---:|---:|---:|---:|---:|---|']
     for b in copy.get('benchmarks',[]):
