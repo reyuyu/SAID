@@ -313,7 +313,8 @@ def main():
     cfg.setdefault('save_initial_checkpoint', True)
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'interior_random_k', 'summary_contiguous_detail')
     if cfg['sampling_mode'] == 'nested_detail':
-        assert cfg.get('inclusion_hierarchy') == 'detail_chain' and cfg['view_weights'] == [1.4,1.4,.2]
+        assert cfg.get('inclusion_hierarchy') == 'detail_chain'
+        assert cfg['view_weights'] in ([1.4,1.4,.2], [1.,1.,1.]), 'Only reviewed Nested Detail weights are authorized'
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
