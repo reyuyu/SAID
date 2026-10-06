@@ -56,7 +56,8 @@ class LoggedLocalDataset(FullLocalDataset):
         if self._proofs<4:
             record=dict(event='LOCAL_ONLY_IMAGE_READ',rank=int(os.environ['RANK']),worker_pid=os.getpid(),
                 sample_id=value['sample_id'],actual_path=str(path),image_root=str(IMAGES),NFS_fallback=False)
-            with (PHASE/f'image-paths-rank{os.environ["RANK"]}-pid{os.getpid()}.jsonl').open('a') as stream:
+            worker_phase = Path(os.environ['SAID_S02_PHASE_LOCAL'])
+            with (worker_phase/f'image-paths-rank{os.environ["RANK"]}-pid{os.getpid()}.jsonl').open('a') as stream:
                 stream.write(json.dumps(record)+'\n')
             print(json.dumps(record),flush=True)
             self._proofs+=1

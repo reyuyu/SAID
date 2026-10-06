@@ -31,3 +31,12 @@ def test_diagnostics_weights_and_token_coverage():
     assert result['last50_views']['D']['weighted_alignment_contribution']==pytest.approx(14)
     assert result['D_mean_sentences']==3 and result['D_mean_content_tokens']==10
     assert result['D_F_content_token_coverage_pooled']==.5
+
+
+@pytest.mark.parametrize('raw,expected', [
+    (.8899999856948853, 'URBAN_STRONG_POSITIVE'),
+    (.8849999904632568, 'URBAN_POSITIVE'),
+])
+def test_native_float32_urban_threshold_representation(raw,expected):
+    result=classify(dict(Score5=71,J_long3=74),{'Urban-1k':{'T2I':{'R@1':raw}}})
+    assert result['status']==expected

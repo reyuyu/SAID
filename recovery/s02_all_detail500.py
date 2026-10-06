@@ -76,14 +76,19 @@ def checkpoint_invariants(current, reference):
 
 
 def classify(percent, metrics):
-    urban = metrics['Urban-1k']['T2I']['R@1'] * 100
+    raw_urban = metrics['Urban-1k']['T2I']['R@1'] * 100
+    # Canonical Urban has1000 captions: classify integer hits, avoiding a
+    # float32 representation of89.0 falling just below the requested89.0 gate.
+    urban = round(raw_urban * 10) / 10
+    assert abs(urban-raw_urban) < .0001, 'Urban R1 is not a canonical1000-item recall'
     guard = percent['J_long3'] >= 73.403324
     strong = urban >= 89 and percent['Score5'] >= 70.264367 and guard
     positive = urban >= 88.5 and percent['Score5'] >= 70.164367 and guard
     # Between baseline and the positive threshold: retain the result, no new run.
     status = 'URBAN_STRONG_POSITIVE' if strong else 'URBAN_POSITIVE' if positive else (
         'NEGATIVE' if urban <= 88 or percent['Score5'] < 70.164367 or not guard else 'INCONCLUSIVE')
-    return dict(status=status, Urban_T2I_percent=urban, strong_positive=strong, positive=positive,
+    return dict(status=status, Urban_T2I_percent=urban, Urban_T2I_raw_float32_percent=raw_urban,
+                Urban_T2I_hits=round(urban*10), strong_positive=strong, positive=positive,
                 thresholds=dict(Urban_T2I_positive=88.5, Urban_T2I_strong=89,
                     Score5_positive=70.164367, Score5_strong=70.264367, J_long3_min=73.403324),
                 automatic_continuation=False, automatic_new_experiments=False)

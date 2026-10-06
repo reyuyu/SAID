@@ -1,0 +1,151 @@
+{
+  "last50_steps": [
+    451,
+    452,
+    453,
+    454,
+    455,
+    456,
+    457,
+    458,
+    459,
+    460,
+    461,
+    462,
+    463,
+    464,
+    465,
+    466,
+    467,
+    468,
+    469,
+    470,
+    471,
+    472,
+    473,
+    474,
+    475,
+    476,
+    477,
+    478,
+    479,
+    480,
+    481,
+    482,
+    483,
+    484,
+    485,
+    486,
+    487,
+    488,
+    489,
+    490,
+    491,
+    492,
+    493,
+    494,
+    495,
+    496,
+    497,
+    498,
+    499,
+    500
+  ],
+  "last50_views": {
+    "F": {
+      "CE_I2T": 0.048398474082350734,
+      "CE_T2I": 0.058023739829659464,
+      "CE_directional_mean": 0.0532111069560051,
+      "weighted_alignment_contribution": 0.4966369982560477,
+      "keep_ratio": 0.8596797943115234,
+      "positive_keep_ratio": 0.8596797943115234
+    },
+    "S": {
+      "CE_I2T": 0.8513046383857727,
+      "CE_T2I": 1.0219584858417512,
+      "CE_directional_mean": 0.936631562113762,
+      "weighted_alignment_contribution": 1.2488420828183495,
+      "keep_ratio": 0.7136885058879853,
+      "positive_keep_ratio": 0.7136885058879853
+    },
+    "D": {
+      "CE_I2T": 0.09969160914421081,
+      "CE_T2I": 0.11475747630000115,
+      "CE_directional_mean": 0.10722454272210598,
+      "weighted_alignment_contribution": 1.000762398739656,
+      "keep_ratio": 0.8454737973213196,
+      "positive_keep_ratio": 0.8454737973213196
+    }
+  },
+  "weighted_formula": "10/sum(weights) * weight * (CE_I2T+CE_T2I); sum(weights)=3",
+  "last50_inc": 0.013976992629468441,
+  "last50_inc_weight": 1.0,
+  "last50_oe_iou": 0.767772307395935,
+  "last50_hard_inclusion_violation": 0.020694508329033853,
+  "last50_loss": 4.086219868659973,
+  "F_D_mask_IoU_diagnostic_steps": [
+    {
+      "step": 1,
+      "F_keep_ratio": 0.4664592742919922,
+      "O_keep_ratio": 0.4677619934082031,
+      "E_keep_ratio": 0.4672508239746094,
+      "E_F_D_positive_mask_iou": 0.8696568608283997
+    },
+    {
+      "step": 100,
+      "F_keep_ratio": 0.9382610321044922,
+      "O_keep_ratio": 0.9085617065429688,
+      "E_keep_ratio": 0.9388027191162109,
+      "E_F_D_positive_mask_iou": 0.9829428195953369
+    },
+    {
+      "step": 200,
+      "F_keep_ratio": 0.9190616607666016,
+      "O_keep_ratio": 0.8473300933837891,
+      "E_keep_ratio": 0.9156951904296875,
+      "E_F_D_positive_mask_iou": 0.9703890085220337
+    },
+    {
+      "step": 500,
+      "F_keep_ratio": 0.8529701232910156,
+      "O_keep_ratio": 0.7140140533447266,
+      "E_keep_ratio": 0.8369312286376953,
+      "E_F_D_positive_mask_iou": 0.9408870339393616
+    }
+  ],
+  "valid_detail_samples": 511936,
+  "D_mean_sentences": 7.0531414083010375,
+  "D_mean_effective_tokens_including_SOT_EOT": 153.89054100512564,
+  "D_mean_content_tokens": 151.89054100512564,
+  "D_F_content_token_coverage_pooled": 0.8962725006846681,
+  "D_F_content_token_coverage_mean_per_sample": 0.8883068352970271,
+  "token_coverage_definition": "Effective EOT-delimited token lengths excluding SOT/EOT; same valid samples only",
+  "F_D_native_text_cosine": {
+    "computed": false,
+    "reason": "No existing F-D text-cosine observer; optional metric omitted"
+  },
+  "last50_loss_reconstruction": {
+    "weighted_alignment": 2.746241479814053,
+    "sparsity": 1.3260014669100442,
+    "weighted_inclusion": 0.013976992629468441,
+    "actual_loss": 4.086219868659973,
+    "residual": -7.0693592367152e-08,
+    "passed": true
+  },
+  "current_RandomDetail_baseline": {
+    "valid_detail_samples": 511936,
+    "D_mean_sentences": 4.0276831478934865,
+    "D_mean_effective_tokens_including_SOT_EOT": 88.42585987310913,
+    "last50_views": {
+      "F": {
+        "CE_directional_mean": 0.056425557546317576
+      },
+      "S": {
+        "CE_directional_mean": 0.9126055777072907
+      },
+      "D": {
+        "CE_directional_mean": 0.4704356130957603
+      }
+    }
+  }
+}

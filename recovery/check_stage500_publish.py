@@ -4,6 +4,7 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/review_all_detail500.py',
     'train/nested_semantic_data.py', 'tests/test_summary_all_detail.py',
     'recovery/s02_all_detail500.py', 'recovery/test_all_detail500.py',
     'recovery/configs/summary02_all_detail500.json',

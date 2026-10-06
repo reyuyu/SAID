@@ -1,0 +1,759 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6078,
+        "R@5": 0.8264,
+        "R@10": 0.8912
+      },
+      "T2I": {
+        "R@1": 0.4158,
+        "R@5": 0.67156,
+        "R@10": 0.76956
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9100000262260437,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9980000257492065
+      },
+      "T2I": {
+        "R@1": 0.8810000419616699,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.877,
+        "R@5": 0.975,
+        "R@10": 0.993
+      },
+      "T2I": {
+        "R@1": 0.7118,
+        "R@5": 0.9138,
+        "R@10": 0.95
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7738,
+        "R@5": 0.9528,
+        "R@10": 0.9816
+      },
+      "T2I": {
+        "R@1": 0.7702,
+        "R@5": 0.9482,
+        "R@10": 0.9778
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5645882662457248,
+        "R@5": 0.7486187845303868,
+        "R@10": 0.8093922651933702
+      },
+      "T2I": {
+        "R@1": 0.5564325177584846,
+        "R@5": 0.7519073927913706,
+        "R@10": 0.8107077084977637
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7068420852191923,
+    "J_long3": 0.7426701420319871,
+    "J_long": 0.8337500170469284,
+    "Short4_R1": 0.6531
+  },
+  "scores_percent": {
+    "Score5_R1": 70.68420852191923,
+    "J_long3": 74.26701420319871,
+    "J_long": 83.37500170469283,
+    "Short4_R1": 65.31,
+    "Score5": 70.68420852191923,
+    "Short4": 65.31
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "a55820de3eb43e7409af72fced8ec568c21e88b8929014a62c81ef83cef2de92",
+    "bare_sha256": "f5af960e770d418c664956088f480b499f2445afcd40ee7cdd8c321927803285"
+  },
+  "checkpoint_sha256": "a55820de3eb43e7409af72fced8ec568c21e88b8929014a62c81ef83cef2de92",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T15:29:34.924812+00:00",
+  "urban_gate": {
+    "status": "INCONCLUSIVE",
+    "Urban_T2I_percent": 88.1,
+    "Urban_T2I_raw_float32_percent": 88.10000419616699,
+    "Urban_T2I_hits": 881,
+    "strong_positive": false,
+    "positive": false,
+    "thresholds": {
+      "Urban_T2I_positive": 88.5,
+      "Urban_T2I_strong": 89,
+      "Score5_positive": 70.164367,
+      "Score5_strong": 70.264367,
+      "J_long3_min": 73.403324
+    },
+    "automatic_continuation": false,
+    "automatic_new_experiments": false
+  },
+  "status": "INCONCLUSIVE",
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/step000500.pt",
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "first_five_gate": {
+    "passed": true,
+    "samples": 5120,
+    "exact_sample_ids": true,
+    "exact_F_S_strings_tokens": true,
+    "D_only_change": true,
+    "all_detail_ordered_complete": true,
+    "exact_LR": true,
+    "cross_run_numeric_comparison": false,
+    "baseline": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500",
+    "checkpoint": {
+      "passed": true,
+      "optimizer_steps": [
+        5
+      ],
+      "horizon": 4868,
+      "common_step0": true,
+      "frozen_config_except_sampling_mode": true,
+      "construction_exact": true,
+      "optimizer_groups_order_exact": true,
+      "finite_states": true,
+      "authorized_source_changes": [
+        "train/nested_semantic_data.py",
+        "train/train_nested_semantic_mask.py"
+      ],
+      "cross_run_numeric_comparison": false
+    },
+    "rank_parameter_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ],
+    "gate": "BEFORE_UPDATE6",
+    "stop_updates": 500,
+    "horizon": 4868,
+    "source_sha256": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "21bf7cbf99d7c0025e75fa463eb833f925919e1c0622ff05425006c5dfeef06c",
+      "train/train_nested_semantic_mask.py": "df3dfcf15dcef94f9b25288f6932c6cc9fdf487b35d486d55fbe75b49a611d82",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
+    }
+  },
+  "stream_proof": {
+    "passed": true,
+    "records_checked": 512000,
+    "all500_sample_ids_F_S_exact": true,
+    "first5_gate": "Before update6",
+    "D_only_change": true,
+    "changed_rank_batches": 2000,
+    "baseline_steps_sha256": "389af885e4384433f273e9437c4b8c24da7179e5dbe23b6430b2e36293fffaaf",
+    "baseline_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500",
+    "summary_proof": "Every valid Summary string/token equals unchanged fixed-first reference; same fallback",
+    "D_proof": "Every batch selects ordered range(1,detail_pool_size+1)"
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-06T14:52:19.957347+00:00",
+    "supervisor_pid": 34452,
+    "git_head": "6d5b8fb9b9d6113903842c43ba4b476e103941df",
+    "source_sha256": {
+      "recovery/s02_all_detail500.py": "77b3b0db2e091e2b28df1c359afaf2ef9bafc74b383962d725dbb8bca5d7caae",
+      "recovery/configs/summary02_all_detail500.json": "f1fc4bd825d33c9a88499a0fb2c8171aaebd177996cbc2b4e42377a20c2b6c04",
+      "train/nested_semantic_data.py": "21bf7cbf99d7c0025e75fa463eb833f925919e1c0622ff05425006c5dfeef06c",
+      "train/train_nested_semantic_mask.py": "df3dfcf15dcef94f9b25288f6932c6cc9fdf487b35d486d55fbe75b49a611d82",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "recovery/s02_local500.py": "8a68cba345075bce131c0d4839b02902293780f2e3badddc64d531ffaac23cd5",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3"
+    },
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index": "/root/said_s02_stage500/data_index",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "resume": null,
+    "initial_resources": {
+      "timestamp_utc": "2026-10-06T14:52:25.236131+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 501325373440,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 495196434432,
+        "rss": 1910640640,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 119623680,
+        "dirty": 0,
+        "writeback": 1486848,
+        "pgpgin": 3082368960,
+        "pgpgout": 2961002706,
+        "pgfault": 5035612296,
+        "pgmajfault": 41349,
+        "inactive_anon": 946176,
+        "active_anon": 1910734848,
+        "inactive_file": 11730939904,
+        "active_file": 483459002368,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 495196434432,
+        "total_rss": 1910640640,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 119623680,
+        "total_dirty": 0,
+        "total_writeback": 1486848,
+        "total_pgpgin": 3082368960,
+        "total_pgpgout": 2961002706,
+        "total_pgfault": 5035612296,
+        "total_pgmajfault": 41349,
+        "total_inactive_anon": 946176,
+        "total_active_anon": 1910734848,
+        "total_inactive_file": 11730939904,
+        "total_active_file": 483459002368,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 54374582
+      },
+      "file": 495196434432,
+      "inactive_file": 11730939904,
+      "active_file": 483459002368,
+      "anon": 1910640640,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 443115,
+        "nr_throttled": 3,
+        "throttled_time": 797366108
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27412942794
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22043132800
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 1.16,
+          "avg60": 0.27,
+          "avg300": 0.12,
+          "total": 487094942044
+        },
+        "full": {
+          "avg10": 1.16,
+          "avg60": 0.27,
+          "avg300": 0.12,
+          "total": 481741299929
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "sole_config_change": {
+      "sampling_mode": [
+        "summary_random_detail",
+        "summary_all_detail"
+      ]
+    },
+    "D_definition": "Ordered all non-summary sentences in unchanged baseline visible F pool",
+    "disposable_cache": "Ephemeral Docker overlay; persistent NFS originals retained",
+    "automatic_retry": false
+  },
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1159.976021885872,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1159.9208753407001,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1159.9624817669392,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1159.9259897470474,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "automatic_continuation": false,
+  "automatic_new_experiments": false,
+  "preserved_implementation_failure": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006",
+    "stage": "First update completed; failed before writing its diagnostic row",
+    "reason": "Diagnostic torch.equal compared CUDA tokens against CPU reference",
+    "correction": "Compare already-CPU token lists; no model/objective/optimizer changes",
+    "resumed": false,
+    "new_run_fresh_common_step0": true,
+    "raw_log_sha256": "c5c43a0e295256170918b7f4a69d285a28f3c94dc9e204365232f9bdb9113bba",
+    "raw_log_bytes": 53611,
+    "uploaded": false
+  },
+  "delta_vs_historical_S02_pp": {
+    "Score5": 0.3198415219192299,
+    "J_long3": 0.5404032031987072,
+    "J_long": 0.6099997046928394,
+    "Short4": -0.01099999999999568
+  },
+  "delta_vs_current_local_S02_pp": {
+    "Score5": 0.28715420893047394,
+    "J_long3": 0.42859034821744046,
+    "J_long": 0.6099994397163471,
+    "Short4": 0.07500000000000284
+  },
+  "dataset_R1_delta_vs_current_local_S02_pp": {
+    "COCO": {
+      "I2T": 0.10000000000000009,
+      "T2I": -0.31999999999999806
+    },
+    "Urban-1k": {
+      "I2T": 1.1999964714050293,
+      "T2I": -0.09999871253967285
+    },
+    "Flickr30k-test1k": {
+      "I2T": 0.9000000000000008,
+      "T2I": -0.38000000000000256
+    },
+    "DOCCI": {
+      "I2T": 1.0800000000000032,
+      "T2I": 0.26000000000000467
+    },
+    "Long-DCI": {
+      "I2T": 1.5390686661404862,
+      "T2I": -1.407524335701138
+    }
+  },
+  "historical_Urban_R1_delta_pp": {
+    "I2T": 0.9000026226043758,
+    "T2I": 0.10000419616699219
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "checkpoint_sha256": "f5af960e770d418c664956088f480b499f2445afcd40ee7cdd8c321927803285",
+      "native_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/coco_native.json",
+      "result_sha256": "b174b9f6634b992b36bb7ab6925ada49a112c211ef61964d79043f06464ca777"
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "checkpoint_sha256": "f5af960e770d418c664956088f480b499f2445afcd40ee7cdd8c321927803285",
+      "native_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/urban_native.json",
+      "result_sha256": "80aedfaa87e0036c0da10b74c58d0e244c3db14386c0bd40aec90ab7b0b5c020"
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "checkpoint_sha256": "f5af960e770d418c664956088f480b499f2445afcd40ee7cdd8c321927803285",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/flickr_test1k/flickr_test1k.json",
+      "result_sha256": "4282f4b0e21448fe4c8b1be9a1e6786f573e20c72260843ef61d5f075b7f40d6"
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "checkpoint_sha256": "f5af960e770d418c664956088f480b499f2445afcd40ee7cdd8c321927803285",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/docci/docci.json",
+      "result_sha256": "4e415910e4c3cd4b8d9e0c5a78869f8780a27613dfae5a549ec2931d8744ba65"
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "checkpoint_sha256": "f5af960e770d418c664956088f480b499f2445afcd40ee7cdd8c321927803285",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/long_dci/long_dci.json",
+      "result_sha256": "75570ac3574f3d2541de7e56b001efd8004b5819c1d875e39cf132f12e211d48"
+    }
+  },
+  "full_checkpoint_proof": {
+    "passed": true,
+    "size_bytes": 1884188154,
+    "completed_steps": 500,
+    "scheduler_horizon": 4868,
+    "scheduler": {
+      "type": "native_manual_learning_rate_function",
+      "horizon": 4868,
+      "completed_steps": 500,
+      "last_update_index": 499,
+      "optimizer_lrs": {
+        "backbone": 9.899108530188312e-07,
+        "text_mask_and_shared_pool": 0.0009742970336195614,
+        "visual_mask": 0.0009742970336195614,
+        "fusion_adapter": 0.00019485940672391228
+      }
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "data_cursor": {
+      "next_epoch": 0,
+      "next_batch": 500
+    },
+    "rng_ranks": 4,
+    "optimizer_counters": [
+      500
+    ],
+    "model_adapter_optimizer_present": true,
+    "uploaded": false
+  },
+  "prelaunch_local_only_proof": {
+    "passed": true,
+    "count": 5000,
+    "seed": 0,
+    "epoch": 0,
+    "all_local": true,
+    "NFS_fallback": false,
+    "selection": "Random positions in frozen steps1..500,1250 per rank",
+    "training_RNG_untouched": true
+  },
+  "classification_note": "Urban T2I gate uses integer correct-caption count/1000; raw float32 retained. INCONCLUSIVE is the gap between historical baseline and positive threshold without a guard failure.",
+  "dataset_R1_delta_vs_historical_S02_pp": {
+    "COCO": {
+      "I2T": 0.5399999999999991,
+      "T2I": -0.2640000000000029
+    },
+    "Urban-1k": {
+      "I2T": 0.9000026226043758,
+      "T2I": 0.10000419616699219
+    },
+    "Flickr30k-test1k": {
+      "I2T": 0.20000000000000284,
+      "T2I": -0.5200000000000102
+    },
+    "DOCCI": {
+      "I2T": 0.8400000000000034,
+      "T2I": 0.5999999999999943
+    },
+    "Long-DCI": {
+      "I2T": 1.7495396245724777,
+      "T2I": -0.9471192241515425
+    }
+  },
+  "historical_R1_reference_percent": {
+    "COCO": [
+      60.24,
+      41.844
+    ],
+    "Urban-1k": [
+      90.1,
+      88.0
+    ],
+    "Flickr30k-test1k": [
+      87.5,
+      71.7
+    ],
+    "DOCCI": [
+      76.54,
+      76.42
+    ],
+    "Long-DCI": [
+      54.709287,
+      56.590371
+    ]
+  },
+  "launch_code_snapshot": {
+    "commit": "b45fa7cd8879dd4da39637526547eda18caf35f3",
+    "all_source_SHA256_matched": true,
+    "snapshot_committed_during_training": true,
+    "post_training_changes": "Only spawn-safe diagnostic log routing and integer Urban decision precision; training data/model/loss/optimizer frozen"
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.s02_all_detail500",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/recovery/configs/summary02_all_detail500.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-06T14:52:25.246458+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/train500.log",
+      "ended_utc": "2026-10-06T15:12:06.984386+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-06T15:12:12.690083+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/export500.log",
+      "ended_utc": "2026-10-06T15:12:35.831175+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-06T15:12:35.847254+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/verify500.log",
+      "ended_utc": "2026-10-06T15:12:53.912144+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-coco",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/coco_native.json"
+      ],
+      "started_utc": "2026-10-06T15:12:53.926608+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/eval500-coco.log",
+      "ended_utc": "2026-10-06T15:15:06.262246+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-urban",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/urban_native.json"
+      ],
+      "started_utc": "2026-10-06T15:15:06.276795+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/eval500-urban.log",
+      "ended_utc": "2026-10-06T15:15:36.358955+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-flickr_test1k",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/flickr_test1k",
+        "flickr_test1k:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-10-06T15:15:36.372900+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/eval500-flickr_test1k.log",
+      "ended_utc": "2026-10-06T15:16:05.452307+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-docci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/docci",
+        "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-10-06T15:16:05.467817+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/eval500-docci.log",
+      "ended_utc": "2026-10-06T15:21:06.162083+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-long_dci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/step500/long_dci",
+        "long_dci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-10-06T15:21:06.181575+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-all-detail500-20261006-r2/eval500-long_dci.log",
+      "ended_utc": "2026-10-06T15:29:32.302817+00:00",
+      "returncode": 0
+    }
+  ],
+  "diagnostic_log_relocation": {
+    "from_directory": "/root/said_s02_stage500/formal-local500-phase-20261006",
+    "to_directory": "/root/said_s02_stage500/formal-all-detail500-phase-20261006-r2",
+    "files": 32,
+    "local_read_records": 128,
+    "scope": "Only worker PIDs observed in this run; after worker exit",
+    "reason": "Spawn imports base module globals anew; future logger now reads the per-run environment path"
+  },
+  "CPU_unit_validation": {
+    "command": ".venv/bin/python -m pytest -q tests/test_summary_all_detail.py tests/test_summary_random_detail.py tests/test_summary_detail.py recovery/test_all_detail500.py recovery/test_local500_policy.py",
+    "scope": "CPU invariants and one small CUDA-token/CPU-reference telemetry regression; no training in tests",
+    "result": "46 passed"
+  },
+  "reviewed_at": "2026-10-06T15:30:24.030273+00:00"
+}
