@@ -35,3 +35,7 @@ Error: None
 Final CPU/unit verification before publication:24 passed,0 failed. Command: `.venv/bin/python -m pytest -q recovery/test_s02_local_full.py recovery/test_local500_policy.py recovery/test_s02_full_stage.py recovery/test_nfs500_policy.py`.
 
 Long-DCI alone loses1.157590pp I2T and0.276243pp T2I relative to RandomK. The aggregate long guard still passes; FULL_POSITIVE uses the user's fixed Score5/J_long3 conditions.
+
+GitHub branch: `recovery/s02-local-full-training`. Evidence commit `7bc1ddaf3f79fca56e2dbfafa46430a5a9aa5103` pushed successfully, fetched remote HEAD equal, verified UTC2026-10-06T14:01:29Z. Sync receipt: `FULL_GITHUB_RECEIPT.json`; receipt commit is also pushed/fetched and compared before final handoff.
+
+Local assets excluded from Git: full `/root` training mirror and phase logs; persistent runtime complete checkpoints, bare students and raw logs; `local_assets` training/evaluation data; full staging hash ledgers under `recovery/evidence/s02-local-full-data-local`. Raw log path/size/SHA/UTC inventory remains in `FULL_RUNTIME_STATS.json`.
