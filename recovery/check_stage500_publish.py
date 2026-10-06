@@ -4,6 +4,9 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/s02_local500.py', 'recovery/local500_policy.py', 'recovery/test_local500_policy.py',
+    'recovery/configs/summary02_local500.json', 'recovery/STEP500_LOCAL_REPRODUCTION.md',
+    'recovery/LOCAL_RUNTIME_STATS.json', 'recovery/LOCAL_PER_STEP_SUMMARY.json',
     'recovery/s02_full_stage_report.py',
     'recovery/s02_full_stage.py', 'recovery/s02_full_local_data.py',
     'recovery/test_s02_full_stage.py', 'recovery/configs/s02_local_full_paths.json',
