@@ -4,6 +4,10 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/s02_local_full.py', 'recovery/test_s02_local_full.py',
+    'recovery/full_evidence.py', 'recovery/FULL_RESULTS.md', 'recovery/FULL_RESULTS.json',
+    'recovery/FULL_RUNTIME_STATS.json', 'recovery/RESUME_PROVENANCE.json',
+    'recovery/FULL_DIAGNOSTICS.json', 'recovery/FULL_GITHUB_RECEIPT.json',
     'recovery/s02_local500.py', 'recovery/local500_policy.py', 'recovery/test_local500_policy.py',
     'recovery/local500_evidence.py',
     'recovery/configs/summary02_local500.json', 'recovery/STEP500_LOCAL_REPRODUCTION.md',
