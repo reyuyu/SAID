@@ -1,6 +1,7 @@
 {
-  "status": "LOCAL_SSD_COPY_IN_PROGRESS",
-  "started_at": "2026-10-05T23:47:22.927700+00:00",
+  "status": "EVALUATING",
+  "started_at": "2026-10-06T00:11:29.379211+00:00",
+  "supervisor_pid": 59920,
   "branch": "codex/nest-balanced-armb-summary02-4epoch-recovery-v1",
   "completed_updates": 0,
   "stop_updates": 4868,
@@ -12,26 +13,9 @@
   "first_stage_stop": 500,
   "horizon": 4868,
   "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
-  "training_process_running": false,
-  "active_pid": 58690,
-  "stage": "Copy only first500 required images; verifySHA before fresh training",
-  "previous_trajectory_stopped_at55": true,
-  "local_copy_progress": {
-    "status": "COPYING",
-    "checked": 117760,
-    "total": 512000,
-    "copied": 104245,
-    "families": {
-      "sam": 117760
-    },
-    "source_destination_SHA256_matches": 117760,
-    "payload_bytes": 116614333530,
-    "newly_written_bytes": 103279278576,
-    "elapsed_s": 992.4562708064914,
-    "average_payload_MiB_s": 112.05742568588926,
-    "workers": 16,
-    "source_read": "NFS O_DIRECT; empirically byte-verified",
-    "global_drop_caches": false,
-    "private_local_cache_advice": "fsync + file-scoped DONTNEED on our new mirror only; no source-cache advice"
-  }
+  "updated_at": "2026-10-06T00:13:30.475400+00:00",
+  "stage": "local-verify500",
+  "stage_started_at": "2026-10-06T00:11:30.318233+00:00",
+  "active_pid": null,
+  "training_process_running": false
 }

@@ -1,0 +1,223 @@
+{
+  "passed": true,
+  "status": "LOCAL_SSD_STAGE500_READY",
+  "equivalence_samples": 1000,
+  "byte_RGB_preprocess_exact_equal": true,
+  "copy_workers_exited": true,
+  "system": {
+    "timestamp_utc": "2026-10-06T00:13:18.022638+00:00",
+    "cgroup_version": 1,
+    "cgroup_path": "/sys/fs/cgroup/memory",
+    "memory_current": 497511981056,
+    "memory_max": "536870912000",
+    "memory_stat": {
+      "cache": 481803964416,
+      "rss": 2412883968,
+      "rss_huge": 0,
+      "shmem": 0,
+      "mapped_file": 388743168,
+      "dirty": 5271552,
+      "writeback": 7704576,
+      "pgpgin": 1245557181,
+      "pgpgout": 1127342883,
+      "pgfault": 667761006,
+      "pgmajfault": 26169,
+      "inactive_anon": 1216512,
+      "active_anon": 2415919104,
+      "inactive_file": 20985581568,
+      "active_file": 460814499840,
+      "unevictable": 0,
+      "hierarchical_memory_limit": 536870912000,
+      "total_cache": 481803964416,
+      "total_rss": 2412883968,
+      "total_rss_huge": 0,
+      "total_shmem": 0,
+      "total_mapped_file": 388743168,
+      "total_dirty": 5271552,
+      "total_writeback": 7704576,
+      "total_pgpgin": 1245557181,
+      "total_pgpgout": 1127342883,
+      "total_pgfault": 667761006,
+      "total_pgmajfault": 26169,
+      "total_inactive_anon": 1216512,
+      "total_active_anon": 2415919104,
+      "total_inactive_file": 20985581568,
+      "total_active_file": 460814499840,
+      "total_unevictable": 0
+    },
+    "memory_events": {
+      "oom_kill_disable": 0,
+      "under_oom": 0,
+      "oom_kill": 0,
+      "limit_hits_cumulative": 19288505
+    },
+    "file": 481803964416,
+    "inactive_file": 20985581568,
+    "active_file": 460814499840,
+    "anon": 2412883968,
+    "shmem": 0,
+    "cpu_stat": {
+      "nr_periods": 1183266,
+      "nr_throttled": 1,
+      "throttled_time": 2053033755
+    },
+    "memory_PSI": {
+      "some": {
+        "avg10": 0.0,
+        "avg60": 0.0,
+        "avg300": 0.0,
+        "total": 27401037415
+      },
+      "full": {
+        "avg10": 0.0,
+        "avg60": 0.0,
+        "avg300": 0.0,
+        "total": 22036262087
+      }
+    },
+    "io_PSI": {
+      "some": {
+        "avg10": 0.0,
+        "avg60": 0.0,
+        "avg300": 0.0,
+        "total": 485288196553
+      },
+      "full": {
+        "avg10": 0.0,
+        "avg60": 0.0,
+        "avg300": 0.0,
+        "total": 479948830645
+      }
+    },
+    "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+    "cgroup_memory_PSI": null,
+    "cgroup_io_PSI": null
+  },
+  "process_audit": {
+    "processes": [
+      {
+        "pid": 1,
+        "ppid": 0,
+        "comm": "pod"
+      },
+      {
+        "pid": 11,
+        "ppid": 0,
+        "comm": "tini"
+      },
+      {
+        "pid": 23,
+        "ppid": 11,
+        "comm": "startup.sh"
+      },
+      {
+        "pid": 28,
+        "ppid": 23,
+        "comm": "sshd"
+      },
+      {
+        "pid": 29,
+        "ppid": 0,
+        "comm": "sidecar-worker"
+      },
+      {
+        "pid": 344,
+        "ppid": 11,
+        "comm": "sh"
+      },
+      {
+        "pid": 348,
+        "ppid": 344,
+        "comm": "node"
+      },
+      {
+        "pid": 400,
+        "ppid": 348,
+        "comm": "node"
+      },
+      {
+        "pid": 11181,
+        "ppid": 28,
+        "comm": "sshd"
+      },
+      {
+        "pid": 11192,
+        "ppid": 11181,
+        "comm": "bash"
+      },
+      {
+        "pid": 11196,
+        "ppid": 11192,
+        "comm": "sh"
+      },
+      {
+        "pid": 11214,
+        "ppid": 11196,
+        "comm": "code-ddc367ed5c"
+      },
+      {
+        "pid": 11341,
+        "ppid": 348,
+        "comm": "node"
+      },
+      {
+        "pid": 11353,
+        "ppid": 348,
+        "comm": "node"
+      },
+      {
+        "pid": 11384,
+        "ppid": 11214,
+        "comm": "sh"
+      },
+      {
+        "pid": 11458,
+        "ppid": 11341,
+        "comm": "codex"
+      },
+      {
+        "pid": 11589,
+        "ppid": 11341,
+        "comm": "node"
+      },
+      {
+        "pid": 59920,
+        "ppid": 11458,
+        "comm": "python"
+      },
+      {
+        "pid": 61904,
+        "ppid": 11196,
+        "comm": "sleep"
+      },
+      {
+        "pid": 62254,
+        "ppid": 11458,
+        "comm": "bash"
+      },
+      {
+        "pid": 62257,
+        "ppid": 62254,
+        "comm": "sleep"
+      }
+    ],
+    "residual_audit_or_training_workers": [],
+    "open_training_or_audit_files": [],
+    "workers_all_exited": true,
+    "killed_processes": [],
+    "removed_images": 0
+  },
+  "local_storage": {
+    "mount": "overlay overlay /",
+    "free_bytes": 478759948288,
+    "required_bytes": 0,
+    "reserve_bytes": 68719476736,
+    "backing_device_evidence": "lsblk: nvme2n1p2 ext4 backs the root overlay and /tmp/nvidia-mps"
+  },
+  "global_drop_caches": false,
+  "manifest_sha256": "3e9713571caca0cbdf3cfbee4f302c15f27613aa5390e8c70cdd948569bf4af5",
+  "all512000_source_destination_SHA256_matches": true,
+  "local_images": "/root/SAID_train_cache/ShareGPT4V",
+  "local_index": "/root/SAID_train_cache/data_index",
+  "no_remaining_images_background_copy": true
+}
