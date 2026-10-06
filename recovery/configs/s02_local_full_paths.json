@@ -1,0 +1,14 @@
+{
+  "training_config": "recovery/configs/summary02.json",
+  "image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "index_dir": "/root/said_s02_stage500/data_index",
+  "dataset_class": "recovery.s02_full_local_data.FullLocalDataset",
+  "admission_function": "recovery.s02_full_local_data.configure_native_training",
+  "ready_marker": "/root/said_s02_stage500/full-ready.json",
+  "scheduler_horizon": 4868,
+  "missing_image": "fail-fast",
+  "NFS_fallback": false,
+  "relative_paths_changed": false,
+  "automatic_training_launch": false,
+  "storage_lifecycle": "ephemeral Docker overlay; explicitly accepted disposable cache"
+}

@@ -4,6 +4,10 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/s02_full_stage.py', 'recovery/s02_full_local_data.py',
+    'recovery/test_s02_full_stage.py', 'recovery/configs/s02_local_full_paths.json',
+    'recovery/S02_LOCAL_FULL_DATA.md', 'recovery/S02_LOCAL_FULL_DATA.json',
+    'recovery/S02_LOCAL_FULL_RESOURCE_SUMMARY.json',
     'recovery/nfs500_evidence.py',
     'recovery/nfs500_policy.py', 'recovery/s02_nfs500.py', 'recovery/test_nfs500_policy.py',
     'recovery/configs/summary02_nfs500.json', 'train/train_nested_semantic_mask.py',
