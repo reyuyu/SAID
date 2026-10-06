@@ -31,7 +31,7 @@ PASS/FAIL both stop500; no automatic continuation. CPU/unit checks and GitHub re
 Raw logs and checkpoints remain local; path/size/SHA/UTC inventory in LOCAL_RUNTIME_STATS.json.
 CPU/unit validation before launch: 20 passed, 0 failed (`recovery/test_local500_policy.py`, `recovery/test_s02_full_stage.py`, `recovery/test_nfs500_policy.py`). Final evidence code compiled and reviewed against the completed native run. Training/evaluation workers have exited.
 
-GitHub synchronization: PENDING.
+GitHub synchronization: evidence `55def57680f409f1987811cb0689eb07666495e8` pushed/fetched, remote HEAD matched on `recovery/s02-local500`. Receipt commit is pushed/fetched and checked separately.
 Error: None
 
 Reviewed evidence:
