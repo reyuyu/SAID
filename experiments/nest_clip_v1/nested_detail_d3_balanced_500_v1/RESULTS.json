@@ -1,0 +1,1014 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.604,
+        "R@5": 0.8262,
+        "R@10": 0.8926
+      },
+      "T2I": {
+        "R@1": 0.41588,
+        "R@5": 0.67276,
+        "R@10": 0.76932
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.909000039100647,
+        "R@5": 0.9860000610351562,
+        "R@10": 0.9960000514984131
+      },
+      "T2I": {
+        "R@1": 0.8970000147819519,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.87,
+        "R@5": 0.978,
+        "R@10": 0.992
+      },
+      "T2I": {
+        "R@1": 0.7192,
+        "R@5": 0.9138,
+        "R@10": 0.9512
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7782,
+        "R@5": 0.9534,
+        "R@10": 0.98
+      },
+      "T2I": {
+        "R@1": 0.7768,
+        "R@5": 0.9526,
+        "R@10": 0.9772
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5702446724546172,
+        "R@5": 0.755327545382794,
+        "R@10": 0.8164956590370955
+      },
+      "T2I": {
+        "R@1": 0.5660352538805578,
+        "R@5": 0.760852407261247,
+        "R@10": 0.8193896343067614
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7106359980217773,
+    "J_long3": 0.749546663369629,
+    "J_long": 0.8402500134706498,
+    "Short4_R1": 0.65227
+  },
+  "scores_percent": {
+    "Score5_R1": 71.06359980217773,
+    "J_long3": 74.9546663369629,
+    "J_long": 84.02500134706497,
+    "Short4_R1": 65.227,
+    "Score5": 71.06359980217773,
+    "Short4": 65.227
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "24792ba9e6e3c34f733820f489cb3a8953278246ae58f2f688652894be871e4b",
+    "bare_sha256": "27779a0c403431ecf55364c09e487a171313a2bea8e24e82cea9fe9b72dadfbe"
+  },
+  "checkpoint_sha256": "24792ba9e6e3c34f733820f489cb3a8953278246ae58f2f688652894be871e4b",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T19:38:44.156752+00:00",
+  "status": "D3_BALANCED_STRONG_POSITIVE",
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/step000500.pt",
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "first_five_gate": {
+    "passed": true,
+    "samples": 5120,
+    "exact_sample_ids_F_Dall_D3_strings_tokens": true,
+    "exact_D3_selected_sentence_indices": true,
+    "exact_LR": true,
+    "cross_run_numeric_comparison": false,
+    "checkpoint": {
+      "passed": true,
+      "common_step0": true,
+      "horizon": 4868,
+      "optimizer_steps": [
+        5
+      ],
+      "model_adapter_initialization_exact": true,
+      "optimizer_groups_order_exact": true,
+      "model_sampling_objective_sources_frozen": true,
+      "trainer_only_admission_extension": true,
+      "cross_run_numeric_comparison": false
+    },
+    "rank_parameter_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ],
+    "gate": "BEFORE_UPDATE6",
+    "stop_updates": 500,
+    "horizon": 4868,
+    "source_sha256": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "9f797d0da9006ed297da415cd1b37785de9a19130dd7d8ce23c1191c3bd41b80",
+      "train/train_nested_semantic_mask.py": "5b28a2a8da7b40a683b9fe618251e17a85bbf43aeaa541f8fa36dd69ff456ebf",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "51c145e032ed09fabf8f401d4e1bef28245db9a64aa9cf5529012d8e79f4c070"
+    }
+  },
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all500_sample_ids_F_Dall_D3_strings_tokens_indices_exact": true,
+    "exact_LR": true,
+    "baseline_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-equal500-20261007-r1/step500/steps.jsonl",
+    "baseline_steps_sha256": "40b5abce8bbc027303be7fdd4d95a0f36e1dad8f97717bd603dce53c93731d7e",
+    "selection_proof": "Actual current indices digests match immutable baseline sampler replay from actual baseline n/IDs, epoch0/seed0",
+    "first5_gate": "BEFORE_UPDATE6"
+  },
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1144.8396893814206,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1144.8270859792829,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1144.6692292690277,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1144.7725189477205,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-06T18:59:39.581299+00:00",
+    "supervisor_pid": 81863,
+    "git_head": "3b663275d8932ebc3a41d2d2cbdf57198d69a110",
+    "source_sha256": {
+      "recovery/nested_detail500.py": "5f7aaa3c53f28184d3df441baec5430d27fbf5364880caaec7ede0c140a46c96",
+      "experiments/nest_clip_v1/nested_detail_d3_balanced_500_v1/config.json": "e36cb77fbcfd814f4205b7119f64bc359ba6b5dbe388e36c27c45398744c334e",
+      "train/train_nested_semantic_mask.py": "5b28a2a8da7b40a683b9fe618251e17a85bbf43aeaa541f8fa36dd69ff456ebf",
+      "tools/nest_clip.py": "5810297a7894f76ffca1ed65795b9a35f100811ba0c281503f30c02d9ed7f165",
+      "recovery/nested_detail_gradients.py": "333386f00ac25efdca854d18e69d7c46ccfead64576a14d62c61cfb27343f8e9",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "9f797d0da9006ed297da415cd1b37785de9a19130dd7d8ce23c1191c3bd41b80",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "51c145e032ed09fabf8f401d4e1bef28245db9a64aa9cf5529012d8e79f4c070",
+      "recovery/nested_detail_d3_balanced500.py": "9286dfd1398e14f91c1e4d1de3c0a330c3d440bbec2e742357df6c1ff3559b62",
+      "recovery/nested_detail_d3_balanced_gradients.py": "1dbf86b93d02e43ea41d3a0eb60060b9ac01eb3f4fb594ced3ffde57a1c35a9a",
+      "recovery/review_nested_detail_d3_balanced500.py": "1a0f6b5de1ada391b0d8326d40026ca0082e8ea141361656b4fa7c7637c96fb8",
+      "recovery/review_nested_detail_d3_equal500.py": "23845c9389a79825dfe9f4e1c26b1d61f480d645e6a2d5acad8764e80caad7f0",
+      "recovery/nested_detail_d3_equal500.py": "6c990e7caafacd1b576319dd417c9cf26d52ec6e3635f4d64f1f06def3cb96c2",
+      "tests/test_nested_detail_d3_balanced.py": "33a679c55f5380ba6ff9afc1126bb6b3e4c0bbafbdaf59199983b090068fb1a1"
+    },
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index": "/root/said_s02_stage500/data_index",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "resume": null,
+    "initial_resources": {
+      "timestamp_utc": "2026-10-06T19:00:17.354535+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 490879414272,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 484264607744,
+        "rss": 1953062912,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 120975360,
+        "dirty": 0,
+        "writeback": 1622016,
+        "pgpgin": 4070565081,
+        "pgpgout": 3951858537,
+        "pgfault": 7025453721,
+        "pgmajfault": 103818,
+        "inactive_anon": 1622016,
+        "active_anon": 1953988608,
+        "inactive_file": 8150511616,
+        "active_file": 476107976704,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 484264607744,
+        "total_rss": 1953062912,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 120975360,
+        "total_dirty": 0,
+        "total_writeback": 1622016,
+        "total_pgpgin": 4070565081,
+        "total_pgpgout": 3951858537,
+        "total_pgfault": 7025453721,
+        "total_pgmajfault": 103818,
+        "total_inactive_anon": 1622016,
+        "total_active_anon": 1953988608,
+        "total_inactive_file": 8150511616,
+        "total_active_file": 476107976704,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 61030527
+      },
+      "file": 484264607744,
+      "inactive_file": 8150511616,
+      "active_file": 476107976704,
+      "anon": 1953062912,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 587986,
+        "nr_throttled": 4,
+        "throttled_time": 828881023
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27418209356
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22047436752
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.25,
+          "avg60": 0.66,
+          "avg300": 0.21,
+          "total": 487123208151
+        },
+        "full": {
+          "avg10": 0.25,
+          "avg60": 0.66,
+          "avg300": 0.21,
+          "total": 481769380958
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "method_changes": {
+      "only": "view_weights",
+      "old": [
+        1,
+        1,
+        1
+      ],
+      "new": [
+        1.35,
+        1.35,
+        0.3
+      ]
+    },
+    "parent_trial_id_note": "Frozen parent trial label retained; actual new objective is explicitly recorded",
+    "disposable_cache": "Ephemeral Docker overlay; persistent NFS originals retained",
+    "automatic_retry": false,
+    "related_unit_tests": {
+      "passed": 91
+    },
+    "isolation_proof": {
+      "config_only_view_weights_changed": true,
+      "objective_model_sources_unchanged": true,
+      "data_sampler_source_exact_baseline": true,
+      "trainer_only_admission_extension": true,
+      "indices_observer_read_only": true,
+      "baseline_checkpoint_used_for_resume": false,
+      "baseline_checkpoint_sha256": "5ae825a15eb1ab60160b70115d04dd735da2108e6855457737d8b5156e0a6764",
+      "baseline_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-equal500-20261007-r1/step500/steps.jsonl",
+      "baseline_steps_sha256": "40b5abce8bbc027303be7fdd4d95a0f36e1dad8f97717bd603dce53c93731d7e"
+    }
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.nested_detail_d3_balanced500",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_detail_d3_balanced_500_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-06T19:00:20.135047+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/train500.log",
+      "ended_utc": "2026-10-06T19:19:48.780786+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.nested_detail_d3_balanced_gradients"
+      ],
+      "started_utc": "2026-10-06T19:20:05.629298+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/gradient500.log",
+      "ended_utc": "2026-10-06T19:21:31.875523+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-06T19:21:37.072753+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/export500.log",
+      "ended_utc": "2026-10-06T19:21:56.204168+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-06T19:21:56.222887+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/verify500.log",
+      "ended_utc": "2026-10-06T19:22:15.283187+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-coco",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/coco_native.json"
+      ],
+      "started_utc": "2026-10-06T19:22:15.295905+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/eval500-coco.log",
+      "ended_utc": "2026-10-06T19:24:26.602944+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-urban",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/urban_native.json"
+      ],
+      "started_utc": "2026-10-06T19:24:26.621683+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/eval500-urban.log",
+      "ended_utc": "2026-10-06T19:24:55.705455+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-flickr_test1k",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/flickr_test1k",
+        "flickr_test1k:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-10-06T19:24:55.719650+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/eval500-flickr_test1k.log",
+      "ended_utc": "2026-10-06T19:25:25.799656+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-docci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/docci",
+        "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-10-06T19:25:25.815729+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/eval500-docci.log",
+      "ended_utc": "2026-10-06T19:30:23.570546+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-long_dci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/long_dci",
+        "long_dci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-10-06T19:30:23.585476+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/eval500-long_dci.log",
+      "ended_utc": "2026-10-06T19:38:41.636222+00:00",
+      "returncode": 0
+    }
+  ],
+  "automatic_continuation": false,
+  "automatic_new_experiments": false,
+  "decision": {
+    "status": "D3_BALANCED_STRONG_POSITIVE",
+    "Urban_R1_percent": {
+      "I2T": 90.9,
+      "T2I": 89.7
+    },
+    "strong_gate": true,
+    "positive_gate": true,
+    "gradient_not_dominant": true,
+    "gradient_balance_improved": true,
+    "thresholds": {
+      "strong_Score5_min": 70.750319,
+      "positive_Score5_min": 70.7,
+      "J_long3_min": 74.4,
+      "Urban_T2I_min": 88.5,
+      "weighted_ratio_reduction_min": 0.25,
+      "tradeoff_max_Score5_or_Short4_decline_pp": 0.2
+    },
+    "interpretation": "Long-tradeoff compared with D3 equal; no new long advantage means neither J_long3 nor J_long improves over low-dose Ds. Boundary outcomes retained as inconclusive.",
+    "automatic_continuation": false,
+    "automatic_new_experiments": false
+  },
+  "baseline_scores_percent": {
+    "RandomDetail": {
+      "Score5_R1": 70.39705431298876,
+      "J_long3": 73.83842385498127,
+      "J_long": 82.76500226497649,
+      "Short4_R1": 65.235,
+      "Score5": 70.39705431298876,
+      "Short4": 65.235
+    },
+    "AllDetail": {
+      "Score5_R1": 70.68420852191923,
+      "J_long3": 74.26701420319871,
+      "J_long": 83.37500170469283,
+      "Short4_R1": 65.31,
+      "Score5": 70.68420852191923,
+      "Short4": 65.31
+    },
+    "Nested_Ds_low": {
+      "Score5_R1": 70.75031912372968,
+      "J_long3": 74.32786520621613,
+      "J_long": 83.3150022292137,
+      "Short4_R1": 65.384,
+      "Score5": 70.75031912372968,
+      "Short4": 65.384
+    },
+    "Nested_D3_equal": {
+      "Score5_R1": 70.71390083693203,
+      "J_long3": 74.45650139488671,
+      "J_long": 83.23500202655792,
+      "Short4_R1": 65.10000000000001,
+      "Score5": 70.71390083693203,
+      "Short4": 65.10000000000001
+    }
+  },
+  "delta_vs_baselines_pp": {
+    "RandomDetail": {
+      "Score5": 0.6665454891889766,
+      "J_long3": 1.1162424819816295,
+      "J_long": 1.259999082088484,
+      "Short4": -0.007999999999995566
+    },
+    "AllDetail": {
+      "Score5": 0.37939128025850266,
+      "J_long3": 0.687652133764189,
+      "J_long": 0.649999642372137,
+      "Short4": -0.08299999999999841
+    },
+    "Nested_Ds_low": {
+      "Score5": 0.3132806784480522,
+      "J_long3": 0.6268011307467702,
+      "J_long": 0.7099991178512681,
+      "Short4": -0.15699999999999648
+    },
+    "Nested_D3_equal": {
+      "Score5": 0.3496989652457074,
+      "J_long3": 0.4981649420761869,
+      "J_long": 0.7899993205070501,
+      "Short4": 0.12699999999999534
+    }
+  },
+  "dataset_delta_vs_baselines_pp": {
+    "RandomDetail": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.28000000000000247,
+          "R@5": -0.07999999999999119,
+          "R@10": -0.22000000000000908
+        },
+        "T2I": {
+          "R@1": -0.3119999999999956,
+          "R@5": -0.012000000000000899,
+          "R@10": -0.21999999999999797
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 1.0999977588653564,
+          "R@5": 0.4999995231628418,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 1.4999985694885254,
+          "R@5": 0.20000338554382324,
+          "R@10": 0.20000338554382324
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.20000000000000018,
+          "R@5": 0.10000000000000009,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 0.35999999999999366,
+          "R@5": 0.0,
+          "R@10": -0.30000000000000027
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 1.5199999999999991,
+          "R@5": 0.48000000000000265,
+          "R@10": 0.41999999999999815
+        },
+        "T2I": {
+          "R@1": 0.9200000000000097,
+          "R@5": 0.43999999999999595,
+          "R@10": 0.20000000000000018
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 2.104709287029727,
+          "R@5": 0.7234938174164651,
+          "R@10": 0.5919494869771169
+        },
+        "T2I": {
+          "R@1": -0.44725072349381945,
+          "R@5": -0.42094185740594314,
+          "R@10": -0.06577216521967966
+        }
+      }
+    },
+    "AllDetail": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.38000000000000256,
+          "R@5": -0.019999999999997797,
+          "R@10": 0.13999999999999568
+        },
+        "T2I": {
+          "R@1": 0.00800000000000245,
+          "R@5": 0.11999999999999789,
+          "R@10": -0.024000000000001798
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": -0.09999871253967285,
+          "R@5": 0.09999871253967285,
+          "R@10": -0.1999974250793457
+        },
+        "T2I": {
+          "R@1": 1.5999972820281982,
+          "R@5": 0.0,
+          "R@10": 0.10000467300415039
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": -0.7000000000000006,
+          "R@5": 0.30000000000000027,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": 0.7399999999999962,
+          "R@5": 0.0,
+          "R@10": 0.12000000000000899
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.43999999999999595,
+          "R@5": 0.060000000000004494,
+          "R@10": -0.16000000000000458
+        },
+        "T2I": {
+          "R@1": 0.660000000000005,
+          "R@5": 0.43999999999999595,
+          "R@10": -0.060000000000004494
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.5656406208892406,
+          "R@5": 0.6708760852407236,
+          "R@10": 0.7103393843725381
+        },
+        "T2I": {
+          "R@1": 0.9602736122073185,
+          "R@5": 0.8945014469876389,
+          "R@10": 0.8681925808997626
+        }
+      }
+    },
+    "Nested_Ds_low": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.15999999999999348,
+          "R@5": 0.0200000000000089,
+          "R@10": 0.21999999999999797
+        },
+        "T2I": {
+          "R@1": -0.027999999999994696,
+          "R@5": 0.019999999999997797,
+          "R@10": 0.10799999999999699
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.0,
+          "R@5": -0.09999871253967285,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 1.1999964714050293,
+          "R@5": 0.10000467300415039,
+          "R@10": 0.10000467300415039
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": -1.0000000000000009,
+          "R@5": 0.20000000000000018,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 0.23999999999999577,
+          "R@5": -0.12000000000000899,
+          "R@10": -0.019999999999997797
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.9800000000000031,
+          "R@5": 0.18000000000000238,
+          "R@10": -0.060000000000004494
+        },
+        "T2I": {
+          "R@1": 0.660000000000005,
+          "R@5": 0.33999999999999586,
+          "R@10": 0.019999999999997797
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 1.328597737437509,
+          "R@5": 1.1838989739542227,
+          "R@10": 0.907655880031577
+        },
+        "T2I": {
+          "R@1": -0.407787424362005,
+          "R@5": -0.18416206261510082,
+          "R@10": -0.15785319652723562
+        }
+      }
+    },
+    "Nested_D3_equal": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.33999999999999586,
+          "R@5": 0.22000000000000908,
+          "R@10": -0.0200000000000089
+        },
+        "T2I": {
+          "R@1": 0.048000000000003595,
+          "R@5": -0.027999999999994696,
+          "R@10": 0.031999999999998696
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.40000081062316895,
+          "R@5": 0.09999871253967285,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 1.1999964714050293,
+          "R@5": -0.09999871253967285,
+          "R@10": 0.3000020980834961
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.30000000000000027,
+          "R@5": 0.40000000000000036,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": -0.18000000000000238,
+          "R@5": -0.20000000000000018,
+          "R@10": -0.17999999999999128
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.8399999999999963,
+          "R@5": 0.26000000000000467,
+          "R@10": 0.13999999999999568
+        },
+        "T2I": {
+          "R@1": 0.7200000000000095,
+          "R@5": 0.5199999999999982,
+          "R@10": 0.21999999999999797
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.407787424362005,
+          "R@5": 0.15785319652723562,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": -0.5787950539331788,
+          "R@5": -0.19731649565903897,
+          "R@10": -0.17100762957116267
+        }
+      }
+    }
+  },
+  "internal_slot_mapping": {
+    "F": "F",
+    "O": "Dall",
+    "E": "D3",
+    "legacy_Ds_metrics": "D3 in this run only"
+  },
+  "sole_method_change": {
+    "field": "view_weights",
+    "old": [
+      1,
+      1,
+      1
+    ],
+    "new": [
+      1.35,
+      1.35,
+      0.3
+    ]
+  },
+  "full_checkpoint_proof": {
+    "passed": true,
+    "size_bytes": 1884188282,
+    "global_step": 500,
+    "horizon": 4868,
+    "data_cursor": {
+      "next_epoch": 0,
+      "next_batch": 500
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "rng_ranks": 4,
+    "AdamW_counters": [
+      500
+    ],
+    "model_adapter_optimizer_present": true,
+    "uploaded": false
+  },
+  "prelaunch_local_only_proof": {
+    "passed": true,
+    "count": 5000,
+    "seed": 0,
+    "epoch": 0,
+    "all_local": true,
+    "NFS_fallback": false,
+    "selection": "Random positions in frozen steps1..500,1250 per rank",
+    "training_RNG_untouched": true
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "checkpoint_sha256": "27779a0c403431ecf55364c09e487a171313a2bea8e24e82cea9fe9b72dadfbe",
+      "native_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/coco_native.json",
+      "result_sha256": "2397d192b91e2238314c246946f592c78464dfdaebebcaf28d62b131c5ccd06a"
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "checkpoint_sha256": "27779a0c403431ecf55364c09e487a171313a2bea8e24e82cea9fe9b72dadfbe",
+      "native_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/urban_native.json",
+      "result_sha256": "32110a54170aca8f56b90923b2a35d98d7911079760f761c8c9a2e2c43b98e53"
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "checkpoint_sha256": "27779a0c403431ecf55364c09e487a171313a2bea8e24e82cea9fe9b72dadfbe",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/flickr_test1k/flickr_test1k.json",
+      "result_sha256": "39eaa55087846524b0b4f92066f76810818f2b324cff77e714205f4327bb5488"
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "checkpoint_sha256": "27779a0c403431ecf55364c09e487a171313a2bea8e24e82cea9fe9b72dadfbe",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/docci/docci.json",
+      "result_sha256": "a914caa017100dbe2627029f8e6400ec149b27b2f1348d75a023b8aa0bd99c2e"
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "checkpoint_sha256": "27779a0c403431ecf55364c09e487a171313a2bea8e24e82cea9fe9b72dadfbe",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/long_dci/long_dci.json",
+      "result_sha256": "b980fbe41fb2bda15837735e470685648505329306627cdbe295a6013b19ccef"
+    }
+  },
+  "launch_code_snapshot": {
+    "commit": "3b663275d8932ebc3a41d2d2cbdf57198d69a110",
+    "all_source_SHA256_matched": true
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "status": "CHAIN_OBJECTIVE_VERIFIED",
+  "inclusion_edges": [
+    "Dall->F",
+    "D3->Dall"
+  ],
+  "detached_child": true,
+  "D3_to_F_direct_edge": false,
+  "sibling_constraint": false,
+  "orthogonality": false,
+  "union_loss": false,
+  "formula": "0.5*(relu(Dall.detach()-F).mean(-1)+relu(D3.detach()-Dall).mean(-1))",
+  "sparsity": "(Omega_F+2*Omega_Dall+2*Omega_D3)/3",
+  "ramp_steps": 200,
+  "max_weight": 1,
+  "last50": {
+    "inc": 0.008108068946748972,
+    "inc_weight": 1.0,
+    "F_Dall_mask_iou": 0.9658638739585876,
+    "Dall_D3_mask_iou": 0.9000527119636536,
+    "Dall_F_hard_violation": 0.010362121723592282,
+    "D3_Dall_hard_violation": 0.016811178997159004
+  },
+  "selected_steps": {
+    "1": {
+      "inc": 0.018924200907349586,
+      "inc_weight": 0.0,
+      "F_Dall_mask_iou": 0.8696568608283997,
+      "Dall_D3_mask_iou": 0.7920972108840942,
+      "Dall_F_hard_violation": 0.03306770324707031,
+      "D3_Dall_hard_violation": 0.05450630187988281
+    },
+    "100": {
+      "inc": 0.00925211701542139,
+      "inc_weight": 0.495,
+      "F_Dall_mask_iou": 0.9814010858535767,
+      "Dall_D3_mask_iou": 0.970697283744812,
+      "Dall_F_hard_violation": 0.008844375610351562,
+      "D3_Dall_hard_violation": 0.011875152587890625
+    },
+    "200": {
+      "inc": 0.009118015877902508,
+      "inc_weight": 0.995,
+      "F_Dall_mask_iou": 0.9630475640296936,
+      "Dall_D3_mask_iou": 0.9092888236045837,
+      "Dall_F_hard_violation": 0.01172637939453125,
+      "D3_Dall_hard_violation": 0.016267776489257812
+    },
+    "500": {
+      "inc": 0.007811316289007664,
+      "inc_weight": 1.0,
+      "F_Dall_mask_iou": 0.9594013094902039,
+      "Dall_D3_mask_iou": 0.8709335327148438,
+      "Dall_F_hard_violation": 0.011056900024414062,
+      "D3_Dall_hard_violation": 0.017728805541992188
+    }
+  },
+  "note": "Soft inclusion encourages nesting; hard masks need not have zero violation",
+  "delta_vs_baselines": {
+    "Nested_D3_low": {
+      "inc": -0.009847795292735101,
+      "inc_weight": 0.0,
+      "F_Dall_mask_iou": -0.0015140676498412997,
+      "Dall_D3_mask_iou": 0.11537079691886898,
+      "Dall_F_hard_violation": -0.0008067380450665941,
+      "D3_Dall_hard_violation": -0.02361300654709339
+    },
+    "Nested_D3_equal": {
+      "inc": -0.006921937074512243,
+      "inc_weight": 0.0,
+      "F_Dall_mask_iou": 0.00035365343093873847,
+      "Dall_D3_mask_iou": -0.03282575607299809,
+      "Dall_F_hard_violation": -0.004046938680112362,
+      "D3_Dall_hard_violation": -0.006369330026209354
+    },
+    "Nested_Ds_low": {
+      "inc": -0.009847795292735101,
+      "inc_weight": 0.0,
+      "F_Dall_mask_iou": -0.0015140676498412997,
+      "Dall_D3_mask_iou": 0.11537079691886898,
+      "Dall_F_hard_violation": -0.0008067380450665941,
+      "D3_Dall_hard_violation": -0.02361300654709339
+    }
+  },
+  "keep_ratio_delta_vs_baselines": {
+    "Nested_D3_low": {
+      "F": -0.02283718109130861,
+      "Dall": -0.024752724170684748,
+      "D3": 0.03784934282302854
+    },
+    "Nested_D3_equal": {
+      "F": -0.018899421691894513,
+      "Dall": -0.025628517866134626,
+      "D3": -0.06417956113815304
+    },
+    "Nested_Ds_low": {
+      "F": -0.02283718109130861,
+      "Dall": -0.024752724170684748,
+      "D3": 0.03784934282302854
+    }
+  }
+}
