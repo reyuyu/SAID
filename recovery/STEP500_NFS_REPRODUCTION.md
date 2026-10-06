@@ -21,7 +21,7 @@ No step500 checkpoint exists. Training stopped before its first optimizer update
 Strict bare export and five-set evaluation were not run. No continuation is authorized; PASS and FAIL both stop500.
 
 Raw logs remain local; reviewed inventory (paths, SHA256, size and UTC scope) is in NFS_RUNTIME_STATS.json. Checkpoints/datasets/images/caches are excluded from GitHub.
-GitHub synchronization: PENDING; phase is not marked finally complete.
+GitHub synchronization succeeded on `recovery/s02-nfs500-reproduction`: pushed evidence commit `adbcf634f5f8f822eb4172e9d747c981994880ed`, then fetched and confirmed exact remote/local HEAD equality. This receipt is committed separately and its final HEAD is also fetch-verified on delivery. Reproduction remains incomplete; diagnostic evidence synchronization is complete.
 
 Error: RuntimeError: train500 process failed, returncode=1; see /opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-nfs500-20261006/train500.log
 
@@ -51,3 +51,5 @@ Checks: `null`.
 Dataset collapse definition: invalid/nonfinite R1 or any direction below50% of historical R1. Thresholds are fixed before evaluation; no weight tuning.
 
 Run is stopped before step1; no step500 checkpoint exists. No continuation/retry is authorized by this result.
+
+Validation: 81 CPU/unit tests passed; incomplete-report consistency passed; staged credential/binary/1MiB size checks passed. No dataset, checkpoint or raw log was uploaded. Staging retained116817 images (11519230546 bytes), partials and hash ledger; workers exited before formal NFS launch. Raw staging manifests/ledger/resource logs and training/resource/path logs remain local, with paths, sizes, SHA256 and UTC scopes in `NFS_RUNTIME_STATS.json`.
