@@ -1,13 +1,65 @@
 {
-  "status": "RESOURCE_STALL_RECURRED_BEFORE_500",
-  "passed": false,
-  "evaluated": false,
-  "automatic_retry": false,
-  "horizon": 4868,
+  "status": "REPRODUCTION_PASS",
+  "passed": true,
+  "checks": {
+    "Score5_R1": true,
+    "J_long3": true,
+    "Urban_I2T": true,
+    "Urban_T2I": true,
+    "no_obvious_dataset_collapse": true
+  },
   "thresholds_percent": {
     "Score5_R1": 70.164367,
     "J_long3": 73.403324,
     "Urban_I2T": 89.1,
     "Urban_T2I": 87.0
-  }
+  },
+  "actual_percent": {
+    "Score5_R1": 70.3794087460327,
+    "J_long3": 73.88368124338783,
+    "J_long": 82.8000022649765,
+    "Short4_R1": 65.12299999999999,
+    "Urban_I2T": 89.80000615119934,
+    "Urban_T2I": 88.20000290870667
+  },
+  "delta_vs_historical_S02_pp": {
+    "Score5_R1": 0.015041746032693482,
+    "J_long3": 0.15707024338782105,
+    "J_long": 0.035000264976503104,
+    "Short4_R1": -0.1980000000000075
+  },
+  "dataset_R1_deltas_pp": {
+    "COCO": {
+      "I2T": 0.25999999999999357,
+      "T2I": 0.00800000000000245
+    },
+    "Urban-1k": {
+      "I2T": -0.29999613761901855,
+      "T2I": 0.1999974250793457
+    },
+    "Flickr30k-test1k": {
+      "I2T": -1.0000000000000009,
+      "T2I": -0.05999999999999339
+    },
+    "DOCCI": {
+      "I2T": -0.41999999999999815,
+      "T2I": 0.660000000000005
+    },
+    "Long-DCI": {
+      "I2T": 0.34201525914233644,
+      "T2I": 0.4604051565377576
+    }
+  },
+  "collapsed_directions": [],
+  "collapse_screen": "Invalid/nonfinite R1 or loss of more than50% of historical R1 in any direction; no weight search",
+  "near_boundary": {
+    "Score5_R1": false,
+    "J_long3": false,
+    "Urban_I2T": false,
+    "Urban_T2I": false
+  },
+  "horizon": 4868,
+  "continuation_checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3/step500/step000500.pt",
+  "checkpoint_sha256": "7213a8b2e79123b46783c02264fe2898a98bdefc8a890db7e28c819b27be7a65",
+  "evaluated_at": "2026-10-06T00:59:23.527204+00:00"
 }

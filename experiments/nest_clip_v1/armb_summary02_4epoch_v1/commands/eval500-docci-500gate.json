@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/opt/data/private/lklk/SAID/.venv/bin/python",
+    "-m",
+    "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+    "--checkpoint",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3/step500/student_step500.pt",
+    "--device",
+    "cuda:0",
+    "--batch-size",
+    "64",
+    "--output-dir",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3/step500/docci",
+    "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+  ],
+  "cwd": "/opt/data/private/lklk/SAID",
+  "started_at": "2026-10-06T00:40:15.206577+00:00",
+  "returncode": 0,
+  "finished_at": "2026-10-06T00:47:15.656343+00:00"
+}

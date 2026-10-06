@@ -1,8 +1,8 @@
 # Local SSD first500 staging and reproduction
 
-Updated UTC: 2026-10-06T00:13:30.584538+00:00
+Updated UTC: 2026-10-06T00:59:23.630010+00:00
 
-Trajectory: `/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3`; status: `EVALUATING`.
+Trajectory: `/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3`; status: `REPRODUCTION_PASS_LOCAL_FULL_COPY_PENDING`.
 
 IO-only override; frozen sampling/preprocessing/model/loss/optimizer and horizon4868 unchanged. Native3 consecutive full cycles>3s protection unchanged. Fresh common step0; no resume of diagnostic or stopped runs.
 
@@ -22,9 +22,10 @@ Every required first500 image source SHA256 compared with SSD reread SHA256; ato
 
 ## Training and retrieval
 
-Actual native worker resolved-path proofs: 0 samples, ranks: [].
+Actual native worker resolved-path proofs: 256 samples, ranks: [0, 1, 2, 3].
 Phase telemetry: `/tmp/said-s02-full-phase-localssd-v3`; data_wait/H2D/forward/backward/DDP/optimizer/cgroup/PSI recorded.
-Retrieval status: `RESOURCE_STALL_RECURRED_BEFORE_500`; evaluated: `False`.
-Scores percent: `null`.
+Step7+ full cycles: `{"count": 494, "median": 2.0715749263763428, "p95": 2.2700153112411496, "max": 2.4123637676239014}`; protection: `{"triggered": false, "threshold_seconds": 3, "consecutive_updates": 3}`.
+Retrieval status: `REPRODUCTION_PASS`; evaluated: `True`.
+Scores percent: `{"Score5_R1": 70.3794087460327, "J_long3": 73.88368124338783, "J_long": 82.8000022649765, "Short4_R1": 65.12299999999999}`.
 
 Remaining images are NOT copied during500 training/evaluation. Only after REPRODUCTION_PASS: paused training, manifest-driven full local coverage+SHA verification, unchanged same500 checkpoint, then exact-state continuation. Old stall root cause is not claimed repaired; resource guard retained.

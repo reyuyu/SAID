@@ -1,21 +1,147 @@
 {
-  "status": "EVALUATING",
+  "status": "REPRODUCTION_PASS_LOCAL_FULL_COPY_PENDING",
   "started_at": "2026-10-06T00:11:29.379211+00:00",
   "supervisor_pid": 59920,
   "branch": "codex/nest-balanced-armb-summary02-4epoch-recovery-v1",
-  "completed_updates": 0,
+  "completed_updates": 500,
   "stop_updates": 4868,
   "formal_training_authorized": true,
-  "formal_training_started": false,
+  "formal_training_started": true,
   "resume": null,
   "scheduled_evaluation": "Pause at500; native five-set reproduction gate; then conditional4868",
   "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3",
   "first_stage_stop": 500,
   "horizon": 4868,
   "policy": "Minimal first5 hard invariants; no cross-run numeric gate",
-  "updated_at": "2026-10-06T00:13:30.475400+00:00",
-  "stage": "local-verify500",
-  "stage_started_at": "2026-10-06T00:11:30.318233+00:00",
+  "updated_at": "2026-10-06T00:59:23.601863+00:00",
+  "stage": "Training paused; full local mirror required before501",
+  "stage_started_at": "2026-10-06T00:47:15.760476+00:00",
   "active_pid": null,
-  "training_process_running": false
+  "training_process_running": false,
+  "phase_telemetry": "/tmp/said-s02-full-phase-localssd-v3/step500",
+  "latest_loss": 7.4264092445373535,
+  "latest_update_seconds": 2.13043924421072,
+  "peak_allocated_gib": 27.7598934173584,
+  "first_five_gate": {
+    "passed": true,
+    "samples": 5120,
+    "exact_sample_ids": true,
+    "exact_FSD_strings_tokens": true,
+    "exact_LR": true,
+    "losses": [
+      60.99950408935547,
+      23.328746795654297,
+      20.406293869018555,
+      18.707012176513672,
+      21.49717903137207
+    ],
+    "cross_run_numeric_comparison": false,
+    "checkpoint": {
+      "passed": true,
+      "optimizer_steps": [
+        5
+      ],
+      "scheduler_horizon": 4868,
+      "cross_run_model_and_moment_comparison": false,
+      "scaler": "Historical BF16; no GradScaler"
+    },
+    "rank_parameter_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ],
+    "gate": "BEFORE_UPDATE6",
+    "stop_updates": 500,
+    "horizon": 4868,
+    "source_sha256": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "ba58e15f20e9e43e8f59e376363f49c052696eb3a8d62e2b14cc517b07f18393",
+      "train/train_nested_semantic_mask.py": "56eaa83f7ee3ea9fa97a754a52288fc61adb28dd41129015ec39b129b82c57e3",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
+    }
+  },
+  "reproduction_gate": {
+    "status": "REPRODUCTION_PASS",
+    "passed": true,
+    "checks": {
+      "Score5_R1": true,
+      "J_long3": true,
+      "Urban_I2T": true,
+      "Urban_T2I": true,
+      "no_obvious_dataset_collapse": true
+    },
+    "thresholds_percent": {
+      "Score5_R1": 70.164367,
+      "J_long3": 73.403324,
+      "Urban_I2T": 89.1,
+      "Urban_T2I": 87.0
+    },
+    "actual_percent": {
+      "Score5_R1": 70.3794087460327,
+      "J_long3": 73.88368124338783,
+      "J_long": 82.8000022649765,
+      "Short4_R1": 65.12299999999999,
+      "Urban_I2T": 89.80000615119934,
+      "Urban_T2I": 88.20000290870667
+    },
+    "delta_vs_historical_S02_pp": {
+      "Score5_R1": 0.015041746032693482,
+      "J_long3": 0.15707024338782105,
+      "J_long": 0.035000264976503104,
+      "Short4_R1": -0.1980000000000075
+    },
+    "dataset_R1_deltas_pp": {
+      "COCO": {
+        "I2T": 0.25999999999999357,
+        "T2I": 0.00800000000000245
+      },
+      "Urban-1k": {
+        "I2T": -0.29999613761901855,
+        "T2I": 0.1999974250793457
+      },
+      "Flickr30k-test1k": {
+        "I2T": -1.0000000000000009,
+        "T2I": -0.05999999999999339
+      },
+      "DOCCI": {
+        "I2T": -0.41999999999999815,
+        "T2I": 0.660000000000005
+      },
+      "Long-DCI": {
+        "I2T": 0.34201525914233644,
+        "T2I": 0.4604051565377576
+      }
+    },
+    "collapsed_directions": [],
+    "collapse_screen": "Invalid/nonfinite R1 or loss of more than50% of historical R1 in any direction; no weight search",
+    "near_boundary": {
+      "Score5_R1": false,
+      "J_long3": false,
+      "Urban_I2T": false,
+      "Urban_T2I": false
+    },
+    "horizon": 4868,
+    "continuation_checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3/step500/step000500.pt",
+    "checkpoint_sha256": "7213a8b2e79123b46783c02264fe2898a98bdefc8a890db7e28c819b27be7a65",
+    "evaluated_at": "2026-10-06T00:59:23.527204+00:00"
+  }
 }

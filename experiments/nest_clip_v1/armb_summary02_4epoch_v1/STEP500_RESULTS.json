@@ -1,8 +1,207 @@
 {
-  "status": "RESOURCE_STALL_RECURRED_BEFORE_500",
-  "completed_updates": 55,
-  "evaluated": false,
-  "scores_percent": null,
-  "method_failure": false,
-  "horizon": 4868
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.605,
+        "R@5": 0.8276,
+        "R@10": 0.8952
+      },
+      "T2I": {
+        "R@1": 0.41852,
+        "R@5": 0.67312,
+        "R@10": 0.77212
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.8980000615119934,
+        "R@5": 0.9830000400543213,
+        "R@10": 0.9950000643730164
+      },
+      "T2I": {
+        "R@1": 0.8820000290870667,
+        "R@5": 0.9820000529289246,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.865,
+        "R@5": 0.974,
+        "R@10": 0.992
+      },
+      "T2I": {
+        "R@1": 0.7164,
+        "R@5": 0.9138,
+        "R@10": 0.9542
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7612,
+        "R@5": 0.9494,
+        "R@10": 0.9766
+      },
+      "T2I": {
+        "R@1": 0.7708,
+        "R@5": 0.9494,
+        "R@10": 0.9754
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5505130228887135,
+        "R@5": 0.7449355432780848,
+        "R@10": 0.8091291765324915
+      },
+      "T2I": {
+        "R@1": 0.570507761115496,
+        "R@5": 0.7658510918179426,
+        "R@10": 0.820705077611155
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.703794087460327,
+    "J_long3": 0.7388368124338783,
+    "J_long": 0.828000022649765,
+    "Short4_R1": 0.65123
+  },
+  "scores_percent": {
+    "Score5_R1": 70.3794087460327,
+    "J_long3": 73.88368124338783,
+    "J_long": 82.8000022649765,
+    "Short4_R1": 65.12299999999999
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "7213a8b2e79123b46783c02264fe2898a98bdefc8a890db7e28c819b27be7a65",
+    "bare_sha256": "dc313d863481d88cc738f8a0956537e2c24009b2e4d0f3f5c1c5f501a72fb2fb"
+  },
+  "checkpoint_sha256": "7213a8b2e79123b46783c02264fe2898a98bdefc8a890db7e28c819b27be7a65",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T00:59:23.512680+00:00",
+  "status": "REPRODUCTION_PASS",
+  "gate": {
+    "status": "REPRODUCTION_PASS",
+    "passed": true,
+    "checks": {
+      "Score5_R1": true,
+      "J_long3": true,
+      "Urban_I2T": true,
+      "Urban_T2I": true,
+      "no_obvious_dataset_collapse": true
+    },
+    "thresholds_percent": {
+      "Score5_R1": 70.164367,
+      "J_long3": 73.403324,
+      "Urban_I2T": 89.1,
+      "Urban_T2I": 87.0
+    },
+    "actual_percent": {
+      "Score5_R1": 70.3794087460327,
+      "J_long3": 73.88368124338783,
+      "J_long": 82.8000022649765,
+      "Short4_R1": 65.12299999999999,
+      "Urban_I2T": 89.80000615119934,
+      "Urban_T2I": 88.20000290870667
+    },
+    "delta_vs_historical_S02_pp": {
+      "Score5_R1": 0.015041746032693482,
+      "J_long3": 0.15707024338782105,
+      "J_long": 0.035000264976503104,
+      "Short4_R1": -0.1980000000000075
+    },
+    "dataset_R1_deltas_pp": {
+      "COCO": {
+        "I2T": 0.25999999999999357,
+        "T2I": 0.00800000000000245
+      },
+      "Urban-1k": {
+        "I2T": -0.29999613761901855,
+        "T2I": 0.1999974250793457
+      },
+      "Flickr30k-test1k": {
+        "I2T": -1.0000000000000009,
+        "T2I": -0.05999999999999339
+      },
+      "DOCCI": {
+        "I2T": -0.41999999999999815,
+        "T2I": 0.660000000000005
+      },
+      "Long-DCI": {
+        "I2T": 0.34201525914233644,
+        "T2I": 0.4604051565377576
+      }
+    },
+    "collapsed_directions": [],
+    "collapse_screen": "Invalid/nonfinite R1 or loss of more than50% of historical R1 in any direction; no weight search",
+    "near_boundary": {
+      "Score5_R1": false,
+      "J_long3": false,
+      "Urban_I2T": false,
+      "Urban_T2I": false
+    },
+    "horizon": 4868,
+    "continuation_checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3/step500/step000500.pt",
+    "checkpoint_sha256": "7213a8b2e79123b46783c02264fe2898a98bdefc8a890db7e28c819b27be7a65",
+    "evaluated_at": "2026-10-06T00:59:23.527204+00:00"
+  },
+  "native_acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1135.403444930911,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1135.5334389060736,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1135.5606166645885,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1135.4184745252132,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3"
 }

@@ -1,5 +1,3 @@
-# S02 trajectory stopped
+# S02 full trajectory
 
-**RESOURCE_STALL_RECURRED_BEFORE_500**
-
-Resource gate, not method failure. No automatic restart; logs/checkpoint preserved.
+Fresh common step0 ->500, horizon4868. Retrieval gate pending; no full result claimed.
