@@ -102,6 +102,40 @@ def meta(db, key, value=None):
     return json.loads(row[0]) if row else None
 
 
+def ensure_local_index(source=None,destination=None,records_sha=INDEX_SHA):
+    source=Path(source or ROOT/'runtime/SAID-nest-clip-v1/data_index')
+    destination=Path(destination or LOCAL/'data_index')
+    destination.mkdir(parents=True,exist_ok=True)
+    if destination.is_symlink():
+        raise RuntimeError('Training index must be local, not a symlink')
+    verified={}
+    for name in ('records.jsonl','offsets.npy','metadata.json'):
+        incoming,final=source/name,destination/name
+        expected=records_sha if name=='records.jsonl' else sha(incoming)
+        if final.is_symlink():
+            raise RuntimeError('Local training-index symlink forbidden')
+        if final.exists():
+            if sha(final)!=expected:
+                raise RuntimeError('Existing frozen local index changed; preserve and investigate')
+        else:
+            temp=final.with_suffix(final.suffix+'.part')
+            if temp.is_symlink():
+                raise RuntimeError('Index partial symlink forbidden')
+            checksum=hashlib.sha256()
+            with incoming.open('rb') as reader,temp.open('wb') as writer:
+                for chunk in iter(lambda:reader.read(BUFFER),b''):
+                    checksum.update(chunk)
+                    writer.write(chunk)
+                writer.flush()
+                os.fsync(writer.fileno())  # Only three index artifacts, never per JPEG.
+                advise(reader.fileno())
+            if checksum.hexdigest()!=expected:
+                raise RuntimeError('Canonical training index hash drift')
+            temp.replace(final)
+        verified[name]=expected
+    return verified
+
+
 def rebuild_manifest():
     target = RAW / 'required_training_images.jsonl'
     if target.exists():
@@ -145,6 +179,7 @@ def prepare():
     from recovery.local_ssd_stage import sizes_from_installation
     RAW.mkdir(parents=True, exist_ok=True)
     LOCAL.mkdir(exist_ok=True)
+    index_hashes=ensure_local_index()
     manifest = rebuild_manifest()
     db = connection()
     if not meta(db,'manifest_complete'):
@@ -212,6 +247,7 @@ def prepare():
     if disk.free < remaining + 64*GIB:
         raise RuntimeError('Local disk lacks space plus64GiB reserve')
     proof = dict(status='LOCAL_FULL_PREFLIGHT_READY', manifest=manifest, family_counts=counts,total_images=TOTAL,
+        local_index_sha256=index_hashes,
         total_bytes=total,total_GB=total/1e9,total_GiB=total/GIB,local_existing_images=reused,local_existing_bytes=payload,
         remaining_images=missing,remaining_bytes=remaining,unledgered_existing_images=unverified,
         destination_free_bytes=disk.free,queue_order='family (COCO,LLaVA,SAM), source parent directory, filename',

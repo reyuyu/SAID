@@ -103,3 +103,30 @@ def test_guard_distinguishes_reclaimable_cache_from_actual_OOM():
     guard=stage.Guard()
     assert guard.check(s(memory=20,psi=11),0) is None
     assert guard.check(s(memory=20,psi=11),61)=='severe memory PSI sustained'
+
+
+def test_rebuild_lost_cache_index_and_reuse_without_source_record_reread(tmp_path,monkeypatch):
+    source,dest=tmp_path/'canonical',tmp_path/'local'
+    source.mkdir()
+    for name,payload in [('records.jsonl',b'{"image":"sam/images/a.jpg"}\n'),('offsets.npy',b'offsets'),('metadata.json',b'{}')]:
+        (source/name).write_bytes(payload)
+    expected=hashlib.sha256((source/'records.jsonl').read_bytes()).hexdigest()
+    hashes=stage.ensure_local_index(source,dest,expected)
+    assert hashes['records.jsonl']==expected
+    original=Path.open
+    def fail_source_record(path,*args,**kwargs):
+        if path==source/'records.jsonl':
+            pytest.fail('Already verified local record file must be reused')
+        return original(path,*args,**kwargs)
+    monkeypatch.setattr(Path,'open',fail_source_record)
+    assert stage.ensure_local_index(source,dest,expected)==hashes
+
+
+def test_index_drift_fails_without_overwrite(tmp_path):
+    source,dest=tmp_path/'canonical',tmp_path/'local'
+    source.mkdir()
+    dest.mkdir()
+    (dest/'records.jsonl').write_bytes(b'user changed')
+    with pytest.raises(RuntimeError,match='preserve'):
+        stage.ensure_local_index(source,dest,'frozen')
+    assert (dest/'records.jsonl').read_bytes()==b'user changed'
