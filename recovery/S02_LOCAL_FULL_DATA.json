@@ -34,7 +34,7 @@
   "prepared_utc": "2026-10-06T06:12:18.328728+00:00",
   "ready": true,
   "training_started": false,
-  "github_sync_complete": false,
+  "github_sync_complete": true,
   "post_stage_checks": {
     "CPU_tests": {
       "command": ".venv/bin/python -m pytest -q recovery/test_s02_full_stage.py recovery/test_nfs500_policy.py recovery/test_s02_stage500.py",
@@ -382,9 +382,34 @@
     "scope": "DONTNEED hints only for closed local JPEG files after successful local-only audit"
   },
   "benchmark_comparison_limit": "Sequential real missing sorted ranges, not repeated identical payloads; family counts recorded. No cached duplicate source passes used for copy benchmarking.",
-  "phase_final_complete": false,
+  "phase_final_complete": true,
   "copy_elapsed_s": 9231.586477912962,
   "copy_mean_MiB_s": 61.83294685668152,
   "validation_elapsed_s": 2816.159961976111,
-  "elapsed_scope": "Copy benchmarks + sustained copy + validation; preflight reconstruction/inventory time is separate"
+  "elapsed_scope": "Copy benchmarks + sustained copy + validation; preflight reconstruction/inventory time is separate",
+  "github_sync": {
+    "branch": "recovery/s02-local-full-data",
+    "verified_data_evidence_commit": "1378826e6db3ec57716cf2f26b053259de3a152b",
+    "fetched_remote_evidence_HEAD": "1378826e6db3ec57716cf2f26b053259de3a152b",
+    "remote_evidence_HEAD_equal": true,
+    "verified_utc": "2026-10-06T09:36:10.680469+00:00",
+    "receipt_scope": "This receipt follows the verified evidence commit; the final receipt commit HEAD is checked again after push.",
+    "excluded_assets": [
+      "/root/said_s02_stage500/ShareGPT4V",
+      "/root/said_s02_stage500/data_index",
+      "/root/said_s02_stage500/full-ready.json",
+      "/root/said_s02_stage500/full-stage-progress.sqlite",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/copy-hashes.jsonl",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/equivalence-2000.json",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/local-cache-advice-result.json",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/local-cache-advice.jsonl",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/local-path-proof-5000.json",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/preflight.json",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/progress.json",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/required_training_images.jsonl",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/resource-progress.jsonl",
+      "/opt/data/private/lklk/SAID/recovery/evidence/s02-stage500-local/hash-ledger.jsonl",
+      "/root/said_s02_stage500/full-stage-progress.sqlite"
+    ]
+  }
 }

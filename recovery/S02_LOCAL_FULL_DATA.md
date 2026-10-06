@@ -45,4 +45,4 @@ Raw logs/manifests/full hash ledger/path proofs remain local. Reviewed inventory
 
 Post-stage CPU checks: 29 passed (`recovery/test_s02_full_stage.py`, `recovery/test_nfs500_policy.py`, `recovery/test_s02_stage500.py`). Local records/offsets/metadata SHA256 reverified; formal local-only admission passed without launching training. Copy, audit and cache-advisor processes have exited.
 
-GitHub sync: pending final commit/push/fetch verification; final phase completion remains false until synchronization succeeds.
+GitHub sync: evidence commit `1378826e6db3ec57716cf2f26b053259de3a152b` pushed and fetched on `recovery/s02-local-full-data`; remote HEAD equals local. This receipt is committed separately, then pushed/fetched and its final HEAD checked again. Training remains stopped.
