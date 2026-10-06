@@ -91,6 +91,14 @@ def test_only_lowest_sampling_config_changes():
     with pytest.raises(AssertionError,match='Config drift'):changed_config(dict(new,view_weights=[1.4,1.4,.2]))
 
 
+def test_runtime_provenance_fields_do_not_reject_frozen_config():
+    root=Path(__file__).resolve().parents[1]
+    c=json.loads((root/'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/config.json').read_text())
+    changed_config(dict(c,completed_steps=5,code_sha256={'trainer':'example'},resume=None))
+    with pytest.raises(AssertionError,match='Config drift'):
+        changed_config(dict(c,workers=4,completed_steps=5))
+
+
 @pytest.mark.parametrize('delta,urban,dominant,status',[
     (0,88.5,False,'D3_EQUAL_WEIGHT_STRONG_POSITIVE'),
     (-.1,88.3,False,'D3_OPTIMIZATION_POSITIVE'),

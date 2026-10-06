@@ -15,8 +15,9 @@ from recovery import nested_detail500 as parent
 from recovery.s02_nfs500 import ROOT, OUT, STEP0_SHA, dump, rows, sha
 
 EXP = ROOT/'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1'
-RUN = ROOT/'runtime/SAID-nest-clip-v1/nested-detail-d3-equal500-20261007'
-PHASE = parent.LOCAL/'formal-nested-detail-d3-equal500-phase-20261007'
+FAILED_ATTEMPT = ROOT/'runtime/SAID-nest-clip-v1/nested-detail-d3-equal500-20261007'
+RUN = ROOT/'runtime/SAID-nest-clip-v1/nested-detail-d3-equal500-20261007-r1'
+PHASE = parent.LOCAL/'formal-nested-detail-d3-equal500-phase-20261007-r1'
 CONFIG = EXP/'config.json'
 BASELINE = ROOT/'runtime/SAID-nest-clip-v1/nested-detail-equal-weight500-20261007/step500'
 ATOMIC_EXP = ROOT/'experiments/nest_clip_v1/nested_detail_equal_weight_500_v1'
@@ -27,13 +28,15 @@ SCORES = dict(Score5=70.750319,J_long3=74.327865,J_long=83.315002,Short4=65.384)
 BASELINES = dict(RandomDetail=OUT/'STEP500_RESULTS.json',AllDetail=OUT/'ALL_DETAIL500_RESULTS.json',
     Nested_Ds_low=LOW_EXP/'RESULTS.json',Nested_Ds_equal=ATOMIC_EXP/'RESULTS.json')
 EDITED = {'train/nested_semantic_data.py','train/train_nested_semantic_mask.py'}
-RELATED_TEST_COUNT = 80  # Verified prelaunch related CPU tests, 2026-10-07.
+RELATED_TEST_COUNT = 81  # Verified prelaunch related CPU tests, 2026-10-07.
 ORIGINAL_DIAGNOSTICS = parent.diagnostics
 
 
 def changed_config(c):
     old = json.loads((ATOMIC_EXP/'config.json').read_text())
-    assert c.keys()==old.keys()
+    # Trainer runtime config adds provenance, cursor and construction metadata.
+    # Only the frozen declared config keys are shared with the input JSON.
+    assert old.keys() <= c.keys()
     for k,v in old.items():
         assert c[k]==(MODE if k=='sampling_mode' else v), ('Config drift',k)
 
@@ -252,6 +255,17 @@ class Supervisor(parent.Supervisor):
                     loader_optimizer_architecture_unchanged=True,baseline_checkpoint_used_for_resume=False,
                     baseline_checkpoint_sha256=baseline['checkpoint_sha256'],baseline_steps_path=str(BASELINE/'steps.jsonl'),
                     baseline_steps_sha256=sha(BASELINE/'steps.jsonl')))
+            failed=json.loads((FAILED_ATTEMPT/'supervisor-result.json').read_text())
+            assert failed['completed_steps']==5 and failed['status']=='INCOMPLETE_HARD_STOP'
+            launch['prior_aborted_attempt']=dict(path=str(FAILED_ATTEMPT),completed_steps=5,
+                reason='Admission checker required runtime-expanded config keys to equal input-config keys',
+                sampling_prefix_passed=True,method_changed=False,resumed=False,
+                fresh_common0_restart=True,supervisor_result_sha256=sha(FAILED_ATTEMPT/'supervisor-result.json'),
+                checkpoint5_path=str(FAILED_ATTEMPT/'step500/step000005.pt'))
+            old_command=json.loads((FAILED_ATTEMPT/'commands.json').read_text())[0]
+            launch['prior_aborted_attempt']['local_assets']=[dict(path=str(p),bytes=p.stat().st_size,
+                sha256=sha(p),time_range_utc=[old_command['started_utc'],old_command['ended_utc']],uploaded=False)
+                for p in (FAILED_ATTEMPT/'train500.log',FAILED_ATTEMPT/'step500/step000005.pt')]
             dump(RUN/'launch-provenance.json',launch)
             command[command.index('-m')+1]='recovery.nested_detail_d3_equal500'
         if name=='gradient500':command[command.index('-m')+1]='recovery.nested_detail_d3_gradients'
@@ -321,6 +335,7 @@ def write_report(r,d,h):
         f'Fresh common0 SHA256: `{STEP0_SHA}`. Local-only `{parent.IMAGES}`; missing/symlink/escape fails; no fallback. Ephemeral cache; NFS originals retained.',
         'Alignment10/3*(L_F+L_Dall+L_D3), each directional-summed CE. Detached-child chain Dall->F,D3->Dall only,200-step ramp,max1. Sparsity(Omega_F+2*Omega_Dall+2*Omega_D3)/3.',
         'Frozen model logs use O/E and legacy Ds names internally; reports map lowest slot to D3 without changing the graph.',
+        'An initial five-update attempt stopped because the admission checker rejected trainer-added runtime metadata. All five sample/F/Dall checks passed. Checker fixed and regression-tested; the formal r1 run restarted from common0, never resumed that checkpoint. Prior artifacts retained locally in launch_provenance.prior_aborted_attempt.',
         '', '| Dataset | I2T R@1 / R@5 / R@10 (%) | T2I R@1 / R@5 / R@10 (%) |','|---|---|---|']
     for dataset,v in r.get('metrics',{}).items():
         values=[' / '.join(f'{100*v[q][k]:.6f}' for k in ('R@1','R@5','R@10')) for q in ('I2T','T2I')]
