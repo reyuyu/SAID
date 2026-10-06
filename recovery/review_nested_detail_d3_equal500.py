@@ -10,6 +10,9 @@ from recovery.nested_detail_d3_equal500 import (
 from recovery.s02_nfs500 import ROOT,OUT,STEP0_SHA,dump,rows,sha,now
 from recovery.s02_full_stage import IMAGES
 
+EXPECTED_WEIGHTS = [1,1,1]
+ISOLATION_KEY = 'config_only_sampling_mode_changed'
+
 
 def main():
     import torch
@@ -35,7 +38,7 @@ def main():
     assert payload['data_cursor']==dict(next_epoch=0,next_batch=500)
     assert len(payload['rng_per_rank'])==4 and payload['trajectory_root']==str(RUN)
     assert payload['config']['resume'] is None and payload['config']['init_sha256']==STEP0_SHA
-    assert payload['config']['sampling_mode']==MODE and payload['config']['view_weights']==[1,1,1]
+    assert payload['config']['sampling_mode']==MODE and payload['config']['view_weights']==EXPECTED_WEIGHTS
     assert {int(s['step']) for s in payload['optimizer']['state'].values()}=={500}
     assert all(k in payload for k in ('model','adapter','optimizer','scheduler','rng_per_rank','sampler','data_cursor'))
     result['full_checkpoint_proof']=dict(passed=True,size_bytes=checkpoint.stat().st_size,global_step=500,horizon=4868,
@@ -78,7 +81,7 @@ def main():
         blob=subprocess.check_output(['git','show',commit+':'+path],cwd=ROOT)
         assert hashlib.sha256(blob).hexdigest()==expected,('Unarchived launch source',path)
         assert sha(ROOT/path)==expected,('Launch code modified',path)
-    assert launch['isolation_proof']['config_only_sampling_mode_changed'] and launch['isolation_proof']['objective_model_sources_unchanged']
+    assert launch['isolation_proof'][ISOLATION_KEY] and launch['isolation_proof']['objective_model_sources_unchanged']
     result['launch_code_snapshot']=dict(commit=commit,all_source_SHA256_matched=True)
     runtime['peak_cgroup_memory_interpretation']='Includes file cache; not RSS. Actual oom_kill checked separately; cache/limit size does not establish OOM.'
     intervals={c['raw_log']:[c['started_utc'],c['ended_utc']] for c in result['commands']}

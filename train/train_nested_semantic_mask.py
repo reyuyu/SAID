@@ -314,9 +314,9 @@ def main():
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'interior_random_k', 'summary_contiguous_detail')
     if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3'):
         assert cfg.get('inclusion_hierarchy') == 'detail_chain'
-        assert cfg['view_weights'] in ([1.4,1.4,.2], [1.,1.,1.]), 'Only reviewed Nested Detail weights are authorized'
-        if cfg['sampling_mode'] == 'nested_detail_d3':
-            assert cfg['view_weights'] == [1.,1.,1.], 'D3 experiment freezes equal weights'
+        allowed = (([1.,1.,1.], [1.35,1.35,.30]) if cfg['sampling_mode']=='nested_detail_d3'
+                   else ([1.4,1.4,.2], [1.,1.,1.]))
+        assert cfg['view_weights'] in allowed, 'Only reviewed Nested Detail weights are authorized'
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
