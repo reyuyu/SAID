@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import subprocess
 import time
 
 from recovery.s02_full_stage import (ROOT,RAW,LOCAL,IMAGES,DB,RESULT,REPORT,LEDGER,OLD_LEDGER,
@@ -98,6 +99,17 @@ def finalize():
             if path.name=='required_training_images.jsonl':
                 artifacts[-1]['time_range_utc']=[None,result['prepared_utc']]
                 artifacts[-1]['time_scope']='Byte-exact reconstruction finished before preflight; precise start was not separately logged'
+            elif path.name=='resource-progress.jsonl':
+                artifacts[-1]['time_range_utc']=[telemetry[0]['utc'],telemetry[-1]['utc']]
+                artifacts[-1]['time_scope']='First and last recorded resource events'
+            elif path.name=='local-cache-advice.jsonl':
+                events=list(rows(path))
+                artifacts[-1]['time_range_utc']=[events[0]['utc'],events[-1]['utc']]
+                artifacts[-1]['time_scope']='First and last recorded cache-advisor events'
+            elif path.name=='local-cache-advice-result.json':
+                event=json.loads(path.read_text())
+                artifacts[-1]['time_range_utc']=[event['started_utc'],event['finished_utc']]
+                artifacts[-1]['time_scope']='Actual advisor lifecycle'
     for path in (OLD_LEDGER,DB):
         if path.exists():
             artifacts.append(dict(path=str(path),bytes=path.stat().st_size,sha256=sha(path),uploaded=False))
@@ -111,6 +123,7 @@ def finalize():
     result['audit_cache_advice_mode']='Original launch uses separate local per-file advisor; final code also advises immediately after each closed local decode. No image bytes or decode semantics changed.'
     result['cache_advisor_summary']=json.loads((RAW/'local-cache-advice-result.json').read_text()) if (RAW/'local-cache-advice-result.json').exists() else None
     result['benchmark_comparison_limit']='Sequential real missing sorted ranges, not repeated identical payloads; family counts recorded. No cached duplicate source passes used for copy benchmarking.'
+    result['phase_final_complete']=False
     if result['ready']:
         v=result['verification']
         if result['status']!='LOCAL_FULL_TRAINING_DATA_READY' or not v['passed'] or v['exact_paths']!=TOTAL or v['local_only_decode_passed']!=TOTAL or v['resolved_sample_paths_checked']<5000:
@@ -163,17 +176,53 @@ def finalize():
     print(json.dumps(dict(status=result['status'],summary=summary,raw_artifacts=len(artifacts)),indent=2))
 
 
+def record_sync():
+    """Record a previously pushed/fetched evidence commit; never start training."""
+    def git(*args):
+        return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
+    branch=git('branch','--show-current')
+    if branch!='recovery/s02-local-full-data':
+        raise RuntimeError('Unexpected publication branch')
+    local=git('rev-parse','HEAD')
+    remote=git('rev-parse','refs/remotes/origin/'+branch)
+    if local!=remote:
+        raise RuntimeError('Fetched remote HEAD differs; sync receipt not written')
+    # Require finalized evidence to be exactly the reviewed, committed versions.
+    for path in (RESULT,REPORT,ROOT/'recovery/S02_LOCAL_FULL_RESOURCE_SUMMARY.json'):
+        committed=subprocess.check_output(['git','show','HEAD:'+str(path.relative_to(ROOT))],cwd=ROOT)
+        if committed!=path.read_bytes():
+            raise RuntimeError('Uncommitted result differs from verified remote evidence')
+    result=json.loads(RESULT.read_text())
+    result['github_sync_complete']=True
+    result['phase_final_complete']=bool(result['ready'])
+    result['github_sync']=dict(branch=branch,verified_data_evidence_commit=local,
+        fetched_remote_evidence_HEAD=remote,remote_evidence_HEAD_equal=True,verified_utc=now(),
+        receipt_scope='This receipt follows the verified evidence commit; the final receipt commit HEAD is checked again after push.',
+        excluded_assets=result['local_only_assets_not_uploaded']+[a['path'] for a in result['local_raw_artifacts']])
+    pending='GitHub sync: pending final commit/push/fetch verification; final phase completion remains false until synchronization succeeds.'
+    completed=(f'GitHub sync: evidence commit `{local}` pushed and fetched on `{branch}`; remote HEAD equals local. '
+        'This receipt is committed separately, then pushed/fetched and its final HEAD checked again. Training remains stopped.')
+    markdown=REPORT.read_text()
+    if pending not in markdown:
+        raise RuntimeError('Finalized report sync marker missing')
+    dump(RESULT,result)
+    REPORT.write_text(markdown.replace(pending,completed))
+    print(json.dumps(result['github_sync'],indent=2))
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=['cache-advisor','finalize'])
+    parser.add_argument('command',choices=['cache-advisor','finalize','record-sync'])
     parser.add_argument('--pid',type=int)
     args=parser.parse_args()
     if args.command=='cache-advisor':
         if not args.pid:
             parser.error('--pid required for cache advisor')
         cache_advisor(args.pid)
-    else:
+    elif args.command=='finalize':
         finalize()
+    else:
+        record_sync()
 
 
 if __name__=='__main__':

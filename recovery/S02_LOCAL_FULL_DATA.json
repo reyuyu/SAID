@@ -1,5 +1,5 @@
 {
-  "status": "LOCAL_FULL_PREFLIGHT_READY",
+  "status": "LOCAL_FULL_TRAINING_DATA_READY",
   "manifest": {
     "path": "/opt/data/private/lklk/SAID/recovery/required_training_images.jsonl",
     "persistent_target": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/required_training_images.jsonl",
@@ -22,7 +22,7 @@
   "remaining_images": 1129084,
   "remaining_bytes": 598544163633,
   "unledgered_existing_images": 0,
-  "destination_free_bytes": 1259174772736,
+  "destination_free_bytes": 655129276416,
   "queue_order": "family (COCO,LLaVA,SAM), source parent directory, filename",
   "storage": {
     "mount": "/      overlay overlay",
@@ -32,7 +32,359 @@
     "source_deletion_forbidden": true
   },
   "prepared_utc": "2026-10-06T06:12:18.328728+00:00",
+  "ready": true,
   "training_started": false,
   "github_sync_complete": false,
-  "ready": false
+  "post_stage_checks": {
+    "CPU_tests": {
+      "command": ".venv/bin/python -m pytest -q recovery/test_s02_full_stage.py recovery/test_nfs500_policy.py recovery/test_s02_stage500.py",
+      "passed": 29,
+      "failed": 0
+    },
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "formal_local_admission_passed": true,
+    "training_launched": false,
+    "copy_audit_advisor_processes_exited": true
+  },
+  "reused_old_files": 116817,
+  "newly_copied_files": 1129084,
+  "copy": {
+    "started_utc": "2026-10-06T06:12:50.303806+00:00",
+    "elapsed_s": 12047.746439889073,
+    "newly_copied_images": 1129084,
+    "newly_copied_bytes": 598544163633,
+    "resumed_prefix_bytes": 0,
+    "benchmarks": [
+      {
+        "workers": 2,
+        "requested_seconds": 180,
+        "elapsed_s": 180.02888095378876,
+        "files": 16986,
+        "bytes": 2779106238,
+        "MiB_s": 14.721872555689057,
+        "files_s": 94.35152798822374,
+        "family_counts": {
+          "coco": 16986
+        },
+        "healthy": true,
+        "source_passes_per_file": 1,
+        "benchmark_scope": "Different real remaining sorted ranges; family composition recorded",
+        "resources": {
+          "samples": 37,
+          "peak_memory_current": 25801146368,
+          "peak_file_cache": 14739390464,
+          "last_memory_current": 25516978176,
+          "last_file_cache": 14445113344,
+          "oom": 0,
+          "oom_kill": 0,
+          "NFS_errors": 0,
+          "IO_PSI_full_avg10_max": 16.47,
+          "memory_PSI_full_avg10_max": 0.0,
+          "PSI_scope": "host /proc/pressure; cgroup v1 does not expose cgroup PSI"
+        }
+      },
+      {
+        "workers": 4,
+        "requested_seconds": 180,
+        "elapsed_s": 180.15768590569496,
+        "files": 37017,
+        "bytes": 6036085271,
+        "MiB_s": 31.952339228002884,
+        "files_s": 205.47000153730247,
+        "family_counts": {
+          "coco": 37017
+        },
+        "healthy": true,
+        "source_passes_per_file": 1,
+        "benchmark_scope": "Different real remaining sorted ranges; family composition recorded",
+        "resources": {
+          "samples": 38,
+          "peak_memory_current": 26404450304,
+          "peak_file_cache": 14893719552,
+          "last_memory_current": 25762312192,
+          "last_file_cache": 14572052480,
+          "oom": 0,
+          "oom_kill": 0,
+          "NFS_errors": 0,
+          "IO_PSI_full_avg10_max": 21.13,
+          "memory_PSI_full_avg10_max": 0.0,
+          "PSI_scope": "host /proc/pressure; cgroup v1 does not expose cgroup PSI"
+        }
+      },
+      {
+        "workers": 6,
+        "requested_seconds": 180,
+        "elapsed_s": 180.03081057220697,
+        "files": 60720,
+        "bytes": 5129433654,
+        "MiB_s": 27.17206637009308,
+        "files_s": 337.27560192062987,
+        "family_counts": {
+          "coco": 15696,
+          "llava": 45024
+        },
+        "healthy": true,
+        "source_passes_per_file": 1,
+        "benchmark_scope": "Different real remaining sorted ranges; family composition recorded",
+        "resources": {
+          "samples": 37,
+          "peak_memory_current": 26089377792,
+          "peak_file_cache": 14892744704,
+          "last_memory_current": 25983381504,
+          "last_file_cache": 14651764736,
+          "oom": 0,
+          "oom_kill": 0,
+          "NFS_errors": 0,
+          "IO_PSI_full_avg10_max": 21.87,
+          "memory_PSI_full_avg10_max": 0.0,
+          "PSI_scope": "host /proc/pressure; cgroup v1 does not expose cgroup PSI"
+        }
+      }
+    ],
+    "errors": [],
+    "pod_anomaly": false,
+    "final_workers": 4,
+    "sustained_copy": {
+      "workers": 4,
+      "requested_seconds": null,
+      "elapsed_s": 8691.369100481272,
+      "files": 1014361,
+      "bytes": 584599538470,
+      "MiB_s": 64.14611539060225,
+      "files_s": 116.70900042017905,
+      "family_counts": {
+        "llava": 444875,
+        "sam": 569486
+      },
+      "healthy": true,
+      "source_passes_per_file": 1,
+      "benchmark_scope": "Different real remaining sorted ranges; family composition recorded",
+      "resources": {
+        "samples": 1736,
+        "peak_memory_current": 30806900736,
+        "peak_file_cache": 17077551104,
+        "last_memory_current": 29017411584,
+        "last_file_cache": 15180734464,
+        "oom": 0,
+        "oom_kill": 0,
+        "NFS_errors": 0,
+        "IO_PSI_full_avg10_max": 22.32,
+        "memory_PSI_full_avg10_max": 0.0,
+        "PSI_scope": "host /proc/pressure; cgroup v1 does not expose cgroup PSI"
+      }
+    }
+  },
+  "verification": {
+    "passed": true,
+    "exact_paths": 1245901,
+    "all_sizes_matched": true,
+    "symlink_to_NFS": 0,
+    "partials_remaining": 0,
+    "random_SHA_RGB_preprocess_exact_samples": 2000,
+    "sample_family_counts": {
+      "sam": 668,
+      "coco": 666,
+      "llava": 666
+    },
+    "local_only_decode_checked": 1245901,
+    "local_only_decode_passed": 1245901,
+    "NFS_audit_fallback": false,
+    "resolved_sample_paths_checked": 5000,
+    "resolved_all_local": true
+  },
+  "peak_cgroup_memory": 36234960896,
+  "pause_reason": null,
+  "finished_utc": "2026-10-06T09:33:38.050725+00:00",
+  "copy_workers_exited": true,
+  "training_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "training_index": "/root/said_s02_stage500/data_index",
+  "NFS_source_preserved": true,
+  "raw_evidence_dir": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local",
+  "local_hash_ledger": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/copy-hashes.jsonl",
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/copy-hashes.jsonl",
+      "bytes": 326129236,
+      "sha256": "c3038974176c61e9a600d37fb9c34b62f8fc7496d4ee0b96e034232010149094",
+      "time_range_utc": [
+        "2026-10-06T06:12:50.303806+00:00",
+        "2026-10-06T09:33:38.050725+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Associated copy/validation run; not an inference from filesystem mtimes"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/equivalence-2000.json",
+      "bytes": 416063,
+      "sha256": "92702d4a7c3dbdb902a2553c90eed0cffc952025a779061b6efabae9ea9f1489",
+      "time_range_utc": [
+        "2026-10-06T06:12:50.303806+00:00",
+        "2026-10-06T09:33:38.050725+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Associated copy/validation run; not an inference from filesystem mtimes"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/local-cache-advice-result.json",
+      "bytes": 324,
+      "sha256": "d03c29df70117c2ec0dbb94aebcf01dd6f92f724e2c0d81e96e4bea6ef3e3aa3",
+      "time_range_utc": [
+        "2026-10-06T06:17:28.198492+00:00",
+        "2026-10-06T09:33:46.889305+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Actual advisor lifecycle"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/local-cache-advice.jsonl",
+      "bytes": 38924,
+      "sha256": "2b4e0ec1e256158c923bb7dae989a646036357fbee2951508c0f8682b27ceb31",
+      "time_range_utc": [
+        "2026-10-06T06:18:29.101785+00:00",
+        "2026-10-06T09:33:22.569565+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "First and last recorded cache-advisor events"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/local-path-proof-5000.json",
+      "bytes": 762873,
+      "sha256": "be7c4fce4bdac0e0f9ecc0e19320bbed307c8d45bd6042c2f7232fad9d13d9d4",
+      "time_range_utc": [
+        "2026-10-06T06:12:50.303806+00:00",
+        "2026-10-06T09:33:38.050725+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Associated copy/validation run; not an inference from filesystem mtimes"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/preflight.json",
+      "bytes": 1369,
+      "sha256": "9d2d77ae21f57b8c40cb5e541092c095f73dfac6db8af95afede751df5bc02de",
+      "time_range_utc": [
+        "2026-10-06T06:12:50.303806+00:00",
+        "2026-10-06T09:33:38.050725+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Associated copy/validation run; not an inference from filesystem mtimes"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/progress.json",
+      "bytes": 2631,
+      "sha256": "b82875c5cb48600a9d311eeca94e9078feb7c19884c5348ed8c4d7aa499a3a55",
+      "time_range_utc": [
+        "2026-10-06T06:12:50.303806+00:00",
+        "2026-10-06T09:33:38.050725+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Associated copy/validation run; not an inference from filesystem mtimes"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/required_training_images.jsonl",
+      "bytes": 316768447,
+      "sha256": "60106915fb9ba11ba4686081d7bddb42536d9779b0d32ae3df83166d1e456c2f",
+      "time_range_utc": [
+        null,
+        "2026-10-06T06:12:18.328728+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "Byte-exact reconstruction finished before preflight; precise start was not separately logged"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/resource-progress.jsonl",
+      "bytes": 433285,
+      "sha256": "83e553dfc7576352c20801cb3b09ff629722e2f26b40c7e8e425284b6f7b981b",
+      "time_range_utc": [
+        "2026-10-06T06:12:50.408386+00:00",
+        "2026-10-06T09:32:56.412768+00:00"
+      ],
+      "uploaded": false,
+      "time_scope": "First and last recorded resource events"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-stage500-local/hash-ledger.jsonl",
+      "bytes": 32091301,
+      "sha256": "bedc7435873a410cd983d8eb9080abad7dac70dde36c5a7b1e43ff0e3cd0caec",
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/full-stage-progress.sqlite",
+      "bytes": 394178560,
+      "sha256": "bee4433b507d04229154f2560a3360f7533ba095c150a9648ffd1712047553af",
+      "uploaded": false
+    }
+  ],
+  "resource_summary": {
+    "status": "LOCAL_FULL_TRAINING_DATA_READY",
+    "finished_utc": "2026-10-06T09:34:53.592640+00:00",
+    "samples": 206,
+    "phase_counts": {
+      "BENCHMARK": 13,
+      "COPY": 146,
+      "VERIFY": 6,
+      "LOCAL_DECODE_AUDIT": 41
+    },
+    "peak_memory_current": 36234960896,
+    "peak_file_cache": 20195536896,
+    "peak_inactive_file": 8989753344,
+    "memory_oom_kill": 0,
+    "memory_oom": 0,
+    "PSI_scope": "host /proc/pressure; cgroup v1 has no per-cgroup PSI",
+    "io_PSI_full_avg10": {
+      "count": 206,
+      "min": 0.0,
+      "max": 22.32,
+      "median": 14.715,
+      "p95": 18.7175
+    },
+    "memory_PSI_full_avg10": {
+      "count": 206,
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0,
+      "p95": 0.0
+    },
+    "copy_rolling5min_MiB_s": {
+      "count": 146,
+      "min": 11.667936528289276,
+      "max": 78.81424373081374,
+      "median": 76.12428367413061,
+      "p95": 78.53335339123907
+    },
+    "pod_anomaly": false,
+    "pause_reason": null,
+    "errors": [],
+    "no_training_started": true,
+    "NFS_source_preserved": true
+  },
+  "local_only_assets_not_uploaded": [
+    "/root/said_s02_stage500/ShareGPT4V",
+    "/root/said_s02_stage500/data_index",
+    "/root/said_s02_stage500/full-ready.json",
+    "/root/said_s02_stage500/full-stage-progress.sqlite"
+  ],
+  "training_path_config": "recovery/configs/s02_local_full_paths.json",
+  "source_of_truth": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V",
+  "risk_record": "Ephemeral Docker overlay cache. Pod rebuild may discard it; restore from persistent manifest/NFS. Never delete NFS images because a local cache exists.",
+  "git_source_commit_launch": "ed9ab013d126316d6af87e306e4213adfd87c5d6",
+  "audit_cache_advice_mode": "Original launch uses separate local per-file advisor; final code also advises immediately after each closed local decode. No image bytes or decode semantics changed.",
+  "cache_advisor_summary": {
+    "started_utc": "2026-10-06T06:17:28.198492+00:00",
+    "finished_utc": "2026-10-06T09:33:46.889305+00:00",
+    "completed_files_advised": 1245901,
+    "image_bytes_read": 0,
+    "NFS_touched": false,
+    "global_drop_caches": false,
+    "scope": "DONTNEED hints only for closed local JPEG files after successful local-only audit"
+  },
+  "benchmark_comparison_limit": "Sequential real missing sorted ranges, not repeated identical payloads; family counts recorded. No cached duplicate source passes used for copy benchmarking.",
+  "phase_final_complete": false,
+  "copy_elapsed_s": 9231.586477912962,
+  "copy_mean_MiB_s": 61.83294685668152,
+  "validation_elapsed_s": 2816.159961976111,
+  "elapsed_scope": "Copy benchmarks + sustained copy + validation; preflight reconstruction/inventory time is separate"
 }
