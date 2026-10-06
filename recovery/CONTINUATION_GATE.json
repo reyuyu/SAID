@@ -1,17 +1,68 @@
 {
-  "status": "INCOMPLETE_HARD_STOP",
+  "status": "REPRODUCTION_PASS",
+  "passed": true,
+  "checks": {
+    "Score5_R1": true,
+    "J_long3": true,
+    "Urban_I2T": true,
+    "Urban_T2I": true,
+    "no_obvious_dataset_collapse": true
+  },
+  "thresholds_percent": {
+    "Score5_R1": 70.164367,
+    "J_long3": 73.403324,
+    "Urban_I2T": 89.1,
+    "Urban_T2I": 87.0
+  },
+  "actual_percent": {
+    "Score5_R1": 70.39705431298876,
+    "J_long3": 73.83842385498127,
+    "J_long": 82.76500226497649,
+    "Short4_R1": 65.235,
+    "Urban_I2T": 89.80000615119934,
+    "Urban_T2I": 88.20000290870667
+  },
+  "delta_vs_historical_S02_pp": {
+    "Score5_R1": 0.032687312988755934,
+    "J_long3": 0.1118128549812667,
+    "J_long": 2.649764923035036e-07,
+    "Short4_R1": -0.08599999999999852
+  },
+  "dataset_R1_deltas_pp": {
+    "COCO": {
+      "I2T": 0.43999999999999595,
+      "T2I": 0.056000000000000494
+    },
+    "Urban-1k": {
+      "I2T": -0.29999613761901855,
+      "T2I": 0.1999974250793457
+    },
+    "Flickr30k-test1k": {
+      "I2T": -0.7000000000000006,
+      "T2I": -0.13999999999999568
+    },
+    "DOCCI": {
+      "I2T": -0.23999999999999577,
+      "T2I": 0.33999999999999586
+    },
+    "Long-DCI": {
+      "I2T": 0.21047092870297712,
+      "T2I": 0.4604051565377576
+    }
+  },
+  "collapsed_directions": [],
+  "collapse_screen": "Invalid/nonfinite R1 or loss of more than50% of historical R1 in any direction; no weight search",
+  "near_boundary": {
+    "Score5_R1": false,
+    "J_long3": false,
+    "Urban_I2T": false,
+    "Urban_T2I": false
+  },
+  "horizon": 4868,
+  "continuation_checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/step000500.pt",
+  "stop_updates": 500,
   "continuation_allowed": false,
   "automatic_continuation": false,
-  "stop_updates": 500,
   "wait_for_next_user_instruction": true,
-  "github_sync": "SUCCESS",
-  "github_branch": "recovery/s02-nfs500-reproduction",
-  "fetch_verified_evidence_commit": "adbcf634f5f8f822eb4172e9d747c981994880ed",
-  "reproduction_task_complete": false,
-  "diagnostic_evidence_sync_complete": true,
-  "true_hard_stop": "FIRST_BATCH_DATA_WAIT_TIMEOUT_60S",
-  "first_five_gate": "NOT_REACHED",
-  "step500_checkpoint_exists": false,
-  "reproduction_evaluated": false,
-  "automatic_retry": false
+  "github_sync": "PENDING"
 }

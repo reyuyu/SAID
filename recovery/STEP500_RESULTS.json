@@ -1,66 +1,299 @@
 {
-  "status": "INCOMPLETE_HARD_STOP",
-  "step": 0,
-  "error": "RuntimeError: train500 process failed, returncode=1; see /opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-nfs500-20261006/train500.log",
-  "evaluated": false,
-  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-nfs500-20261006",
-  "canonical_image_root": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V",
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6068,
+        "R@5": 0.827,
+        "R@10": 0.8948
+      },
+      "T2I": {
+        "R@1": 0.419,
+        "R@5": 0.67288,
+        "R@10": 0.77152
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.8980000615119934,
+        "R@5": 0.9810000658035278,
+        "R@10": 0.9960000514984131
+      },
+      "T2I": {
+        "R@1": 0.8820000290870667,
+        "R@5": 0.9830000400543213,
+        "R@10": 0.9930000305175781
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.868,
+        "R@5": 0.977,
+        "R@10": 0.992
+      },
+      "T2I": {
+        "R@1": 0.7156,
+        "R@5": 0.9138,
+        "R@10": 0.9542
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.763,
+        "R@5": 0.9486,
+        "R@10": 0.9758
+      },
+      "T2I": {
+        "R@1": 0.7676,
+        "R@5": 0.9482,
+        "R@10": 0.9752
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5491975795843199,
+        "R@5": 0.7480926072086294,
+        "R@10": 0.8105761641673244
+      },
+      "T2I": {
+        "R@1": 0.570507761115496,
+        "R@5": 0.7650618258353065,
+        "R@10": 0.8200473559589582
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7039705431298876,
+    "J_long3": 0.7383842385498127,
+    "J_long": 0.827650022649765,
+    "Short4_R1": 0.65235
+  },
+  "scores_percent": {
+    "Score5_R1": 70.39705431298876,
+    "J_long3": 73.83842385498127,
+    "J_long": 82.76500226497649,
+    "Short4_R1": 65.235,
+    "Score5": 70.39705431298876,
+    "Short4": 65.235
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "10d5c156dbef97a53cdac97c8eee7ad1879615e39a32208a1c04489e2f5f496d",
+    "bare_sha256": "dd1ed2ede97139cd8124ca8f665a2950aafccf74b948709ca1a21e5cab25c975"
+  },
+  "checkpoint_sha256": "10d5c156dbef97a53cdac97c8eee7ad1879615e39a32208a1c04489e2f5f496d",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T10:30:54.917593+00:00",
+  "status": "REPRODUCTION_PASS",
+  "CPU_validation": {
+    "passed": 20,
+    "failed": 0,
+    "before_formal_launch": true,
+    "command": ".venv/bin/python -m pytest -q recovery/test_local500_policy.py recovery/test_s02_full_stage.py recovery/test_nfs500_policy.py"
+  },
+  "reproduction_gate": {
+    "status": "REPRODUCTION_PASS",
+    "passed": true,
+    "checks": {
+      "Score5_R1": true,
+      "J_long3": true,
+      "Urban_I2T": true,
+      "Urban_T2I": true,
+      "no_obvious_dataset_collapse": true
+    },
+    "thresholds_percent": {
+      "Score5_R1": 70.164367,
+      "J_long3": 73.403324,
+      "Urban_I2T": 89.1,
+      "Urban_T2I": 87.0
+    },
+    "actual_percent": {
+      "Score5_R1": 70.39705431298876,
+      "J_long3": 73.83842385498127,
+      "J_long": 82.76500226497649,
+      "Short4_R1": 65.235,
+      "Urban_I2T": 89.80000615119934,
+      "Urban_T2I": 88.20000290870667
+    },
+    "delta_vs_historical_S02_pp": {
+      "Score5_R1": 0.032687312988755934,
+      "J_long3": 0.1118128549812667,
+      "J_long": 2.649764923035036e-07,
+      "Short4_R1": -0.08599999999999852
+    },
+    "dataset_R1_deltas_pp": {
+      "COCO": {
+        "I2T": 0.43999999999999595,
+        "T2I": 0.056000000000000494
+      },
+      "Urban-1k": {
+        "I2T": -0.29999613761901855,
+        "T2I": 0.1999974250793457
+      },
+      "Flickr30k-test1k": {
+        "I2T": -0.7000000000000006,
+        "T2I": -0.13999999999999568
+      },
+      "DOCCI": {
+        "I2T": -0.23999999999999577,
+        "T2I": 0.33999999999999586
+      },
+      "Long-DCI": {
+        "I2T": 0.21047092870297712,
+        "T2I": 0.4604051565377576
+      }
+    },
+    "collapsed_directions": [],
+    "collapse_screen": "Invalid/nonfinite R1 or loss of more than50% of historical R1 in any direction; no weight search",
+    "near_boundary": {
+      "Score5_R1": false,
+      "J_long3": false,
+      "Urban_I2T": false,
+      "Urban_T2I": false
+    },
+    "horizon": 4868,
+    "continuation_checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/step000500.pt"
+  },
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006",
   "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
-  "first_five_gate": null,
-  "git_launch_provenance": {
-    "started_utc": "2026-10-06T05:30:26.089933+00:00",
-    "supervisor_pid": 4735,
-    "git_head": "3d1d041da334bd854e4e2c1b495beb5562609025",
-    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "first_five_gate": {
+    "passed": true,
+    "samples": 5120,
+    "exact_sample_ids": true,
+    "exact_FSD_strings_tokens": true,
+    "exact_LR": true,
+    "losses": [
+      60.99950408935547,
+      23.328746795654297,
+      20.395172119140625,
+      18.690505981445312,
+      21.600372314453125
+    ],
+    "cross_run_numeric_comparison": false,
+    "checkpoint": {
+      "passed": true,
+      "optimizer_steps": [
+        5
+      ],
+      "scheduler_horizon": 4868,
+      "authorized_source_changes": {
+        "train/train_nested_semantic_mask.py": {
+          "historical": "56eaa83f7ee3ea9fa97a754a52288fc61adb28dd41129015ec39b129b82c57e3",
+          "current": "0e99107583b878f1d294f4fa6c9cf3516a33b827ed59324a615a75d31680ab4f",
+          "reason": "User-authorized NFS resource control and finite-parameter checking"
+        }
+      },
+      "cross_run_model_and_moment_comparison": false,
+      "scaler": "Historical BF16; no GradScaler"
+    },
+    "rank_parameter_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ],
+    "gate": "BEFORE_UPDATE6",
+    "stop_updates": 500,
+    "horizon": 4868,
     "source_sha256": {
-      "recovery/s02_nfs500.py": "aeae7ef94acbf244a0af5a702ac8f655df908e6895457a3933fdc895489cc9ef",
-      "recovery/nfs500_policy.py": "e35a5b1e9efe5f120d38d3fbefbc972c825a34ed62f240671fa25663d6f8453b",
-      "recovery/configs/summary02_nfs500.json": "a9dc7ddf908f01baabad2ea235c22ea78ac175b4e867dc1f8adcda0bb738da63",
-      "train/train_nested_semantic_mask.py": "84105f376fae5527131f87291adf592efad9e67d0db6811621d52334c4aaad00",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "ba58e15f20e9e43e8f59e376363f49c052696eb3a8d62e2b14cc517b07f18393",
+      "train/train_nested_semantic_mask.py": "0e99107583b878f1d294f4fa6c9cf3516a33b827ed59324a615a75d31680ab4f",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "18dede11f002cfc45a5b3ec278dbbe4210a760b73f6361f11d58797648b73a16"
+    }
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-06T09:52:43.959579+00:00",
+    "started_monotonic": 45687164.73027203,
+    "supervisor_pid": 11609,
+    "git_head": "cae8d5d19ee452ab26bfac4ef2a06b57fff8e102",
+    "source_sha256": {
+      "recovery/s02_local500.py": "8a68cba345075bce131c0d4839b02902293780f2e3badddc64d531ffaac23cd5",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/configs/summary02_local500.json": "a854a7a466b111cf359fa6213860ec93deb6c4e45893a3aa39d44f9d30596815",
+      "train/train_nested_semantic_mask.py": "0e99107583b878f1d294f4fa6c9cf3516a33b827ed59324a615a75d31680ab4f",
       "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
       "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3"
     },
-    "canonical_image_root": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V",
-    "canonical_index": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/data_index",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index": "/root/said_s02_stage500/data_index",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "resume": null,
     "initial_resources": {
-      "timestamp_utc": "2026-10-06T05:30:26.936223+00:00",
+      "timestamp_utc": "2026-10-06T09:52:49.781880+00:00",
       "cgroup_version": 1,
       "cgroup_path": "/sys/fs/cgroup/memory",
-      "memory_current": 19823554560,
+      "memory_current": 25236254720,
       "memory_max": "536870912000",
       "memory_stat": {
-        "cache": 8649916416,
-        "rss": 1781592064,
+        "cache": 10612097024,
+        "rss": 1777385472,
         "rss_huge": 0,
         "shmem": 0,
-        "mapped_file": 236544000,
+        "mapped_file": 235192320,
         "dirty": 0,
-        "writeback": 3244032,
-        "pgpgin": 24914373,
-        "pgpgout": 22366062,
-        "pgfault": 42616035,
-        "pgmajfault": 10989,
+        "writeback": 3514368,
+        "pgpgin": 599920101,
+        "pgpgout": 596893289,
+        "pgfault": 218195175,
+        "pgmajfault": 19305,
         "inactive_anon": 0,
-        "active_anon": 1766240256,
-        "inactive_file": 3755102208,
-        "active_file": 4908761088,
+        "active_anon": 1760157696,
+        "inactive_file": 3951722496,
+        "active_file": 6673793024,
         "unevictable": 0,
         "hierarchical_memory_limit": 536870912000,
-        "total_cache": 8649916416,
-        "total_rss": 1781592064,
+        "total_cache": 10612097024,
+        "total_rss": 1777385472,
         "total_rss_huge": 0,
         "total_shmem": 0,
-        "total_mapped_file": 236544000,
+        "total_mapped_file": 235192320,
         "total_dirty": 0,
-        "total_writeback": 3244032,
-        "total_pgpgin": 24914373,
-        "total_pgpgout": 22366062,
-        "total_pgfault": 42616035,
-        "total_pgmajfault": 10989,
+        "total_writeback": 3514368,
+        "total_pgpgin": 599920101,
+        "total_pgpgout": 596893289,
+        "total_pgfault": 218195175,
+        "total_pgmajfault": 19305,
         "total_inactive_anon": 0,
-        "total_active_anon": 1766240256,
-        "total_inactive_file": 3755102208,
-        "total_active_file": 4908761088,
+        "total_active_anon": 1760157696,
+        "total_inactive_file": 3951722496,
+        "total_active_file": 6673793024,
         "total_unevictable": 0
       },
       "memory_events": {
@@ -69,178 +302,243 @@
         "oom_kill": 0,
         "limit_hits_cumulative": 0
       },
-      "file": 8649916416,
-      "inactive_file": 3755102208,
-      "active_file": 4908761088,
-      "anon": 1781592064,
+      "file": 10612097024,
+      "inactive_file": 3951722496,
+      "active_file": 6673793024,
+      "anon": 1777385472,
       "shmem": 0,
       "cpu_stat": {
-        "nr_periods": 106152,
-        "nr_throttled": 0,
-        "throttled_time": 0
+        "nr_periods": 263549,
+        "nr_throttled": 1,
+        "throttled_time": 235033267
       },
       "memory_PSI": {
         "some": {
           "avg10": 0.0,
           "avg60": 0.0,
           "avg300": 0.0,
-          "total": 27402005381
+          "total": 27402013592
         },
         "full": {
           "avg10": 0.0,
           "avg60": 0.0,
           "avg300": 0.0,
-          "total": 22036497760
+          "total": 22036504927
         }
       },
       "io_PSI": {
         "some": {
-          "avg10": 0.0,
-          "avg60": 0.0,
-          "avg300": 1.33,
-          "total": 485495473895
+          "avg10": 2.55,
+          "avg60": 5.05,
+          "avg300": 1.86,
+          "total": 487044923056
         },
         "full": {
-          "avg10": 0.0,
-          "avg60": 0.0,
-          "avg300": 1.33,
-          "total": 480154873753
+          "avg10": 2.54,
+          "avg60": 5.03,
+          "avg300": 1.85,
+          "total": 481691559230
         }
       },
       "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
       "cgroup_memory_PSI": null,
       "cgroup_io_PSI": null
     },
-    "previous_boot_kernel_evidence": "Unavailable in this pod: journalctl reports no journal files",
-    "local_mirror_used": false,
-    "stop_updates": 500,
-    "horizon": 4868,
+    "disposable_cache": "Ephemeral Docker overlay; NFS originals retained",
     "automatic_retry": false
   },
-  "stopped_at_500": false,
-  "checkpoint_uploaded": false,
-  "full500_sample_stream_proof": {
-    "passed": false,
-    "records_checked": 0,
-    "reason": "No optimizer step completed; first-five and full500 stream gate not reached"
-  },
-  "first_five_gate_status": "NOT_REACHED",
-  "step500_checkpoint_exists": false,
-  "scores_percent": {
-    "Score5": null,
-    "J_long3": null,
-    "J_long": null,
-    "Short4": null
-  },
-  "reproduction_verdict": "NOT_EVALUATED: no step500 checkpoint; cannot label PASS or FAIL_AT_500",
-  "historical_reference": {
-    "metrics": {
-      "COCO": {
-        "I2T": {
-          "R@1": 0.6024,
-          "R@5": 0.8316,
-          "R@10": 0.8976
-        },
-        "T2I": {
-          "R@1": 0.41844,
-          "R@5": 0.67428,
-          "R@10": 0.773
-        }
-      },
-      "Urban-1k": {
-        "I2T": {
-          "R@1": 0.9010000228881836,
-          "R@5": 0.9830000400543213,
-          "R@10": 0.9960000514984131
-        },
-        "T2I": {
-          "R@1": 0.8800000548362732,
-          "R@5": 0.984000027179718,
-          "R@10": 0.9940000176429749
-        }
-      },
-      "Flickr30k-test1k": {
-        "I2T": {
-          "R@1": 0.875,
-          "R@5": 0.976,
-          "R@10": 0.993
-        },
-        "T2I": {
-          "R@1": 0.717,
-          "R@5": 0.9142,
-          "R@10": 0.955
-        }
-      },
-      "DOCCI": {
-        "I2T": {
-          "R@1": 0.7654,
-          "R@5": 0.9498,
-          "R@10": 0.976
-        },
-        "T2I": {
-          "R@1": 0.7642,
-          "R@5": 0.9498,
-          "R@10": 0.9762
-        }
-      },
-      "Long-DCI": {
-        "I2T": {
-          "R@1": 0.5470928702972901,
-          "R@5": 0.7455932649302816,
-          "R@10": 0.8080768218889766
-        },
-        "T2I": {
-          "R@1": 0.5659037095501184,
-          "R@5": 0.7611154959221258,
-          "R@10": 0.8187319126545646
-        }
-      }
+  "stopped_at_500": true,
+  "checkpoint_proof": {
+    "passed": true,
+    "global_step": 500,
+    "horizon": 4868,
+    "rng_ranks": 4,
+    "data_cursor": {
+      "next_epoch": 0,
+      "next_batch": 500
     },
-    "scores_percent": {
-      "Score5": 70.364367,
-      "J_long3": 73.726611,
-      "J_long": 82.765002,
-      "Short4": 65.321
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "optimizer_steps": [
+      500
+    ],
+    "uploaded": false
+  },
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1173.5656784847379,
+        "peak_allocated_gib": 27.75317144393921,
+        "peak_reserved_gib": 28.369140625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1173.6685175001621,
+        "peak_allocated_gib": 27.7598934173584,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1173.5794277861714,
+        "peak_allocated_gib": 27.75901460647583,
+        "peak_reserved_gib": 28.416015625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1173.452287696302,
+        "peak_allocated_gib": 27.75901460647583,
+        "peak_reserved_gib": 28.416015625,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "checkpoint_uploaded": false,
+  "NFS_fallback": false,
+  "training_workers_exited": true,
+  "prelaunch_local_path_proof": {
+    "passed": true,
+    "checked": 5000,
+    "seed": 0,
+    "selection": "Random positions in frozen steps1..500,1250 per rank",
+    "training_RNG_untouched": true,
+    "NFS_fallback": false
+  },
+  "full500_sample_stream_proof": {
+    "passed": true,
+    "records_checked": 512000,
+    "expected_records": 512000,
+    "completed_steps": 500,
+    "manifest_sha256": "ea899755259c82ca9c86915328894009d26ac67df3cb8db57b1eb29cc24aadda",
+    "manifest_path": "/opt/data/private/lklk/SAID/recovery/evidence/s02-stage500-local/ordered-records.jsonl",
+    "historical_manifest_proof": {
+      "status": "MANIFEST_READY",
+      "seed": 0,
+      "global_batch": 1024,
+      "horizon": 4868,
+      "sampling_mode": "summary_random_detail",
+      "view_weights": [
+        1.4,
+        0.2,
+        1.4
+      ],
+      "records_count": 512000,
+      "record_order": "step, rank, rank-local batch position",
+      "unique_images_count": 512000,
+      "family_counts": {
+        "llava": 229118,
+        "coco": 48588,
+        "sam": 234294
+      },
+      "total_bytes": 250901003778,
+      "staged_GB": 250.901003778,
+      "historical_sample_ids_matched": 512000,
+      "historical_FSD_string_token_samples_matched": 5120,
+      "offline_global_RNG_unchanged": true,
+      "ordered_stream_sha256": "ea899755259c82ca9c86915328894009d26ac67df3cb8db57b1eb29cc24aadda",
+      "manifest_sha256": "97230a9cc150d5b841e25ecdbf1e60215b912dfc978a6dc1fd433018a4dd3a45",
+      "historical_source_sha256": "1ce670f64f8d7dc218947f56b3a6b3cc7e4506778b79ffdae64313be49c739ba",
+      "index_records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "config_sha256": "7a8b37927b19ca5a3241ce5308a52dfea09dadc69141645f1bf8deac2936cce3",
+      "local_storage": {
+        "mount": "overlay overlay /",
+        "free_bytes": 1273299562496,
+        "reserve_bytes": 68719476736,
+        "local_root": "/root/said_s02_stage500/ShareGPT4V",
+        "lifecycle": "pod-local; regenerate after pod rebuild"
+      },
+      "generated_at": "2026-10-06T05:03:53.083301+00:00"
+    },
+    "separate_readonly_process": true,
+    "training_RNG_untouched": true,
+    "text_token_stream_first5": "Exact historical reference gate"
+  },
+  "completed_training_invariants": {
+    "passed": true,
+    "exact_step_sequence": "1..500",
+    "losses_and_gradients_finite": true,
+    "all_rank_batches": 256,
+    "global_batch": 1024,
+    "accumulation": 1,
+    "image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "NFS_fallback": false,
+    "start_updates": 0,
+    "resume": null,
+    "horizon": 4868
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "checkpoint_sha256": "dd1ed2ede97139cd8124ca8f665a2950aafccf74b948709ca1a21e5cab25c975",
+      "native_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/coco_native.json",
+      "local_result_sha256": "b587144ffd814f88818e92ba3a9e02492b543d52c8b7fcf655c7b7fcbd184436",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "checkpoint_sha256": "dd1ed2ede97139cd8124ca8f665a2950aafccf74b948709ca1a21e5cab25c975",
+      "native_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/urban_native.json",
+      "local_result_sha256": "38fe8e09103225c2641e410566ce775876428e91ad6a51759af81f16cdf01785",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "checkpoint_sha256": "dd1ed2ede97139cd8124ca8f665a2950aafccf74b948709ca1a21e5cab25c975",
+      "native_student_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/flickr_test1k/flickr_test1k.json",
+      "local_result_sha256": "e689cdbb587524d07f41c09e03e65693038160ce746c0689bbc50dda339bb511",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "checkpoint_sha256": "dd1ed2ede97139cd8124ca8f665a2950aafccf74b948709ca1a21e5cab25c975",
+      "native_student_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/docci/docci.json",
+      "local_result_sha256": "749f3937d2ca13580f7f169164646423f94d31056c27af46c3de8305ec90a104",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "checkpoint_sha256": "dd1ed2ede97139cd8124ca8f665a2950aafccf74b948709ca1a21e5cab25c975",
+      "native_student_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/long_dci/long_dci.json",
+      "local_result_sha256": "3a5ff302e6c76cfdd4a70e46d628c52fc4ab7d1a839c96ec7e3058c6c4efb889",
+      "evaluation_uses_strict_bare_student": true
     }
-  },
-  "automatic_retry": false,
-  "true_hard_stop": "FIRST_BATCH_DATA_WAIT_TIMEOUT_60S",
-  "training_ended_utc": "2026-10-06T05:33:26.772051+00:00",
-  "source_read_failure_observed": false,
-  "physical_EIO_observed": false,
-  "no_copy_workers_verified": true,
-  "all_training_workers_exited": true,
-  "staging_stop": {
-    "status": "STAGE_PAUSED",
-    "copied_images": 116817,
-    "copied_bytes": 11519230546,
-    "local_root": "/root/said_s02_stage500/ShareGPT4V",
-    "workers_exited": true,
-    "stopped_utc": "2026-10-06T05:22:13.887234+00:00",
-    "existing_images_partials_ledgers_preserved": true
-  },
-  "metrics": {
-    "COCO": null,
-    "Urban-1k": null,
-    "Flickr30k-test1k": null,
-    "DOCCI": null,
-    "Long-DCI": null
-  },
-  "historical_deltas_pp": null,
-  "github_sync": {
-    "status": "SUCCESS",
-    "branch": "recovery/s02-nfs500-reproduction",
-    "verified_evidence_commit": "adbcf634f5f8f822eb4172e9d747c981994880ed",
-    "push_success": true,
-    "fetch_remote_HEAD_matched": true,
-    "receipt_commit_HEAD_verification": "Final delivery also fetch-verifies its own HEAD; SHA returned to user"
-  },
-  "validation": {
-    "CPU_unit_tests_passed": 81,
-    "report_consistency_check_passed": true,
-    "secret_credential_size_sanity_passed": true,
-    "no_dataset_checkpoint_raw_log_uploaded": true
-  },
-  "reproduction_task_complete": false,
-  "diagnostic_evidence_sync_complete": true
+  }
 }
