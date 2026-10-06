@@ -4,6 +4,7 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/evaluate_epoch3.py', 'recovery/EPOCH3_RESULTS.md', 'recovery/EPOCH3_RESULTS.json',
     'recovery/s02_local_full.py', 'recovery/test_s02_local_full.py',
     'recovery/full_evidence.py', 'recovery/FULL_RESULTS.md', 'recovery/FULL_RESULTS.json',
     'recovery/full_monitor.py',
