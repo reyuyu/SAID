@@ -1,0 +1,831 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6024,
+        "R@5": 0.826,
+        "R@10": 0.8904
+      },
+      "T2I": {
+        "R@1": 0.41616,
+        "R@5": 0.67256,
+        "R@10": 0.76824
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.909000039100647,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9960000514984131
+      },
+      "T2I": {
+        "R@1": 0.8850000500679016,
+        "R@5": 0.984000027179718,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.88,
+        "R@5": 0.976,
+        "R@10": 0.992
+      },
+      "T2I": {
+        "R@1": 0.7168,
+        "R@5": 0.915,
+        "R@10": 0.9514
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7684,
+        "R@5": 0.9516,
+        "R@10": 0.9806
+      },
+      "T2I": {
+        "R@1": 0.7702,
+        "R@5": 0.9492,
+        "R@10": 0.977
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5569586950802421,
+        "R@5": 0.7434885556432518,
+        "R@10": 0.8074191002367798
+      },
+      "T2I": {
+        "R@1": 0.5701131281241778,
+        "R@5": 0.762694027887398,
+        "R@10": 0.8209681662720337
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7075031912372969,
+    "J_long3": 0.7432786520621614,
+    "J_long": 0.8331500222921371,
+    "Short4_R1": 0.65384
+  },
+  "scores_percent": {
+    "Score5_R1": 70.75031912372968,
+    "J_long3": 74.32786520621613,
+    "J_long": 83.3150022292137,
+    "Short4_R1": 65.384,
+    "Score5": 70.75031912372968,
+    "Short4": 65.384
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "62b40994214fc7cf9a513d72fa71250e7a15be1cc88d206dc55fd62314ea399f",
+    "bare_sha256": "5d050fda9bb0c80fd147fd9efa598a07f640a43ea7f3a95493093cfd7da795bd"
+  },
+  "checkpoint_sha256": "62b40994214fc7cf9a513d72fa71250e7a15be1cc88d206dc55fd62314ea399f",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T16:34:59.477061+00:00",
+  "status": "NESTED_DETAIL_POSITIVE",
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/step000500.pt",
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "first_five_gate": {
+    "passed": true,
+    "samples": 5120,
+    "exact_sample_ids_F_strings_tokens": true,
+    "exact_Dall_strings_tokens": true,
+    "Ds_whole_visible_sentence": true,
+    "exact_LR": true,
+    "cross_run_numeric_comparison": false,
+    "checkpoint": {
+      "passed": true,
+      "optimizer_steps": [
+        5
+      ],
+      "horizon": 4868,
+      "common_step0": true,
+      "construction_initialization_exact": true,
+      "optimizer_groups_order_exact": true,
+      "finite_states": true,
+      "authorized_source_changes": [
+        "model/balanced_hparam_search.py",
+        "train/nested_semantic_data.py",
+        "train/train_nested_semantic_mask.py"
+      ],
+      "cross_run_numeric_comparison": false
+    },
+    "rank_parameter_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ],
+    "gate": "BEFORE_UPDATE6",
+    "stop_updates": 500,
+    "horizon": 4868,
+    "source_sha256": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "78c995a7ff2a23808e948534ba6b0e6ee113643b74967a46d2417a5f3d2aba0e",
+      "train/train_nested_semantic_mask.py": "5591d724add7bedeb28c6f85a4d4af93d469751e1fc49ebd85a42748a0d458ff",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "51c145e032ed09fabf8f401d4e1bef28245db9a64aa9cf5529012d8e79f4c070"
+    }
+  },
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all500_sample_ids_F_strings_tokens_exact": true,
+    "all500_Dall_ordered_visible_Ds_whole_sentence_exact": true,
+    "baseline_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/steps.jsonl",
+    "baseline_steps_sha256": "389af885e4384433f273e9437c4b8c24da7179e5dbe23b6430b2e36293fffaaf",
+    "first5_gate": "BEFORE_UPDATE6"
+  },
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1164.0982482209802,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1164.0637284591794,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1164.1404881253839,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1164.179863654077,
+        "peak_allocated_gib": 27.760382175445557,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-06T15:55:43.160421+00:00",
+    "supervisor_pid": 44899,
+    "git_head": "bacd6513d704658b68c05fdce4e4f3be9b6b6067",
+    "source_sha256": {
+      "recovery/nested_detail500.py": "5f7aaa3c53f28184d3df441baec5430d27fbf5364880caaec7ede0c140a46c96",
+      "experiments/nest_clip_v1/nested_detail_500_v1/config.json": "351488cc55ad8d466a93c3a34f08eee561a5890ae4f34f1f46b975a27819b8de",
+      "model/balanced_hparam_search.py": "51c145e032ed09fabf8f401d4e1bef28245db9a64aa9cf5529012d8e79f4c070",
+      "train/nested_semantic_data.py": "78c995a7ff2a23808e948534ba6b0e6ee113643b74967a46d2417a5f3d2aba0e",
+      "train/train_nested_semantic_mask.py": "5591d724add7bedeb28c6f85a4d4af93d469751e1fc49ebd85a42748a0d458ff",
+      "tools/nest_clip.py": "5810297a7894f76ffca1ed65795b9a35f100811ba0c281503f30c02d9ed7f165",
+      "recovery/nested_detail_gradients.py": "333386f00ac25efdca854d18e69d7c46ccfead64576a14d62c61cfb27343f8e9",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3"
+    },
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index": "/root/said_s02_stage500/data_index",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "resume": null,
+    "initial_resources": {
+      "timestamp_utc": "2026-10-06T15:56:20.216701+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 494689136640,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 488558170112,
+        "rss": 1916600320,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 123678720,
+        "dirty": 0,
+        "writeback": 1486848,
+        "pgpgin": 3326128476,
+        "pgpgout": 3206381878,
+        "pgfault": 5531394957,
+        "pgmajfault": 58080,
+        "inactive_anon": 2433024,
+        "active_anon": 1916276736,
+        "inactive_file": 11007127552,
+        "active_file": 477546967040,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 488558170112,
+        "total_rss": 1916600320,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 123678720,
+        "total_dirty": 0,
+        "total_writeback": 1486848,
+        "total_pgpgin": 3326128476,
+        "total_pgpgout": 3206381878,
+        "total_pgfault": 5531394957,
+        "total_pgmajfault": 58080,
+        "total_inactive_anon": 2433024,
+        "total_active_anon": 1916276736,
+        "total_inactive_file": 11007127552,
+        "total_active_file": 477546967040,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 58556414
+      },
+      "file": 488558170112,
+      "inactive_file": 11007127552,
+      "active_file": 477546967040,
+      "anon": 1916600320,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 481365,
+        "nr_throttled": 3,
+        "throttled_time": 797366108
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27415023781
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22044690419
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.13,
+          "avg60": 0.29,
+          "avg300": 0.08,
+          "total": 487100021635
+        },
+        "full": {
+          "avg10": 0.12,
+          "avg60": 0.27,
+          "avg300": 0.08,
+          "total": 481746337594
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "method_changes": {
+      "views": "F/Dall/Ds",
+      "weights": [
+        1.4,
+        1.4,
+        0.2
+      ],
+      "inclusion": "Dall->F,Ds->Dall only"
+    },
+    "parent_trial_id_note": "Frozen parent trial label retained; actual new objective is explicitly recorded",
+    "disposable_cache": "Ephemeral Docker overlay; persistent NFS originals retained",
+    "automatic_retry": false
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.nested_detail500",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_detail_500_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-06T15:56:20.225926+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/train500.log",
+      "ended_utc": "2026-10-06T16:16:06.033505+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.nested_detail_gradients"
+      ],
+      "started_utc": "2026-10-06T16:16:10.292047+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/gradient500.log",
+      "ended_utc": "2026-10-06T16:17:39.568278+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-06T16:17:44.337539+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/export500.log",
+      "ended_utc": "2026-10-06T16:18:05.498640+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-06T16:18:05.514433+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/verify500.log",
+      "ended_utc": "2026-10-06T16:18:24.571699+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-coco",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/coco_native.json"
+      ],
+      "started_utc": "2026-10-06T16:18:24.586115+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/eval500-coco.log",
+      "ended_utc": "2026-10-06T16:20:36.873704+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-urban",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/urban_native.json"
+      ],
+      "started_utc": "2026-10-06T16:20:36.890379+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/eval500-urban.log",
+      "ended_utc": "2026-10-06T16:21:06.972136+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-flickr_test1k",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/flickr_test1k",
+        "flickr_test1k:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-10-06T16:21:06.987022+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/eval500-flickr_test1k.log",
+      "ended_utc": "2026-10-06T16:21:37.072678+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-docci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/docci",
+        "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-10-06T16:21:37.087266+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/eval500-docci.log",
+      "ended_utc": "2026-10-06T16:26:33.748461+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-long_dci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/long_dci",
+        "long_dci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-10-06T16:26:33.762227+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/eval500-long_dci.log",
+      "ended_utc": "2026-10-06T16:34:56.858139+00:00",
+      "returncode": 0
+    }
+  ],
+  "automatic_continuation": false,
+  "automatic_new_experiments": false,
+  "decision": {
+    "status": "NESTED_DETAIL_POSITIVE",
+    "Urban_R1_percent": {
+      "I2T": 90.9,
+      "T2I": 88.5
+    },
+    "positive_guard": true,
+    "strong_guard": true,
+    "atomic_anomaly": true,
+    "thresholds": {
+      "positive_Urban_T2I_gt": 88.2,
+      "Score5_min": 70.48,
+      "J_long3_min": 74.0,
+      "strong_Urban_T2I_min": 88.7,
+      "strong_Score5_min": 70.684209,
+      "strong_J_long3_min": 74.267014
+    },
+    "strong_guard_interpretation": "No regression against the stronger AllDetail matched500 baseline; tolerance1e-6pp for rounding",
+    "automatic_continuation": false,
+    "automatic_new_experiments": false
+  },
+  "baseline_scores_percent": {
+    "RandomDetail": {
+      "Score5": 70.397054,
+      "J_long3": 73.838424,
+      "J_long": 82.765002,
+      "Short4": 65.235
+    },
+    "AllDetail": {
+      "Score5": 70.684209,
+      "J_long3": 74.267014,
+      "J_long": 83.375002,
+      "Short4": 65.31
+    }
+  },
+  "delta_vs_baselines_pp": {
+    "RandomDetail": {
+      "Score5": 0.35326512372968466,
+      "J_long3": 0.48944120621612797,
+      "J_long": 0.5500002292137083,
+      "Short4": 0.1490000000000009
+    },
+    "AllDetail": {
+      "Score5": 0.06611012372968617,
+      "J_long3": 0.06085120621612816,
+      "J_long": -0.05999977078629115,
+      "Short4": 0.07399999999999807
+    }
+  },
+  "dataset_delta_vs_baselines_pp": {
+    "RandomDetail": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.43999999999999595,
+          "R@5": -0.10000000000000009,
+          "R@10": -0.44000000000000705
+        },
+        "T2I": {
+          "R@1": -0.2840000000000009,
+          "R@5": -0.031999999999998696,
+          "R@10": -0.32799999999999496
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 1.0999977588653564,
+          "R@5": 0.5999982357025146,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 0.3000020980834961,
+          "R@5": 0.09999871253967285,
+          "R@10": 0.09999871253967285
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 1.200000000000001,
+          "R@5": -0.10000000000000009,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 0.11999999999999789,
+          "R@5": 0.12000000000000899,
+          "R@10": -0.28000000000000247
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.539999999999996,
+          "R@5": 0.30000000000000027,
+          "R@10": 0.48000000000000265
+        },
+        "T2I": {
+          "R@1": 0.26000000000000467,
+          "R@5": 0.10000000000000009,
+          "R@10": 0.18000000000000238
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.7761115495922177,
+          "R@5": -0.4604051565377576,
+          "R@10": -0.31570639305446013
+        },
+        "T2I": {
+          "R@1": -0.039463299131814455,
+          "R@5": -0.23677979479084232,
+          "R@10": 0.09208103130755596
+        }
+      }
+    },
+    "AllDetail": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.539999999999996,
+          "R@5": -0.0400000000000067,
+          "R@10": -0.08000000000000229
+        },
+        "T2I": {
+          "R@1": 0.035999999999997145,
+          "R@5": 0.10000000000000009,
+          "R@10": -0.13199999999999878
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": -0.09999871253967285,
+          "R@5": 0.1999974250793457,
+          "R@10": -0.1999974250793457
+        },
+        "T2I": {
+          "R@1": 0.40000081062316895,
+          "R@5": -0.10000467300415039,
+          "R@10": 0.0
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.30000000000000027,
+          "R@5": 0.10000000000000009,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": 0.5000000000000004,
+          "R@5": 0.12000000000000899,
+          "R@10": 0.14000000000000679
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.5400000000000071,
+          "R@5": -0.11999999999999789,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": 0.0,
+          "R@5": 0.10000000000000009,
+          "R@10": -0.08000000000000229
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": -0.7629571165482685,
+          "R@5": -0.5130228887134991,
+          "R@10": -0.19731649565903897
+        },
+        "T2I": {
+          "R@1": 1.3680610365693235,
+          "R@5": 1.0786635096027397,
+          "R@10": 1.0260457774269982
+        }
+      }
+    }
+  },
+  "full_checkpoint_proof": {
+    "passed": true,
+    "size_bytes": 1884188218,
+    "global_step": 500,
+    "horizon": 4868,
+    "data_cursor": {
+      "next_epoch": 0,
+      "next_batch": 500
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "rng_ranks": 4,
+    "AdamW_counters": [
+      500
+    ],
+    "model_adapter_optimizer_present": true,
+    "uploaded": false
+  },
+  "prelaunch_local_only_proof": {
+    "passed": true,
+    "count": 5000,
+    "seed": 0,
+    "epoch": 0,
+    "all_local": true,
+    "NFS_fallback": false,
+    "selection": "Random positions in frozen steps1..500,1250 per rank",
+    "training_RNG_untouched": true
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "checkpoint_sha256": "5d050fda9bb0c80fd147fd9efa598a07f640a43ea7f3a95493093cfd7da795bd",
+      "native_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/coco_native.json",
+      "result_sha256": "140ea6a38531af4cad71219d6095214db2d4a2d22041a918a7935a15b0e05716"
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "checkpoint_sha256": "5d050fda9bb0c80fd147fd9efa598a07f640a43ea7f3a95493093cfd7da795bd",
+      "native_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/urban_native.json",
+      "result_sha256": "e4745093d707eafd40b92f6fee523ab3d48c67ad4b98f9c17ce01f52c361dba6"
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "checkpoint_sha256": "5d050fda9bb0c80fd147fd9efa598a07f640a43ea7f3a95493093cfd7da795bd",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/flickr_test1k/flickr_test1k.json",
+      "result_sha256": "eb81a48badf653512195c291211df8ec30a9e8b5d4c0e872e2e6afd4d913b75b"
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "checkpoint_sha256": "5d050fda9bb0c80fd147fd9efa598a07f640a43ea7f3a95493093cfd7da795bd",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/docci/docci.json",
+      "result_sha256": "6044eadd17d6f1e4f7a01789866c939632deb5b51c2ca76cc6708f06d556f82e"
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "checkpoint_sha256": "5d050fda9bb0c80fd147fd9efa598a07f640a43ea7f3a95493093cfd7da795bd",
+      "native_student_only": true,
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail500-20261006/step500/long_dci/long_dci.json",
+      "result_sha256": "142013b26e66c2f317c5c257b9cb3437acef5e5c92bb2d928aafb0069a929c5c"
+    }
+  },
+  "launch_code_snapshot": {
+    "commit": "bacd6513d704658b68c05fdce4e4f3be9b6b6067",
+    "all_source_SHA256_matched": true
+  },
+  "gradient_summary": {
+    "mean_gradient_norms": {
+      "F": 11.42037832736969,
+      "Dall": 15.080010056495667,
+      "Ds": 48.42653560638428
+    },
+    "mean_cosine_to_native": {
+      "F": 0.7849307283759117,
+      "Dall": 0.4844956286251545,
+      "Ds": 0.03205208025610773
+    },
+    "mean_weighted_alignment_cosine_to_native": 0.6589201763272285
+  },
+  "atomic_pressure_diagnostic": {
+    "CE_ratio_to_Dall": 26.052276379270122,
+    "gradient_norm_ratio_to_Dall": 3.2113065856693312,
+    "threshold": 2.0,
+    "flagged": true,
+    "note": "Descriptive >=2x pressure heuristic, not a causal attribution or training stop rule"
+  }
+}

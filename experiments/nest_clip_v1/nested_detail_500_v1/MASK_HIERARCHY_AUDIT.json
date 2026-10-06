@@ -1,0 +1,59 @@
+{
+  "status": "CHAIN_OBJECTIVE_VERIFIED",
+  "inclusion_edges": [
+    "Dall->F",
+    "Ds->Dall"
+  ],
+  "detached_child": true,
+  "Ds_to_F_direct_edge": false,
+  "sibling_constraint": false,
+  "orthogonality": false,
+  "union_loss": false,
+  "formula": "0.5*(relu(Dall.detach()-F).mean(-1)+relu(Ds.detach()-Dall).mean(-1))",
+  "sparsity": "(Omega_F+2*Omega_Dall+2*Omega_Ds)/3",
+  "ramp_steps": 200,
+  "max_weight": 1,
+  "last50": {
+    "inc": 0.017955864239484073,
+    "inc_weight": 1.0,
+    "F_Dall_mask_iou": 0.9673779416084289,
+    "Dall_Ds_mask_iou": 0.7846819150447846,
+    "Dall_F_hard_violation": 0.011168859768658876,
+    "Ds_Dall_hard_violation": 0.040424185544252395
+  },
+  "selected_steps": {
+    "1": {
+      "inc": 0.025757474824786186,
+      "inc_weight": 0.0,
+      "F_Dall_mask_iou": 0.8696568608283997,
+      "Dall_Ds_mask_iou": 0.6948280334472656,
+      "Dall_F_hard_violation": 0.03306770324707031,
+      "Ds_Dall_hard_violation": 0.08680534362792969
+    },
+    "100": {
+      "inc": 0.007930171675980091,
+      "inc_weight": 0.495,
+      "F_Dall_mask_iou": 0.9857993125915527,
+      "Dall_Ds_mask_iou": 0.936842679977417,
+      "Dall_F_hard_violation": 0.0065460205078125,
+      "Ds_Dall_hard_violation": 0.012491226196289062
+    },
+    "200": {
+      "inc": 0.014881355687975883,
+      "inc_weight": 0.995,
+      "F_Dall_mask_iou": 0.9752457141876221,
+      "Dall_Ds_mask_iou": 0.8591466546058655,
+      "Dall_F_hard_violation": 0.009044647216796875,
+      "Ds_Dall_hard_violation": 0.023157119750976562
+    },
+    "500": {
+      "inc": 0.02080386132001877,
+      "inc_weight": 1.0,
+      "F_Dall_mask_iou": 0.9629347324371338,
+      "Dall_Ds_mask_iou": 0.790681004524231,
+      "Dall_F_hard_violation": 0.012495040893554688,
+      "Ds_Dall_hard_violation": 0.04665374755859375
+    }
+  },
+  "note": "Soft inclusion encourages nesting; hard masks need not have zero violation"
+}
