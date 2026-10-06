@@ -1,8 +1,8 @@
 # Local SSD first500 staging and reproduction
 
-Updated UTC: 2026-10-06T00:59:23.630010+00:00
+Updated UTC: 2026-10-06T01:17:15.486519+00:00
 
-Trajectory: `/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3`; status: `REPRODUCTION_PASS_LOCAL_FULL_COPY_PENDING`.
+Trajectory: `/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3`; status: `EVALUATING`.
 
 IO-only override; frozen sampling/preprocessing/model/loss/optimizer and horizon4868 unchanged. Native3 consecutive full cycles>3s protection unchanged. Fresh common step0; no resume of diagnostic or stopped runs.
 

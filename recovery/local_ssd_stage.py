@@ -23,7 +23,7 @@ from PIL import Image
 import torch
 from torch.utils.data import DistributedSampler
 
-from recovery.resource_stall_v2 import ROOT, GIB, dump, process_audit, system_snapshot
+from recovery.resource_stall_v2 import ROOT, GIB, dump, process_audit, system_snapshot, summary
 
 
 EXP = ROOT / "experiments/nest_clip_v1/armb_summary02_4epoch_v1"
@@ -332,8 +332,31 @@ def verify():
         raise RuntimeError("Cgroup still near500GiB; hold training without any global cache operation")
 
 
+def report_resources():
+    runtime = ROOT / "runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3"
+    phases = Path("/tmp/said-s02-full-phase-localssd-v3/step500")
+    cycles = list(manifest_rows(runtime / "step500/cycle_timing.jsonl"))
+    assert len(cycles) == 500 and cycles[-1]["step"] == 500
+    ranks = {}
+    for rank in range(4):
+        rows = [row for row in manifest_rows(phases / f"rank{rank}.jsonl") if 7 <= row["step"] <= 500]
+        assert len(rows) == 494
+        timings = {key: summary([row[key] for row in rows]) for key in
+                   ("data_wait_s", "h2d_s", "forward_s", "backward_s", "optimizer_s")}
+        timings.update(backward_includes_DDP=True, distinct_DDP_timing_available=False,
+                       maximum_cgroup_current_GiB=max(row["system_after"]["memory_current"] for row in rows) / GIB,
+                       PSI_scope="host /proc/pressure, not cgroup-specific on this v1 host")
+        ranks[str(rank)] = timings
+    result = dict(passed=True, optimizer_updates=500, steady_updates="7..500",
+                  full_cycle_s=summary([row["four_rank_max_seconds"] for row in cycles if row["step"] >= 7]),
+                  ranks=ranks, resource_protection="Unchanged native3 consecutive full cycles>3s", algorithm_changes=False)
+    dump(EXP / "evidence/reproduction/local500-phase-summary.json", result)
+    print(json.dumps(result), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("prepare", "copy500", "verify", "copyfull"))
+    parser.add_argument("command", choices=("prepare", "copy500", "verify", "copyfull", "resources"))
     choice = parser.parse_args().command
-    {"prepare": prepare, "copy500": copy_images, "verify": verify, "copyfull": lambda: copy_images(True)}[choice]()
+    {"prepare": prepare, "copy500": copy_images, "verify": verify, "copyfull": lambda: copy_images(True),
+     "resources": report_resources}[choice]()
