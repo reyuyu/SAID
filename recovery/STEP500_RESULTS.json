@@ -1,0 +1,230 @@
+{
+  "status": "INCOMPLETE_HARD_STOP",
+  "step": 0,
+  "error": "RuntimeError: train500 process failed, returncode=1; see /opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-nfs500-20261006/train500.log",
+  "evaluated": false,
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-nfs500-20261006",
+  "canonical_image_root": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V",
+  "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "first_five_gate": null,
+  "git_launch_provenance": {
+    "started_utc": "2026-10-06T05:30:26.089933+00:00",
+    "supervisor_pid": 4735,
+    "git_head": "3d1d041da334bd854e4e2c1b495beb5562609025",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "source_sha256": {
+      "recovery/s02_nfs500.py": "aeae7ef94acbf244a0af5a702ac8f655df908e6895457a3933fdc895489cc9ef",
+      "recovery/nfs500_policy.py": "e35a5b1e9efe5f120d38d3fbefbc972c825a34ed62f240671fa25663d6f8453b",
+      "recovery/configs/summary02_nfs500.json": "a9dc7ddf908f01baabad2ea235c22ea78ac175b4e867dc1f8adcda0bb738da63",
+      "train/train_nested_semantic_mask.py": "84105f376fae5527131f87291adf592efad9e67d0db6811621d52334c4aaad00",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3"
+    },
+    "canonical_image_root": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V",
+    "canonical_index": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/data_index",
+    "initial_resources": {
+      "timestamp_utc": "2026-10-06T05:30:26.936223+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 19823554560,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 8649916416,
+        "rss": 1781592064,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 236544000,
+        "dirty": 0,
+        "writeback": 3244032,
+        "pgpgin": 24914373,
+        "pgpgout": 22366062,
+        "pgfault": 42616035,
+        "pgmajfault": 10989,
+        "inactive_anon": 0,
+        "active_anon": 1766240256,
+        "inactive_file": 3755102208,
+        "active_file": 4908761088,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 8649916416,
+        "total_rss": 1781592064,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 236544000,
+        "total_dirty": 0,
+        "total_writeback": 3244032,
+        "total_pgpgin": 24914373,
+        "total_pgpgout": 22366062,
+        "total_pgfault": 42616035,
+        "total_pgmajfault": 10989,
+        "total_inactive_anon": 0,
+        "total_active_anon": 1766240256,
+        "total_inactive_file": 3755102208,
+        "total_active_file": 4908761088,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 0
+      },
+      "file": 8649916416,
+      "inactive_file": 3755102208,
+      "active_file": 4908761088,
+      "anon": 1781592064,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 106152,
+        "nr_throttled": 0,
+        "throttled_time": 0
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27402005381
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22036497760
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 1.33,
+          "total": 485495473895
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 1.33,
+          "total": 480154873753
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "previous_boot_kernel_evidence": "Unavailable in this pod: journalctl reports no journal files",
+    "local_mirror_used": false,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "automatic_retry": false
+  },
+  "stopped_at_500": false,
+  "checkpoint_uploaded": false,
+  "full500_sample_stream_proof": {
+    "passed": false,
+    "records_checked": 0,
+    "reason": "No optimizer step completed; first-five and full500 stream gate not reached"
+  },
+  "first_five_gate_status": "NOT_REACHED",
+  "step500_checkpoint_exists": false,
+  "scores_percent": {
+    "Score5": null,
+    "J_long3": null,
+    "J_long": null,
+    "Short4": null
+  },
+  "reproduction_verdict": "NOT_EVALUATED: no step500 checkpoint; cannot label PASS or FAIL_AT_500",
+  "historical_reference": {
+    "metrics": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.6024,
+          "R@5": 0.8316,
+          "R@10": 0.8976
+        },
+        "T2I": {
+          "R@1": 0.41844,
+          "R@5": 0.67428,
+          "R@10": 0.773
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9010000228881836,
+          "R@5": 0.9830000400543213,
+          "R@10": 0.9960000514984131
+        },
+        "T2I": {
+          "R@1": 0.8800000548362732,
+          "R@5": 0.984000027179718,
+          "R@10": 0.9940000176429749
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.875,
+          "R@5": 0.976,
+          "R@10": 0.993
+        },
+        "T2I": {
+          "R@1": 0.717,
+          "R@5": 0.9142,
+          "R@10": 0.955
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 0.7654,
+          "R@5": 0.9498,
+          "R@10": 0.976
+        },
+        "T2I": {
+          "R@1": 0.7642,
+          "R@5": 0.9498,
+          "R@10": 0.9762
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 0.5470928702972901,
+          "R@5": 0.7455932649302816,
+          "R@10": 0.8080768218889766
+        },
+        "T2I": {
+          "R@1": 0.5659037095501184,
+          "R@5": 0.7611154959221258,
+          "R@10": 0.8187319126545646
+        }
+      }
+    },
+    "scores_percent": {
+      "Score5": 70.364367,
+      "J_long3": 73.726611,
+      "J_long": 82.765002,
+      "Short4": 65.321
+    }
+  },
+  "automatic_retry": false,
+  "true_hard_stop": "FIRST_BATCH_DATA_WAIT_TIMEOUT_60S",
+  "training_ended_utc": "2026-10-06T05:33:26.772051+00:00",
+  "source_read_failure_observed": false,
+  "physical_EIO_observed": false,
+  "no_copy_workers_verified": true,
+  "all_training_workers_exited": true,
+  "staging_stop": {
+    "status": "STAGE_PAUSED",
+    "copied_images": 116817,
+    "copied_bytes": 11519230546,
+    "local_root": "/root/said_s02_stage500/ShareGPT4V",
+    "workers_exited": true,
+    "stopped_utc": "2026-10-06T05:22:13.887234+00:00",
+    "existing_images_partials_ledgers_preserved": true
+  },
+  "metrics": {
+    "COCO": null,
+    "Urban-1k": null,
+    "Flickr30k-test1k": null,
+    "DOCCI": null,
+    "Long-DCI": null
+  },
+  "historical_deltas_pp": null
+}

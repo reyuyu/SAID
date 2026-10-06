@@ -91,10 +91,15 @@ def worker():
             dump(path, dict(state='DATA_WAIT', rank=self.recorder.rank,
                             step=self.recorder.counter + 1, started_monotonic=time.monotonic(), utc=now()))
             try:
-                return super().__next__()
-            finally:
+                value = super().__next__()
+            except BaseException:
+                dump(path, dict(state='DATA_WAIT_FAILED', rank=self.recorder.rank,
+                                step=self.recorder.counter, utc=now()))
+                raise
+            else:
                 dump(path, dict(state='BATCH_RETURNED', rank=self.recorder.rank,
                                 step=self.recorder.counter, utc=now()))
+                return value
 
     # A top-level dataset is required for spawn workers; only import after torchrun.
     timing.TimedIterator = HeartbeatIterator
@@ -324,8 +329,10 @@ class Supervisor:
                  'Slow steps only warn; no samples skipped/replaced, no workers/batch/math changed. Detailed phase telemetry includes backward/DDP, optimizer, memory, PSI and GPU utilization.', '',
                  'Five-set strict native scores (%): `' + json.dumps(scores) + '`.',
                  'Both directions R@1/5/10 and historical deltas are in STEP500_RESULTS.json; all-step and rank statistics in NFS_RUNTIME_STATS.json and NFS_PER_STEP_SUMMARY.json.', '',
-                 'Complete resumable checkpoint remains local: `' + str(self.train / 'step000500.pt') + '`.',
-                 'Strict bare export and evaluation leave that checkpoint unchanged. No continuation is authorized; PASS and FAIL both stop500.', '',
+                 ('Complete resumable checkpoint remains local: `' + str(self.train / 'step000500.pt') + '`.'
+                  if (self.train / 'step000500.pt').exists() else 'No step500 checkpoint exists; training did not reach500.'),
+                 ('Strict bare export and evaluation left the checkpoint unchanged.' if self.result else 'Strict export and five-set evaluation were not run.'),
+                 'No continuation is authorized; PASS and FAIL both stop500.', '',
                  'Raw logs remain local; reviewed inventory (paths, SHA256, size and UTC scope) is in NFS_RUNTIME_STATS.json. Checkpoints/datasets/images/caches are excluded from GitHub.',
                  'GitHub synchronization: PENDING; phase is not marked finally complete.', '',
                  'Error: ' + str(self.error)]

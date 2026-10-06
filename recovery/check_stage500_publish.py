@@ -4,6 +4,7 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/nfs500_evidence.py',
     'recovery/nfs500_policy.py', 'recovery/s02_nfs500.py', 'recovery/test_nfs500_policy.py',
     'recovery/configs/summary02_nfs500.json', 'train/train_nested_semantic_mask.py',
     'experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py',
@@ -19,6 +20,7 @@ PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),
     re.compile(rb'\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b'),
+    re.compile(rb'\bhf_[A-Za-z0-9]{20,}\b'),
     re.compile(rb'(?i)(?:https?://[^\s"<>]+[?&](?:x-amz-signature|signature|sig|token|access_token)=)'),
     re.compile(rb'(?i)(?:authorization\s*[:=]\s*["\x27]?(?:bearer|basic)\s+[a-z0-9+/=._-]{12,})'),
     re.compile(rb'(?i)(?:secret_access_key|aws_secret_access_key|access_token|api_key|password|cookie)\s*["\x27]?\s*[:=]\s*["\x27][^"\x27\s]{12,}["\x27]'),
