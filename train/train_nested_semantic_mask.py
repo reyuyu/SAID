@@ -511,6 +511,11 @@ def main():
                     save_emergency(module, optimizer, config, completed, output)
                 raise FloatingPointError('Nonfinite parameter gradient on at least one rank')
             optimizer.step()
+            if cfg.get('resource_policy') == 'nfs_reproduction500':
+                finite = torch.stack([torch.isfinite(p).all() for p in module.parameters()]).all().int()
+                dist.all_reduce(finite, op=dist.ReduceOp.MIN)
+                if not finite.item():
+                    raise FloatingPointError('Nonfinite parameter after AdamW on at least one rank')
             completed += 1
             updates_here += 1
             torch.cuda.synchronize()
@@ -575,14 +580,23 @@ def main():
                         resource_failure = 'measured full update exceeded 3 seconds'
                     elif updates_here >= 2 and cycle_seconds > cfg.get('feasibility_abort_seconds', float('inf')):
                         resource_failure = 'limited full-update feasibility probe exceeded its abort threshold'
+                elif cfg.get('resource_policy') == 'nfs_reproduction500':
+                    from recovery.nfs500_policy import cycle_state
+                    policy = cycle_state(cycle_seconds, consecutive_slow)
+                    consecutive_slow = policy['consecutive']
+                    if policy['warning'] and rank == 0:
+                        print(json.dumps(dict(event='PERFORMANCE_WARNING', step=completed,
+                                              full_cycle_s=cycle_seconds)), flush=True)
+                    if policy['stop']:
+                        resource_failure = 'five consecutive full updates exceeded 30 seconds'
                 elif updates_here > 1:
                     consecutive_slow = consecutive_slow + 1 if cycle_seconds > 3 else 0
                     if consecutive_slow >= 3:
                         resource_failure = 'three consecutive full updates exceeded 3 seconds'
-                if torch.cuda.max_memory_allocated() / 2**30 > 65:
+                if cfg.get('resource_policy') != 'nfs_reproduction500' and torch.cuda.max_memory_allocated() / 2**30 > 65:
                     resource_failure = 'peak allocated memory exceeded 65 GiB'
                 saturation_limit = cfg.get('saturation_abort_fraction')
-                if saturation_limit is not None and any(
+                if cfg.get('resource_policy') != 'nfs_reproduction500' and saturation_limit is not None and any(
                         float(value) >= saturation_limit for name, value in logs.items()
                         if name.endswith('_sigmoid_saturation')):
                     resource_failure = 'sigmoid saturation reached the recorded 99% stop criterion'

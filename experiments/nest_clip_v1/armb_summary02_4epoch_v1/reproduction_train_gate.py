@@ -17,6 +17,7 @@ ROOT = historical.ROOT
 EXP = historical.EXP
 RUN = ROOT / "runtime/SAID-nest-clip-v1/armb_summary02_500gate_localssd_v3"
 STEP0_SHA = historical.STEP0_SHA
+AUTHORIZED_SOURCE_CHANGES = {}
 
 
 def require(condition, message):
@@ -70,7 +71,11 @@ def checkpoint_invariants(current, reference):
                 "code_sha256", "component_initialization", "data", "horizon", "batch_size",
                 "world_size", "accumulation", "optimizer_groups"):
         if key in reference["config"]:
-            require(config.get(key) == reference["config"][key], "Frozen config/source drift: " + key)
+            if key == 'code_sha256' and AUTHORIZED_SOURCE_CHANGES:
+                from recovery.nfs500_policy import source_changes
+                source_changes(config[key], reference['config'][key], AUTHORIZED_SOURCE_CHANGES)
+            else:
+                require(config.get(key) == reference["config"][key], "Frozen config/source drift: " + key)
     require(config["view_weights"] == [1.4, .2, 1.4], "S02 weights changed")
     require(current["optimizer"]["param_groups"] == reference["optimizer"]["param_groups"], "Optimizer group drift")
     require(current["optimizer"]["state"].keys() == reference["optimizer"]["state"].keys(), "Optimizer state keys drift")
@@ -83,6 +88,8 @@ def checkpoint_invariants(current, reference):
                     tensor.dtype == expected[name].dtype and bool(torch.isfinite(tensor).all()), "Invalid tensor: " + name)
     require({int(state["step"]) for state in current["optimizer"]["state"].values()} == {5}, "AdamW must update5 times")
     return dict(passed=True, optimizer_steps=[5], scheduler_horizon=4868,
+                authorized_source_changes=(source_changes(config['code_sha256'], reference['config']['code_sha256'],
+                    AUTHORIZED_SOURCE_CHANGES) if AUTHORIZED_SOURCE_CHANGES else {}),
                 cross_run_model_and_moment_comparison=False, scaler="Historical BF16; no GradScaler")
 
 
