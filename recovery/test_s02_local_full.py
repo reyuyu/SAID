@@ -21,3 +21,11 @@ def test_continuation_lr_retains_native_horizon_and_group_order():
 def test_stream_digest_detects_order_and_text_changes():
     assert digest({'sample_ids':[1,2],'views':['A','B']})!=digest({'sample_ids':[2,1],'views':['A','B']})
     assert digest({'tokens':[1,2]})!=digest({'tokens':[1,3]})
+
+
+def test_dataset_survives_spawn_pickle():
+    import pickle
+    from recovery.s02_local_full import LocalDataset,INDEX,IMAGES
+    data=LocalDataset(INDEX,IMAGES,'summary_random_detail',0)
+    restored=pickle.loads(pickle.dumps(data))
+    assert type(restored) is LocalDataset and restored.image_root==IMAGES

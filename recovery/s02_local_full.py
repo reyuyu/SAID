@@ -22,6 +22,13 @@ REVIEW = RUN / 'full-reviewed'
 FINAL = RUN / 'step4868'
 
 
+class LocalDataset(previous.LoggedLocalDataset):
+    """Module-level class is spawn-picklable; worker path logs use full phase."""
+    def __getitem__(self,index):
+        previous.PHASE=PHASE
+        return super().__getitem__(index)
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
 
@@ -134,8 +141,6 @@ def worker():
                 dump(REVIEW/f'resume-batch-{step}-rank{self.recorder.rank}.json',dict(passed=True,**expected,epoch=self.epoch,batch_cursor=self.position-1))
             dump(path,dict(event,state='ACTIVE_STEP'))
             return value
-    class LocalDataset(previous.LoggedLocalDataset):
-        pass
     previous.PHASE=PHASE
     timing.TimedIterator=HeartbeatIterator
     local_image_dataset.LocalImageDataset=LocalDataset
