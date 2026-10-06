@@ -311,10 +311,12 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'interior_random_k', 'summary_contiguous_detail')
-    if cfg['sampling_mode'] == 'nested_detail':
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'interior_random_k', 'summary_contiguous_detail')
+    if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3'):
         assert cfg.get('inclusion_hierarchy') == 'detail_chain'
         assert cfg['view_weights'] in ([1.4,1.4,.2], [1.,1.,1.]), 'Only reviewed Nested Detail weights are authorized'
+        if cfg['sampling_mode'] == 'nested_detail_d3':
+            assert cfg['view_weights'] == [1.,1.,1.], 'D3 experiment freezes equal weights'
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
@@ -562,6 +564,7 @@ def main():
                                            ['Summary', 'Contiguous Detail'] if cfg['sampling_mode']=='summary_contiguous_detail' else
                                            ['Summary', 'All Detail'] if cfg['sampling_mode']=='summary_all_detail' else
                                            ['All Detail', 'Atomic Detail'] if cfg['sampling_mode']=='nested_detail' else
+                                           ['All Detail', 'Partial Detail D3'] if cfg['sampling_mode']=='nested_detail_d3' else
                                            ['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
                                            ['prefix', 'remainder'] if cfg['sampling_mode'] in ('random_k', 'interior_random_k') else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),

@@ -71,6 +71,17 @@ def sample_atomic_detail_index(n, sampling_seed, epoch, sample_id):
     return random.Random(int.from_bytes(hashlib.sha256(material).digest(), 'big')).randrange(1, n)
 
 
+def sample_partial_detail_indices(n, sampling_seed, epoch, sample_id):
+    """Uniform ordered strict subset up to three sentences; singleton unchanged."""
+    m = n-1
+    if m < 1:
+        return []
+    k = min(3, m-1) if m >= 2 else 1
+    material = f'{int(sampling_seed)}:{int(epoch)}:{int(sample_id)}:nested_detail_d3_v1'.encode()
+    rng = random.Random(int.from_bytes(hashlib.sha256(material).digest(), 'big'))
+    return sorted(rng.sample(range(1, n), k))
+
+
 def sample_interior_split_k(n, sampling_seed, epoch, sample_id):
     if n < 4:
         return sample_split_k(n, sampling_seed, epoch, sample_id)
@@ -98,13 +109,15 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     n=0, K=0 marks the overlong-first-segment fallback (no complete visible
     segment count); n=1, K=0 marks a single visible segment.
     """
-    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'interior_random_k', 'summary_contiguous_detail'):
+    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'interior_random_k', 'summary_contiguous_detail'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
                   reference_tokens_o=original['tokens_o'],
                   reference_tokens_e=original['tokens_e'])
-    if sampling_mode == 'nested_detail':
+    if sampling_mode == 'nested_detail_d3':
+        result['partial_detail'] = True
+    if sampling_mode in ('nested_detail', 'nested_detail_d3'):
         if not original['valid']:
             padding = torch.zeros_like(original['tokens_f'])
             result.update(tokens_o=padding, tokens_e=padding.clone(), valid=False,
@@ -114,16 +127,18 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                 detail_pool_size=0, detail_indices=[], dall_indices=[])
             return result
         parts = original['views'][0].split('. ')
-        j = sample_atomic_detail_index(len(parts), sampling_seed, epoch, sample_id)
-        dall, ds = '. '.join(parts[1:]), parts[j]
+        indices = (sample_partial_detail_indices(len(parts), sampling_seed, epoch, sample_id)
+                   if sampling_mode == 'nested_detail_d3' else
+                   [sample_atomic_detail_index(len(parts), sampling_seed, epoch, sample_id)])
+        dall, ds = '. '.join(parts[1:]), '. '.join(parts[j] for j in indices)
         lengths = [len(longclip._tokenizer.encode(s))+2 for s in (dall, ds)]
         assert max(lengths) <= 248, ('visible detail token overflow', sample_id, lengths)
         local = longclip.tokenize([dall, ds], context_length=248, truncate=False)
         result.update(tokens_o=local[0], tokens_e=local[1], valid=True,
-            reason='nested_detail', views=[original['views'][0], dall, ds],
+            reason=sampling_mode, views=[original['views'][0], dall, ds],
             untruncated_lengths=[original['untruncated_lengths'][0], *lengths],
-            n=len(parts), K=1, detail_pool_size=len(parts)-1,
-            detail_indices=[j], dall_indices=list(range(1, len(parts))))
+            n=len(parts), K=len(indices), detail_pool_size=len(parts)-1,
+            detail_indices=indices, dall_indices=list(range(1, len(parts))))
         return result
     if sampling_mode in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         if not original['valid']:
@@ -235,6 +250,7 @@ def sampling_diagnostics(batch):
                 split_sha256=digest(dict(sample_ids=ids, n=ns, K=ks)),
                 fixed_first_reference_stream_sha256=digest(reference))
     if 'dall_indices' in batch:
+        partial = bool(batch.get('partial_detail', False))
         eot = longclip._tokenizer.encoder['<|endoftext|>']
         chosen = [i for i, enabled in enumerate(valid) if enabled]
         lengths = [[tokens[j][i].index(eot)+1 for i in chosen] for j in range(3)]
@@ -249,13 +265,29 @@ def sampling_diagnostics(batch):
         result['nested_detail_exact'] = all(
             (batch['views'][i][1] == '. '.join(batch['views'][i][0].split('. ')[1:])
              and batch['dall_indices'][i] == list(range(1, ns[i]))
-             and len(batch['detail_indices'][i]) == 1
-             and 1 <= batch['detail_indices'][i][0] < ns[i]
-             and batch['views'][i][2] == batch['views'][i][0].split('. ')[batch['detail_indices'][i][0]]
+             and len(batch['detail_indices'][i]) == (min(3, ns[i]-2) if partial and ns[i]>=3 else 1)
+             and batch['detail_indices'][i] == sorted(set(batch['detail_indices'][i]))
+             and all(1 <= j < ns[i] for j in batch['detail_indices'][i])
+             and batch['views'][i][2] == '. '.join(batch['views'][i][0].split('. ')[j] for j in batch['detail_indices'][i])
              and tokens[1][i] == batch['reference_tokens_e'][i].tolist()) if enabled else
             (batch['views'][i][1:] == [None,None] and tokens[1][i] == tokens[2][i] == [0]*248
              and batch['detail_indices'][i] == batch['dall_indices'][i] == [])
             for i, enabled in enumerate(valid))
+        if partial:
+            # Existing model/phase fields use the internal E/Ds slot; extra D3
+            # telemetry makes its actual semantics explicit without graph changes.
+            result['nested_d3_exact'] = result['nested_detail_exact']
+            pools = batch['detail_pool_size'].tolist()
+            result['nested_d3_statistics'] = dict(
+                records=len(ids), valid_samples=sum(valid),
+                K_eff_histogram=histogram(ks),
+                D3_sentence_count_histogram=histogram([len(batch['detail_indices'][i]) for i in chosen]),
+                m_histogram=histogram(pools),
+                degenerate_samples=sum(m <= 1 for m in pools),
+                strict_subset_samples=sum(enabled and len(batch['detail_indices'][i]) < pools[i]
+                                          for i, enabled in enumerate(valid)),
+                selected_sentence_position_histogram_1based=histogram(
+                    [j+1 for i in chosen for j in batch['detail_indices'][i]]))
         return result
     if any(reason in ('summary_detail', 'single_raw_segment', 'summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail', 'no_visible_detail') for reason in batch['reason']):
         # Metadata only; EOT index counts real token ID0 correctly as content.
@@ -329,7 +361,7 @@ class NestedDataset(Dataset):
         self.index_dir, self.image_root = Path(index_dir), Path(image_root)
         self.metadata = json.loads((self.index_dir / 'metadata.json').read_text())
         self.transform = reference_view_a_transform()
-        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'interior_random_k', 'summary_contiguous_detail'):
+        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'interior_random_k', 'summary_contiguous_detail'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
         self._records = self._offsets = self._file = None
@@ -373,4 +405,7 @@ def collate(samples):
         result['detail_pool_size'] = torch.tensor([s['detail_pool_size'] for s in samples])
     if 'dall_indices' in samples[0]:
         result['dall_indices'] = [s['dall_indices'] for s in samples]
+    if 'partial_detail' in samples[0]:
+        assert all(s['partial_detail'] for s in samples)
+        result['partial_detail'] = True
     return result

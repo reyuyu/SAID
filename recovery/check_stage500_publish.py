@@ -4,6 +4,19 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/nested_detail_d3_equal500.py',
+    'recovery/nested_detail_d3_gradients.py',
+    'recovery/review_nested_detail_d3_equal500.py',
+    'tests/test_nested_detail_d3.py',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/config.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/REPORT.md',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/RESULTS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/TRAINING_DIAGNOSTICS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/SAMPLING_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/MASK_HIERARCHY_AUDIT.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/GRADIENT_SPOTCHECK.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/RUNTIME_STATS.json',
+    'experiments/nest_clip_v1/nested_detail_d3_equal_500_v1/VALIDATION.json',
     'recovery/nested_detail_equal_weight500.py',
     'recovery/nested_detail_equal_weight_gradients.py',
     'recovery/review_nested_detail_equal_weight500.py',
