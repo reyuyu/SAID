@@ -64,6 +64,9 @@ def report():
         PSI_scope='Host /proc/pressure on cgroupv1, not per-cgroup PSI',
         local_runtime_path_proof=dict(passed=path_valid,count=len(path_proofs),ranks=sorted({p['rank'] for p in path_proofs}),NFS_fallback=False),
         checkpoint_timing=rows(FINAL/'checkpoint_timing.jsonl'))
+    stats['training_wall_seconds_including_loader_replay_and_checkpoints']=max((r['seconds'] for r in (saved['acceptance'] or {}).get('ranks',[])),default=None)
+    stats['summed_update_full_cycle_seconds']=sum(c['four_rank_max_seconds'] for c in cycles)
+    stats['peak_cgroup_anon_bytes']=max((s.get('anon',0) for s in systems),default=0)
     for kind in ('io_PSI','memory_PSI'):
         for pressure in ('some','full'):
             stats[f'{kind}_{pressure}_avg10']=distribution([s[kind][pressure]['avg10'] for s in systems if pressure in s[kind]])
@@ -73,10 +76,22 @@ def report():
     stats['whole_trajectory_full_cycle_seconds']=distribution([c['four_rank_max_seconds'] for c in first500+cycles])
     stats['whole_trajectory_steps_gt3s']=sum(c['four_rank_max_seconds']>3 for c in first500+cycles)
     stats['whole_trajectory_steps_gt10s']=sum(c['four_rank_max_seconds']>10 for c in first500+cycles)
+    initial_phase=Path('/root/said_s02_stage500/formal-local500-phase-20261006')
+    first_phases={r:rows(initial_phase/f'rank{r}.jsonl') for r in range(4)}
+    first_lookup={r:{p['step']:p for p in records} for r,records in first_phases.items()}
+    first_waits=[max(first_lookup[r][c['step']]['data_wait_s'] for r in range(4)) for c in first500]
+    stats['whole_trajectory_data_wait_seconds_slowest_rank']=distribution(first_waits+waits)
     inventories=list(RUN.glob('*4868*.log'))+[RUN/'full-resource-telemetry.jsonl']+list(FINAL.glob('*.jsonl'))+list(PHASE.glob('*.jsonl'))+[
         REVIEW/'resume-stream-reference.json',REVIEW/'prelaunch-local-path-proof-5000.json']
     stats['raw_local_artifacts']=[dict(path=str(p),bytes=p.stat().st_size,sha256=sha(p),time_range_utc=[saved['started_utc'],saved['ended_utc']],uploaded=False) for p in inventories if p.exists()]
     provenance=json.loads((OUT/'RESUME_PROVENANCE.json').read_text())
+    failed=RUN/'failed-preupdate-spawn'
+    provenance['preupdate_launcher_failure']=dict(
+        cause='Function-local dataset class could not be pickled by spawn; corrected with module-level class',
+        optimizer_updates_executed=0,parent_checkpoint_unchanged=True,
+        evidence=[dict(path=str(p),bytes=p.stat().st_size,sha256=sha(p),uploaded=False) for p in sorted(failed.glob('*')) if p.is_file()])
+    for r in provenance['rng_per_rank']:
+        r['cuda_rng_bytes']=r.pop('cuda_devices',r.get('cuda_rng_bytes'))
     provenance.update(launch=json.loads((RUN/'full-launch-provenance.json').read_text()),
         restoration_gate=json.loads((REVIEW/'STEP500_RESUME_AUDIT.json').read_text()) if (REVIEW/'STEP500_RESUME_AUDIT.json').exists() else None,
         stream_gates=[json.loads(p.read_text()) for p in sorted(REVIEW.glob('resume-batch-*.json'))],
@@ -88,13 +103,29 @@ def report():
         assert all(len(phases[r])==4368 for r in range(4))
         assert len(provenance['stream_gates'])==len(provenance['LR_gates'])==20
         assert provenance['restoration_gate']['passed'] and path_valid and not errors and stats['oom_kill']==0
-        assert all(math.isfinite(s['loss']) and all(h['gradients_finite'] and h['batch']==256 for h in s['rank_health']) for s in steps)
+        # Preserve the original drop_last=False epoch tail:180/rank at1217 boundaries.
+        assert all(math.isfinite(s['loss']) and all(h['gradients_finite'] and h['batch']==(180 if s['step']%1217==0 else 256) for h in s['rank_health']) for s in steps)
         provenance['full_frozen_sample_stream']=ordered_samples(steps)
         assert sha(PARENT)==PARENT_SHA, 'Parent checkpoint modified'
         assert all(s['actual_lrs']==dict(zip([g['name'] for g in provenance['optimizer_groups']],
             __import__('recovery.s02_local_full',fromlist=['expected_lrs']).expected_lrs(s['step']-1,json.loads((OUT/'configs/summary02_local500.json').read_text())))) for s in steps)
         result['delta_vs_RandomK_pp']={k:result['scores_percent'][k]-value for k,value in RANDOMK.items()}
+        result['classification_checks']=dict(Score5_improved=result['scores_percent']['Score5']>72.768147,
+            long_guard_passed=result['scores_percent']['J_long3']>=76.870244,
+            thresholds_percent=dict(Score5_strictly_greater_than=72.768147,J_long3_at_least=76.870244))
         result['dataset_R1_delta_vs_RandomK_pp']={name:{d:result['metrics'][name][d]['R@1']*100-baseline[j] for j,d in enumerate(('I2T','T2I'))} for name,baseline in RANDOMK_R1.items()}
+        from experiments.nest_clip_v1.balanced_hparam_search_v1.search import native_metrics
+        _,raw_metrics,sources=native_metrics(FINAL)
+        result['native_evaluation_provenance']={name:dict(
+            **{k:data[k] for k in ('protocol','n_images','n_captions','manifest_sha256','checkpoint_sha256',
+                'native_only','native_student_only') if k in data},
+            local_result_path=str(sources[name]),local_result_sha256=sha(sources[name]),
+            evaluation_uses_strict_bare_student=True) for name,data in raw_metrics.items()}
+        result['commands']=json.loads((RUN/'full-commands.json').read_text())
+        result['native_evaluation_source_sha256']={p:sha(ROOT/p) for p in (
+            'tools/nest_clip.py','tools/eval_nest_native.py','tools/eval_urban1k_cls.py',
+            'experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py',
+            'experiments/nest_clip_v1/balanced_hparam_search_v1/search.py')}
     result.update(completed_4868=complete,completed_updates_this_continuation=len(cycles),
         acceptance=saved['acceptance'],final_checkpoint_proof=saved['final_checkpoint_proof'],
         local_image_root=str(IMAGES),NFS_fallback=False,runtime=str(RUN),checkpoint_uploaded=False,
@@ -118,6 +149,10 @@ def report():
     dump(OUT/'FULL_RUNTIME_STATS.json',stats)
     dump(OUT/'RESUME_PROVENANCE.json',provenance)
     dump(OUT/'FULL_RESULTS.json',result)
+    dump(OUT/'CONTINUATION_GATE.json',dict(status=result['status'],completed_steps=steps[-1]['step'] if steps else 500,
+        authorized_stop_updates=4868,continuation_allowed=False,automatic_continuation=False,
+        wait_for_next_user_instruction=True,new_sampling_weight_sparsity_experiments_allowed=False,
+        final_checkpoint_sha256=result.get('checkpoint_sha256'),updated_utc=now()))
     lines=['# S=0.2 full trajectory continuation','',f'Status: `{result["status"]}`; completed4868: `{complete}`.',
         f'Resumed exact evaluated checkpoint500 SHA256 `{PARENT_SHA}`; continuation501..4868, horizon4868.',
         'Full model/adapter/AdamW, per-rank Python/NumPy/CPU/CUDA RNG and loader generator restored. Native replay of consumed batches skips optimizer updates; step501..505 ordered IDs/FSD/token/LR gates pass.',
@@ -126,7 +161,7 @@ def report():
         'Cache is ephemeral Docker overlay; persistent NFS original images remain source of truth.',
         '',f'Continuation full-cycle seconds: `{json.dumps(stats["full_cycle_seconds"])}`.',
         f'Slowest-rank data_wait seconds: `{json.dumps(stats["data_wait_seconds_slowest_rank"])}`.',
-        f'>3s: {stats["steps_gt3s"]}; >10s: {stats["steps_gt10s"]}. I/O errors: {len(errors)}; oom_kill: {stats["oom_kill"]}.',
+            f'Steps >3s: {stats["steps_gt3s"]}; >10s: {stats["steps_gt10s"]}. I/O errors: {len(errors)}; oom_kill: {stats["oom_kill"]}.',
         f'Peak cgroup: {stats["peak_cgroup_memory_bytes"]/2**30:.3f}GiB; peak file cache: {stats["peak_file_cache_bytes"]/2**30:.3f}GiB. GPU/rank and PSI distributions: FULL_RUNTIME_STATS.json.',
         'Ordinary>3s warnings continue; hard stops only actual image/CUDA/DDP/finite-state/OOM failure, active step>60s or supervisor anomaly.',
         'Checkpoints saved persistently at1217/2434/3651/4868, runtime checkpoint timing retained.',
@@ -142,7 +177,7 @@ def report():
         f'Final complete checkpoint `{FINAL/"step004868.pt"}` SHA256 `{result.get("checkpoint_sha256")}`.',
         f'Bare student `{FINAL/"student_step4868.pt"}` SHA256 `{result.get("strict_export",{}).get("bare_sha256")}`.',
         'Raw logs path/size/SHA/UTC inventory: FULL_RUNTIME_STATS.json; raw logs, checkpoints, mirror and full hash ledgers stay local.',
-        'CPU checks:23 tests passed before continuation launch. GitHub synchronization receipt follows. No automatic further training or experiments.',
+        'CPU checks:23 initial tests plus dataset spawn regression passed before corrected launch. Initial launch had a spawn-pickling error before any update; corrected and evidence retained, parent checkpoint unchanged. Native epoch tail remains180/rank (drop_last=False), nominal256/rank; no sampler/batch math changed. GitHub synchronization receipt follows. No automatic further training or experiments.',
         f'Error: {saved["error"]}']
     (OUT/'FULL_RESULTS.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps(dict(status=result['status'],completed_4868=complete,scores=result.get('scores_percent'),runtime=stats['full_cycle_seconds'])))

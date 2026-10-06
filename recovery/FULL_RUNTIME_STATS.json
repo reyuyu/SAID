@@ -1,0 +1,1646 @@
+{
+  "scope": "Continuation updates501..4868; replay and export/evaluation excluded from cycle distributions",
+  "started_utc": "2026-10-06T10:48:44.073419+00:00",
+  "finished_utc": "2026-10-06T13:56:30.883827+00:00",
+  "completed_updates": 4368,
+  "full_cycle_seconds": {
+    "count": 4368,
+    "median": 2.108485221862793,
+    "p95": 2.2689209461212156,
+    "p99": 2.346855676174164,
+    "max": 33.73188781738281
+  },
+  "data_wait_seconds_slowest_rank": {
+    "count": 4368,
+    "median": 0.0007028132677078247,
+    "p95": 0.0011115722358226775,
+    "p99": 0.0015905800461769102,
+    "max": 31.302938051521778
+  },
+  "rank_data_wait_seconds": {
+    "0": {
+      "count": 4368,
+      "median": 0.000616077333688736,
+      "p95": 0.0009253013879060745,
+      "p99": 0.001398242264986038,
+      "max": 30.692349709570408
+    },
+    "1": {
+      "count": 4368,
+      "median": 0.0006051100790500641,
+      "p95": 0.0007906202226877211,
+      "p99": 0.00117900863289833,
+      "max": 31.302938051521778
+    },
+    "2": {
+      "count": 4368,
+      "median": 0.0005990788340568542,
+      "p95": 0.0007733587175607681,
+      "p99": 0.001111195534467697,
+      "max": 30.817718856036663
+    },
+    "3": {
+      "count": 4368,
+      "median": 0.0006109215319156647,
+      "p95": 0.0007659118622541426,
+      "p99": 0.0011381753534078594,
+      "max": 30.982324816286564
+    }
+  },
+  "steps_gt3s": 4,
+  "steps_gt10s": 3,
+  "peak_cgroup_memory_bytes": 536871026688,
+  "peak_file_cache_bytes": 503018606592,
+  "oom_kill": 0,
+  "GPU_peak_memory": {
+    "0": {
+      "allocated_GiB": 27.757885456085205,
+      "reserved_GiB": 29.64453125
+    },
+    "1": {
+      "allocated_GiB": 27.757718086242676,
+      "reserved_GiB": 29.3515625
+    },
+    "2": {
+      "allocated_GiB": 27.757872581481934,
+      "reserved_GiB": 29.37109375
+    },
+    "3": {
+      "allocated_GiB": 27.757718086242676,
+      "reserved_GiB": 29.33203125
+    }
+  },
+  "io_error_count": 0,
+  "io_errors": [],
+  "stop_reason": null,
+  "pod_supervisor_anomaly_observed": false,
+  "PSI_scope": "Host /proc/pressure on cgroupv1, not per-cgroup PSI",
+  "local_runtime_path_proof": {
+    "passed": true,
+    "count": 512,
+    "ranks": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "NFS_fallback": false
+  },
+  "checkpoint_timing": [
+    {
+      "step": 1217,
+      "four_rank_max_seconds": 16.429887771606445
+    },
+    {
+      "step": 2434,
+      "four_rank_max_seconds": 16.482006072998047
+    },
+    {
+      "step": 3651,
+      "four_rank_max_seconds": 16.438495635986328
+    },
+    {
+      "step": 4868,
+      "four_rank_max_seconds": 16.45795249938965
+    }
+  ],
+  "training_wall_seconds_including_loader_replay_and_checkpoints": 10140.932998023927,
+  "summed_update_full_cycle_seconds": 9423.469286680222,
+  "peak_cgroup_anon_bytes": 31152771072,
+  "io_PSI_some_avg10": {
+    "count": 19500,
+    "median": 0.0,
+    "p95": 0.0,
+    "p99": 0.01,
+    "max": 6.04
+  },
+  "io_PSI_full_avg10": {
+    "count": 19500,
+    "median": 0.0,
+    "p95": 0.0,
+    "p99": 0.01,
+    "max": 6.04
+  },
+  "memory_PSI_some_avg10": {
+    "count": 19500,
+    "median": 0.0,
+    "p95": 0.0,
+    "p99": 0.03,
+    "max": 1.16
+  },
+  "memory_PSI_full_avg10": {
+    "count": 19500,
+    "median": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "max": 0.69
+  },
+  "GPU_utilization_percent": {
+    "0": {
+      "count": 2028,
+      "median": 99.0,
+      "p95": 100.0,
+      "p99": 100.0,
+      "max": 100
+    },
+    "1": {
+      "count": 2028,
+      "median": 99.0,
+      "p95": 100.0,
+      "p99": 100.0,
+      "max": 100
+    },
+    "2": {
+      "count": 2028,
+      "median": 99.0,
+      "p95": 100.0,
+      "p99": 100.0,
+      "max": 100
+    },
+    "3": {
+      "count": 2028,
+      "median": 99.0,
+      "p95": 100.0,
+      "p99": 100.0,
+      "max": 100
+    }
+  },
+  "whole_trajectory_full_cycle_seconds": {
+    "count": 4868,
+    "median": 2.108725666999817,
+    "p95": 2.271040403842926,
+    "p99": 2.3470207262039184,
+    "max": 56.95749282836914
+  },
+  "whole_trajectory_steps_gt3s": 6,
+  "whole_trajectory_steps_gt10s": 5,
+  "whole_trajectory_data_wait_seconds_slowest_rank": {
+    "count": 4868,
+    "median": 0.0007034353911876678,
+    "p95": 0.001125894859433173,
+    "p99": 0.0015927061438560483,
+    "max": 31.302938051521778
+  },
+  "raw_local_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-coco.log",
+      "bytes": 695,
+      "sha256": "b874f2b17882576ca6658f80c37b58d397cd475ca614a1c48650339e6941d334",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-urban.log",
+      "bytes": 1193,
+      "sha256": "9afc4143eb8f73256e301aa5de30eb1b5db9997489ec6f541d8b302d98b755d2",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-docci.log",
+      "bytes": 782,
+      "sha256": "6019391f556905c04167d1a5c007deb93d49973a4cf6152045fdb2abc7c24ca1",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-long_dci.log",
+      "bytes": 859,
+      "sha256": "d9a0ab79c542116c776f05b2ce64317717d9a057f1116086c78a619cdc9247a7",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/train4868.log",
+      "bytes": 538403,
+      "sha256": "8a52752d3bb73538a378e2a542bd84f95c6a9797b738f273a767c63e5b895afa",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/export4868.log",
+      "bytes": 547,
+      "sha256": "3372ec51306f80c6f094af8ca07b6789053bb19a957da3e862541a7ba6bc0836",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/verify4868.log",
+      "bytes": 609,
+      "sha256": "4fdf7a16f74a60d640041316256e3eac2405caa1b596929af02fd96bb5fd02af",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-flickr_test1k.log",
+      "bytes": 788,
+      "sha256": "2e9c538d109e164d00348091647ada209bf5998c248440e694f3d446a67e6ec9",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/full-resource-telemetry.jsonl",
+      "bytes": 4942123,
+      "sha256": "413349a22b9cd44e8eb57129079742ed09b1c4e1e06390e841f0557ff6cb56d1",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/steps.jsonl",
+      "bytes": 206862153,
+      "sha256": "c70bcf97ccd6a5ea2ae4c98a0cdaad5bcbb7df2250bdfd45c1e6d614d5038cfd",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/cycle_timing.jsonl",
+      "bytes": 333725,
+      "sha256": "20f2c95094fcb5952c7ced2807c8dc9fcdc3712d36bad788b5c7521483368610",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/checkpoint_timing.jsonl",
+      "bytes": 239,
+      "sha256": "724937e9e7be43e5c413fea36cffe5d348e7ef1524c6d458e8d2496963f96a14",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22122.jsonl",
+      "bytes": 1018,
+      "sha256": "a6294afbb3032f88a3fac9620a757240a44ddda419d5d41113208cf484461a76",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16898.jsonl",
+      "bytes": 986,
+      "sha256": "eea83337de0fe97453933608c8665c7a6a5f11390e0cac4ae788e0d49dce9a34",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19478.jsonl",
+      "bytes": 993,
+      "sha256": "d72517bd07bf96cefb337ad0551aeed824c074ebeb1d87f5384f54902182747e",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16897.jsonl",
+      "bytes": 1041,
+      "sha256": "6e5045f55a8a5aa24d65b389850b678ea7dbfe55ac39bc3373433a5b35479b7a",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/rank3.jsonl",
+      "bytes": 23438823,
+      "sha256": "52638815fc47433de66f0091ef83506c532ecd5a8184781315c1ade0b3311559",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19447.jsonl",
+      "bytes": 986,
+      "sha256": "250c76aaf38f23286992bd7b47a778e204eea329508c30ea1c1d298ee6751f13",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/rank2.jsonl",
+      "bytes": 23440506,
+      "sha256": "57144222cf27c6c5cf816cc36fc0e390570d27d7ac289fd5646ece5a798e477c",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24728.jsonl",
+      "bytes": 1009,
+      "sha256": "d89f03461b6198916b06df0cdcbc66e58d369061161e227d003e5ebcc31b38d1",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16840.jsonl",
+      "bytes": 985,
+      "sha256": "5b0765c057c44f8c593d143ee11e53a814cbfdf134c9986140fac5aedc67c9f8",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16838.jsonl",
+      "bytes": 1034,
+      "sha256": "9f9269f442c76562e8af810989b141abfc6c251962d6931fd2eb93c26b820463",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19450.jsonl",
+      "bytes": 1010,
+      "sha256": "071bc8da20570bdff58236c4927df343fc8f509b214f7fab05d634bc2a400fba",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22125.jsonl",
+      "bytes": 987,
+      "sha256": "829864e9ffb6b10377baed3de23bfd954f4ccea7e87ca161a2bc6400647e65a4",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24734.jsonl",
+      "bytes": 1034,
+      "sha256": "161ae8b0d00bfac8914c51ace763b4d258fce9d9d6f4bf5b8d96133a2cdde9da",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19462.jsonl",
+      "bytes": 985,
+      "sha256": "3029041a293c6a0ab6b8d122cad16b51714fa3515cc187e60f18bc41004c390e",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24713.jsonl",
+      "bytes": 989,
+      "sha256": "b9cfe2490cc0deb47263db5bfd31409e93d221cc3be5ff745a1836ea1b28dccf",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19484.jsonl",
+      "bytes": 985,
+      "sha256": "1c0d08c3b41297fe057ea789c4153bd336bfae464f92732f9b4271eae114c4ba",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22114.jsonl",
+      "bytes": 994,
+      "sha256": "62f3dd6fed73e1ccc33dd501753a685eeba06f57f35cc8393871a06f58b30c4c",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24732.jsonl",
+      "bytes": 1010,
+      "sha256": "699dd4fe6959bb4116860202ab0d764ee4571476685a54cd671b4a96e04b1a70",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22129.jsonl",
+      "bytes": 1034,
+      "sha256": "d67ead3a39cefaceb567902538c9bb5e5444d7fcc8f5ceb89064b5ca238079e3",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24710.jsonl",
+      "bytes": 988,
+      "sha256": "f34a0278b4de95f5e70fdfff952687f07748b8a7dcb2a5b1def984797cb8c461",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24744.jsonl",
+      "bytes": 962,
+      "sha256": "6655d6a5e144de6b187e16617808c96b774e08af11a923cf948d149eb9717422",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22096.jsonl",
+      "bytes": 994,
+      "sha256": "25045efa438675c56ebd5d7f4eadf9345de797a9897853c87429b530d414a2f3",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24736.jsonl",
+      "bytes": 994,
+      "sha256": "512e5246bb9b6ac7cb584fc8513ae1359ccfa665823fcbc3633645c903928a28",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22117.jsonl",
+      "bytes": 1011,
+      "sha256": "51e670c2e2dd16ccd7783d5ae22b59ea47eca081ba4ab09a8d3ad8ed54bef7bf",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/rank0.jsonl",
+      "bytes": 23449351,
+      "sha256": "93674b36340c601f96f8f38f931482cac8b17712d1988c686f2eef2b77b9a468",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16903.jsonl",
+      "bytes": 1017,
+      "sha256": "d6942ee615e1ea304f88ab9dda582d14bdf3bb67004935193aa885615dfbcadd",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19448.jsonl",
+      "bytes": 995,
+      "sha256": "9196d1d1e901dc4bacd41e37313dbffc7467af671abfcf04a61b5cb9efe21c2e",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24730.jsonl",
+      "bytes": 1009,
+      "sha256": "333bbec77957bf5d2079c6cd9afd7f797fb65c5a7012cbb4f4bcc1f8f275bb39",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24750.jsonl",
+      "bytes": 1017,
+      "sha256": "ad97eec932f519f737e678ce5a0c1740641325f4270235972ecde9419e67f0c8",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24741.jsonl",
+      "bytes": 1043,
+      "sha256": "976c6fe20990206e597c5c1394d79849014518093eaf693d994bc43c52437940",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16859.jsonl",
+      "bytes": 1008,
+      "sha256": "bc8418e52132106f90ad1ad4030849a03e79b54c90250333ac9ebd0f54860056",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16800.jsonl",
+      "bytes": 986,
+      "sha256": "b28307af99cbcb256adefa1045ad4dd279ea5d97001fa620fda8d256f39251de",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22121.jsonl",
+      "bytes": 1017,
+      "sha256": "844601354f2d224674d8c2be4acf35bc2efa0ebeacd0545bf8b9b7e285681b69",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19446.jsonl",
+      "bytes": 987,
+      "sha256": "84cb96e241e589dcfee34c217d80c36bdf840828a526cd678b157c9104d3c3f5",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19445.jsonl",
+      "bytes": 995,
+      "sha256": "e4f1bb052225153b18984dfa64ccf6de01f9eab2dc6abb3828b6b287a6030d83",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19463.jsonl",
+      "bytes": 1010,
+      "sha256": "1330efd65968b512a8fa3056ddfa0e14ecdfa4a2ab2969d56f783c1bc72255ae",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19482.jsonl",
+      "bytes": 1011,
+      "sha256": "39df2e0f7c676680d42b2e19adb5409f76c883ba62787b15673a9b2fc6f1a008",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24733.jsonl",
+      "bytes": 1033,
+      "sha256": "9646e63b3a5f9cfa63152b66daf378118b2c909a2573e95c1dd8ffbd110b1794",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24709.jsonl",
+      "bytes": 986,
+      "sha256": "67327b8cc9b4a913695b9dadc397e01ec0576c4b98f283bba0de696a2925c4c5",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16801.jsonl",
+      "bytes": 1010,
+      "sha256": "1c203d4c14de4ca8456c168273d9233d76fecc4de68d086a9e369ac44f4eb0b1",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16797.jsonl",
+      "bytes": 994,
+      "sha256": "3703911f22814031e567486ce0008dce6a73c0377ffe761d58c904a38f0a98ff",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19480.jsonl",
+      "bytes": 1058,
+      "sha256": "b51560d2c847f8dae5bf861a3d7a376ac6b062758f33b170e5f8dacb673a373e",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24740.jsonl",
+      "bytes": 1002,
+      "sha256": "0f8c4c4794c7fc418165d0d6d4e09a30150b81f3db9a1d54e9b6bfc49a1d936b",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22092.jsonl",
+      "bytes": 994,
+      "sha256": "42b33b41627e6fb655efc9bd8db1441820b0738401cfacf8c8706000c74ff591",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16899.jsonl",
+      "bytes": 971,
+      "sha256": "73c8ddac8a74504bf041541647a80aaf329d3e0fefdffc77e9c78452501a983b",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22113.jsonl",
+      "bytes": 988,
+      "sha256": "002e3687c20fdd1e7df51cce19b903a4d9249483836d68ed20c309cd7f85cbf3",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22093.jsonl",
+      "bytes": 1056,
+      "sha256": "413d60bd9182ba832260ea6df3c8fa3044b2ee11b0199dcd1ca5e3227a0b8e12",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19476.jsonl",
+      "bytes": 1011,
+      "sha256": "2e7d13c158299da89bee60f940590f750a64e276106cb98ad23051a77d850cd4",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16794.jsonl",
+      "bytes": 993,
+      "sha256": "df9150cd1ff99116278cfde09c12a57962ebac09d5de27a162635129a54b8675",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22091.jsonl",
+      "bytes": 1057,
+      "sha256": "f9bcc5358e51b645cdfa0bcd68c87cdb8f7990fd115f5ced59fbce8a9dd2993e",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22115.jsonl",
+      "bytes": 1009,
+      "sha256": "74bfe3737fbba14f0611a4c14d725bdefdf229177bfe01c2cbe511e741c498f2",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19464.jsonl",
+      "bytes": 1018,
+      "sha256": "c2030cc7fef1ca09e4bb71f68c8f5f6bd9e366454a4c222f4487d99c45154d17",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19471.jsonl",
+      "bytes": 1035,
+      "sha256": "e72eb5f0f91626a01a066051141ba01319bfb4ceb4fbc499b695cc42b68d6ef9",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16900.jsonl",
+      "bytes": 1010,
+      "sha256": "b83b7c67dcefce36d2fe0b017e63fa3137171c407032d01575c6b7c0dd3ce343",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24735.jsonl",
+      "bytes": 1018,
+      "sha256": "728bbebe16361c2bf8e3e8768ddfd9db1c6baf97ffc583a276f0de41d2834765",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24743.jsonl",
+      "bytes": 988,
+      "sha256": "3e322745cb717a419893533f4b93c3f9112ecdf6fa8cb4e460406e8e4e6675ea",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19449.jsonl",
+      "bytes": 987,
+      "sha256": "28b36ecd156186c3d743cff61d67d1a22eb47ace3c3d61861408a8c6a102e347",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22127.jsonl",
+      "bytes": 967,
+      "sha256": "24a7918dcfc936f52c7689afce71b3437806b826bfdc8c4a199e57049ef2061d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16857.jsonl",
+      "bytes": 995,
+      "sha256": "a4d486237ec06c8d9de4dc36f4ad4e62c47e4dc27c1c0c0b117df2e766f89a0d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24746.jsonl",
+      "bytes": 986,
+      "sha256": "8a47a3fb5b715e5c06a452c241009e3c27bbd8c2e00395e47ce808fda2a53651",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24727.jsonl",
+      "bytes": 1011,
+      "sha256": "f0c0c23858f334af98557b62e01d1c0f490809d6b8b8518f30a64395d9ffa9cc",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22109.jsonl",
+      "bytes": 1010,
+      "sha256": "88a0803cac690a2910afa460e90f1289fe773ffcaca61f736ec5844d42f43bd6",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/rank1.jsonl",
+      "bytes": 23440547,
+      "sha256": "629fa5dce7be6f301c995d1261b1fe0e91ba405b351c3a9dad8b6d320d226eff",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19474.jsonl",
+      "bytes": 992,
+      "sha256": "b93ef0f69339416eea25d05b2828ebd5b6714cbe5f4a5f9616fdcc885a961b38",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24745.jsonl",
+      "bytes": 1035,
+      "sha256": "07213e882a70957701ea309032f3b9252c5cb3d83cb5a9b6d8d8724b77bba2e5",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22112.jsonl",
+      "bytes": 985,
+      "sha256": "4dfd9e8e924533965b6e382a7476aed989372cb0028e2f6c9831233f4429d46c",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22128.jsonl",
+      "bytes": 1018,
+      "sha256": "190eca2b11f841cdebc943911b61786c6dd8f7291df73d7e15dd75aba71f2657",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24729.jsonl",
+      "bytes": 962,
+      "sha256": "bc76c1ebb256f1b147321dedb3221a6de77234fe8648c5a7520d23d0ca5fca28",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24708.jsonl",
+      "bytes": 1041,
+      "sha256": "86ca33346499dbca24940ecc6cf799f7ab0491b5d3aabdca0725a9e0477327d7",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19461.jsonl",
+      "bytes": 1034,
+      "sha256": "8624a28137bfe0ab48b218d6acfa442b08c6f1a419ee48b6e5d6168f916c5901",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19472.jsonl",
+      "bytes": 1018,
+      "sha256": "79323a326a3c095092573d904f5ee55c8647cc66fc4eb799ec1f5af6f9c30418",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22130.jsonl",
+      "bytes": 986,
+      "sha256": "bf603f53ae96db912b063113f510a110c89cfe2e02c4d5110bfad7876b99cace",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16856.jsonl",
+      "bytes": 995,
+      "sha256": "134ee2ab33621b1668b7003ecb568f29ca54fabec9093d350aae06ff926f3ef8",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24737.jsonl",
+      "bytes": 1034,
+      "sha256": "1de9cbe90b01917d4c00073bf6efac2a09e9cd3f0671bff86482a71dc6bce86a",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22095.jsonl",
+      "bytes": 995,
+      "sha256": "da5ceaa420f59ce7b06bda044aed99bb9afbfb9c50aa44fd1d3fb12e4be771e6",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19466.jsonl",
+      "bytes": 1018,
+      "sha256": "72ea57616cc3875b07ed963fc6633ad8bf19d184f226a94da440512d335d886b",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24707.jsonl",
+      "bytes": 962,
+      "sha256": "a943837bb8928fe58a2be9b028a08c534f4bb4528eb600e346021a1c08efdf87",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16795.jsonl",
+      "bytes": 1019,
+      "sha256": "2578ceb48a4db13a34deb67cf8e802d11ee97df905555c7039d3edf00aae6896",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16796.jsonl",
+      "bytes": 984,
+      "sha256": "44d8106db34c747229c10014696ebfd5c414a18975eff3469319a63566c3f52d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19485.jsonl",
+      "bytes": 1017,
+      "sha256": "a11c1324610680c06826ea74a54f96eea5b41b384dbd4921d5641032eed6ae12",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16896.jsonl",
+      "bytes": 993,
+      "sha256": "ed9381ed0a78172bf419b25d046c246a110c2fdc4a8ea0ca2cd4967e8a624a29",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16839.jsonl",
+      "bytes": 1011,
+      "sha256": "dfdca35282c428d333476d2d8e4789700082daef1c972d6d53bd2cecbe1ef370",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24725.jsonl",
+      "bytes": 1012,
+      "sha256": "59addca73d670fd2c67857ad490238091dd1848de581ed7273ba7db2ccfffc83",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22089.jsonl",
+      "bytes": 970,
+      "sha256": "25b6cd16dd3e42254d07742a1c37a31148907bee6d11499d3c5c00b92586d04d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16799.jsonl",
+      "bytes": 1024,
+      "sha256": "69420ce7f2a3b7447c9a91dfa108ef1b49c8dc78c3b4d05981753ea4417555cd",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24738.jsonl",
+      "bytes": 1033,
+      "sha256": "d696f6a1a44c2c177513169e56e2489efe080c5d6fc319d91573aeba64a3e2d7",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22131.jsonl",
+      "bytes": 1012,
+      "sha256": "565d74f32137c4b0636da21e4e165434c0f0a920bc3611e907939ed77ca30010",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24712.jsonl",
+      "bytes": 1034,
+      "sha256": "8c24c0b9b5f5ee1b20b07b54b822b2ef85fa675edc9d6b0b66b8e353bc93e4fd",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22119.jsonl",
+      "bytes": 1034,
+      "sha256": "68fa2a3ab3385fdb02223c329c5d80f1e948d1186bb7c37ddbcaf1a32bbd8b75",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24706.jsonl",
+      "bytes": 1024,
+      "sha256": "61601f98a580c31033c56893d4341bd6cf01e916f2eeb900b00bbdfa0baed65d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16854.jsonl",
+      "bytes": 1026,
+      "sha256": "4bf89af6a69bd11d3fa2d830f3624e9850c37c91c8607a35a84e796e80bc4c7d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22090.jsonl",
+      "bytes": 992,
+      "sha256": "73f4dcf7895603df5086543ceb9a2e091ed41e614f0ee8d298315535cd0cc935",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19477.jsonl",
+      "bytes": 986,
+      "sha256": "808090e4c7b8560eb98dc1427a7f2dcfc2bc50a7d4a89c5250671ebf3b9be62c",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16860.jsonl",
+      "bytes": 1041,
+      "sha256": "fe79807d993694cc9c88e822a5a34b8ec650cb1ae76c432357663de5b6d2fda2",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid16798.jsonl",
+      "bytes": 1001,
+      "sha256": "e59acb8b589602b5a02674d6dc20d22246718127c7403259d84898b47bfe95b1",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19468.jsonl",
+      "bytes": 1033,
+      "sha256": "f15258605ad08cbe9f6f6f6b2273dad6b40f7eadcf4f631446cd77a810d56c1d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22110.jsonl",
+      "bytes": 1018,
+      "sha256": "9a6a55bf052131c626494fce367b09dc83bd524c44aa397a13854ed70d310222",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19473.jsonl",
+      "bytes": 1018,
+      "sha256": "f6ee752f4a84a0bbdd0ae77344e2cc0536b6f505b2c13c2a03f56c7e1fc8895b",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid22094.jsonl",
+      "bytes": 1058,
+      "sha256": "c2e8afce477ee1435956eb95c66150148c26e23a9b2535a30765aca642623de2",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24724.jsonl",
+      "bytes": 1018,
+      "sha256": "73dc9fbb949c18060d3ad023405a8971b09fbc3ff6c65145cd219e55eadc0553",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22107.jsonl",
+      "bytes": 1024,
+      "sha256": "edde83515bfb9602ee43bd5366fb585290800af02959030b815a7195f2822f0a",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24723.jsonl",
+      "bytes": 1010,
+      "sha256": "ec30c1374705ceb5ebe306dc49b8785d128b413fc6a7b09c721b63403a002c68",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19475.jsonl",
+      "bytes": 1018,
+      "sha256": "c84ff1f1ff984ea70b218049280b01b17626c98524ec889c665a5abcafaccfb8",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid24739.jsonl",
+      "bytes": 1001,
+      "sha256": "83ddd92050abac812a709aa7fc543aa94d4510b3d83c66a213e91f3eba3cc01c",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22116.jsonl",
+      "bytes": 1057,
+      "sha256": "3b2a0415715c132830e12b00b604130fcde17ba55824c21a63d0a9c88ac81f98",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19479.jsonl",
+      "bytes": 993,
+      "sha256": "7fcc8d7d015a7bcc52ae0ce2021aecb9a05e9cbf3a564aa3b773bf69d56ee68d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22108.jsonl",
+      "bytes": 986,
+      "sha256": "bc36c914c0f975ee623d9798d4a800dc6125347979c28d67136f9ce9f2b75fe8",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16861.jsonl",
+      "bytes": 1011,
+      "sha256": "1be930bd3017545dcdaa0f2ae2cf355b022d6cff46c196455d15576ebfc8b5f2",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19444.jsonl",
+      "bytes": 1035,
+      "sha256": "10b8f1e45c2c80e11c8dbdcaca4e0ba5bd7261eef91d3551d68f018677461c82",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22126.jsonl",
+      "bytes": 1041,
+      "sha256": "128b32d5ba920a7247aa21defb3dd9f6321d720aabc68fa58c847ae09e4fba6d",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19467.jsonl",
+      "bytes": 994,
+      "sha256": "fd22191b928a12509c1a1d583566cee31309604f8db0de48147c3856c30c1045",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid19465.jsonl",
+      "bytes": 1007,
+      "sha256": "36b5999f989732f3f92cfa4bbf2b68459034893a28a4794b51a400526f52b038",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid19470.jsonl",
+      "bytes": 962,
+      "sha256": "cd905b326d91fecb4371a2903eb82dc402773e52457e6ee66095985ccee227ad",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid19451.jsonl",
+      "bytes": 1018,
+      "sha256": "1632d5b8b9d7d2c9175f75c9a91c3bb198c2da94f15bf8f102dededcff22aee7",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22120.jsonl",
+      "bytes": 1011,
+      "sha256": "17ea1e62ced0f18047129cb391ab962be8b026606a9e223cc277573c362aa103",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid24711.jsonl",
+      "bytes": 985,
+      "sha256": "674dc18dabc82790c058b04bdfa8916ccd2f9124e79f1f816f1200147b4ea4ea",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19486.jsonl",
+      "bytes": 1033,
+      "sha256": "ffac202d0824d2097b8cd5fc4efbe7bc304cdc2b63dddcae428cfcdae816f3e3",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16841.jsonl",
+      "bytes": 1057,
+      "sha256": "8f9d3bbada5e11f5599cad2ecb6e94fb1063f386c59faa168752cb75c535ef8f",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16836.jsonl",
+      "bytes": 1056,
+      "sha256": "9c4dd01ef91fa50886f0a58ca5597905dc8fb1b54d58d599c01379be3a73e7b3",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid24726.jsonl",
+      "bytes": 1034,
+      "sha256": "272d1da870b24870deabadc27d0518daf2060440366bed127ed9311c70b6779c",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16901.jsonl",
+      "bytes": 1041,
+      "sha256": "2fbe760bfaa14f8be1f31d2af652813524ecf103c58d8b1c63bfb71f9aa69588",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank3-pid16902.jsonl",
+      "bytes": 1033,
+      "sha256": "7e18a695e9de632e055cdaeeae220def980e385f08a90811cb4df4a0c12b9b91",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16843.jsonl",
+      "bytes": 959,
+      "sha256": "285e2a169b1fafd77aea0c607404e1ac2c44d81fb91064786eac2ab65d8e3a55",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16842.jsonl",
+      "bytes": 1034,
+      "sha256": "d4f771984c37c9a2751c075ac0249d6d504cd659cbd3793edc16908eb1521345",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid22106.jsonl",
+      "bytes": 1019,
+      "sha256": "2060c70051beb080c32345de3bacd3495afedb8b165e871111ba68f839482e82",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16858.jsonl",
+      "bytes": 993,
+      "sha256": "2a2f5d58720b612910cf7b44c0bce098f6cc91904d3d31426e8325e71a7c4c23",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid22111.jsonl",
+      "bytes": 987,
+      "sha256": "d012e2ef97d1416d2af78c264360351c6aa6dd0588b748e7791c053088892764",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid19483.jsonl",
+      "bytes": 1033,
+      "sha256": "b028f108b7a9005b9aa1fe1370c69c70d042feabcd7b787ae872d570ceab28c7",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid24742.jsonl",
+      "bytes": 968,
+      "sha256": "62b7eb5b2015ad6f18092497bf1cfe64fc7fce1a034a7efd2dcbee046e7bbf28",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank1-pid16837.jsonl",
+      "bytes": 1010,
+      "sha256": "ba08dfcc22666e1c8f5fe978adbf08b94c64c0b6b668bf2fdd09c22133fc0461",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank2-pid22124.jsonl",
+      "bytes": 1034,
+      "sha256": "57d307f8a7e882546b7afb2b14f0122f17da22cc172fbde82cfbe07aacf463f0",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-full-phase-20261006/image-paths-rank0-pid16855.jsonl",
+      "bytes": 961,
+      "sha256": "e43deb33decca6836a3f54b35cd279be71a2bd01bd6050effca8843b2c257a93",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/full-reviewed/resume-stream-reference.json",
+      "bytes": 86246,
+      "sha256": "08149d66825daac998278fb8ea33df2657e6f43d81aaf89d616347f7fa205c2e",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/full-reviewed/prelaunch-local-path-proof-5000.json",
+      "bytes": 992338,
+      "sha256": "747576f6336672d6469bffd871e2b568796c62b8b9fe640c55cfc4e42d5772e8",
+      "time_range_utc": [
+        "2026-10-06T10:48:44.073419+00:00",
+        "2026-10-06T13:56:30.883827+00:00"
+      ],
+      "uploaded": false
+    }
+  ]
+}

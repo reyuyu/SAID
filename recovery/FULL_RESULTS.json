@@ -1,0 +1,460 @@
+{
+  "CPU_validation": {
+    "passed": 24,
+    "failed": 0,
+    "before_Git_publication": true,
+    "command": ".venv/bin/python -m pytest -q recovery/test_s02_local_full.py recovery/test_local500_policy.py recovery/test_s02_full_stage.py recovery/test_nfs500_policy.py"
+  },
+  "local_only_assets": [
+    "/root/said_s02_stage500/ShareGPT4V/",
+    "/root/said_s02_stage500/formal-full-phase-20261006/",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/",
+    "/opt/data/private/lklk/SAID/local_assets/",
+    "/opt/data/private/lklk/SAID/recovery/evidence/s02-local-full-data-local/"
+  ],
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6216,
+        "R@5": 0.8434,
+        "R@10": 0.9024
+      },
+      "T2I": {
+        "R@1": 0.43324,
+        "R@5": 0.6896,
+        "R@10": 0.78436
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9280000329017639,
+        "R@5": 0.9880000352859497,
+        "R@10": 0.9940000176429749
+      },
+      "T2I": {
+        "R@1": 0.9180000424385071,
+        "R@5": 0.9890000224113464,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.898,
+        "R@5": 0.985,
+        "R@10": 0.996
+      },
+      "T2I": {
+        "R@1": 0.7398,
+        "R@5": 0.9214,
+        "R@10": 0.959
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.792,
+        "R@5": 0.9586,
+        "R@10": 0.9834
+      },
+      "T2I": {
+        "R@1": 0.7998,
+        "R@5": 0.9586,
+        "R@10": 0.9822
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5851091817942646,
+        "R@5": 0.7736122073138648,
+        "R@10": 0.8316232570376216
+      },
+      "T2I": {
+        "R@1": 0.6053670086819258,
+        "R@5": 0.7841357537490135,
+        "R@10": 0.8355695869508024
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7320916265816462,
+    "J_long3": 0.771379377636077,
+    "J_long": 0.8594500188350678,
+    "Short4_R1": 0.67316
+  },
+  "scores_percent": {
+    "Score5_R1": 73.20916265816462,
+    "J_long3": 77.1379377636077,
+    "J_long": 85.94500188350678,
+    "Short4_R1": 67.316,
+    "Score5": 73.20916265816462,
+    "Short4": 67.316
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      4868
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "c76557576f2bb7da3fe9e98b7dbf5d0b130215ca7004b0eb93bbeb1e9370b72d",
+    "bare_sha256": "38594ccebc39bf6b96dc04d3f7adad5ad16bf417e21df6bab86d603c9b71e180"
+  },
+  "checkpoint_sha256": "c76557576f2bb7da3fe9e98b7dbf5d0b130215ca7004b0eb93bbeb1e9370b72d",
+  "evaluation_checkpoint_immutable": true,
+  "step": 4868,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T13:56:30.883667+00:00",
+  "status": "FULL_POSITIVE",
+  "delta_vs_RandomK_pp": {
+    "Score5": 0.4410156581646163,
+    "J_long3": 0.06769376360769286,
+    "J_long": 0.45999888350677054,
+    "Short4": 1.0010000000000048
+  },
+  "classification_checks": {
+    "Score5_improved": true,
+    "long_guard_passed": true,
+    "thresholds_percent": {
+      "Score5_strictly_greater_than": 72.768147,
+      "J_long3_at_least": 76.870244
+    }
+  },
+  "dataset_R1_delta_vs_RandomK_pp": {
+    "COCO": {
+      "I2T": 0.46000000000000085,
+      "T2I": 1.1039999999999992
+    },
+    "Urban-1k": {
+      "I2T": 0.7000032901763973,
+      "T2I": 0.7000042438507137
+    },
+    "Flickr30k-test1k": {
+      "I2T": 0.8999999999999915,
+      "T2I": 1.5400000000000063
+    },
+    "DOCCI": {
+      "I2T": 0.4399999999999977,
+      "T2I": -1.4210854715202004e-14
+    },
+    "Long-DCI": {
+      "I2T": -1.1575898205735413,
+      "T2I": -0.2762431318074192
+    }
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "checkpoint_sha256": "38594ccebc39bf6b96dc04d3f7adad5ad16bf417e21df6bab86d603c9b71e180",
+      "native_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/coco_native.json",
+      "local_result_sha256": "39425850730f5a1d5b63c9df1de3a4b06cd02c1238ea7d14175325231e71dd16",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "checkpoint_sha256": "38594ccebc39bf6b96dc04d3f7adad5ad16bf417e21df6bab86d603c9b71e180",
+      "native_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/urban_native.json",
+      "local_result_sha256": "8c85de70d60faccc23dd7437a34d4bf4234d536aad3cd061f4feed851cf44f3e",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "checkpoint_sha256": "38594ccebc39bf6b96dc04d3f7adad5ad16bf417e21df6bab86d603c9b71e180",
+      "native_student_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/flickr_test1k/flickr_test1k.json",
+      "local_result_sha256": "6bc8636f8ef143c9d8b324e6803dc4af7f4e85889658c05b0a6b2d93c6263377",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "checkpoint_sha256": "38594ccebc39bf6b96dc04d3f7adad5ad16bf417e21df6bab86d603c9b71e180",
+      "native_student_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/docci/docci.json",
+      "local_result_sha256": "1a27b286fc8ba739f8e6710850c3cd00c78f1c0f4d078d2c4bdf60aa55211a8b",
+      "evaluation_uses_strict_bare_student": true
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "checkpoint_sha256": "38594ccebc39bf6b96dc04d3f7adad5ad16bf417e21df6bab86d603c9b71e180",
+      "native_student_only": true,
+      "local_result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/long_dci/long_dci.json",
+      "local_result_sha256": "b0f738c3c71cf620d3b16765cb67fc4d78d1a6f12afff53e993598c69e6552ae",
+      "evaluation_uses_strict_bare_student": true
+    }
+  },
+  "commands": [
+    {
+      "name": "train4868",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.s02_local_full",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/recovery/configs/summary02_local500.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--resume",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step500/step000500.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "4868"
+      ],
+      "started_utc": "2026-10-06T10:48:46.567016+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/train4868.log",
+      "ended_utc": "2026-10-06T13:38:11.581468+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export4868",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/step004868.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--expect-updates",
+        "4868"
+      ],
+      "started_utc": "2026-10-06T13:38:15.697426+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/export4868.log",
+      "ended_utc": "2026-10-06T13:38:39.852305+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify4868",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/step004868.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-06T13:38:39.867039+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/verify4868.log",
+      "ended_utc": "2026-10-06T13:38:58.925033+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-coco",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/coco_native.json"
+      ],
+      "started_utc": "2026-10-06T13:38:58.939244+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-coco.log",
+      "ended_utc": "2026-10-06T13:42:08.380489+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-urban",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/urban_native.json"
+      ],
+      "started_utc": "2026-10-06T13:42:08.398936+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-urban.log",
+      "ended_utc": "2026-10-06T13:42:37.483393+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-flickr_test1k",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/flickr_test1k",
+        "flickr_test1k:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-10-06T13:42:37.500316+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-flickr_test1k.log",
+      "ended_utc": "2026-10-06T13:43:06.579653+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-docci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/docci",
+        "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-10-06T13:43:06.593237+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-docci.log",
+      "ended_utc": "2026-10-06T13:48:08.240141+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-long_dci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/student_step4868.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/step4868/long_dci",
+        "long_dci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-10-06T13:48:08.253452+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006/eval4868-long_dci.log",
+      "ended_utc": "2026-10-06T13:56:28.333146+00:00",
+      "returncode": 0
+    }
+  ],
+  "native_evaluation_source_sha256": {
+    "tools/nest_clip.py": "defdd3b1d64f2c2be54c6bdda06f8bf7e4a6a908b1c0a8501e09f3e9a40f7540",
+    "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+    "tools/eval_urban1k_cls.py": "42cc728f587b3b2bd83bde8d205900f7aa8ff4387491a3c3a0f95ffbac0475c7",
+    "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+    "experiments/nest_clip_v1/balanced_hparam_search_v1/search.py": "bf7641088f0e1a054748fe0350084c20903bc6c7c54cc217026130050bc483b3"
+  },
+  "completed_4868": true,
+  "completed_updates_this_continuation": 4368,
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 4868,
+        "updates_this_run": 4368,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 10140.370649777353,
+        "peak_allocated_gib": 27.757885456085205,
+        "peak_reserved_gib": 29.64453125,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 4868,
+        "updates_this_run": 4368,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 10140.5493754372,
+        "peak_allocated_gib": 27.757718086242676,
+        "peak_reserved_gib": 29.3515625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 4868,
+        "updates_this_run": 4368,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 10140.932998023927,
+        "peak_allocated_gib": 27.757872581481934,
+        "peak_reserved_gib": 29.37109375,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 4868,
+        "updates_this_run": 4368,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 10140.155384987593,
+        "peak_allocated_gib": 27.757718086242676,
+        "peak_reserved_gib": 29.33203125,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "final_checkpoint_proof": {
+    "passed": true,
+    "global_step": 4868,
+    "data_cursor": {
+      "next_epoch": 4,
+      "next_batch": 0
+    },
+    "optimizer_steps": [
+      4868
+    ],
+    "rng_ranks": 4
+  },
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "runtime": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/s02-local500-20261006",
+  "checkpoint_uploaded": false,
+  "exact_stop_updates": 4868,
+  "automatic_new_experiments": false,
+  "github_sync_complete": false
+}
