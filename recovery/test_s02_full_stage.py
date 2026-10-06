@@ -134,3 +134,24 @@ def test_index_drift_fails_without_overwrite(tmp_path):
     with pytest.raises(RuntimeError,match='preserve'):
         stage.ensure_local_index(source,dest,'frozen')
     assert (dest/'records.jsonl').read_bytes()==b'user changed'
+
+
+def test_native_local_dataset_ignores_partial_and_never_falls_back(tmp_path,monkeypatch):
+    import json
+    import numpy as np
+    from PIL import Image
+    from recovery import s02_full_local_data as local
+    root,index=tmp_path/'cache',tmp_path/'index'
+    (root/'sam/images').mkdir(parents=True)
+    index.mkdir()
+    raw=(json.dumps(dict(image='sam/images/a.jpg',caption='A photo. Another sentence.'))+'\n').encode()
+    (index/'records.jsonl').write_bytes(raw)
+    np.save(index/'offsets.npy',np.array([0,len(raw)],dtype=np.int64))
+    (index/'metadata.json').write_text(json.dumps(dict(training_records=1,records_sha256=stage.INDEX_SHA)))
+    (root/'sam/images/a.jpg.part').write_bytes(b'partial must never be decoded')
+    monkeypatch.setattr(local,'IMAGES',root)
+    monkeypatch.setattr(local,'local_path',lambda name:stage.local_path(name,root))
+    monkeypatch.setattr(Image,'open',lambda *a,**k:pytest.fail('Missing local image must stop before any decode/fallback'))
+    dataset=local.FullLocalDataset(index,root,'summary_random_detail',0)
+    with pytest.raises(RuntimeError,match='NFS fallback forbidden'):
+        dataset[0]
