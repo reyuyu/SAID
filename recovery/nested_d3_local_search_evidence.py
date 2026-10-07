@@ -145,7 +145,7 @@ def arm_report(arm,result,diag,masks,gradient,stats):
     lines=[f'# {arm}: isolated Nested D3 local500 search arm','',
         f'Completed exactly500 fresh-common0 optimizer updates, horizon4868. Only changed axis:`{spec["axis"]}`.',
         f'Alignment:{spec["weights"]}; absolute sparsity coefficients:{search.arm_sparsity(arm)} (mass{sum(search.arm_sparsity(arm))}); mode:{spec["mode"]}.',
-        'Other construction,optimizer/LR,workers8,batch256/rank,inclusion chain/ramp200/max1,preprocess and native protocol frozen. No combination/full run.',
+        f'Other construction,optimizer/LR,workers8,batch256/rank,preprocess and native protocol frozen. Inclusion max:{search.arm_config(arm)["inclusion_max"]}; zero bypasses the schedule and inclusion autograd graph. No combination/full run.',
         f'Local-only:`{search.IMAGES}`; missing/symlink/escape fails, NFS fallback forbidden. /root is disposable overlay; NFS originals retained.',
         '', '| Dataset | I2T R@1 / R@5 / R@10 (%) | T2I R@1 / R@5 / R@10 (%) |','|---|---|---|']
     for name,v in result['metrics'].items():
@@ -191,6 +191,9 @@ def review_arm(arm):
     assert json.loads((run/'prelaunch-local-path-proof-5000.json').read_text())['passed']
     steps=rows(train/'steps.jsonl');assert [r['step'] for r in steps]==list(range(1,501))
     proof=search.matched_stream(steps,rows(search.ANCHOR_RUN/'step500/steps.jsonl'),arm);assert proof['records']==512000
+    if search.arm_config(arm)['inclusion_max']==0:
+        assert all(r['inc_weight']==r['inclusion_loss']==0 and r['inclusion_enabled'] is False for r in steps)
+        proof['all500_inclusion_loss_weight_zero_and_disabled']=True
     inventory=[]
     for step in (5,500):
         path=train/f'step{step:06d}.pt';payload=torch.load(path,map_location='cpu',weights_only=False)
@@ -232,7 +235,11 @@ def review_arm(arm):
     dump(exp/'RESULTS.json',result);dump(exp/'TRAINING_DIAGNOSTICS.json',diag)
     dump(exp/'MASK_HIERARCHY_AUDIT.json',dict(last50=masks,keep_ratio={v:s['keep_ratio'] for v,s in diag['last50_views'].items()},
         delta_vs_anchor=mask_delta,keep_ratio_delta_vs_anchor=keep_delta,
-        inclusion_edges=['Dall->F','lowest->Dall'],detached_child=True,ramp200=True,inclusion_max=1,hard_projection=False))
+        inclusion_edges=['Dall->F','lowest->Dall'] if search.arm_config(arm)['inclusion_max']>0 else [],
+        telemetry_edges=['Dall->F','lowest->Dall'],detached_child=search.arm_config(arm)['inclusion_max']>0,
+        ramp200=search.arm_config(arm)['inclusion_max']>0,inclusion_max=search.arm_config(arm)['inclusion_max'],
+        inclusion_loss_active=search.arm_config(arm)['inclusion_max']>0,
+        raw_inc_is_telemetry_only=search.arm_config(arm)['inclusion_max']==0,hard_projection=False))
     dump(exp/'RUNTIME_STATS.json',stats);dump(exp/'EXPORT_AUDIT.json',export)
     sampling=json.loads((exp/'SAMPLING_AUDIT.json').read_text());sampling['runtime_proof']=proof;dump(exp/'SAMPLING_AUDIT.json',sampling)
     dump(exp/'VALIDATION.json',dict(passed=True,reviewed_utc=now(),all512000_actual_records_verified=True,

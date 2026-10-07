@@ -68,6 +68,7 @@ def arm_config(arm):
     cfg['view_weights']=spec['weights']
     cfg['sampling_mode']=spec['mode']
     if spec['axis']=='sparsity':cfg['view_sparsity_weights']=arm_sparsity(arm)
+    if spec['axis']=='inclusion':cfg['inclusion_max']=spec['inclusion_max']
     return cfg
 
 
@@ -115,6 +116,8 @@ def matched_stream(actual,reference,arm):
     for a,b in zip(actual,reference):
         assert a['step']==b['step'] and a['epoch']==b['epoch']==0
         assert a['actual_lrs']==b['actual_lrs'] and math.isfinite(a['loss']) and a['nonfinite']==0
+        if ARMS[arm]['axis']=='inclusion' and ARMS[arm]['inclusion_max']==0:
+            assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
         old={h['rank']:h for h in b['rank_health']}
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
@@ -149,7 +152,11 @@ def checkpoint_invariants(current,reference):
     assert new_model.pop('view_sparsity_weights',[1.,2.,2.])==arm_sparsity(ARM)
     assert old_model.pop('view_sparsity_weights',[1.,2.,2.])==[1.,2.,2.]
     assert new_model['search_hparams'].pop('view_weights')==ARMS[ARM]['weights']
-    old_model['search_hparams'].pop('view_weights');assert new_model==old_model
+    old_model['search_hparams'].pop('view_weights')
+    if ARMS[ARM]['axis']=='inclusion':
+        assert new_model['search_hparams'].pop('inclusion_max')==ARMS[ARM]['inclusion_max']==0
+        assert old_model['search_hparams'].pop('inclusion_max')==1
+    assert new_model==old_model
     changed={k for k,v in old['code_sha256'].items() if cfg['code_sha256'][k]!=v}
     assert changed==EDITED and all(cfg['code_sha256'][k]==sha(ROOT/k) for k in changed)
     assert current['optimizer']['param_groups']==reference['optimizer']['param_groups']

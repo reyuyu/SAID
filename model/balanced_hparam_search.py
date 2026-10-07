@@ -22,7 +22,7 @@ def hparams(config):
     for key in DEFAULTS:
         if key != 'view_weights':
             result[key] = float(result[key])
-            assert math.isfinite(result[key]) and result[key]>0, key
+            assert math.isfinite(result[key]) and (result[key]>=0 if key=='inclusion_max' else result[key]>0), key
     return result
 
 
@@ -102,7 +102,8 @@ class BalancedSearch(NestedFusionMask):
         gate_f=lf.pop('_diagnostic_gate',None)
         logs={'F_'+key:value for key,value in lf.items()}
         hp=self.search_hparams
-        weight=hp['inclusion_max']*inclusion_weight(self.arm,completed) if valid_count>=2 else 0.
+        inclusion_enabled=hp['inclusion_max']>0
+        weight=hp['inclusion_max']*inclusion_weight(self.arm,completed) if inclusion_enabled and valid_count>=2 else 0.
         if valid_count>=2:
             ao,so,mo,po,lo=terms(tokens_o,valid,valid_global,self.summary_t2i_weight)
             ae,se,me,pe,le=terms(tokens_e,valid,valid_global)
@@ -112,8 +113,15 @@ class BalancedSearch(NestedFusionMask):
                                               (gate_f-gate_e).abs().mean(-1)[valid].sum(),
                                               (gate_o-gate_e).abs().mean(-1)[valid].sum())))/valid_count
                 logs.update(g_F_P_abs_difference=values[0],g_F_R_abs_difference=values[1],g_P_R_abs_difference=values[2])
-            inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
-                     else inclusion(pf,po,pe))[valid].sum()
+            if inclusion_enabled:
+                inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
+                         else inclusion(pf,po,pe))[valid].sum()
+            else:
+                # INC0: retain the raw violation statistic without an autograd
+                # graph, loss term, or evaluation of the inclusion schedule.
+                with torch.no_grad():
+                    inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
+                             else inclusion(pf,po,pe))[valid].sum()
             wf,wp,wr=hp['view_weights']
             align=(10/3*(af+ao+ae) if hp['view_weights']==[1.,1.,1.] else
                    10/(wf+wp+wr)*(wf*af+wp*ao+wr*ae))
@@ -125,13 +133,15 @@ class BalancedSearch(NestedFusionMask):
             cf,co,ce=self.view_sparsity_weights
             sparse=((sf+2*so+2*se)/3 if self.view_sparsity_weights==[1.,2.,2.] else
                     (cf*sf+co*so+ce*se)/3)
-            loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*inc_sum
+            loss=align+hp['sparsity_scale']*sparse
+            if inclusion_enabled:
+                loss=loss+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
             iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)
             extra=global_sum(torch.stack((inc_sum.detach(),violation[valid].sum(),iou[valid].sum())))/valid_count
             logs.update({'O_'+key:value for key,value in lo.items()})
             logs.update({'E_'+key:value for key,value in le.items()})
-            logs.update(inc=extra[0],hard_inclusion_violation=extra[1],oe_iou=extra[2])
+            logs.update(inc=extra[0],inclusion_loss=weight*extra[0],hard_inclusion_violation=extra[1],oe_iou=extra[2])
             if self.inclusion_hierarchy == 'detail_chain':
                 with torch.no_grad():
                     f,o,e = mf.detach(),mo.detach(),me.detach()
@@ -145,8 +155,8 @@ class BalancedSearch(NestedFusionMask):
                     hard_inclusion_violation=.5*(chain[1]+chain[2]))
         else:
             loss=10*af+hp['sparsity_scale']*sf
-            logs.update(inc=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)
-        logs.update(loss=global_sum(loss)/world_rank()[0],inc_weight=weight,valid_global=valid_count,
+            logs.update(inc=0.,inclusion_loss=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)
+        logs.update(loss=global_sum(loss)/world_rank()[0],inc_weight=weight,inclusion_enabled=inclusion_enabled,valid_global=valid_count,
                     fusion=self.fusion,visual=self.visual,condition_mode=self.condition_mode,shuffle_shift=0,
                     nonfinite=global_sum((~torch.isfinite(loss)).sum()))
         return loss,{key:value.detach() if torch.is_tensor(value) else value for key,value in logs.items()}
