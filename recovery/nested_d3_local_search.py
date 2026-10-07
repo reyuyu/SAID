@@ -69,6 +69,7 @@ def arm_config(arm):
     cfg['sampling_mode']=spec['mode']
     if spec['axis']=='sparsity':cfg['view_sparsity_weights']=arm_sparsity(arm)
     if spec['axis']=='inclusion':cfg['inclusion_max']=spec['inclusion_max']
+    if spec['axis']=='regularizer':cfg['regularizer_mode']=spec['regularizer_mode']
     return cfg
 
 
@@ -122,6 +123,12 @@ def matched_stream(actual,reference,arm):
             assert ARMS[arm]['inclusion_max']==.5 and a['inclusion_enabled'] is True
             assert a['inc_weight']==.5*b['inc_weight'], ('Inclusion ramp drift',a['step'])
             assert math.isclose(a['inclusion_loss'],a['inc_weight']*a['inc'],rel_tol=1e-6,abs_tol=1e-8)
+        elif ARMS[arm]['axis']=='regularizer':
+            assert a['regularizer_mode']=='coupled_nested' and a['inclusion_folded_into_regularizer'] is True
+            assert a['inc_weight']==b['inc_weight']==min(1.,(a['step']-1)/200.)
+            assert a['independent_child_sparse_applied']==a['independent_inclusion_applied']==0
+            assert math.isclose(a['total_outside_penalty'],a['inclusion_loss'],rel_tol=2e-6,abs_tol=1e-7)
+            assert math.isclose(a['total_nested_regularizer'],a['Omega_F']/3+a['total_inside_sparsity']+a['total_outside_penalty'],rel_tol=2e-6,abs_tol=1e-7)
         old={h['rank']:h for h in b['rank_health']}
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
@@ -157,6 +164,9 @@ def checkpoint_invariants(current,reference):
     assert old_model.pop('view_sparsity_weights',[1.,2.,2.])==[1.,2.,2.]
     assert new_model['search_hparams'].pop('view_weights')==ARMS[ARM]['weights']
     old_model['search_hparams'].pop('view_weights')
+    if ARMS[ARM]['axis']=='regularizer':
+        assert new_model.pop('regularizer_mode')=='coupled_nested'
+        assert old_model.pop('regularizer_mode','independent')=='independent'
     if ARMS[ARM]['axis']=='inclusion':
         assert new_model['search_hparams'].pop('inclusion_max')==ARMS[ARM]['inclusion_max']
         assert ARMS[ARM]['inclusion_max'] in (0.,.5)

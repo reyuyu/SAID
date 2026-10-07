@@ -1,0 +1,53 @@
+{
+  "arm": "CoupledNested",
+  "axis": "regularizer_mode",
+  "only_config_change": {
+    "regularizer_mode": "coupled_nested"
+  },
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "fresh_common0": true,
+  "updates": 500,
+  "horizon": 4868,
+  "local_only_root": "/root/said_s02_stage500/ShareGPT4V/",
+  "NFS_fallback": false,
+  "epsilon": 0.000001,
+  "edge_outside_factor": 0.75,
+  "formula": "alignment + (Omega_F + 2*(inside_Dall_F+.75*lambda*outside_Dall_F) + 2*(inside_D3_Dall+.75*lambda*outside_D3_Dall))/3",
+  "ramp": "original completed-update min((u-1)/200,1)",
+  "gradient_routes": {
+    "outside": "child.detach -> parent",
+    "inside": "parent.detach -> child"
+  },
+  "no_extra_child_global_sparse": true,
+  "no_independent_inclusion": true,
+  "strict_stream_records": 512000,
+  "gradient_protocol": "Identical Anchor8 global1024 batches, per-view native-backbone raw CE gradient norm, no updates",
+  "classification": {
+    "strong": {
+      "Score5_gt": 71.158309,
+      "J_long3_ge": 74.978516,
+      "Urban_T2I_ge": 89.6,
+      "Short4_ge": 65.3,
+      "coverage": "mean F>Dall>D3>0"
+    },
+    "positive": {
+      "delta_Score5_ge": 0.05,
+      "delta_J_long3_ge": 0.05,
+      "delta_Urban_T2I_ge": -0.1,
+      "coverage": "ordered"
+    },
+    "simplification": {
+      "abs_delta_Score5_le": 0.05,
+      "abs_delta_J_long3_le": 0.05,
+      "abs_delta_Urban_T2I_le": 0.1,
+      "abs_delta_Short4_le": 0.15,
+      "coverage": "ordered"
+    },
+    "negative": "Score5,J_long3,Urban_T2I all below Anchor",
+    "otherwise": "COUPLED_NESTED_TRADEOFF"
+  },
+  "automatic_full": false,
+  "automatic_other_arms": false,
+  "publish_small_artifacts_only": true,
+  "automatic_commit_push_fetch_verify": true
+}

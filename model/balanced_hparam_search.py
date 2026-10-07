@@ -36,9 +36,36 @@ def detail_chain_inclusion(pf, dall, ds):
                  torch.relu(ds.detach()-dall).mean(-1))
 
 
+def nested_edge_terms(child, parent):
+    """Per-pair terms: outside trains parent, inside trains child only."""
+    support = parent.detach()
+    outside = torch.relu(child.detach()-parent).mean(-1)
+    inside = (support*child).sum(-1)/(support.sum(-1)+1e-6)
+    return inside, outside
+
+
+def coupled_nested_terms(omega_f, pf, dall, lowest, valid, weight, world, count):
+    """Local differentiable sums; DDP averages world/count scaling.
+
+    Child global Hard-ST sparsity is deliberately not an argument.
+    """
+    inside_d, outside_d = nested_edge_terms(dall, pf)
+    inside_l, outside_l = nested_edge_terms(lowest, dall)
+    vectors = dict(L_in_Dall_F=inside_d, L_out_Dall_F=outside_d,
+                   L_in_D3_Dall=inside_l, L_out_D3_Dall=outside_l)
+    means = {k:world/count*v[valid].sum() for k,v in vectors.items()}
+    means['Omega_F'] = omega_f
+    means['total_inside_sparsity'] = 2/3*(means['L_in_Dall_F']+means['L_in_D3_Dall'])
+    # 2*(3/4)/3 = 1/2: precisely the Anchor's inclusion scale.
+    means['total_outside_penalty'] = (2*.75/3)*weight*(means['L_out_Dall_F']+means['L_out_D3_Dall'])
+    total = omega_f/3+means['total_inside_sparsity']+means['total_outside_penalty']
+    means['total_nested_regularizer'] = total
+    return total, means
+
+
 class BalancedSearch(NestedFusionMask):
     def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings',
-                 view_sparsity_weights=(1.,2.,2.), **options):
+                 view_sparsity_weights=(1.,2.,2.), regularizer_mode='independent', **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
@@ -46,11 +73,18 @@ class BalancedSearch(NestedFusionMask):
         assert 0 < self.summary_t2i_weight <= 1.
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
         self.inclusion_hierarchy = inclusion_hierarchy
+        assert regularizer_mode in ('independent','coupled_nested')
+        self.regularizer_mode = regularizer_mode
         self.view_sparsity_weights = [float(v) for v in view_sparsity_weights]
         assert len(self.view_sparsity_weights)==3
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
         assert (math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12)
                 or self.view_sparsity_weights in ([.5,1.,1.5],[1.,2.,3.])), 'Unreviewed sparsity coefficients'
+        if regularizer_mode == 'coupled_nested':
+            assert inclusion_hierarchy == 'detail_chain'
+            assert self.view_sparsity_weights == [1.,2.,2.]
+            assert self.search_hparams['inclusion_max'] == self.search_hparams['sparsity_scale'] == 1.
+            assert self.search_hparams['view_weights'] == [1.35,1.35,.30]
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -113,12 +147,12 @@ class BalancedSearch(NestedFusionMask):
                                               (gate_f-gate_e).abs().mean(-1)[valid].sum(),
                                               (gate_o-gate_e).abs().mean(-1)[valid].sum())))/valid_count
                 logs.update(g_F_P_abs_difference=values[0],g_F_R_abs_difference=values[1],g_P_R_abs_difference=values[2])
-            if inclusion_enabled:
+            if inclusion_enabled and self.regularizer_mode == 'independent':
                 inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
                          else inclusion(pf,po,pe))[valid].sum()
             else:
-                # INC0: retain the raw violation statistic without an autograd
-                # graph, loss term, or evaluation of the inclusion schedule.
+                # INC0 and coupled mode: old independent inclusion is telemetry
+                # only. Coupled outside gradients come from its edge terms.
                 with torch.no_grad():
                     inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
                              else inclusion(pf,po,pe))[valid].sum()
@@ -133,9 +167,29 @@ class BalancedSearch(NestedFusionMask):
             cf,co,ce=self.view_sparsity_weights
             sparse=((sf+2*so+2*se)/3 if self.view_sparsity_weights==[1.,2.,2.] else
                     (cf*sf+co*so+ce*se)/3)
-            loss=align+hp['sparsity_scale']*sparse
-            if inclusion_enabled:
-                loss=loss+weight*world_rank()[0]/valid_count*inc_sum
+            if self.regularizer_mode == 'coupled_nested':
+                world=world_rank()[0]
+                regularizer,reg_logs=coupled_nested_terms(sf,pf,po,pe,valid,weight,world,valid_count)
+                loss=align+regularizer
+                # Detached reductions for telemetry only, never objective gradients.
+                logs.update({k:global_sum(v)/world for k,v in reg_logs.items()})
+                logs['old_global_sparse_counterfactual']=global_sum(sparse)/world
+                logs['independent_child_sparse_applied']=0.
+                logs['independent_inclusion_applied']=0.
+                with torch.no_grad():
+                    for name,child,parent,hard_child,hard_parent in (
+                        ('Dall_F',po,pf,mo,mf),('D3_Dall',pe,po,me,mo)):
+                        support=parent.detach();child=child.detach()
+                        outside=((1-support)*child).sum(-1)
+                        inside_keep=(hard_child.detach()*hard_parent.detach()).sum(-1)/hard_parent.detach().sum(-1).clamp_min(1)
+                        vals=global_sum(torch.stack((inside_keep[valid].sum(),outside[valid].sum(),
+                            (outside/(child.sum(-1)+1e-6))[valid].sum())))/valid_count
+                        logs.update({name+'_inside_parent_keep_ratio':vals[0],
+                            name+'_outside_probability_mass':vals[1],name+'_outside_mass_ratio':vals[2]})
+            else:
+                loss=align+hp['sparsity_scale']*sparse
+                if inclusion_enabled:
+                    loss=loss+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
             iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)
             extra=global_sum(torch.stack((inc_sum.detach(),violation[valid].sum(),iou[valid].sum())))/valid_count
@@ -159,6 +213,9 @@ class BalancedSearch(NestedFusionMask):
         logs.update(loss=global_sum(loss)/world_rank()[0],inc_weight=weight,inclusion_enabled=inclusion_enabled,valid_global=valid_count,
                     fusion=self.fusion,visual=self.visual,condition_mode=self.condition_mode,shuffle_shift=0,
                     nonfinite=global_sum((~torch.isfinite(loss)).sum()))
+        if self.regularizer_mode == 'coupled_nested':
+            logs['regularizer_mode']=self.regularizer_mode
+            logs['inclusion_folded_into_regularizer']=True
         return loss,{key:value.detach() if torch.is_tensor(value) else value for key,value in logs.items()}
 
 

@@ -134,6 +134,11 @@ ALLOWED.update('experiments/nest_clip_v1/nested_d3_inc05_500_v1/'+name for name 
     'config.json','CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
     'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
     'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
+ALLOWED.update(('recovery/nested_d3_coupled_reg500.py','tests/test_nested_d3_coupled_reg500.py'))
+ALLOWED.update('experiments/nest_clip_v1/nested_d3_coupled_reg500_v1/'+name for name in (
+    'config.json','CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
+    'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
+    'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json','REGULARIZER_AUDIT.json'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),
