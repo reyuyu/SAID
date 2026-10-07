@@ -151,6 +151,11 @@ ALLOWED.update('experiments/nest_clip_v1/'+arm+'/'+name
         'SMOKE_EVIDENCE.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json','DECISION.json',
         'SEARCH_SUMMARY.md','FINAL_COMPARISON.json',
         *('evaluations/'+ds+'.json' for ds in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))))
+ALLOWED.update(('recovery/hns_full.py', 'tests/test_hns_full.py'))
+ALLOWED.update('experiments/nest_clip_v1/nested_d3_hns_full_v1/'+name for name in (
+    'config.json', 'PLAN.json', 'RESUME_PROVENANCE.json', 'CPU_TESTS.json',
+    'FULL_RESULTS.md', 'FULL_RESULTS.json', 'FULL_RUNTIME_STATS.json',
+    'TRAINING_DIAGNOSTICS.json', 'MASK_HIERARCHY_AUDIT.json', 'VALIDATION.json', 'RESUME_GATE.json'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),

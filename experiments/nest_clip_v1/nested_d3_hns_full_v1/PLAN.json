@@ -1,0 +1,54 @@
+{
+  "method": "HNS-v1 exact evaluated500 continuation",
+  "resume": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns500-20261008/HNS/step500/step000500.pt",
+  "parent_sha256": "efb161ba1b5847bc919750821c421595afaac4490676c0dad20790e21f77bada",
+  "updates": [
+    501,
+    4868
+  ],
+  "epochs": 4,
+  "horizon": 4868,
+  "alignment": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity": [
+    1,
+    2,
+    2
+  ],
+  "old_inclusion_max": 0,
+  "HNS_beta": [
+    2,
+    2
+  ],
+  "HNS_ramp": 200,
+  "checkpoints": [
+    1217,
+    2434,
+    3651,
+    4868
+  ],
+  "local_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "local_cache": "Disposable Docker overlay. NFS remains source of truth; never delete originals.",
+  "local_path_proof": {
+    "passed": true,
+    "checked": 5000,
+    "local_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-full-v1/reviewed/prelaunch-local-path-proof-5000.json",
+    "sha256": "747576f6336672d6469bffd871e2b568796c62b8b9fe640c55cfc4e42d5772e8"
+  },
+  "evaluation": [
+    "COCO canonical",
+    "Urban1k",
+    "Flickr30k test1K",
+    "DOCCI",
+    "Long-DCI7602"
+  ],
+  "inference": "normalize(native image embedding) @ normalize(native full-caption text embedding).T",
+  "stop_after_final_evaluation": true,
+  "automatic_other_experiments": false,
+  "performance_policy": ">3s warning; local I/O failure, CUDA/OOM, DDP, NaN/Inf, oom_kill, >60s step, supervisor failure hard stop",
+  "resumed_loader": "Replay consumed500 batches without updates, preserving worker/loader state; first executed update501"
+}
