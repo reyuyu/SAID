@@ -118,6 +118,10 @@ def matched_stream(actual,reference,arm):
         assert a['actual_lrs']==b['actual_lrs'] and math.isfinite(a['loss']) and a['nonfinite']==0
         if ARMS[arm]['axis']=='inclusion' and ARMS[arm]['inclusion_max']==0:
             assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
+        elif ARMS[arm]['axis']=='inclusion':
+            assert ARMS[arm]['inclusion_max']==.5 and a['inclusion_enabled'] is True
+            assert a['inc_weight']==.5*b['inc_weight'], ('Inclusion ramp drift',a['step'])
+            assert math.isclose(a['inclusion_loss'],a['inc_weight']*a['inc'],rel_tol=1e-6,abs_tol=1e-8)
         old={h['rank']:h for h in b['rank_health']}
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
@@ -154,7 +158,8 @@ def checkpoint_invariants(current,reference):
     assert new_model['search_hparams'].pop('view_weights')==ARMS[ARM]['weights']
     old_model['search_hparams'].pop('view_weights')
     if ARMS[ARM]['axis']=='inclusion':
-        assert new_model['search_hparams'].pop('inclusion_max')==ARMS[ARM]['inclusion_max']==0
+        assert new_model['search_hparams'].pop('inclusion_max')==ARMS[ARM]['inclusion_max']
+        assert ARMS[ARM]['inclusion_max'] in (0.,.5)
         assert old_model['search_hparams'].pop('inclusion_max')==1
     assert new_model==old_model
     changed={k for k,v in old['code_sha256'].items() if cfg['code_sha256'][k]!=v}
@@ -162,6 +167,9 @@ def checkpoint_invariants(current,reference):
     assert current['optimizer']['param_groups']==reference['optimizer']['param_groups']
     assert current['optimizer']['state'].keys()==reference['optimizer']['state'].keys()
     assert {int(s['step']) for s in current['optimizer']['state'].values()}=={5}
+    if ARMS[ARM]['axis']=='inclusion' and 'scheduler' in reference:
+        assert current['scheduler']==reference['scheduler'], 'Scheduler metadata drift'
+        assert current['data_cursor']==reference['data_cursor'], 'Sampler cursor drift'
     pairs=[(current['model'],reference['model']),(current['adapter'],reference['adapter'])]
     pairs += [(v,reference['optimizer']['state'][k]) for k,v in current['optimizer']['state'].items()]
     for new,old_state in pairs:
