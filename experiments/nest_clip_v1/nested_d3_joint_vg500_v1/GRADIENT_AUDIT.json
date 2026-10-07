@@ -1,9 +1,8 @@
 {
   "passed": true,
-  "before_formal_launch": true,
   "joint_edge_gradient_routing": {
     "passed": true,
-    "epsilon": 0.000001,
+    "epsilon": 1e-06,
     "joint_parent_child_gradients": true,
     "no_stop_gradient": true,
     "cases": {
@@ -19,13 +18,13 @@
         "term": "V_penalty",
         "values": {
           "V": 0.5882349480970893,
-          "G": 0,
+          "G": 0.0,
           "V_penalty": 0.2896968593530764,
           "G_lower_penalty": 0.010000000000000002,
-          "G_upper_penalty": 0,
-          "V_legal": 0,
-          "G_legal": 0,
-          "zero_edge": 0
+          "G_upper_penalty": 0.0,
+          "V_legal": 0.0,
+          "G_legal": 0.0,
+          "zero_edge": 0.0
         },
         "child_gradient": [
           [
@@ -51,14 +50,14 @@
         ],
         "term": "G_lower_penalty",
         "values": {
-          "V": 0,
+          "V": 0.0,
           "G": 0.07999993600005119,
-          "V_penalty": 0,
+          "V_penalty": 0.0,
           "G_lower_penalty": 0.00040000256000204864,
-          "G_upper_penalty": 0,
-          "V_legal": 1,
-          "G_legal": 0,
-          "zero_edge": 0
+          "G_upper_penalty": 0.0,
+          "V_legal": 1.0,
+          "G_legal": 0.0,
+          "zero_edge": 0.0
         },
         "child_gradient": [
           [
@@ -84,14 +83,14 @@
         ],
         "term": "G_upper_penalty",
         "values": {
-          "V": 0,
+          "V": 0.0,
           "G": 0.7058819377165073,
-          "V_penalty": 0,
-          "G_lower_penalty": 0,
+          "V_penalty": 0.0,
+          "G_lower_penalty": 0.0,
           "G_upper_penalty": 0.16474014736450673,
-          "V_legal": 1,
-          "G_legal": 0,
-          "zero_edge": 0
+          "V_legal": 1.0,
+          "G_legal": 0.0,
+          "zero_edge": 0.0
         },
         "child_gradient": [
           [
@@ -117,25 +116,25 @@
         ],
         "term": "G_lower_penalty",
         "values": {
-          "V": 0,
+          "V": 0.0,
           "G": 0.1999998666667556,
-          "V_penalty": 0,
-          "G_lower_penalty": 0,
-          "G_upper_penalty": 0,
-          "V_legal": 1,
-          "G_legal": 1,
-          "zero_edge": 1
+          "V_penalty": 0.0,
+          "G_lower_penalty": 0.0,
+          "G_upper_penalty": 0.0,
+          "V_legal": 1.0,
+          "G_legal": 1.0,
+          "zero_edge": 1.0
         },
         "child_gradient": [
           [
-            0,
-            0
+            0.0,
+            0.0
           ]
         ],
         "parent_gradient": [
           [
-            0,
-            0
+            0.0,
+            0.0
           ]
         ]
       },
@@ -150,30 +149,260 @@
         ],
         "term": "G_lower_penalty",
         "values": {
-          "V": 0,
-          "G": 0,
-          "V_penalty": 0,
+          "V": 0.0,
+          "G": 0.0,
+          "V_penalty": 0.0,
           "G_lower_penalty": 0.010000000000000002,
-          "G_upper_penalty": 0,
-          "V_legal": 1,
-          "G_legal": 0,
-          "zero_edge": 0
+          "G_upper_penalty": 0.0,
+          "V_legal": 1.0,
+          "G_legal": 0.0,
+          "zero_edge": 0.0
         },
         "child_gradient": [
           [
-            0,
-            0
+            -0.0,
+            -0.0
           ]
         ],
         "parent_gradient": [
           [
-            0,
-            0
+            0.0,
+            0.0
           ]
         ]
       }
     },
     "exact_equality_caveat": "At exact equality PyTorch ReLU has zero subgradient: lower penalty is positive, but its endpoint gradients are zero. Positive gamma_low discourages collapse away from this kink; it does not mathematically guarantee escape from exact collapse."
   },
-  "backbone_alignment_spotcheck": "PENDING_STEP500"
+  "backbone_alignment_spotcheck": {
+    "passed": true,
+    "checkpoint_sha256": "c23f82d3ea16ab11689d4bc0f48f691204f83cf06c6316b334269b43e2a9d875",
+    "checkpoint_unchanged": true,
+    "fixed_global_batches": 8,
+    "global_batch_size": 1024,
+    "selection": "First8 seed0 epoch0 frozen batches at fixed step500 weights",
+    "no_optimizer_updates": true,
+    "read_only_separate_process": true,
+    "backbone_scope": "Exact production backbone optimizer group; zero for unused parameters",
+    "gradients": "Raw directional-summed per-view CE gradients, DDP-equivalent all-reduce/4",
+    "native_reference": "Native F CLIP CE, normalized embeddings, fixed temperature100, both directions",
+    "mean_gradient_norms": {
+      "F": 12.664927959442139,
+      "Dall": 16.7771018743515,
+      "D3": 41.59274387359619
+    },
+    "mean_cosine_to_native": {
+      "F": 0.8330750614404678,
+      "Dall": 0.5555471405386925,
+      "D3": 0.15709302574396133
+    },
+    "mean_weighted_alignment_cosine_to_native": 0.704071432352066,
+    "batches": [
+      {
+        "batch": 1,
+        "global_sample_ids_sha256": "416f198d48ed2416481a08ed2139b06ee73e51243724c088ce542afffdeefb27",
+        "raw_combined_CE": {
+          "F": 0.11034144461154938,
+          "Dall": 0.213076651096344,
+          "D3": 1.5054609775543213
+        },
+        "gradient_norms": {
+          "F": 12.978266716003418,
+          "Dall": 17.823911666870117,
+          "D3": 41.35835647583008
+        },
+        "native_CE": 0.09553605318069458,
+        "native_gradient_norm": 10.084297180175781,
+        "weighted_alignment_gradient_norm": 143.958740234375,
+        "cosine_to_native": {
+          "F": 0.8332000374794006,
+          "Dall": 0.521431028842926,
+          "D3": 0.20051029324531555
+        },
+        "weighted_alignment_cosine_to_native": 0.6861424446105957,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 2,
+        "global_sample_ids_sha256": "51e7c307ae760a5303c6f7134e445e2e1195a54e7eea64695ec92a2ba6a5b120",
+        "raw_combined_CE": {
+          "F": 0.137361079454422,
+          "Dall": 0.23352308571338654,
+          "D3": 1.626037836074829
+        },
+        "gradient_norms": {
+          "F": 13.252787590026855,
+          "Dall": 17.199216842651367,
+          "D3": 42.74162673950195
+        },
+        "native_CE": 0.11391008645296097,
+        "native_gradient_norm": 11.332508087158203,
+        "weighted_alignment_gradient_norm": 144.8702392578125,
+        "cosine_to_native": {
+          "F": 0.8679025769233704,
+          "Dall": 0.6035539507865906,
+          "D3": 0.26080968976020813
+        },
+        "weighted_alignment_cosine_to_native": 0.7566768527030945,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 3,
+        "global_sample_ids_sha256": "d021b457b41f78aa93ba93ebb6ecf8feb60784fa51c20e8849156c183b99963f",
+        "raw_combined_CE": {
+          "F": 0.13692033290863037,
+          "Dall": 0.21980062127113342,
+          "D3": 1.8438512086868286
+        },
+        "gradient_norms": {
+          "F": 12.8973388671875,
+          "Dall": 16.9407901763916,
+          "D3": 42.98103332519531
+        },
+        "native_CE": 0.11757923662662506,
+        "native_gradient_norm": 9.873801231384277,
+        "weighted_alignment_gradient_norm": 134.577880859375,
+        "cosine_to_native": {
+          "F": 0.8327026963233948,
+          "Dall": 0.5273462533950806,
+          "D3": 0.08803031593561172
+        },
+        "weighted_alignment_cosine_to_native": 0.6859487295150757,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 4,
+        "global_sample_ids_sha256": "5b22ba9433025d99a25609721e35db530b806a2aae6e1162f0dd3dfc54c24253",
+        "raw_combined_CE": {
+          "F": 0.11894752085208893,
+          "Dall": 0.20710572600364685,
+          "D3": 1.5222039222717285
+        },
+        "gradient_norms": {
+          "F": 12.223780632019043,
+          "Dall": 16.35080909729004,
+          "D3": 42.688331604003906
+        },
+        "native_CE": 0.11125778406858444,
+        "native_gradient_norm": 10.317730903625488,
+        "weighted_alignment_gradient_norm": 134.5070343017578,
+        "cosine_to_native": {
+          "F": 0.8637160658836365,
+          "Dall": 0.53467857837677,
+          "D3": 0.243253692984581
+        },
+        "weighted_alignment_cosine_to_native": 0.7229022979736328,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 5,
+        "global_sample_ids_sha256": "8cf18e4e0eaca4c601267333a59d1c88c66e32baae5fb55fcf196483beb8dbe4",
+        "raw_combined_CE": {
+          "F": 0.14669549465179443,
+          "Dall": 0.2117708921432495,
+          "D3": 1.641317367553711
+        },
+        "gradient_norms": {
+          "F": 12.9435453414917,
+          "Dall": 16.04368019104004,
+          "D3": 43.73958969116211
+        },
+        "native_CE": 0.13355405628681183,
+        "native_gradient_norm": 9.806498527526855,
+        "weighted_alignment_gradient_norm": 134.47714233398438,
+        "cosine_to_native": {
+          "F": 0.8082444071769714,
+          "Dall": 0.5488709807395935,
+          "D3": 0.12469916045665741
+        },
+        "weighted_alignment_cosine_to_native": 0.6853049993515015,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 6,
+        "global_sample_ids_sha256": "e68cd605ae73c2297d898c884a84adb5b8c1d28295386e7e71adec63685ebcbe",
+        "raw_combined_CE": {
+          "F": 0.11660808324813843,
+          "Dall": 0.19653162360191345,
+          "D3": 1.3581942319869995
+        },
+        "gradient_norms": {
+          "F": 11.415477752685547,
+          "Dall": 15.146416664123535,
+          "D3": 39.014610290527344
+        },
+        "native_CE": 0.10355010628700256,
+        "native_gradient_norm": 9.726285934448242,
+        "weighted_alignment_gradient_norm": 123.13575744628906,
+        "cosine_to_native": {
+          "F": 0.7819124460220337,
+          "Dall": 0.5159586668014526,
+          "D3": 0.11639685928821564
+        },
+        "weighted_alignment_cosine_to_native": 0.6486735343933105,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 7,
+        "global_sample_ids_sha256": "b162c40aa71b6f348fda9e269ec4cef304b0cb0fe56d3c4e9423db809578a82c",
+        "raw_combined_CE": {
+          "F": 0.08409745991230011,
+          "Dall": 0.18341568112373352,
+          "D3": 1.586979866027832
+        },
+        "gradient_norms": {
+          "F": 11.926254272460938,
+          "Dall": 16.973649978637695,
+          "D3": 40.56708526611328
+        },
+        "native_CE": 0.07491897791624069,
+        "native_gradient_norm": 8.340564727783203,
+        "weighted_alignment_gradient_norm": 136.06195068359375,
+        "cosine_to_native": {
+          "F": 0.8192103505134583,
+          "Dall": 0.6154360175132751,
+          "D3": 0.175205260515213
+        },
+        "weighted_alignment_cosine_to_native": 0.7208551168441772,
+        "all_gradients_finite": true
+      },
+      {
+        "batch": 8,
+        "global_sample_ids_sha256": "bb13beb6eb51a6421f38fbe25a85ee2daa6832c199f1d2d170d4cfb479df0661",
+        "raw_combined_CE": {
+          "F": 0.1392330527305603,
+          "Dall": 0.2679360508918762,
+          "D3": 1.5323855876922607
+        },
+        "gradient_norms": {
+          "F": 13.68197250366211,
+          "Dall": 17.738340377807617,
+          "D3": 39.65131759643555
+        },
+        "native_CE": 0.11320414394140244,
+        "native_gradient_norm": 9.771427154541016,
+        "weighted_alignment_gradient_norm": 138.79006958007812,
+        "cosine_to_native": {
+          "F": 0.857711911201477,
+          "Dall": 0.5771016478538513,
+          "D3": 0.047838933765888214
+        },
+        "weighted_alignment_cosine_to_native": 0.7260674834251404,
+        "all_gradients_finite": true
+      }
+    ],
+    "actual_gradient_coefficients": {
+      "F": 4.500000000000001,
+      "Dall": 4.500000000000001,
+      "D3": 1.0
+    },
+    "weighted_mean_gradient_norms": {
+      "F": 56.99217581748964,
+      "Dall": 75.49695843458177,
+      "D3": 41.59274387359619
+    },
+    "weighted_lowest_Dall_ratio": 0.5509194639892198,
+    "weighted_lowest_F_ratio": 0.7297974375779543,
+    "frozen_anchor_batch_IDs_and_protocol_exact": true
+  }
 }
