@@ -1,0 +1,686 @@
+{
+  "completed_updates": 500,
+  "training_wall_seconds": 1138.0978940576315,
+  "full_cycle_seconds": {
+    "count": 500,
+    "median": 2.120060443878174,
+    "p95": 2.2663551688194272,
+    "p99": 2.343806364536285,
+    "max": 24.80042839050293
+  },
+  "data_wait_seconds_slowest_rank": {
+    "count": 500,
+    "median": 0.000739268958568573,
+    "p95": 0.0009896136820316311,
+    "p99": 0.0015614420175552337,
+    "max": 20.428772918879986
+  },
+  "rank_data_wait_seconds": {
+    "0": {
+      "count": 500,
+      "median": 0.0006099678575992584,
+      "p95": 0.0008771624416112898,
+      "p99": 0.0013626127690076824,
+      "max": 20.428772918879986
+    },
+    "1": {
+      "count": 500,
+      "median": 0.0005968138575553894,
+      "p95": 0.0007692791521549221,
+      "p99": 0.0010898078233003603,
+      "max": 20.341973282396793
+    },
+    "2": {
+      "count": 500,
+      "median": 0.0006044991314411163,
+      "p95": 0.0007936827838420864,
+      "p99": 0.0009761173278093321,
+      "max": 19.31187527626753
+    },
+    "3": {
+      "count": 500,
+      "median": 0.0006866082549095154,
+      "p95": 0.0008460097014904019,
+      "p99": 0.0011422614753246287,
+      "max": 19.807019017636776
+    }
+  },
+  "steps_gt3s": 2,
+  "steps_gt10s": 2,
+  "peak_cgroup_memory_bytes": 536870780928,
+  "peak_file_cache_bytes": 505704165376,
+  "peak_anon_bytes": 29900705792,
+  "oom_kill": 0,
+  "true_training_IO_errors": 0,
+  "pod_or_supervisor_anomaly_observed": false,
+  "GPU_peak_allocated_GiB": {
+    "0": 27.760382652282715,
+    "1": 27.760382652282715,
+    "2": 27.760382652282715,
+    "3": 27.760382652282715
+  },
+  "local_only_proof": {
+    "passed": true,
+    "records": 128,
+    "ranks": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "NFS_fallback": false
+  },
+  "PSI_scope": "Host /proc/pressure, cgroupv1; not per-cgroup PSI",
+  "memory_interpretation": "Cgroup includes file cache; neither memory.current nor file cache is RSS/OOM proof",
+  "raw_artifact_time_range_basis": "Exact command intervals for logs; conservative supervisor start to end containment window for other raw artifacts",
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/commands.json",
+      "bytes": 8269,
+      "sha256": "2d00794b4041fb175de510a38990e49ca22c5e4890266c73833c51a4513f04b9",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/eval500-coco.log",
+      "bytes": 695,
+      "sha256": "d66036e8a15f50f5e00fc6261bc629c68935e6ed2a689b9fcf94a4ad505b3d3a",
+      "time_range_utc": [
+        "2026-10-07T11:14:33.318964+00:00",
+        "2026-10-07T11:16:42.556622+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/eval500-docci.log",
+      "bytes": 782,
+      "sha256": "dac1f5b544c67a4f1fd5bd2b726440fdf23acdefd33db3d1e9132de8039df46f",
+      "time_range_utc": [
+        "2026-10-07T11:17:35.714380+00:00",
+        "2026-10-07T11:22:29.274293+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/eval500-flickr_test1k.log",
+      "bytes": 788,
+      "sha256": "1d05aaacf9bab3a7eada80f0fe989db9ba348e0b59773bd6b2f4b7a69b0a2541",
+      "time_range_utc": [
+        "2026-10-07T11:17:06.635828+00:00",
+        "2026-10-07T11:17:35.702465+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/eval500-long_dci.log",
+      "bytes": 859,
+      "sha256": "812f2e28e0fcdd1a3837e83d2ef204b60af799f1afaa130a532b209d524deb69",
+      "time_range_utc": [
+        "2026-10-07T11:22:29.287235+00:00",
+        "2026-10-07T11:30:45.315284+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/eval500-urban.log",
+      "bytes": 1191,
+      "sha256": "78bf4075769caa6061d3fc9125b614b74a5a7447569386e687a3f69e8734fe4d",
+      "time_range_utc": [
+        "2026-10-07T11:16:42.567449+00:00",
+        "2026-10-07T11:17:06.623745+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/export500.log",
+      "bytes": 559,
+      "sha256": "e9ca5d652118d6e19680cdeb97b7742d5b6c2e8c1162b245e8fed44b472e1a47",
+      "time_range_utc": [
+        "2026-10-07T11:13:57.111007+00:00",
+        "2026-10-07T11:14:15.241464+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/gradient500.log",
+      "bytes": 18876,
+      "sha256": "cabb572135bb19fb8b21e2e040328f2236b7c604fdafaf15c22d2ff91355cc48",
+      "time_range_utc": [
+        "2026-10-07T11:12:34.599767+00:00",
+        "2026-10-07T11:13:54.763069+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/launch-provenance.json",
+      "bytes": 8905,
+      "sha256": "ff1fb94b9dee72778d62b34eea52a35df161d0f614db66b4d497561806f93575",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/prelaunch-local-path-proof-5000.json",
+      "bytes": 992338,
+      "sha256": "747576f6336672d6469bffd871e2b568796c62b8b9fe640c55cfc4e42d5772e8",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/resource-telemetry.jsonl",
+      "bytes": 986083,
+      "sha256": "e79105e4393af7c41caf29e289d2fccf39b3a41edf1d870e03ca2ca77039db3a",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "sha256": "a7a138c353e597af9ec619a40faf4ad6ae046e41c9ba45b1701595d30f0d1f25",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/step500/checkpoint_timing.jsonl",
+      "bytes": 59,
+      "sha256": "8addc6b6de20706d97368663530d54b2a8bd438906267107ea1afa2dccc29b3c",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/step500/cycle_timing.jsonl",
+      "bytes": 37642,
+      "sha256": "dc1be75e492fb44575df1e4370a199dd596c56af1f875b7d455769ce057e425d",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/step500/steps.jsonl",
+      "bytes": 24895402,
+      "sha256": "159e2548cefb94dd389d827037e684b7abc1707fa8d69de2fe5f773c7fbc3544",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/train500.log",
+      "bytes": 87455,
+      "sha256": "943340dc53535f604c9f9ea953e4e7e669ea1fe3585d24ff39ccb59288788803",
+      "time_range_utc": [
+        "2026-10-07T10:53:01.618682+00:00",
+        "2026-10-07T11:12:19.706615+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/verify500.log",
+      "bytes": 608,
+      "sha256": "d4a1cf80ced9cc87ca4817db9ff6176236b61f04f47008af6a3c9c554525a216",
+      "time_range_utc": [
+        "2026-10-07T11:14:15.254601+00:00",
+        "2026-10-07T11:14:33.307129+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244006.jsonl",
+      "bytes": 1030,
+      "sha256": "91bc6759acca004ad4a510caaf7b689b7945b61d1b9454b9e49da9938f5d4cb8",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244007.jsonl",
+      "bytes": 965,
+      "sha256": "a320ba2036595100c9be510276cc74ce96f3d5faf136945320347a0dc563d80c",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244008.jsonl",
+      "bytes": 999,
+      "sha256": "29e49a212f797a1a6d8a810e741a42b42f1cb4cbc816e2bd6d5cd373d98b0f9d",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244009.jsonl",
+      "bytes": 999,
+      "sha256": "aea5962079bd59cdcd336a4e39dcb4d9d514480b5009a80bc946a676f5e087e4",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244010.jsonl",
+      "bytes": 997,
+      "sha256": "ec229c9ffa6576f8c181c59dc5eb1f0ca4bb6a2bb1c5ccdbd86b907d2d78311f",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244011.jsonl",
+      "bytes": 1012,
+      "sha256": "8252656b92cdd699bb9ff985698660dffb7b4df3067eed48d72fc4a5e8cb2a56",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244012.jsonl",
+      "bytes": 1045,
+      "sha256": "56eaf640d8dbeadee1102b08b4788b73e988bab9c685c68c8bff77b97770b6eb",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank0-pid244013.jsonl",
+      "bytes": 1015,
+      "sha256": "7f64ccf38ce1f315111e4c8ad8c1b35a4acdbba8a96be1314fc44269cf6d5c02",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244016.jsonl",
+      "bytes": 1060,
+      "sha256": "1562ff9563f4fdf5188eb68a97e4360b8baffb2012536e81cac8ef12642f7fca",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244017.jsonl",
+      "bytes": 1014,
+      "sha256": "fbe6af5f9869e206f318350a53e94143508e6f94d960ccba744e5f7de291a3c0",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244018.jsonl",
+      "bytes": 1038,
+      "sha256": "eaee7b4de7d36dc5e445db67fd8e815f4237f4b3debc6cd921c6ee180ff8c94b",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244019.jsonl",
+      "bytes": 1015,
+      "sha256": "a0abb05a89478be97f88193434d38ef201171d780d7c9e223e997025debd1639",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244020.jsonl",
+      "bytes": 989,
+      "sha256": "de72891b9066519e17caa56969abd2325acf2859ea2d193f88e364e05b59d783",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244021.jsonl",
+      "bytes": 1061,
+      "sha256": "2c40ebd40d3a34a90165a093693bfbcbf27a299855b4432af4569dbea7c17316",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244022.jsonl",
+      "bytes": 1038,
+      "sha256": "58f0224621bb5fe11156e623eea573b25eb98e527aa5fbe3a4f2b23b35515256",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank1-pid244023.jsonl",
+      "bytes": 963,
+      "sha256": "6c6c50e215152658aab7413aa14d36022202bfb3fb91961c4c42d6472061d411",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid243996.jsonl",
+      "bytes": 997,
+      "sha256": "fcb44627ae437edca102c79bf8975fa4e215ee12a4b1663c3ba45b686d16efcd",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid243997.jsonl",
+      "bytes": 1023,
+      "sha256": "5fb1063d81ff5570ec7dfdfbe41aa8e043a6f81f641afa7dfea217885293330e",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid243998.jsonl",
+      "bytes": 988,
+      "sha256": "01868761cb6fa3c7353ae836c94aa3f4279497b2392be512a68b83acb86ece1f",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid243999.jsonl",
+      "bytes": 998,
+      "sha256": "e3596ca6509b578d3032c3dabb52c2a3d3fe66de540ee8e8ff734b7bc694a5b6",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid244000.jsonl",
+      "bytes": 1005,
+      "sha256": "7936f0b316300013cf8e56e9fea71a0d1c6ecd48de09282aa33d4c8f184ce3ac",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid244001.jsonl",
+      "bytes": 1028,
+      "sha256": "36bc4f04f2a7c7d1257bac25926dfef9c2101b141913a16113b370b2ffc3cb6f",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid244002.jsonl",
+      "bytes": 990,
+      "sha256": "d4a931e13af2537003d103b74a9dea7e787fb0143968ac076eca3284b328c1a2",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank2-pid244003.jsonl",
+      "bytes": 1014,
+      "sha256": "b6ef01c8625c0d03a65bb2bb7038de31ab60f331b0276956b7c56720187d89d8",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244026.jsonl",
+      "bytes": 997,
+      "sha256": "f5ffa2d0c1f291308ca7a335fa13c041a28934ad99d8d22e1e805829ff8a77c7",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244027.jsonl",
+      "bytes": 1045,
+      "sha256": "1e765fd874c91b1c49bf1107c3f99363a270d7eb454ec364bc01ed3af28340ee",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244028.jsonl",
+      "bytes": 990,
+      "sha256": "e6c71652dc4cbe6c28e0d103013ad9c893488a5d2eb5c593043198984362acb8",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244033.jsonl",
+      "bytes": 975,
+      "sha256": "384b49a4f3dfe014a119e4f9fe2470c59990fdc34f5515c2ecc814331429af66",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244035.jsonl",
+      "bytes": 1014,
+      "sha256": "daab5c4bf1645a02fca2ca0b3377f20c27e87061d102b48d9665be023395de02",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244039.jsonl",
+      "bytes": 1045,
+      "sha256": "888ce082e0cd66e3479bbf309536eeb0447e6a1314783c48bb0ace1844b09a8b",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244040.jsonl",
+      "bytes": 1037,
+      "sha256": "c66cb1c1d517fd7c66f9a72a1f232da30f2d5bc212b72579310f44f496ebb0ee",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/image-paths-rank3-pid244041.jsonl",
+      "bytes": 1021,
+      "sha256": "2f104f698028b6c403d8e3969bb056283e51fb378950a39069b6ec806ab9fe12",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/rank0.jsonl",
+      "bytes": 2689178,
+      "sha256": "ed80ec4b1eec7b064d6312d67fa20f31f8f8850c76d5e74dadb9d4c5009d97a9",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/rank1.jsonl",
+      "bytes": 2687824,
+      "sha256": "26189139199ec7ccecd5bc4d1fbca191646d29a20fa749671cb49f6a4c0f5bb7",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/rank2.jsonl",
+      "bytes": 2688002,
+      "sha256": "0bde864e21116676e5e9d3898830780144dd406446c13eb5d2cbe057b366d830",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-d3-inc05-500-20261007-INC0.5/rank3.jsonl",
+      "bytes": 2687616,
+      "sha256": "04f6f4b92d38fc6552cc2528bd2578c0d53501842c31a41d327ce6d3dcfae05a",
+      "time_range_utc": [
+        "2026-10-07T10:52:43.443647+00:00",
+        "2026-10-07T11:30:47.733441+00:00"
+      ],
+      "uploaded": false
+    }
+  ],
+  "io_PSI": {
+    "some": {
+      "count": 2231,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.51,
+      "max": 3.99
+    },
+    "full": {
+      "count": 2231,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.51,
+      "max": 3.74
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 2231,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.17,
+      "max": 0.47
+    },
+    "full": {
+      "count": 2231,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    }
+  },
+  "local_binary_assets": [
+    {
+      "passed": true,
+      "completed_steps": 5,
+      "optimizer_counters": [
+        5
+      ],
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 0,
+        "next_batch": 5
+      },
+      "model_adapter_optimizer": true,
+      "four_rank_RNG_and_loader_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/step500/step000005.pt",
+      "bytes": 1884187770,
+      "sha256": "806cf4b16d760681f56a6706b68dd12285eec783a1db6bad674439a35e3cbbdf"
+    },
+    {
+      "passed": true,
+      "completed_steps": 500,
+      "optimizer_counters": [
+        500
+      ],
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 0,
+        "next_batch": 500
+      },
+      "model_adapter_optimizer": true,
+      "four_rank_RNG_and_loader_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/step500/step000500.pt",
+      "bytes": 1884188282,
+      "sha256": "41a620c18cbf1165ec79a2460a3154407fe0ac8f5bb5ac7cb98beeffd6b1abb1"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-inc05-500-20261007/INC0.5/step500/student_step500.pt",
+      "bytes": 612069312,
+      "sha256": "9afcc7e74754c47ee4e60da9712af7a1e531ebf5e6d65a99fcf1ebf45ceafb6f",
+      "uploaded": false
+    }
+  ]
+}

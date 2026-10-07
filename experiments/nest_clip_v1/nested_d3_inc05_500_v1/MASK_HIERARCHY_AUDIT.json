@@ -1,0 +1,78 @@
+{
+  "last50": {
+    "inc": 0.013497757408767939,
+    "inc_weight": 0.5,
+    "F_Dall_mask_iou": 0.928012261390686,
+    "Dall_D3_mask_iou": 0.8711714971065522,
+    "Dall_F_hard_violation": 0.020255601778626443,
+    "D3_Dall_hard_violation": 0.03030098758637905
+  },
+  "keep_ratio": {
+    "F": 0.8352985000610351,
+    "Dall": 0.8146812057495117,
+    "D3": 0.7661861872673035
+  },
+  "delta_vs_anchor": {
+    "inc": 0.005389688462018967,
+    "inc_weight": -0.5,
+    "F_Dall_mask_iou": -0.037851612567901594,
+    "Dall_D3_mask_iou": -0.028881214857101378,
+    "Dall_F_hard_violation": 0.009893480055034161,
+    "D3_Dall_hard_violation": 0.013489808589220047
+  },
+  "keep_ratio_delta_vs_anchor": {
+    "F": -0.017368240356445352,
+    "Dall": -0.029608334302902217,
+    "D3": -0.025876829624176034
+  },
+  "inclusion_edges": [
+    "Dall->F",
+    "lowest->Dall"
+  ],
+  "telemetry_edges": [
+    "Dall->F",
+    "lowest->Dall"
+  ],
+  "detached_child": true,
+  "ramp200": true,
+  "inclusion_max": 0.5,
+  "inclusion_loss_active": true,
+  "raw_inc_is_telemetry_only": false,
+  "hard_projection": false,
+  "hierarchy_position": {
+    "violation_between_INC0_and_Anchor": {
+      "Dall_F_hard_violation": true,
+      "D3_Dall_hard_violation": true
+    },
+    "IoU_between_INC0_and_Anchor": {
+      "F_Dall_mask_iou": true,
+      "Dall_D3_mask_iou": true
+    },
+    "all_four_between": true,
+    "clearly_stronger_than_INC0": true,
+    "mean_coverage_ordered": true
+  },
+  "delta_vs_INC0": {
+    "inc": -0.003172404561191798,
+    "inc_weight": 0.5,
+    "F_Dall_mask_iou": 0.0070567703247070845,
+    "Dall_D3_mask_iou": 0.02128670811653144,
+    "Dall_F_hard_violation": -0.007140930667519568,
+    "D3_Dall_hard_violation": -0.010958497002720835
+  },
+  "keep_ratio_delta_vs_INC0": {
+    "F": 0.036542854309081996,
+    "Dall": 0.025625063180923502,
+    "D3": 0.01932449340820308
+  },
+  "hard_violation_delta_pp": {
+    "Anchor": {
+      "Dall_F_hard_violation": 0.9893480055034161,
+      "D3_Dall_hard_violation": 1.3489808589220047
+    },
+    "INC0": {
+      "Dall_F_hard_violation": -0.7140930667519567,
+      "D3_Dall_hard_violation": -1.0958497002720835
+    }
+  }
+}
