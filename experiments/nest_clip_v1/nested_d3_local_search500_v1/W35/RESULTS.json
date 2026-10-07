@@ -1,0 +1,565 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6058,
+        "R@5": 0.826,
+        "R@10": 0.8918
+      },
+      "T2I": {
+        "R@1": 0.41556,
+        "R@5": 0.67256,
+        "R@10": 0.7694
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.909000039100647,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.8910000324249268,
+        "R@5": 0.9860000610351562,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.875,
+        "R@5": 0.975,
+        "R@10": 0.993
+      },
+      "T2I": {
+        "R@1": 0.7172,
+        "R@5": 0.9138,
+        "R@10": 0.9518
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.775,
+        "R@5": 0.9542,
+        "R@10": 0.9796
+      },
+      "T2I": {
+        "R@1": 0.776,
+        "R@5": 0.9506,
+        "R@10": 0.9764
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.570902394106814,
+        "R@5": 0.7565114443567482,
+        "R@10": 0.8193896343067614
+      },
+      "T2I": {
+        "R@1": 0.5686661404893449,
+        "R@5": 0.7621678505656406,
+        "R@10": 0.8213627992633518
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7104128606121732,
+    "J_long3": 0.7484281010202888,
+    "J_long": 0.8377500178813935,
+    "Short4_R1": 0.65339
+  },
+  "scores_percent": {
+    "Score5_R1": 71.04128606121732,
+    "J_long3": 74.84281010202888,
+    "J_long": 83.77500178813935,
+    "Short4_R1": 65.339,
+    "Score5": 71.04128606121732,
+    "Short4": 65.339
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "e765703a6147ca763c16cdeaa702d30ab8711b7483594abdbfaf2f5f1901504c",
+    "bare_sha256": "aafaec755d24fa6fbe6c758dbb6e6a3f56b297d415cbd3c7692c764a2d065157"
+  },
+  "checkpoint_sha256": "e765703a6147ca763c16cdeaa702d30ab8711b7483594abdbfaf2f5f1901504c",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-07T03:27:06.016751+00:00",
+  "arm": "W35",
+  "spec": {
+    "axis": "alignment",
+    "weights": [
+      1.325,
+      1.325,
+      0.35
+    ],
+    "r": 2.0,
+    "mode": "nested_detail_d3"
+  },
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "resume": null,
+  "initialized_from_common0": true,
+  "configuration": {
+    "arm": "A3",
+    "experiment_name": "ArmB-Summary0.2-4epoch",
+    "condition_mode": "dual_branch",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "full_native_mix": 0,
+    "sampling_mode": "nested_detail_d3",
+    "inclusion_hierarchy": "detail_chain",
+    "sampling_seed": 0,
+    "shuffle_seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 4,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "checkpoint_pair_blocks": false,
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "score_chunk": 64,
+    "checkpoint_interval": 1217,
+    "save_initial_checkpoint": false,
+    "monitor_resources": true,
+    "feasibility_abort_seconds": 15,
+    "four_epoch_followup": true,
+    "fusion_lr": 0.0002,
+    "visual_mask_lr_scale": 1,
+    "view_weights": [
+      1.325,
+      1.325,
+      0.35
+    ],
+    "sparsity_scale": 1,
+    "inclusion_max": 1,
+    "hparam_search": true,
+    "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+    "base_model": "ViT-B/16",
+    "resource_policy": "local_reproduction500"
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-07T02:48:27.040256+00:00",
+    "supervisor_pid": 119658,
+    "step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "resume": null,
+    "start_updates": 0,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "arm": "W35",
+    "spec": {
+      "axis": "alignment",
+      "weights": [
+        1.325,
+        1.325,
+        0.35
+      ],
+      "r": 2.0,
+      "mode": "nested_detail_d3"
+    },
+    "git_head": "756396df64a83e659b38abccae2e0675c6f85dd0",
+    "source_sha256": {
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3",
+      "experiments/nest_clip_v1/nested_d3_local_search500_v1/CPU_TESTS.json": "edc503b6b5b54c4533efe7cfcb57266d80f61a52f4e1257f961cf736802e0fce",
+      "experiments/nest_clip_v1/nested_d3_local_search500_v1/SEARCH_PLAN.json": "1b5edcf71a8330b2919647970e005f5e0cefd757b467c5dd0ac57b2b0a10fc7b",
+      "experiments/nest_clip_v1/nested_d3_local_search500_v1/W35/config.json": "bbb5dedddb9ff96cb23fa5c875a14e6635e434aa3a1b05413ff543b0265190a3",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+      "model/balanced_hparam_search.py": "59dc817a510d835c2cda68b711f30afbe054867d5be4937768c352b036111fa4",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/nested_d3_local_search.py": "8df4c999b02bf4f11cb6e83e7f75d179d5854ce7e15691bf793fa6ceece10d8b",
+      "recovery/nested_d3_local_search_evidence.py": "6fbe085c3195f55e7ffeff1e2c74b476612ba9648150d1a3493a52f3f189c4af",
+      "recovery/nested_detail_gradients.py": "333386f00ac25efdca854d18e69d7c46ccfead64576a14d62c61cfb27343f8e9",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "tests/test_nested_d3_local_search.py": "a2c0a633125771e96ddca963b998bffaa7131342e0f91f7b73a14536df7ce9d8",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "tools/nest_clip.py": "326938dd5877cd67ecb39f3a58a5b52f8caaaab4a1b85044a669f1eec5a3ae3a",
+      "train/nested_semantic_data.py": "d414dbb3ceec2c4ce26d94607f72e6c4b4ed5658bbcd74110b4812589b21d370",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "train/train_nested_semantic_mask.py": "87981185079a368ede1cf11e6a1bfda846698075cb47f84a5e54dfd373eafb5a"
+    },
+    "CPU_tests": {
+      "passed": true,
+      "passed_count": 139,
+      "failed_count": 0,
+      "exit_code": 0,
+      "seconds": 13.417,
+      "command": ".venv/bin/python -m pytest -q tests/test_nested_d3_local_search.py tests/test_nested_detail_d3_balanced_full.py tests/test_nested_detail_d3_balanced.py tests/test_nested_detail_d3.py tests/test_nested_detail_equal_weight.py tests/test_nested_detail.py tests/test_balanced_hparams.py tests/test_nested_resume.py recovery/test_nested_detail500.py --junitxml=/tmp/nested-d3-search-tests-20261007.xml",
+      "warning": "pkg_resources deprecation only",
+      "before_all_arm_launches": true,
+      "raw_junit_evidence": {
+        "path": "/tmp/nested-d3-search-tests-20261007.xml",
+        "bytes": 32422,
+        "sha256": "acb9e4518b0e4359876b3e5c458164f6094e3f29c29292f9b7c1e3bc2555b92c",
+        "uploaded": false
+      }
+    },
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "anchor_reference": {
+      "result_sha256": "087691e5b2aba3690aea97b9e38534e6952045f7d09458fed088b62939fe00f6",
+      "checkpoint_sha256": "24792ba9e6e3c34f733820f489cb3a8953278246ae58f2f688652894be871e4b",
+      "actual_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/steps.jsonl",
+      "actual_steps_sha256": "f3f1cdaa08fca48294bde99b8681763b98a56f3c5102b1b88430fda65da48e72",
+      "reference_used_for_resume": false
+    },
+    "config_changes": {
+      "view_weights": [
+        1.325,
+        1.325,
+        0.35
+      ]
+    },
+    "initial_resources": {
+      "timestamp_utc": "2026-10-07T02:48:44.259375+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 494836580352,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 488989872128,
+        "rss": 1689493504,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 82722816,
+        "dirty": 540672,
+        "writeback": 3919872,
+        "pgpgin": 6916442313,
+        "pgpgout": 6796645348,
+        "pgfault": 12501978852,
+        "pgmajfault": 190245,
+        "inactive_anon": 946176,
+        "active_anon": 1689464832,
+        "inactive_file": 7450259456,
+        "active_file": 481539301376,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 488989872128,
+        "total_rss": 1689493504,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 82722816,
+        "total_dirty": 540672,
+        "total_writeback": 3919872,
+        "total_pgpgin": 6916442313,
+        "total_pgpgout": 6796645348,
+        "total_pgfault": 12501978852,
+        "total_pgmajfault": 190245,
+        "total_inactive_anon": 946176,
+        "total_active_anon": 1689464832,
+        "total_inactive_file": 7450259456,
+        "total_active_file": 481539301376,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 129479457
+      },
+      "file": 488989872128,
+      "inactive_file": 7450259456,
+      "active_file": 481539301376,
+      "anon": 1689493504,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 821923,
+        "nr_throttled": 5,
+        "throttled_time": 870843298
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27445316230
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22068722779
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.47,
+          "avg60": 0.79,
+          "avg300": 0.25,
+          "total": 487179253175
+        },
+        "full": {
+          "avg10": 0.46,
+          "avg60": 0.75,
+          "avg300": 0.23,
+          "total": 481825010390
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "automatic_retry": false,
+    "automatic_full": false,
+    "automatic_combinations": false,
+    "sampling_audit": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/W35/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "sha256": "a7a138c353e597af9ec619a40faf4ad6ae046e41c9ba45b1701595d30f0d1f25",
+      "uploaded": false
+    },
+    "pod_identity": "interactive93293",
+    "disposable_cache": "Ephemeral Docker overlay; NFS original source retained"
+  },
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false
+  },
+  "quality_delta_vs_anchor_pp": {
+    "Score5": -0.022313740960413497,
+    "J_long3": -0.11185623493402375,
+    "J_long": -0.24999955892562298,
+    "Short4": 0.11199999999999477,
+    "Urban_I2T": 0.0,
+    "Urban_T2I": -0.6000000000000085
+  },
+  "recall_delta_vs_anchor_pp": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.18000000000000238,
+        "R@5": -0.0200000000000089,
+        "R@10": -0.07999999999999119
+      },
+      "T2I": {
+        "R@1": -0.03200000000000425,
+        "R@5": -0.019999999999997797,
+        "R@10": 0.007999999999996898
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.0,
+        "R@5": -0.09999871253967285,
+        "R@10": 0.09999871253967285
+      },
+      "T2I": {
+        "R@1": -0.5999982357025146,
+        "R@5": 0.09999871253967285,
+        "R@10": -0.10000467300415039
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.5000000000000004,
+        "R@5": -0.30000000000000027,
+        "R@10": 0.10000000000000009
+      },
+      "T2I": {
+        "R@1": -0.20000000000000018,
+        "R@5": 0.0,
+        "R@10": 0.05999999999999339
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": -0.31999999999999806,
+        "R@5": 0.08000000000000229,
+        "R@10": -0.039999999999995595
+      },
+      "T2I": {
+        "R@1": -0.08000000000000229,
+        "R@5": -0.20000000000000018,
+        "R@10": -0.07999999999999119
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.06577216521967966,
+        "R@5": 0.11838989739542116,
+        "R@10": 0.28939752696658383
+      },
+      "T2I": {
+        "R@1": 0.2630886608787186,
+        "R@5": 0.1315443304393593,
+        "R@10": 0.19731649565903897
+      }
+    }
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "image2text_R1": 0.6058,
+      "image2text_R5": 0.826,
+      "image2text_R10": 0.8918,
+      "text2image_R1": 0.41556,
+      "text2image_R5": 0.67256,
+      "text2image_R10": 0.7694,
+      "checkpoint_sha256": "aafaec755d24fa6fbe6c758dbb6e6a3f56b297d415cbd3c7692c764a2d065157",
+      "native_only": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.909000039100647,
+        "R5": 0.9850000739097595,
+        "R10": 0.9970000386238098
+      },
+      "text2image": {
+        "R1": 0.8910000324249268,
+        "R5": 0.9860000610351562,
+        "R10": 0.9940000176429749
+      },
+      "checkpoint_sha256": "aafaec755d24fa6fbe6c758dbb6e6a3f56b297d415cbd3c7692c764a2d065157",
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ],
+      "native_only": true
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.875,
+          "T2I": 0.7172
+        },
+        "R@5": {
+          "I2T": 0.975,
+          "T2I": 0.9138
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.9518
+        }
+      },
+      "checkpoint_sha256": "aafaec755d24fa6fbe6c758dbb6e6a3f56b297d415cbd3c7692c764a2d065157",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "elapsed_seconds": 19.9059317111969,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.775,
+          "T2I": 0.776
+        },
+        "R@5": {
+          "I2T": 0.9542,
+          "T2I": 0.9506
+        },
+        "R@10": {
+          "I2T": 0.9796,
+          "T2I": 0.9764
+        }
+      },
+      "checkpoint_sha256": "aafaec755d24fa6fbe6c758dbb6e6a3f56b297d415cbd3c7692c764a2d065157",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "elapsed_seconds": 289.16608595848083,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.570902394106814,
+          "T2I": 0.5686661404893449
+        },
+        "R@5": {
+          "I2T": 0.7565114443567482,
+          "T2I": 0.7621678505656406
+        },
+        "R@10": {
+          "I2T": 0.8193896343067614,
+          "T2I": 0.8213627992633518
+        }
+      },
+      "checkpoint_sha256": "aafaec755d24fa6fbe6c758dbb6e6a3f56b297d415cbd3c7692c764a2d065157",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 484.3713524341583,
+      "device": "cuda:0",
+      "native_student_only": true
+    }
+  },
+  "native_evaluation_sources": {
+    "COCO": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/W35/step500/coco_native.json",
+      "sha256": "d0ed13ddbde3c85f8a6ffbda11696b3153441673dcaf6ea66afb8103a2ccf37b"
+    },
+    "Urban-1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/W35/step500/urban_native.json",
+      "sha256": "ddfb9ecac0d9175b9b1a6881125061ceb21278ed396d69ac10487e1673ef6817"
+    },
+    "Flickr30k-test1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/W35/step500/flickr_test1k/flickr_test1k.json",
+      "sha256": "e3e41c05aa82a9161bc7ae03ab7443441319df542d05a49cb131f0d7aded2824"
+    },
+    "DOCCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/W35/step500/docci/docci.json",
+      "sha256": "2f570330255a6368c50b1ab00cda117ddcfe9306c79032bfac8018e96d6508fd"
+    },
+    "Long-DCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/W35/step500/long_dci/long_dci.json",
+      "sha256": "4acb3aa7b6eab325d10911360112f859edaca9afa4bcf97336514bf733b6761b"
+    }
+  },
+  "checkpoint_uploaded": false,
+  "bare_uploaded": false,
+  "automatic_full": false,
+  "automatic_combinations": false,
+  "classification": "NO_IMPROVEMENT",
+  "gradient_weighted_lowest_Dall_ratio": 0.5983923837286859
+}
