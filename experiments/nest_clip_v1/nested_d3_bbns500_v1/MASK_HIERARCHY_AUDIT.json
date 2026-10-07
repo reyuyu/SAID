@@ -1,0 +1,134 @@
+{
+  "last50": {
+    "inc": 0.018513742797076703,
+    "inc_weight": 0.0,
+    "F_Dall_mask_iou": 0.9603551638126373,
+    "Dall_D3_mask_iou": 0.922565426826477,
+    "Dall_F_hard_violation": 0.01970612894743681,
+    "D3_Dall_hard_violation": 0.0229223120957613
+  },
+  "keep_ratio": {
+    "F": 0.8751752853393555,
+    "Dall": 0.8791944003105163,
+    "D3": 0.8551639485359191
+  },
+  "delta_vs_anchor": {
+    "inc": 0.01040567385032773,
+    "inc_weight": -1.0,
+    "F_Dall_mask_iou": -0.005508710145950335,
+    "Dall_D3_mask_iou": 0.02251271486282347,
+    "Dall_F_hard_violation": 0.009344007223844528,
+    "D3_Dall_hard_violation": 0.006111133098602294
+  },
+  "keep_ratio_delta_vs_anchor": {
+    "F": 0.02250854492187504,
+    "Dall": 0.034904860258102355,
+    "D3": 0.06310093164443964
+  },
+  "inclusion_edges": [],
+  "telemetry_edges": [
+    "Dall->F",
+    "lowest->Dall"
+  ],
+  "detached_child": false,
+  "ramp200": false,
+  "inclusion_max": 0,
+  "inclusion_loss_active": true,
+  "raw_inc_is_telemetry_only": false,
+  "hard_projection": false,
+  "regularizer_mode": "bbns",
+  "old_inclusion_edges_applied": [],
+  "BBNS_edges": [
+    "Dall->F",
+    "D3->Dall"
+  ],
+  "BBNS_cover_child_detached": true,
+  "BBNS_refine_parent_detached": true,
+  "legacy_config_inclusion_max_unused": 1,
+  "old_inclusion_ramp_applied": false,
+  "support_bands": {
+    "Dall_F": {
+      "kappa": 0.6466294646263122,
+      "tau_low": 0.6404582858085632,
+      "tau_high": 0.6976943612098694
+    },
+    "D3_Dall": {
+      "kappa": 0.6413809061050415,
+      "tau_low": 0.6085701584815979,
+      "tau_high": 0.6629944801330566
+    }
+  },
+  "support_last50": {
+    "Dall_F_coverage": 0.7728584778308868,
+    "Dall_F_relative_support": 0.7780459678173065,
+    "Dall_F_cover_loss": 3.5999354963678343e-09,
+    "Dall_F_lower_band_loss": 0.0,
+    "Dall_F_upper_band_loss": 0.007469153087586164,
+    "Dall_F_zero_refine_band": 0.005761814210563898,
+    "Dall_F_zero_edge_band": 0.005742282960563898,
+    "Dall_F_percent_inside_zero_loss_band": 0.5742282956838608,
+    "Dall_F_percent_inside_refinement_band": 0.5761814206838608,
+    "Dall_F_edge_loss": 0.007469156691804528,
+    "D3_Dall_coverage": 0.7754539096355438,
+    "D3_Dall_relative_support": 0.7531013834476471,
+    "D3_Dall_cover_loss": 0.0,
+    "D3_Dall_lower_band_loss": 0.0,
+    "D3_Dall_upper_band_loss": 0.009267418403178454,
+    "D3_Dall_zero_refine_band": 0.002753944434225559,
+    "D3_Dall_zero_edge_band": 0.002753944434225559,
+    "D3_Dall_percent_inside_zero_loss_band": 0.2753944432735443,
+    "D3_Dall_percent_inside_refinement_band": 0.2753944432735443,
+    "D3_Dall_edge_loss": 0.009267418403178454,
+    "Omega_F": 0.8751752853393555,
+    "total_band_edges": 0.01673657501116395,
+    "total_nested_regularizer": 0.3084616780281067
+  },
+  "coverage_hierarchy_ordered": false,
+  "delta_vs_references": {
+    "Anchor": {
+      "last50": {
+        "inc": 0.01040567385032773,
+        "inc_weight": -1.0,
+        "F_Dall_mask_iou": -0.005508710145950335,
+        "Dall_D3_mask_iou": 0.02251271486282347,
+        "Dall_F_hard_violation": 0.009344007223844528,
+        "D3_Dall_hard_violation": 0.006111133098602294
+      },
+      "keep_ratio": {
+        "F": 0.02250854492187504,
+        "Dall": 0.034904860258102355,
+        "D3": 0.06310093164443964
+      }
+    },
+    "INC0": {
+      "last50": {
+        "inc": 0.0018435808271169661,
+        "inc_weight": 0.0,
+        "F_Dall_mask_iou": 0.03939967274665834,
+        "Dall_D3_mask_iou": 0.07268063783645629,
+        "Dall_F_hard_violation": -0.007690403498709201,
+        "D3_Dall_hard_violation": -0.018337172493338588
+      },
+      "keep_ratio": {
+        "F": 0.07641963958740239,
+        "Dall": 0.09013825774192807,
+        "D3": 0.10830225467681875
+      }
+    },
+    "Coupled v1": {
+      "last50": {
+        "inc": 0.0065469352900981905,
+        "inc_weight": -1.0,
+        "F_Dall_mask_iou": 0.03587650299072265,
+        "Dall_D3_mask_iou": 0.08453955411911007,
+        "Dall_F_hard_violation": 0.0016259410604834539,
+        "D3_Dall_hard_violation": -0.003561274968087672
+      },
+      "keep_ratio": {
+        "F": 0.046096115112304714,
+        "Dall": 0.07721904754638664,
+        "D3": 0.13480027675628659
+      }
+    }
+  }
+}
