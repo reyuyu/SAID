@@ -76,6 +76,8 @@ def main():
             model_options['search_hparams']=hparams(config)
             if 'inclusion_hierarchy' in config:
                 model_options['inclusion_hierarchy']=config['inclusion_hierarchy']
+            if 'view_sparsity_weights' in config:
+                model_options['view_sparsity_weights']=config['view_sparsity_weights']
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),

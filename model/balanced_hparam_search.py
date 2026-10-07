@@ -37,7 +37,8 @@ def detail_chain_inclusion(pf, dall, ds):
 
 
 class BalancedSearch(NestedFusionMask):
-    def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings', **options):
+    def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings',
+                 view_sparsity_weights=(1.,2.,2.), **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
@@ -45,6 +46,10 @@ class BalancedSearch(NestedFusionMask):
         assert 0 < self.summary_t2i_weight <= 1.
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
         self.inclusion_hierarchy = inclusion_hierarchy
+        self.view_sparsity_weights = [float(v) for v in view_sparsity_weights]
+        assert len(self.view_sparsity_weights)==3
+        assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
+        assert math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12), 'Sparsity mass must stay5'
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -114,7 +119,11 @@ class BalancedSearch(NestedFusionMask):
             if self.summary_t2i_weight != 1.:
                 assert hp["view_weights"] == [1.,1.,1.]
                 align = align * (6/(5+self.summary_t2i_weight))
-            sparse=(sf+2*so+2*se)/3
+            # Preserve the original default arithmetic exactly; only S25/S30
+            # redistribute the same total coefficient mass of5 across views.
+            cf,co,ce=self.view_sparsity_weights
+            sparse=((sf+2*so+2*se)/3 if self.view_sparsity_weights==[1.,2.,2.] else
+                    (cf*sf+co*so+ce*se)/3)
             loss=align+hp['sparsity_scale']*sparse+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
             iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)

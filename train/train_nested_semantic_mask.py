@@ -115,6 +115,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
     if current.get('hparam_search',False):
         assert hparams(old)==hparams(current), 'Resume hyperparameters changed'
         assert old.get('inclusion_hierarchy','siblings') == current.get('inclusion_hierarchy','siblings'), 'Resume inclusion hierarchy changed'
+        assert old.get('view_sparsity_weights',[1.,2.,2.]) == current.get('view_sparsity_weights',[1.,2.,2.]), 'Resume view sparsity allocation changed'
         if not allow_legacy_b0:
             assert old.get('trial_id')==current.get('trial_id'), 'Resume trial identity changed'
     for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
@@ -311,10 +312,12 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'interior_random_k', 'summary_contiguous_detail')
-    if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3'):
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'interior_random_k', 'summary_contiguous_detail')
+    if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3','nested_detail_kr234'):
         assert cfg.get('inclusion_hierarchy') == 'detail_chain'
-        allowed = (([1.,1.,1.], [1.35,1.35,.30]) if cfg['sampling_mode']=='nested_detail_d3'
+        allowed = (([1.,1.,1.], [1.35,1.35,.30], [1.4,1.4,.20], [1.375,1.375,.25],
+                    [1.325,1.325,.35], [1.3,1.3,.40]) if cfg['sampling_mode']=='nested_detail_d3'
+                   else ([1.35,1.35,.30],) if cfg['sampling_mode']=='nested_detail_kr234'
                    else ([1.4,1.4,.2], [1.,1.,1.]))
         assert cfg['view_weights'] in allowed, 'Only reviewed Nested Detail weights are authorized'
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
@@ -366,6 +369,8 @@ def main():
         model_options['search_hparams']=hparams(cfg)
         if 'inclusion_hierarchy' in cfg:
             model_options['inclusion_hierarchy']=cfg['inclusion_hierarchy']
+        if 'view_sparsity_weights' in cfg:
+            model_options['view_sparsity_weights']=cfg['view_sparsity_weights']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
     module = module_class(clip.float(), arm=cfg['arm'],
@@ -565,6 +570,7 @@ def main():
                                            ['Summary', 'All Detail'] if cfg['sampling_mode']=='summary_all_detail' else
                                            ['All Detail', 'Atomic Detail'] if cfg['sampling_mode']=='nested_detail' else
                                            ['All Detail', 'Partial Detail D3'] if cfg['sampling_mode']=='nested_detail_d3' else
+                                           ['All Detail', 'Random Detail K234'] if cfg['sampling_mode']=='nested_detail_kr234' else
                                            ['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
                                            ['prefix', 'remainder'] if cfg['sampling_mode'] in ('random_k', 'interior_random_k') else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),

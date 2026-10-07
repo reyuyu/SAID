@@ -4,6 +4,9 @@ import re
 import subprocess
 
 ALLOWED = {
+    'recovery/nested_d3_local_search.py',
+    'recovery/nested_d3_local_search_evidence.py',
+    'tests/test_nested_d3_local_search.py',
     'recovery/nested_detail_d3_balanced_full.py',
     'recovery/nested_detail_d3_balanced_full_evidence.py',
     'tests/test_nested_detail_d3_balanced_full.py',
@@ -102,6 +105,12 @@ ALLOWED = {
     'recovery/S02_LOCAL_STAGE500.json', 'recovery/S02_LOCAL_STAGE500_RESOURCE_SUMMARY.json',
     'recovery/SERVER_REBOOT_FORENSICS.md',
 }
+SEARCH_ROOT='experiments/nest_clip_v1/nested_d3_local_search500_v1/'
+ALLOWED.update(SEARCH_ROOT+name for name in (
+    'CPU_TESTS.json','SEARCH_PLAN.json','SEARCH_STATE.json','SEARCH_SUMMARY.md','REPORT.md','RESULTS.json','GITHUB_RECEIPT.json'))
+ALLOWED.update(SEARCH_ROOT+arm+'/'+name for arm in ('W20','W25','W35','W40','S25','S30','KR234') for name in (
+    'config.json','REPORT.md','RESULTS.json','TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json',
+    'MASK_HIERARCHY_AUDIT.json','SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),

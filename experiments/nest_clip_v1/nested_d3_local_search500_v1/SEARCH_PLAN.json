@@ -1,0 +1,54 @@
+{
+  "arms": [
+    "W20",
+    "W25",
+    "W35",
+    "W40",
+    "S25",
+    "S30",
+    "KR234"
+  ],
+  "anchor": {
+    "Score5": 71.0636,
+    "J_long3": 74.954666,
+    "J_long": 84.025001,
+    "Short4": 65.227,
+    "Urban_I2T": 90.9,
+    "Urban_T2I": 89.7
+  },
+  "fresh_common_step0": true,
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "updates_per_arm": 500,
+  "horizon": 4868,
+  "local_only_image_root": "/root/said_s02_stage500/ShareGPT4V/",
+  "axis_isolation": true,
+  "automatic_full": false,
+  "automatic_combinations": false,
+  "winner": "Score5>71.063600, J_long3>=74.954666, UrbanT2I>=89.7, Short4 decline<=.15pp",
+  "rounding_tolerance_pp": 0.000001,
+  "primary_Pareto_objectives": [
+    "Score5",
+    "J_long3",
+    "Urban_T2I",
+    "Short4"
+  ],
+  "secondary_Pareto_objectives": [
+    "Score5",
+    "J_long3",
+    "J_long",
+    "Short4",
+    "Urban_I2T",
+    "Urban_T2I"
+  ],
+  "positive_rule": "Primary Pareto arm with >=.1pp key gain, each key decline<=.2pp and Short4 decline<=.15pp",
+  "winner_tiebreak": [
+    "Score5",
+    "J_long3",
+    "Urban_T2I",
+    "Short4"
+  ],
+  "gradient_protocol": "Unchanged eight first seed0 epoch0 frozen global1024 batches at step500; raw per-view native-backbone CE gradients all-reduce/4; no optimizer updates",
+  "KR234_rng": "Separate private K RNG SHA256(seed:epoch:sample_id:nested_detail_kr234_k_v1); subset RNG retains original nested_detail_d3_v1 namespace, so K3 choices match anchor",
+  "source_policy": "All launched sources/configs and CPU test receipt archived in Git before training; unchanged through seven arms",
+  "stop_policy": "Actual local read failure,CUDA/OOM,DDP/NCCL,nonfinite,oom_kill,step>60s,supervisor/pod failure; ordinary >3s warnings continue"
+}
