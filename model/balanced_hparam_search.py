@@ -6,6 +6,7 @@ import math
 
 import torch
 from model.nested_fusion_mask import NestedFusionMask, fusion_view_terms
+from model.hard_nested_sparsity import hns_terms,hard_telemetry,hierarchy_weight
 from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_weight, world_rank
 
 
@@ -38,7 +39,7 @@ def detail_chain_inclusion(pf, dall, ds):
 
 class BalancedSearch(NestedFusionMask):
     def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings',
-                 view_sparsity_weights=(1.,2.,2.), **options):
+                 view_sparsity_weights=(1.,2.,2.), hns_enabled=False, **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
@@ -46,11 +47,18 @@ class BalancedSearch(NestedFusionMask):
         assert 0 < self.summary_t2i_weight <= 1.
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
         self.inclusion_hierarchy = inclusion_hierarchy
+        self.hns_enabled = bool(hns_enabled)
+        if self.hns_enabled:
+            assert inclusion_hierarchy == 'detail_chain'
+            assert self.search_hparams['inclusion_max'] == 0.
+            assert self.search_hparams['sparsity_scale'] == 1.
+            assert self.search_hparams['view_weights'] == [1.35,1.35,.30]
         self.view_sparsity_weights = [float(v) for v in view_sparsity_weights]
         assert len(self.view_sparsity_weights)==3
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
         assert (math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12)
                 or self.view_sparsity_weights in ([.5,1.,1.5],[1.,2.,3.])), 'Unreviewed sparsity coefficients'
+        if self.hns_enabled:assert self.view_sparsity_weights == [1.,2.,2.]
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -134,6 +142,39 @@ class BalancedSearch(NestedFusionMask):
             sparse=((sf+2*so+2*se)/3 if self.view_sparsity_weights==[1.,2.,2.] else
                     (cf*sf+co*so+ce*se)/3)
             loss=align+hp['sparsity_scale']*sparse
+            if self.hns_enabled:
+                world=world_rank()[0]
+                surcharge,hns=hns_terms(mf,mo,me,valid,completed,world,valid_count)
+                loss=loss+surcharge
+                values=global_sum(torch.stack((align.detach(),sparse.detach(),hns['V_DF'].detach(),
+                    hns['V_3D'].detach(),surcharge.detach())))/world
+                logs.update(HNS_enabled=True,HNS_align=values[0],HNS_original_sparse=values[1],
+                    V_DF_hard=values[2],V_3D_hard=values[3],HNS_surcharge=values[4],
+                    HNS_regularizer=values[1]+values[4],lambda_h=hns['lambda_h'])
+                telemetry,width=hard_telemetry(mf,mo,me,valid)
+                totals=global_sum(torch.stack(list(telemetry.values())))
+                totals=dict(zip(telemetry,totals))
+                logs['HNS_mask_width']=width
+                logs['HNS_valid_count']=valid_count
+                for edge in ('DF','3D'):
+                    for key in ('violation_count','child_only_count','parent_only_count','intersection_count'):
+                        logs['HNS_'+edge+'_'+key]=totals[edge+'_'+key]
+                    logs['HNS_'+edge+'_hard_violation_ratio']=totals[edge+'_violation_count']/(valid_count*width)
+                    logs['HNS_'+edge+'_IoU']=totals[edge+'_IoU_sum']/valid_count
+                    logs['HNS_'+edge+'_exact_equality_ratio']=totals[edge+'_exact_equal_samples']/valid_count
+                    logs['HNS_'+edge+'_coordinate_equality_ratio']=totals[edge+'_equal_coordinates']/(valid_count*width)
+                for name in ('F','Dall','D3'):
+                    logs['HNS_'+name+'_keep']=totals[name+'_selected_count']/(valid_count*width)
+                logs['HNS_gap_F_D']=logs['HNS_F_keep']-logs['HNS_Dall_keep']
+                logs['HNS_gap_D_D3']=logs['HNS_Dall_keep']-logs['HNS_D3_keep']
+                logs['HNS_triple_exact_equality_ratio']=totals['triple_equal_samples']/valid_count
+                logs['HNS_triple_coordinate_equality_ratio']=totals['triple_equal_coordinates']/(valid_count*width)
+                # Enabled only by a separate read-only gradient audit process.
+                if getattr(self,'capture_hns_graph',False):
+                    self.hns_graph=dict(alignment=align,original_sparsity=sparse,
+                        V_DF=hns['V_DF'],V_3D=hns['V_3D'],total_HNS=sparse+surcharge,
+                        total_training=loss,masks=dict(F=mf,Dall=mo,D3=me),
+                        probabilities=dict(F=pf,Dall=po,D3=pe),lambda_h=hns['lambda_h'])
             if inclusion_enabled:
                 loss=loss+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
@@ -155,6 +196,10 @@ class BalancedSearch(NestedFusionMask):
                     hard_inclusion_violation=.5*(chain[1]+chain[2]))
         else:
             loss=10*af+hp['sparsity_scale']*sf
+            if self.hns_enabled:
+                logs.update(HNS_enabled=True,lambda_h=hierarchy_weight(completed),
+                    HNS_align=global_sum(10*af)/world_rank()[0],HNS_original_sparse=global_sum(sf)/world_rank()[0],
+                    HNS_surcharge=0.,HNS_regularizer=global_sum(sf)/world_rank()[0],V_DF_hard=0.,V_3D_hard=0.)
             logs.update(inc=0.,inclusion_loss=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)
         logs.update(loss=global_sum(loss)/world_rank()[0],inc_weight=weight,inclusion_enabled=inclusion_enabled,valid_global=valid_count,
                     fusion=self.fusion,visual=self.visual,condition_mode=self.condition_mode,shuffle_shift=0,

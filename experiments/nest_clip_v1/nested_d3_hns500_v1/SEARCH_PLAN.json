@@ -1,0 +1,70 @@
+{
+  "arm": "HNS",
+  "base_branch": "experiment/nested-d3-inc0-500-v1",
+  "base_commit": "e201975982809961cf4f078522e3137203c52726",
+  "axis": "HNS surcharge only",
+  "updates": 500,
+  "smoke5_required": true,
+  "smoke_and_formal_fresh_common0": true,
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "weights": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "global_sparsity": [
+    1,
+    2,
+    2
+  ],
+  "inclusion": 0,
+  "beta": [
+    2,
+    2
+  ],
+  "lambda_rule": "min(1,completed_updates/200)",
+  "lambda_at_steps": {
+    "1": 0,
+    "100": 0.495,
+    "200": 0.995,
+    "300": 1,
+    "400": 1,
+    "500": 1
+  },
+  "no_mask_to_mask_stop_gradient": true,
+  "mask_width": 512,
+  "shared_mask_modules": true,
+  "loss": "unchanged INC0 alignment + unchanged INC0 global sparsity + lambda_h*(2 mean_valid(relu(mDall-mF))+2 mean_valid(relu(mD3-mDall)))/3",
+  "local_only_root": "/root/said_s02_stage500/ShareGPT4V/",
+  "NFS_fallback": false,
+  "diagnostics_steps": [
+    1,
+    100,
+    200,
+    300,
+    400,
+    500
+  ],
+  "stream_records": 512000,
+  "decision": "Raw-fraction comparisons to INC0 jointly inspect retrieval tradeoffs, violation, keep gaps, matched-cohort mask equality and gradient evidence. Classification reasons and all raw deltas recorded; no success solely from Score5 or violation reduction.",
+  "classification_categories": [
+    "STRONG_POSITIVE",
+    "STRUCTURAL_POSITIVE",
+    "TRADEOFF",
+    "NEGATIVE"
+  ],
+  "mask_collapse_early_stop": false,
+  "automatic_full": false,
+  "automatic_extra_arms": false,
+  "pipeline": [
+    "CPU and4-process production-loss correctness",
+    "1000 real matched preflight",
+    "fresh smoke5",
+    "read-only INC0 matched-cohort hierarchy audit",
+    "fresh formal500",
+    "alignment gradients and full HNS decomposition audit",
+    "strict native bare five-set evaluation",
+    "report,decision,commit,push,fetch,remoteHEAD verification"
+  ],
+  "Joint_VG_reference_commit": "2542a5756cdd947736d4d8ac3be558426bc237cb"
+}

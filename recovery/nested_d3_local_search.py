@@ -69,6 +69,7 @@ def arm_config(arm):
     cfg['sampling_mode']=spec['mode']
     if spec['axis']=='sparsity':cfg['view_sparsity_weights']=arm_sparsity(arm)
     if spec['axis']=='inclusion':cfg['inclusion_max']=spec['inclusion_max']
+    if spec['axis']=='hns':cfg['hns_enabled']=True
     return cfg
 
 
@@ -118,6 +119,12 @@ def matched_stream(actual,reference,arm):
         assert a['actual_lrs']==b['actual_lrs'] and math.isfinite(a['loss']) and a['nonfinite']==0
         if ARMS[arm]['axis']=='inclusion' and ARMS[arm]['inclusion_max']==0:
             assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
+        if ARMS[arm]['axis']=='hns':
+            assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
+            assert a['HNS_enabled'] is True and a['lambda_h']==min(1.,(a['step']-1)/200.)
+            expected=a['lambda_h']*(2*a['V_DF_hard']+2*a['V_3D_hard'])/3
+            assert math.isclose(a['HNS_surcharge'],expected,rel_tol=3e-6,abs_tol=1e-7)
+            assert math.isclose(a['HNS_regularizer'],a['HNS_original_sparse']+expected,rel_tol=3e-6,abs_tol=1e-7)
         old={h['rank']:h for h in b['rank_health']}
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
@@ -156,9 +163,15 @@ def checkpoint_invariants(current,reference):
     if ARMS[ARM]['axis']=='inclusion':
         assert new_model['search_hparams'].pop('inclusion_max')==ARMS[ARM]['inclusion_max']==0
         assert old_model['search_hparams'].pop('inclusion_max')==1
+    if ARMS[ARM]['axis']=='hns':
+        assert new_model.pop('hns_enabled') is True
+        assert old_model.pop('hns_enabled',False) is False
+        assert new_model['search_hparams']['inclusion_max']==old_model['search_hparams']['inclusion_max']==0
     assert new_model==old_model
     changed={k for k,v in old['code_sha256'].items() if cfg['code_sha256'][k]!=v}
     assert changed==EDITED and all(cfg['code_sha256'][k]==sha(ROOT/k) for k in changed)
+    if ARMS[ARM]['axis']=='hns':
+        assert set(cfg['code_sha256'])-set(old['code_sha256'])=={'model/hard_nested_sparsity.py'}
     assert current['optimizer']['param_groups']==reference['optimizer']['param_groups']
     assert current['optimizer']['state'].keys()==reference['optimizer']['state'].keys()
     assert {int(s['step']) for s in current['optimizer']['state'].values()}=={5}

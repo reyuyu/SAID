@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "records": 1000,
+  "seed": 0,
+  "epoch": 0,
+  "sampler_order_exact": true,
+  "sample_ids_text_token_K_indices_image_path_and_preprocess_exact": true,
+  "global_RNG_unchanged": true,
+  "image_decode_source": "Both dataset classes read only the local mirror, never NFS",
+  "common_initialization_and_model_optimizer_candidate_scheduler_conditions": {
+    "passed": true,
+    "base_branch": "experiment/nested-d3-inc0-500-v1",
+    "base_commit": "e201975982809961cf4f078522e3137203c52726",
+    "frozen_source_SHA256": {
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/said_cvssl_data.py": "3cd78dfe7a82e1482166665ee452eedd15c8342b42268e4e89590ef1ea74339e",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/s02_full_stage.py": "115987f9cebc288f81dc9069f63d239bd047ab424df984e7ce565e30f5cb424e",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+    },
+    "sole_configuration_addition": {
+      "hns_enabled": true
+    },
+    "checkpoint_identity": "937039b2342ac6ad581f2b1a08a55130ba85b4b063b2b4d72878848b6964fb2c",
+    "common0_SHA256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "optimizer_groups": {
+      "backbone": 149708289,
+      "text_mask_and_shared_pool": 3152897,
+      "visual_mask": 3152384,
+      "fusion_adapter": 917504
+    },
+    "parameter_counts": {
+      "total": 157058050,
+      "trainable": 156931074,
+      "added": 4069888,
+      "optimizer_groups": {
+        "backbone": 149708289,
+        "text_mask_and_shared_pool": 3152897,
+        "visual_mask": 3152384,
+        "fusion_adapter": 917504
+      }
+    },
+    "precision": "fp32 parameters, bf16 native encoder autocast, no GradScaler",
+    "mask_width": 512,
+    "shared_mask_parameters_across_views": true,
+    "original_hidden_detach_preserved": true,
+    "mask_to_mask_stop_gradient": false,
+    "candidate_protocol": "F all global examples; Dall/D3 all valid global examples",
+    "scheduler": "native manual per-group LR; backbone warmup200; horizon4868",
+    "native_export_source_before": "326938dd5877cd67ecb39f3a58a5b52f8caaaab4a1b85044a669f1eec5a3ae3a",
+    "native_export_constructor_only_adds_HNS_flag": true,
+    "data_semantics_preprocessing_optimizer_scheduler_evaluation_unchanged": true
+  },
+  "started_utc": "2026-10-07T16:38:42.535130+00:00",
+  "ended_utc": "2026-10-07T16:40:03.041269+00:00",
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns500-20261008.preflight/matched-real1000.json",
+      "bytes": 11543287,
+      "sha256": "386673413cf89563a5a1fd96fc791160aa03ac8ded3f629a9e48a4c86cdb9240",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T16:38:42.535130+00:00",
+        "2026-10-07T16:40:03.065001+00:00"
+      ]
+    }
+  ]
+}

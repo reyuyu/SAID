@@ -129,6 +129,18 @@ ALLOWED.update('experiments/nest_clip_v1/nested_d3_inc0_500_v1/'+name for name i
     'config.json','CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
     'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
     'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
+HNS_ROOT='experiments/nest_clip_v1/nested_d3_hns500_v1/'
+ALLOWED.update(('model/hard_nested_sparsity.py','recovery/hns_preflight.py','recovery/hns_ddp_correctness.py',
+    'recovery/hns_gradient_audit.py','recovery/nested_d3_hns500.py','tests/test_nested_d3_hns500.py','configs/nested_d3_hns500.json'))
+ALLOWED.update(HNS_ROOT+name for name in (
+    'config.json','CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
+    'BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','DDP_CORRECTNESS.json','CORRECTNESS.md',
+    'GRADIENT_AUDIT.json','INC0_HIERARCHY_REFERENCE.json','SMOKE_EVIDENCE.json','DECISION.json',
+    'HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json',
+    'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
+    'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json',
+    'references/JOINT_VG_RESULTS.json'))
+ALLOWED.update(HNS_ROOT+'evaluations/'+name+'.json' for name in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),

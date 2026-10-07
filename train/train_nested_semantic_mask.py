@@ -116,6 +116,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert hparams(old)==hparams(current), 'Resume hyperparameters changed'
         assert old.get('inclusion_hierarchy','siblings') == current.get('inclusion_hierarchy','siblings'), 'Resume inclusion hierarchy changed'
         assert old.get('view_sparsity_weights',[1.,2.,2.]) == current.get('view_sparsity_weights',[1.,2.,2.]), 'Resume view sparsity allocation changed'
+        assert old.get('hns_enabled',False) == current.get('hns_enabled',False), 'Resume HNS changed'
         if not allow_legacy_b0:
             assert old.get('trial_id')==current.get('trial_id'), 'Resume trial identity changed'
     for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
@@ -233,6 +234,8 @@ def code_manifest():
              'model/longclip.py', 'model/said_cls_cvssl.py']
     if (root/'model/balanced_hparam_search.py').exists():
         paths.append('model/balanced_hparam_search.py')
+    if (root/'model/hard_nested_sparsity.py').exists():
+        paths.append('model/hard_nested_sparsity.py')
     return {p: file_sha(root / p) for p in paths}
 
 
@@ -371,6 +374,8 @@ def main():
             model_options['inclusion_hierarchy']=cfg['inclusion_hierarchy']
         if 'view_sparsity_weights' in cfg:
             model_options['view_sparsity_weights']=cfg['view_sparsity_weights']
+        if 'hns_enabled' in cfg:
+            model_options['hns_enabled']=cfg['hns_enabled']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
     module = module_class(clip.float(), arm=cfg['arm'],
