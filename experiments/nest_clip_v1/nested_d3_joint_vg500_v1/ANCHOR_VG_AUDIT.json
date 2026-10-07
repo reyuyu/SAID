@@ -1,0 +1,209 @@
+{
+  "passed": true,
+  "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/step000500.pt",
+  "checkpoint_sha256": "24792ba9e6e3c34f733820f489cb3a8953278246ae58f2f688652894be871e4b",
+  "Anchor_result_sha256": "087691e5b2aba3690aea97b9e38534e6952045f7d09458fed088b62939fe00f6",
+  "completed_steps": 500,
+  "records": 16384,
+  "no_parameter_updates": true,
+  "state_digest_before": "9747d6a7513a05374f7cb719854a2f5ce93ff9e963c821effdfc1ddf5c87ad50",
+  "state_digest_after": "9747d6a7513a05374f7cb719854a2f5ce93ff9e963c821effdfc1ddf5c87ad50",
+  "checkpoint_unchanged": true,
+  "forward_mode": "Production train mode, gradients disabled; native bf16 encoder and fp32 paired mask probabilities",
+  "epsilon": 1e-06,
+  "std_definition": "Population std",
+  "quantile_definition": "Numpy float64 linear interpolation",
+  "soft_distributions": {
+    "Dall_F": {
+      "V": {
+        "count": 16384,
+        "mean": 0.010209921871812355,
+        "std": 0.007302894529558221,
+        "P10": 0.004097531689330936,
+        "P20": 0.005158520489931107,
+        "P25": 0.005641314783133566,
+        "median": 0.008148654364049435,
+        "P75": 0.012177151860669255,
+        "P80": 0.013686737418174746,
+        "P90": 0.01871733255684376
+      },
+      "G": {
+        "count": 16384,
+        "mean": 0.01865440951989683,
+        "std": 0.009225578529164063,
+        "P10": 0.009216987062245607,
+        "P20": 0.011261347867548467,
+        "P25": 0.012138754362240434,
+        "median": 0.016520741395652294,
+        "P75": 0.022996504325419664,
+        "P80": 0.024891537427902226,
+        "P90": 0.030719103664159777
+      }
+    },
+    "D3_Dall": {
+      "V": {
+        "count": 16384,
+        "mean": 0.01592309110552037,
+        "std": 0.008998087214385919,
+        "P10": 0.007762238569557667,
+        "P20": 0.009536996111273765,
+        "P25": 0.010245378594845533,
+        "median": 0.013848368544131517,
+        "P75": 0.018903935328125954,
+        "P80": 0.020522184297442438,
+        "P90": 0.026097382232546824
+      },
+      "G": {
+        "count": 16384,
+        "mean": 0.06535641998614494,
+        "std": 0.026080645794016786,
+        "P10": 0.03302611671388149,
+        "P20": 0.04266522899270058,
+        "P25": 0.04642683174461126,
+        "median": 0.06354596838355064,
+        "P75": 0.08172035403549671,
+        "P80": 0.08650477081537247,
+        "P90": 0.09956367239356041
+      }
+    }
+  },
+  "hard_distributions": {
+    "keep_F": {
+      "count": 16384,
+      "mean": 0.8372189998626709,
+      "std": 0.043160877673311705,
+      "P10": 0.779296875,
+      "P20": 0.802734375,
+      "P25": 0.8125,
+      "median": 0.84375,
+      "P75": 0.869140625,
+      "P80": 0.873046875,
+      "P90": 0.888671875
+    },
+    "keep_Dall": {
+      "count": 16384,
+      "mean": 0.8263493776321411,
+      "std": 0.04663155260038462,
+      "P10": 0.763671875,
+      "P20": 0.7890625,
+      "P25": 0.798828125,
+      "median": 0.833984375,
+      "P75": 0.859375,
+      "P80": 0.865234375,
+      "P90": 0.880859375
+    },
+    "keep_D3": {
+      "count": 16384,
+      "mean": 0.7530629634857178,
+      "std": 0.05568167280466085,
+      "P10": 0.67578125,
+      "P20": 0.70703125,
+      "P25": 0.71875,
+      "median": 0.7578125,
+      "P75": 0.79296875,
+      "P80": 0.80078125,
+      "P90": 0.8203125
+    },
+    "IoU_Dall_F": {
+      "count": 16384,
+      "mean": 0.958869964164478,
+      "std": 0.023371491773890342,
+      "P10": 0.9286206662654877,
+      "P20": 0.9426048398017883,
+      "P25": 0.9474886059761047,
+      "median": 0.963942289352417,
+      "P75": 0.9753363132476807,
+      "P80": 0.9776785969734192,
+      "P90": 0.9831730723381042
+    },
+    "IoU_D3_Dall": {
+      "count": 16384,
+      "mean": 0.8711158483165491,
+      "std": 0.05152309184250833,
+      "P10": 0.8010513126850128,
+      "P20": 0.8296686291694642,
+      "P25": 0.8394495248794556,
+      "median": 0.875969409942627,
+      "P75": 0.9088888764381409,
+      "P80": 0.9160104990005493,
+      "P90": 0.9331742525100708
+    },
+    "violation_Dall_F": {
+      "count": 16384,
+      "mean": 0.011832475662231445,
+      "std": 0.008748283767768178,
+      "P10": 0.00390625,
+      "P20": 0.005859375,
+      "P25": 0.005859375,
+      "median": 0.009765625,
+      "P75": 0.015625,
+      "P80": 0.017578125,
+      "P90": 0.0234375
+    },
+    "violation_D3_Dall": {
+      "count": 16384,
+      "mean": 0.01773059368133545,
+      "std": 0.010756365741423838,
+      "P10": 0.005859375,
+      "P20": 0.009765625,
+      "P25": 0.009765625,
+      "median": 0.015625,
+      "P75": 0.0234375,
+      "P80": 0.025390625,
+      "P90": 0.03125
+    }
+  },
+  "frozen_regions": {
+    "Dall_F": {
+      "eps_v": 0.013686737418174746,
+      "gamma_low": 0.011261347867548467,
+      "gamma_high": 0.024891537427902226
+    },
+    "D3_Dall": {
+      "eps_v": 0.020522184297442438,
+      "gamma_low": 0.04266522899270058,
+      "gamma_high": 0.08650477081537247
+    }
+  },
+  "band_rule": "eps_v=P80(V); gamma_low=P20(G); gamma_high=P80(G), independently per edge",
+  "retrieval_metrics_not_used_to_select_bands": true,
+  "cohort": {
+    "path": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_joint_vg500_v1/ANCHOR_VG_COHORT.json",
+    "sha256": "b101e31fb4547918784ab1beb0eb651559d7a9ef5e227b1807d54de79c2ffccd",
+    "count": 16384
+  },
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-joint-vg500-20261007.anchor-audit/per_sample_vg.npz",
+      "bytes": 852486,
+      "sha256": "633313d3455329f33b2c20f2b9142c7e51676bf5354269e7514ca9a79244354d",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T14:52:30.503545+00:00",
+        "2026-10-07T14:53:26.234235+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-joint-vg500-20261007.anchor-audit/cohort_identity_details.json",
+      "bytes": 2262335,
+      "sha256": "345e3aec5f5d92fa0b86f753df55da78131d001616834b30dfbd2c2e8d25cfd6",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T14:52:30.503545+00:00",
+        "2026-10-07T14:53:26.237384+00:00"
+      ]
+    }
+  ],
+  "started_utc": "2026-10-07T14:52:30.503545+00:00",
+  "ended_utc": "2026-10-07T14:53:26.237399+00:00",
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "loader_exhausted_normally": true,
+  "cohort_candidate_records": 17408,
+  "source_sha256": {
+    "recovery/nested_d3_vg_audit.py": "1a9845ab38991ec2d38fd09cbb113b41fe9da324af5b20037541e0d8abb75a50",
+    "model/balanced_hparam_search.py": "8b66b74c50a7a47d6c5a3b604a01e0cfdb8468aed59d814e7807fdf65a42a94b",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "model/nested_joint_vg.py": "fff03ff6531e1b86cc9f761c4ab62a7e29050ff5696c4485af11a27579185d85"
+  }
+}

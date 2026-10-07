@@ -82,6 +82,8 @@ def main():
                 model_options['regularizer_mode']=config['regularizer_mode']
             if 'support_bands' in config:
                 model_options['support_bands']=config['support_bands']
+            if 'vg_regions' in config:
+                model_options['vg_regions']=config['vg_regions']
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),

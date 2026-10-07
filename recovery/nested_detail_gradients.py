@@ -47,6 +47,7 @@ def main():
     module = BalancedSearch(clip.float(),arm=cfg['arm'],search_hparams=hparams(cfg),
         inclusion_hierarchy=cfg['inclusion_hierarchy'],regularizer_mode=cfg.get('regularizer_mode','independent'),
         support_bands=cfg.get('support_bands'),
+        vg_regions=cfg.get('vg_regions'),
         fusion=cfg['fusion'],visual=cfg['visual'],
         condition_mode=cfg['condition_mode'],checkpoint_encoders=cfg['checkpoint_encoders'],
         image_chunk=cfg['image_chunk'],text_chunk=cfg['text_chunk'],

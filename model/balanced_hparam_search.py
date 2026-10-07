@@ -6,6 +6,7 @@ import math
 
 import torch
 from model.nested_support_band import bbns_regularizer,validate_bands
+from model.nested_joint_vg import joint_vg_regularizer,validate_regions
 from model.nested_fusion_mask import NestedFusionMask, fusion_view_terms
 from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_weight, world_rank
 
@@ -66,7 +67,8 @@ def coupled_nested_terms(omega_f, pf, dall, lowest, valid, weight, world, count)
 
 class BalancedSearch(NestedFusionMask):
     def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings',
-                 view_sparsity_weights=(1.,2.,2.), regularizer_mode='independent', support_bands=None, **options):
+                 view_sparsity_weights=(1.,2.,2.), regularizer_mode='independent', support_bands=None,
+                 vg_regions=None, **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
@@ -74,16 +76,18 @@ class BalancedSearch(NestedFusionMask):
         assert 0 < self.summary_t2i_weight <= 1.
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
         self.inclusion_hierarchy = inclusion_hierarchy
-        assert regularizer_mode in ('independent','coupled_nested','bbns')
+        assert regularizer_mode in ('independent','coupled_nested','bbns','joint_vg')
         self.regularizer_mode = regularizer_mode
         self.support_bands=validate_bands(support_bands) if regularizer_mode=='bbns' else None
         assert support_bands is None or regularizer_mode=='bbns'
+        self.vg_regions=validate_regions(vg_regions) if regularizer_mode=='joint_vg' else None
+        assert vg_regions is None or regularizer_mode=='joint_vg'
         self.view_sparsity_weights = [float(v) for v in view_sparsity_weights]
         assert len(self.view_sparsity_weights)==3
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
         assert (math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12)
                 or self.view_sparsity_weights in ([.5,1.,1.5],[1.,2.,3.])), 'Unreviewed sparsity coefficients'
-        if regularizer_mode in ('coupled_nested','bbns'):
+        if regularizer_mode in ('coupled_nested','bbns','joint_vg'):
             assert inclusion_hierarchy == 'detail_chain'
             assert self.view_sparsity_weights == [1.,2.,2.]
             assert self.search_hparams['inclusion_max'] == self.search_hparams['sparsity_scale'] == 1.
@@ -139,7 +143,7 @@ class BalancedSearch(NestedFusionMask):
         gate_f=lf.pop('_diagnostic_gate',None)
         logs={'F_'+key:value for key,value in lf.items()}
         hp=self.search_hparams
-        inclusion_enabled=hp['inclusion_max']>0 and self.regularizer_mode!='bbns'
+        inclusion_enabled=hp['inclusion_max']>0 and self.regularizer_mode not in ('bbns','joint_vg')
         weight=hp['inclusion_max']*inclusion_weight(self.arm,completed) if inclusion_enabled and valid_count>=2 else 0.
         if valid_count>=2:
             ao,so,mo,po,lo=terms(tokens_o,valid,valid_global,self.summary_t2i_weight)
@@ -170,7 +174,15 @@ class BalancedSearch(NestedFusionMask):
             cf,co,ce=self.view_sparsity_weights
             sparse=((sf+2*so+2*se)/3 if self.view_sparsity_weights==[1.,2.,2.] else
                     (cf*sf+co*so+ce*se)/3)
-            if self.regularizer_mode == 'bbns':
+            if self.regularizer_mode == 'joint_vg':
+                world=world_rank()[0]
+                regularizer,reg_logs=joint_vg_regularizer(sf,pf,po,pe,valid,self.vg_regions,world,valid_count)
+                loss=align+regularizer
+                reduced=global_sum(torch.stack(list(reg_logs.values())))/world
+                logs.update(dict(zip(reg_logs,reduced)))
+                logs['independent_child_sparse_applied']=0.
+                logs['independent_inclusion_applied']=0.
+            elif self.regularizer_mode == 'bbns':
                 world=world_rank()[0]
                 regularizer,reg_logs=bbns_regularizer(sf,pf,po,pe,valid,self.support_bands,world,valid_count)
                 loss=align+regularizer
@@ -219,8 +231,8 @@ class BalancedSearch(NestedFusionMask):
                     Dall_F_hard_violation=chain[1],Ds_Dall_hard_violation=chain[2],
                     hard_inclusion_violation=.5*(chain[1]+chain[2]))
         else:
-            loss=10*af+hp['sparsity_scale']*sf/(3 if self.regularizer_mode=='bbns' else 1)
-            if self.regularizer_mode=='bbns':
+            loss=10*af+hp['sparsity_scale']*sf/(3 if self.regularizer_mode in ('bbns','joint_vg') else 1)
+            if self.regularizer_mode in ('bbns','joint_vg'):
                 logs.update(Omega_F=global_sum(sf)/world_rank()[0],total_band_edges=0.,
                     total_nested_regularizer=global_sum(sf)/(3*world_rank()[0]),
                     independent_child_sparse_applied=0.,independent_inclusion_applied=0.)
@@ -231,8 +243,8 @@ class BalancedSearch(NestedFusionMask):
         if self.regularizer_mode == 'coupled_nested':
             logs['regularizer_mode']=self.regularizer_mode
             logs['inclusion_folded_into_regularizer']=True
-        elif self.regularizer_mode=='bbns':
-            logs['regularizer_mode']='bbns'
+        elif self.regularizer_mode in ('bbns','joint_vg'):
+            logs['regularizer_mode']=self.regularizer_mode
             logs['old_inclusion_schedule_applied']=False
         return loss,{key:value.detach() if torch.is_tensor(value) else value for key,value in logs.items()}
 

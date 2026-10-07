@@ -147,6 +147,13 @@ ALLOWED.update('experiments/nest_clip_v1/nested_d3_bbns500_v1/'+name for name in
     'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json',
     'ANCHOR_SUPPORT_AUDIT.json','ANCHOR_SUPPORT_AUDIT.md','ANCHOR_SUPPORT_COHORT.json',
     'SUPPORT_BAND_AUDIT.json','GRADIENT_ROUTING_AUDIT.json'))
+ALLOWED.update(('model/nested_joint_vg.py','recovery/nested_d3_joint_vg500.py',
+    'recovery/nested_d3_vg_audit.py','tests/test_nested_d3_joint_vg500.py','configs/nested_d3_joint_vg500.json'))
+ALLOWED.update('experiments/nest_clip_v1/nested_d3_joint_vg500_v1/'+name for name in (
+    'config.json','CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
+    'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
+    'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json',
+    'ANCHOR_VG_AUDIT.json','ANCHOR_VG_AUDIT.md','ANCHOR_VG_COHORT.json','VG_AUDIT.json','GRADIENT_AUDIT.json'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),

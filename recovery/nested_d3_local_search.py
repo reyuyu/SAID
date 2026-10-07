@@ -72,6 +72,8 @@ def arm_config(arm):
     if spec['axis']=='regularizer':cfg['regularizer_mode']=spec['regularizer_mode']
     if spec['axis']=='support_band':
         cfg['regularizer_mode']='bbns';cfg['support_bands']=spec['support_bands']
+    if spec['axis']=='joint_vg':
+        cfg['regularizer_mode']='joint_vg';cfg['vg_regions']=spec['vg_regions']
     return cfg
 
 
@@ -136,6 +138,11 @@ def matched_stream(actual,reference,arm):
             assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
             assert a['independent_child_sparse_applied']==a['independent_inclusion_applied']==0
             assert math.isclose(a['total_nested_regularizer'],a['Omega_F']/3+a['total_band_edges'],rel_tol=3e-6,abs_tol=1e-7)
+        elif ARMS[arm]['axis']=='joint_vg':
+            assert a['regularizer_mode']=='joint_vg' and a['old_inclusion_schedule_applied'] is False
+            assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
+            assert a['independent_child_sparse_applied']==a['independent_inclusion_applied']==0
+            assert math.isclose(a['total_nested_regularizer'],a['Omega_F']/3+a['total_vg_edges'],rel_tol=3e-6,abs_tol=1e-7)
         old={h['rank']:h for h in b['rank_health']}
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
@@ -179,6 +186,11 @@ def checkpoint_invariants(current,reference):
         assert new_model.pop('support_bands')==ARMS[ARM]['support_bands']
         assert old_model.pop('regularizer_mode','independent')=='independent'
         assert old_model.pop('support_bands',None) is None
+    if ARMS[ARM]['axis']=='joint_vg':
+        assert new_model.pop('regularizer_mode')=='joint_vg'
+        assert new_model.pop('vg_regions')==ARMS[ARM]['vg_regions']
+        assert old_model.pop('regularizer_mode','independent')=='independent'
+        assert old_model.pop('vg_regions',None) is None
     if ARMS[ARM]['axis']=='inclusion':
         assert new_model['search_hparams'].pop('inclusion_max')==ARMS[ARM]['inclusion_max']
         assert ARMS[ARM]['inclusion_max'] in (0.,.5)
@@ -187,7 +199,10 @@ def checkpoint_invariants(current,reference):
     changed={k for k,v in old['code_sha256'].items() if cfg['code_sha256'][k]!=v}
     assert changed==EDITED and all(cfg['code_sha256'][k]==sha(ROOT/k) for k in changed)
     if ARMS[ARM]['axis']=='support_band':
-        assert set(cfg['code_sha256'])-set(old['code_sha256'])=={'model/nested_support_band.py'}
+        assert set(cfg['code_sha256'])-set(old['code_sha256']) in (
+            {'model/nested_support_band.py'}, {'model/nested_support_band.py','model/nested_joint_vg.py'})
+    if ARMS[ARM]['axis']=='joint_vg':
+        assert set(cfg['code_sha256'])-set(old['code_sha256'])=={'model/nested_support_band.py','model/nested_joint_vg.py'}
     assert current['optimizer']['param_groups']==reference['optimizer']['param_groups']
     assert current['optimizer']['state'].keys()==reference['optimizer']['state'].keys()
     assert {int(s['step']) for s in current['optimizer']['state'].values()}=={5}

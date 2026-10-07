@@ -1,0 +1,179 @@
+{
+  "passed": true,
+  "before_formal_launch": true,
+  "joint_edge_gradient_routing": {
+    "passed": true,
+    "epsilon": 0.000001,
+    "joint_parent_child_gradients": true,
+    "no_stop_gradient": true,
+    "cases": {
+      "upward": {
+        "child": [
+          0.9,
+          0.8
+        ],
+        "parent": [
+          0.3,
+          0.4
+        ],
+        "term": "V_penalty",
+        "values": {
+          "V": 0.5882349480970893,
+          "G": 0,
+          "V_penalty": 0.2896968593530764,
+          "G_lower_penalty": 0.010000000000000002,
+          "G_upper_penalty": 0,
+          "V_legal": 0,
+          "G_legal": 0,
+          "zero_edge": 0
+        },
+        "child_gradient": [
+          [
+            0.2607367187891753,
+            0.2607367187891753
+          ]
+        ],
+        "parent_gradient": [
+          [
+            -0.6332172135158618,
+            -0.6332172135158618
+          ]
+        ]
+      },
+      "lower": {
+        "child": [
+          0.55,
+          0.6
+        ],
+        "parent": [
+          0.6,
+          0.65
+        ],
+        "term": "G_lower_penalty",
+        "values": {
+          "V": 0,
+          "G": 0.07999993600005119,
+          "V_penalty": 0,
+          "G_lower_penalty": 0.00040000256000204864,
+          "G_upper_penalty": 0,
+          "V_legal": 1,
+          "G_legal": 0,
+          "zero_edge": 0
+        },
+        "child_gradient": [
+          [
+            0.03200007679985667,
+            0.03200007679985667
+          ]
+        ],
+        "parent_gradient": [
+          [
+            -0.029440072703871414,
+            -0.029440072703871414
+          ]
+        ]
+      },
+      "upper": {
+        "child": [
+          0.2,
+          0.3
+        ],
+        "parent": [
+          0.8,
+          0.9
+        ],
+        "term": "G_upper_penalty",
+        "values": {
+          "V": 0,
+          "G": 0.7058819377165073,
+          "V_penalty": 0,
+          "G_lower_penalty": 0,
+          "G_upper_penalty": 0.16474014736450673,
+          "V_legal": 1,
+          "G_legal": 0,
+          "zero_edge": 0
+        },
+        "child_gradient": [
+          [
+            -0.4775078811324315,
+            -0.4775078811324315
+          ]
+        ],
+        "parent_gradient": [
+          [
+            0.1404436927237671,
+            0.1404436927237671
+          ]
+        ]
+      },
+      "inside": {
+        "child": [
+          0.6,
+          0.6
+        ],
+        "parent": [
+          0.75,
+          0.75
+        ],
+        "term": "G_lower_penalty",
+        "values": {
+          "V": 0,
+          "G": 0.1999998666667556,
+          "V_penalty": 0,
+          "G_lower_penalty": 0,
+          "G_upper_penalty": 0,
+          "V_legal": 1,
+          "G_legal": 1,
+          "zero_edge": 1
+        },
+        "child_gradient": [
+          [
+            0,
+            0
+          ]
+        ],
+        "parent_gradient": [
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "identical": {
+        "child": [
+          0.6,
+          0.6
+        ],
+        "parent": [
+          0.6,
+          0.6
+        ],
+        "term": "G_lower_penalty",
+        "values": {
+          "V": 0,
+          "G": 0,
+          "V_penalty": 0,
+          "G_lower_penalty": 0.010000000000000002,
+          "G_upper_penalty": 0,
+          "V_legal": 1,
+          "G_legal": 0,
+          "zero_edge": 0
+        },
+        "child_gradient": [
+          [
+            0,
+            0
+          ]
+        ],
+        "parent_gradient": [
+          [
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "exact_equality_caveat": "At exact equality PyTorch ReLU has zero subgradient: lower penalty is positive, but its endpoint gradients are zero. Positive gamma_low discourages collapse away from this kink; it does not mathematically guarantee escape from exact collapse."
+  },
+  "backbone_alignment_spotcheck": "PENDING_STEP500"
+}

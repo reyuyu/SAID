@@ -1,0 +1,75 @@
+{
+  "arm": "Joint-VG",
+  "axis": "visual_support_regularization",
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "fresh_common0": true,
+  "updates": 500,
+  "horizon": 4868,
+  "local_only_root": "/root/said_s02_stage500/ShareGPT4V/",
+  "NFS_fallback": false,
+  "audit_records": 16384,
+  "regions": {
+    "Dall_F": {
+      "eps_v": 0.013686737418174746,
+      "gamma_low": 0.011261347867548467,
+      "gamma_high": 0.024891537427902226
+    },
+    "D3_Dall": {
+      "eps_v": 0.020522184297442438,
+      "gamma_low": 0.04266522899270058,
+      "gamma_high": 0.08650477081537247
+    }
+  },
+  "region_rule": "eps_v=P80(V),gamma_low=P20(G),gamma_high=P80(G) independently per edge, from Anchor training cohort only; no retrieval selection",
+  "epsilon": 0.000001,
+  "formula": "alignment + Omega_F/3 + edge(Dall,F) + edge(D3,Dall)",
+  "edge_formula": "relu(V-eps_v)^2 + relu(gamma_low-G)^2 + relu(G-gamma_high)^2",
+  "joint_gradients": true,
+  "stop_gradient": false,
+  "old_child_global_sparsity": false,
+  "old_inclusion": false,
+  "ramp": false,
+  "beta": false,
+  "legacy_inclusion_max_config_unused": 1,
+  "classification": {
+    "strong": {
+      "Score5_gt": 71.158309,
+      "J_long3_ge": 74.978516,
+      "Urban_T2I_ge": 89.6,
+      "Short4_ge": 65.3,
+      "many_samples_inside_feasible_region": true
+    },
+    "positive": {
+      "delta_Score5_ge": 0.05,
+      "delta_J_long3_ge": 0,
+      "delta_Urban_T2I_ge": -0.1,
+      "no_trivial_solution": true
+    },
+    "structural_success": {
+      "abs_delta_Score5_le": 0.05,
+      "abs_delta_J_long3_le": 0.05,
+      "abs_delta_Urban_T2I_le": 0.1,
+      "abs_delta_Short4_le": 0.15,
+      "many_samples_inside_feasible_region": true,
+      "no_trivial_solution": true
+    },
+    "many_samples_inside_feasible_region": {
+      "last50_each_edge_V_legal_ge": 0.5,
+      "last50_each_edge_G_legal_ge": 0.5,
+      "last50_each_edge_zero_edge_ge": 0.4
+    },
+    "trivial_solution": {
+      "both_mean_G_lt": 0.005,
+      "or_all_mean_soft_support_gt": 0.99,
+      "or_D3_hard_keep_lt": 0.5
+    },
+    "negative": "trivial_solution OR both delta Score5 and delta J_long3 below -0.15pp",
+    "otherwise": "JOINT_VG_TRADEOFF"
+  },
+  "strict_stream_records": 512000,
+  "automatic_full": false,
+  "automatic_other_arms": false,
+  "automatic_region_changes": false,
+  "automatic_commit_push_fetch_verify": true,
+  "equality_caveat": "Positive lower band penalizes exact equality, but relu has zero subgradient there; no altered mask/formula to force escape."
+}
