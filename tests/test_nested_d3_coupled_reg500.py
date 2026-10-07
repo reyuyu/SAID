@@ -211,7 +211,9 @@ def fake_steps():
             total_inside_sparsity=4*.2/3,total_outside_penalty=.2*lam,inclusion_loss=.2*lam,
             old_global_sparse_counterfactual=(.8+1.4+1.2)/3)
         a['total_nested_regularizer']=.8/3+a['total_inside_sparsity']+a['total_outside_penalty']
-        actual.append(a);ref.append(dict(a))
+        actual.append(a)
+        old=dict(a,inc=.2);old.pop('inclusion_loss')
+        ref.append(old)
     return actual,ref
 
 
@@ -219,6 +221,20 @@ def test_all500_regularizer_identity_audit_and_double_count_rejected():
     a,b=fake_steps();audit=experiment.regularizer_audit(a,b)
     assert audit['passed'] and len(audit['matched_all500'])==500
     a[10]['independent_inclusion_applied']=.001
+    with pytest.raises(AssertionError):experiment.regularizer_audit(a,b)
+
+
+def test_Anchor_inclusion_field_reconstruction_matches_real_log_schema():
+    a,b=fake_steps()
+    from recovery.s02_nfs500 import rows
+    reference_rows=rows(experiment.BASE_RUN/'step500/steps.jsonl')
+    assert len(reference_rows)==500
+    audit=experiment.regularizer_audit(a,reference_rows)
+    for row,matched in zip(reference_rows,audit['matched_all500']):
+        assert matched['actual_Anchor_inclusion']==row['inc_weight']*row['inc']
+    b[499]['inclusion_loss']=b[499]['inc_weight']*b[499]['inc']
+    assert experiment.regularizer_audit(a,b)['passed']
+    b[499]['inclusion_loss']+=.1
     with pytest.raises(AssertionError):experiment.regularizer_audit(a,b)
 
 

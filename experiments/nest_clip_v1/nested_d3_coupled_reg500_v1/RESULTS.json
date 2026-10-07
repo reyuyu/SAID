@@ -1,0 +1,895 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6062,
+        "R@5": 0.8268,
+        "R@10": 0.8936
+      },
+      "T2I": {
+        "R@1": 0.41472,
+        "R@5": 0.67288,
+        "R@10": 0.76896
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9130000472068787,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9960000514984131
+      },
+      "T2I": {
+        "R@1": 0.8950000405311584,
+        "R@5": 0.9860000610351562,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.874,
+        "R@5": 0.973,
+        "R@10": 0.991
+      },
+      "T2I": {
+        "R@1": 0.718,
+        "R@5": 0.9138,
+        "R@10": 0.951
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7776,
+        "R@5": 0.9556,
+        "R@10": 0.9812
+      },
+      "T2I": {
+        "R@1": 0.7746,
+        "R@5": 0.9514,
+        "R@10": 0.9772
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5678768745067088,
+        "R@5": 0.753485924756643,
+        "R@10": 0.81557484872402
+      },
+      "T2I": {
+        "R@1": 0.5662983425414365,
+        "R@5": 0.7598000526177322,
+        "R@10": 0.8175480136806104
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7107295304786183,
+    "J_long3": 0.749062550797697,
+    "J_long": 0.8400500219345093,
+    "Short4_R1": 0.65323
+  },
+  "scores_percent": {
+    "Score5_R1": 71.07295304786183,
+    "J_long3": 74.9062550797697,
+    "J_long": 84.00500219345093,
+    "Short4_R1": 65.323,
+    "Score5": 71.07295304786183,
+    "Short4": 65.323
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "cb3751b1fe8029490140bd7a777fe218d00f81e01aaaa4f7d6c7e19f9008823b",
+    "bare_sha256": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93"
+  },
+  "checkpoint_sha256": "cb3751b1fe8029490140bd7a777fe218d00f81e01aaaa4f7d6c7e19f9008823b",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-07T12:37:20.620108+00:00",
+  "arm": "CoupledNested",
+  "spec": {
+    "axis": "regularizer",
+    "weights": [
+      1.35,
+      1.35,
+      0.3
+    ],
+    "r": 2.0,
+    "mode": "nested_detail_d3",
+    "regularizer_mode": "coupled_nested",
+    "experiment_dir": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_coupled_reg500_v1"
+  },
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "resume": null,
+  "initialized_from_common0": true,
+  "configuration": {
+    "arm": "A3",
+    "experiment_name": "ArmB-Summary0.2-4epoch",
+    "condition_mode": "dual_branch",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "full_native_mix": 0,
+    "sampling_mode": "nested_detail_d3",
+    "inclusion_hierarchy": "detail_chain",
+    "sampling_seed": 0,
+    "shuffle_seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 4,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "checkpoint_pair_blocks": false,
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "score_chunk": 64,
+    "checkpoint_interval": 1217,
+    "save_initial_checkpoint": false,
+    "monitor_resources": true,
+    "feasibility_abort_seconds": 15,
+    "four_epoch_followup": true,
+    "fusion_lr": 0.0002,
+    "visual_mask_lr_scale": 1,
+    "view_weights": [
+      1.35,
+      1.35,
+      0.3
+    ],
+    "sparsity_scale": 1,
+    "inclusion_max": 1,
+    "hparam_search": true,
+    "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+    "base_model": "ViT-B/16",
+    "resource_policy": "local_reproduction500",
+    "regularizer_mode": "coupled_nested"
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-07T11:59:19.821343+00:00",
+    "supervisor_pid": 268104,
+    "step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "resume": null,
+    "start_updates": 0,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "arm": "CoupledNested",
+    "spec": {
+      "axis": "regularizer",
+      "weights": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "r": 2.0,
+      "mode": "nested_detail_d3",
+      "regularizer_mode": "coupled_nested",
+      "experiment_dir": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_coupled_reg500_v1"
+    },
+    "git_head": "55b4dc301fe911bb7ffb3a984ada5d36db86843d",
+    "source_sha256": {
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3",
+      "experiments/nest_clip_v1/nested_d3_coupled_reg500_v1/CPU_TESTS.json": "8f0534414a8c218b98d792bf869c1666c73bb15d91bf2c7dbe66430a99ce1f97",
+      "experiments/nest_clip_v1/nested_d3_coupled_reg500_v1/SEARCH_PLAN.json": "589acfa126fa1b01848168d0fe90be853eeab9b4c9bbc65ee34bb1520507e859",
+      "experiments/nest_clip_v1/nested_d3_coupled_reg500_v1/config.json": "6a7d4ab83a52d9aeddc3525dd15d18fd472338680d5817c0851ca061917d55b2",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+      "model/balanced_hparam_search.py": "d4b2893a136d0e6fba2230fe5cf5caa558a66bb3089f82de10577ef9b045ac7c",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "recovery/check_stage500_publish.py": "c5701c34c1bf72360a77cd2322f10f4cc5ea613ec090190ac31771095414f94f",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/nested_d3_coupled_reg500.py": "f658bfa685365f10b88fb0f3c78bfb7f7a5bb9cdce102b819d7af7f974c2f76b",
+      "recovery/nested_d3_followup500.py": "2b2283e8ff0d765e8f244f5210c8f040534c9ead5d9e824eb76101fdd215f4a3",
+      "recovery/nested_d3_local_search.py": "c34872fe9887bf1c7f30a1433642ebdd491936d3df0795af0e201b8243a98c34",
+      "recovery/nested_d3_local_search_evidence.py": "af991fca567c4de69b4564570af74a3fc3e6bf5a20da617add7e39c7b7a6d5d2",
+      "recovery/nested_detail_gradients.py": "3eee1cd601ea03d7680c0b1f4b268b72a000ad1170da37231ce6086b03c7d9c8",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "tests/test_nested_d3_coupled_reg500.py": "b09487f9417b487990bd99ea00343a0dccea3c8fd02c1c06c45d7b7420751dd9",
+      "tests/test_nested_d3_local_search.py": "a2c0a633125771e96ddca963b998bffaa7131342e0f91f7b73a14536df7ce9d8",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "tools/nest_clip.py": "1e44a8e6c0be45410be8427648f9facb288530a11476b7f098e92a0ad8a3c9b3",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "train/train_nested_semantic_mask.py": "2abbffa0240b7a34772d400d2b4351cbd1177c901492d741cdb80be01aaa06c3"
+    },
+    "CPU_tests": {
+      "passed": true,
+      "passed_count": 231,
+      "failed_count": 0,
+      "exit_code": 0,
+      "seconds": 17.72,
+      "command": ".venv/bin/python -m pytest -q tests/test_nested_d3_coupled_reg500.py tests/test_nested_d3_inc05_500.py tests/test_nested_d3_inc0_500.py tests/test_kr234_sparsity123_500.py tests/test_nested_d3_followup500.py tests/test_nested_d3_local_search.py tests/test_nested_detail_d3_balanced_full.py tests/test_nested_detail_d3_balanced.py tests/test_nested_detail_d3.py tests/test_nested_detail_equal_weight.py tests/test_nested_detail.py tests/test_balanced_hparams.py tests/test_nested_resume.py recovery/test_nested_detail500.py --junitxml=/tmp/nested-d3-coupled-reg-tests-20261007.xml",
+      "warning": "pkg_resources deprecation only",
+      "before_formal_launch": true,
+      "raw_junit_evidence": {
+        "path": "/tmp/nested-d3-coupled-reg-tests-20261007.xml",
+        "bytes": 45628,
+        "sha256": "1c6739f0e8c09dabcc7bd8a0ef24b0a5eb5440f314e7d488814330515703e7a0",
+        "uploaded": false
+      }
+    },
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "anchor_reference": {
+      "result_sha256": "087691e5b2aba3690aea97b9e38534e6952045f7d09458fed088b62939fe00f6",
+      "checkpoint_sha256": "24792ba9e6e3c34f733820f489cb3a8953278246ae58f2f688652894be871e4b",
+      "actual_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007/step500/steps.jsonl",
+      "actual_steps_sha256": "f3f1cdaa08fca48294bde99b8681763b98a56f3c5102b1b88430fda65da48e72",
+      "reference_used_for_resume": false
+    },
+    "config_changes": {
+      "regularizer_mode": "coupled_nested"
+    },
+    "initial_resources": {
+      "timestamp_utc": "2026-10-07T11:59:38.353224+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 492407963648,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 486329270272,
+        "rss": 1562300416,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 88264704,
+        "dirty": 0,
+        "writeback": 0,
+        "pgpgin": 9311220996,
+        "pgpgout": 9192105565,
+        "pgfault": 17104508091,
+        "pgmajfault": 331980,
+        "inactive_anon": 2162688,
+        "active_anon": 1563082752,
+        "inactive_file": 8060293120,
+        "active_file": 478265946112,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 486329270272,
+        "total_rss": 1562300416,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 88264704,
+        "total_dirty": 0,
+        "total_writeback": 0,
+        "total_pgpgin": 9311220996,
+        "total_pgpgout": 9192105565,
+        "total_pgfault": 17104508091,
+        "total_pgmajfault": 331980,
+        "total_inactive_anon": 2162688,
+        "total_active_anon": 1563082752,
+        "total_inactive_file": 8060293120,
+        "total_active_file": 478265946112,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 136035645
+      },
+      "file": 486329270272,
+      "inactive_file": 8060293120,
+      "active_file": 478265946112,
+      "anon": 1562300416,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 1104063,
+        "nr_throttled": 10,
+        "throttled_time": 5692014333
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27447198798
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22069170932
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.06,
+          "avg60": 0.02,
+          "avg300": 0.0,
+          "total": 487230246165
+        },
+        "full": {
+          "avg10": 0.06,
+          "avg60": 0.02,
+          "avg300": 0.0,
+          "total": 481875713648
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "automatic_retry": false,
+    "automatic_full": false,
+    "automatic_combinations": false,
+    "sampling_audit": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-coupled-reg500-20261007/CoupledNested/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "sha256": "a7a138c353e597af9ec619a40faf4ad6ae046e41c9ba45b1701595d30f0d1f25",
+      "uploaded": false
+    },
+    "pod_identity": "interactive93293",
+    "disposable_cache": "Ephemeral Docker overlay; NFS original source retained"
+  },
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false
+  },
+  "quality_delta_vs_anchor_pp": {
+    "Score5": 0.009353245684096123,
+    "J_long3": -0.0484112571931945,
+    "J_long": -0.019999153614037368,
+    "Short4": 0.09599999999998943,
+    "Urban_I2T": 0.3999999999999915,
+    "Urban_T2I": -0.20000000000000284
+  },
+  "recall_delta_vs_anchor_pp": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.21999999999999797,
+        "R@5": 0.05999999999999339,
+        "R@10": 0.10000000000000009
+      },
+      "T2I": {
+        "R@1": -0.11600000000000499,
+        "R@5": 0.012000000000000899,
+        "R@10": -0.036000000000002697
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.40000081062316895,
+        "R@5": 0.09999871253967285,
+        "R@10": 0.0
+      },
+      "T2I": {
+        "R@1": -0.1999974250793457,
+        "R@5": 0.09999871253967285,
+        "R@10": 0.0
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.40000000000000036,
+        "R@5": -0.5000000000000004,
+        "R@10": -0.10000000000000009
+      },
+      "T2I": {
+        "R@1": -0.11999999999999789,
+        "R@5": 0.0,
+        "R@10": -0.0200000000000089
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": -0.060000000000004494,
+        "R@5": 0.21999999999999797,
+        "R@10": 0.11999999999999789
+      },
+      "T2I": {
+        "R@1": -0.22000000000000908,
+        "R@5": -0.11999999999999789,
+        "R@10": 0.0
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": -0.23677979479084232,
+        "R@5": -0.18416206261510082,
+        "R@10": -0.09208103130755596
+      },
+      "T2I": {
+        "R@1": 0.026308866087876304,
+        "R@5": -0.10523546435148301,
+        "R@10": -0.18416206261510082
+      }
+    }
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "image2text_R1": 0.6062,
+      "image2text_R5": 0.8268,
+      "image2text_R10": 0.8936,
+      "text2image_R1": 0.41472,
+      "text2image_R5": 0.67288,
+      "text2image_R10": 0.76896,
+      "checkpoint_sha256": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93",
+      "native_only": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.9130000472068787,
+        "R5": 0.987000048160553,
+        "R10": 0.9960000514984131
+      },
+      "text2image": {
+        "R1": 0.8950000405311584,
+        "R5": 0.9860000610351562,
+        "R10": 0.9950000643730164
+      },
+      "checkpoint_sha256": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93",
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ],
+      "native_only": true
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.874,
+          "T2I": 0.718
+        },
+        "R@5": {
+          "I2T": 0.973,
+          "T2I": 0.9138
+        },
+        "R@10": {
+          "I2T": 0.991,
+          "T2I": 0.951
+        }
+      },
+      "checkpoint_sha256": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "elapsed_seconds": 19.33445167541504,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.7776,
+          "T2I": 0.7746
+        },
+        "R@5": {
+          "I2T": 0.9556,
+          "T2I": 0.9514
+        },
+        "R@10": {
+          "I2T": 0.9812,
+          "T2I": 0.9772
+        }
+      },
+      "checkpoint_sha256": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "elapsed_seconds": 288.03787636756897,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.5678768745067088,
+          "T2I": 0.5662983425414365
+        },
+        "R@5": {
+          "I2T": 0.753485924756643,
+          "T2I": 0.7598000526177322
+        },
+        "R@10": {
+          "I2T": 0.81557484872402,
+          "T2I": 0.8175480136806104
+        }
+      },
+      "checkpoint_sha256": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 479.03333377838135,
+      "device": "cuda:0",
+      "native_student_only": true
+    }
+  },
+  "native_evaluation_sources": {
+    "COCO": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-coupled-reg500-20261007/CoupledNested/step500/coco_native.json",
+      "sha256": "49b6d16625e57cbffa08aee603506b16495419214394f4ca45f7202518d8c729"
+    },
+    "Urban-1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-coupled-reg500-20261007/CoupledNested/step500/urban_native.json",
+      "sha256": "4a0203a0fda18fac9b22a51d7cb903c116c867f087a63ce0137fabf52e29d9d5"
+    },
+    "Flickr30k-test1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-coupled-reg500-20261007/CoupledNested/step500/flickr_test1k/flickr_test1k.json",
+      "sha256": "5d689fe21137f4c2efd8284f8b39fcf06cf3789179c09ff0eb5d8d85a65e0267"
+    },
+    "DOCCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-coupled-reg500-20261007/CoupledNested/step500/docci/docci.json",
+      "sha256": "94fa41e4ee9d71703622ce5a8ece36f11788d30a59f5120cbe1d39849deed6dc"
+    },
+    "Long-DCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-coupled-reg500-20261007/CoupledNested/step500/long_dci/long_dci.json",
+      "sha256": "20e28183dddd6b1d85de88970ae5846506f783b59874366ad4c1c81a8112fdda"
+    }
+  },
+  "checkpoint_uploaded": false,
+  "bare_uploaded": false,
+  "automatic_full": false,
+  "automatic_combinations": false,
+  "classification": "COUPLED_NESTED_TRADEOFF",
+  "gradient_weighted_lowest_Dall_ratio": 0.5237196531175301,
+  "sequential_queue": [
+    "CoupledNested"
+  ],
+  "references": {
+    "Anchor": {
+      "scores": {
+        "Score5": 71.06359980217773,
+        "J_long3": 74.9546663369629,
+        "J_long": 84.02500134706497,
+        "Short4": 65.227,
+        "Urban_I2T": 90.9,
+        "Urban_T2I": 89.7
+      },
+      "path": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_detail_d3_balanced_500_v1/RESULTS.json",
+      "sha256": "087691e5b2aba3690aea97b9e38534e6952045f7d09458fed088b62939fe00f6"
+    },
+    "INC0": {
+      "scores": {
+        "Score5": 71.15830939305809,
+        "J_long3": 74.97851565509683,
+        "J_long": 83.99500315904618,
+        "Short4": 65.428,
+        "Urban_I2T": 91.1,
+        "Urban_T2I": 89.4
+      },
+      "path": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_inc0_500_v1/RESULTS.json",
+      "sha256": "411743fa43e8604da35a14d2da75e3fbaaa7ce69b6251498b97c24add8f3a53b"
+    },
+    "INC0.5": {
+      "scores": {
+        "Score5": 71.00186879634201,
+        "J_long3": 74.81844799390332,
+        "J_long": 83.87000295639038,
+        "Short4": 65.277,
+        "Urban_I2T": 91.3,
+        "Urban_T2I": 88.8
+      },
+      "path": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_inc05_500_v1/RESULTS.json",
+      "sha256": "ef02d6313efc834edb2daf90690e470f73d9b5b1a510f47bdd1308591f6097c8"
+    }
+  },
+  "quality_delta_vs_references_pp": {
+    "Anchor": {
+      "Score5": 0.009353245684096123,
+      "J_long3": -0.0484112571931945,
+      "J_long": -0.019999153614037368,
+      "Short4": 0.09599999999998943,
+      "Urban_I2T": 0.3999999999999915,
+      "Urban_T2I": -0.20000000000000284
+    },
+    "INC0": {
+      "Score5": -0.08535634519626001,
+      "J_long3": -0.07226057532712105,
+      "J_long": 0.009999034404756912,
+      "Short4": -0.10500000000000398,
+      "Urban_I2T": 0.20000000000000284,
+      "Urban_T2I": 0.09999999999999432
+    },
+    "INC0.5": {
+      "Score5": 0.0710842515198209,
+      "J_long3": 0.08780708586638752,
+      "J_long": 0.13499923706055483,
+      "Short4": 0.04599999999999227,
+      "Urban_I2T": 0.0,
+      "Urban_T2I": 0.7000000000000028
+    }
+  },
+  "recall_delta_vs_references_pp": {
+    "Anchor": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.21999999999999797,
+          "R@5": 0.05999999999999339,
+          "R@10": 0.10000000000000009
+        },
+        "T2I": {
+          "R@1": -0.11600000000000499,
+          "R@5": 0.012000000000000899,
+          "R@10": -0.036000000000002697
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.40000081062316895,
+          "R@5": 0.09999871253967285,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": -0.1999974250793457,
+          "R@5": 0.09999871253967285,
+          "R@10": 0.0
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.40000000000000036,
+          "R@5": -0.5000000000000004,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": -0.11999999999999789,
+          "R@5": 0.0,
+          "R@10": -0.0200000000000089
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.060000000000004494,
+          "R@5": 0.21999999999999797,
+          "R@10": 0.11999999999999789
+        },
+        "T2I": {
+          "R@1": -0.22000000000000908,
+          "R@5": -0.11999999999999789,
+          "R@10": 0.0
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": -0.23677979479084232,
+          "R@5": -0.18416206261510082,
+          "R@10": -0.09208103130755596
+        },
+        "T2I": {
+          "R@1": 0.026308866087876304,
+          "R@5": -0.10523546435148301,
+          "R@10": -0.18416206261510082
+        }
+      }
+    },
+    "INC0": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.060000000000004494,
+          "R@5": -0.26000000000000467,
+          "R@10": 0.11999999999999789
+        },
+        "T2I": {
+          "R@1": -0.040000000000001146,
+          "R@5": -0.039999999999995595,
+          "R@10": -0.019999999999997797
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.1999974250793457,
+          "R@5": -0.09999871253967285,
+          "R@10": -0.09999871253967285
+        },
+        "T2I": {
+          "R@1": 0.09999871253967285,
+          "R@5": -0.09999871253967285,
+          "R@10": 0.0
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.0,
+          "R@5": -0.30000000000000027,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": -0.31999999999999806,
+          "R@5": -0.12000000000000899,
+          "R@10": -0.14000000000000679
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.10000000000000009,
+          "R@5": 0.16000000000000458,
+          "R@10": 0.07999999999999119
+        },
+        "T2I": {
+          "R@1": -0.16000000000000458,
+          "R@5": -0.08000000000000229,
+          "R@10": -0.14000000000000679
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": -0.34201525914232533,
+          "R@5": -0.39463299131807794,
+          "R@10": -0.36832412523020164
+        },
+        "T2I": {
+          "R@1": -0.1315443304393482,
+          "R@5": -0.09208103130754486,
+          "R@10": -0.28939752696658383
+        }
+      }
+    },
+    "INC0.5": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.07999999999999119,
+          "R@5": -0.019999999999997797,
+          "R@10": -0.060000000000004494
+        },
+        "T2I": {
+          "R@1": -0.11600000000000499,
+          "R@5": -0.12799999999999478,
+          "R@10": -0.048000000000003595
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.0,
+          "R@5": 0.3000020980834961,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": 0.6999969482421875,
+          "R@5": -0.09999871253967285,
+          "R@10": 0.20000338554382324
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.20000000000000018,
+          "R@5": -0.30000000000000027,
+          "R@10": -0.10000000000000009
+        },
+        "T2I": {
+          "R@1": 0.019999999999997797,
+          "R@5": 0.0,
+          "R@10": -0.10000000000000009
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.0400000000000067,
+          "R@5": 0.10000000000000009,
+          "R@10": 0.039999999999995595
+        },
+        "T2I": {
+          "R@1": -0.12000000000000899,
+          "R@5": -0.019999999999997797,
+          "R@10": -0.10000000000000009
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": -0.17100762957116267,
+          "R@5": -0.052617732175741505,
+          "R@10": -0.15785319652723562
+        },
+        "T2I": {
+          "R@1": 0.15785319652723562,
+          "R@5": 0.013154433043938152,
+          "R@10": -0.052617732175741505
+        }
+      }
+    }
+  },
+  "sole_changed_config_key": "regularizer_mode",
+  "regularizer_audit_passed": true,
+  "gradient_delta_vs_references": {
+    "Anchor": {
+      "weighted_D3_Dall_ratio": 0.01880263902480006,
+      "raw_norms": {
+        "F": 1.3645546436309814,
+        "Dall": 0.24261748790740967,
+        "D3": 1.78379225730896
+      }
+    },
+    "INC0": {
+      "weighted_D3_Dall_ratio": -0.037889099488881195,
+      "raw_norms": {
+        "F": 0.4769318103790283,
+        "Dall": -0.5027271509170532,
+        "D3": -3.754185914993286
+      }
+    },
+    "INC0.5": {
+      "weighted_D3_Dall_ratio": 0.018203235853399446,
+      "raw_norms": {
+        "F": -0.02622044086456299,
+        "Dall": -0.7518998384475708,
+        "D3": -0.5171966552734375
+      }
+    }
+  },
+  "report_only_recovery": {
+    "passed": true,
+    "recovered_utc": "2026-10-07T12:45:18.233123+00:00",
+    "failure": "KeyError: 'inclusion_loss' in historical Anchor log schema",
+    "fix": "Reconstruct applied Anchor inclusion from recorded inc_weight * inc; cross-check explicit field when present",
+    "trained_source_archive_commit": "55b4dc301fe911bb7ffb3a984ada5d36db86843d",
+    "modified_source_files": {
+      "recovery/nested_d3_coupled_reg500.py": {
+        "launched_sha256": "f658bfa685365f10b88fb0f3c78bfb7f7a5bb9cdce102b819d7af7f974c2f76b",
+        "report_recovery_sha256": "b48b0f1cf56984ad86d891371eee142480c6eec04b84d499e4a0da2fc24c5227"
+      },
+      "tests/test_nested_d3_coupled_reg500.py": {
+        "launched_sha256": "b09487f9417b487990bd99ea00343a0dccea3c8fd02c1c06c45d7b7420751dd9",
+        "report_recovery_sha256": "68d818b83e159e673f40770cee1a8fe894ead785f7abf3ff7101f7be1c687c65"
+      }
+    },
+    "all_training_model_data_optimizer_and_evaluation_sources_unchanged": true,
+    "training_restarted": false,
+    "evaluation_repeated": false,
+    "launch_provenance_unchanged": true,
+    "checkpoint_sha256_unchanged": "cb3751b1fe8029490140bd7a777fe218d00f81e01aaaa4f7d6c7e19f9008823b",
+    "bare_sha256_unchanged": "2f9cc44cfe2d564557eb6af3c456805e14c3a874aade567de852e98af2ea0e93",
+    "CPU_tests": {
+      "passed": true,
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 7.636,
+      "command": ".venv/bin/python -m pytest -q tests/test_nested_d3_coupled_reg500.py --junitxml=/tmp/nested-d3-coupled-reg-report-recovery-tests-20261007.xml",
+      "raw_junit": {
+        "path": "/tmp/nested-d3-coupled-reg-report-recovery-tests-20261007.xml",
+        "bytes": 4203,
+        "sha256": "3ee9c67b160521938298cb2de8d56e3497413a75c3f62a9dbfdde4d889188d05",
+        "uploaded": false
+      }
+    },
+    "finalization_script_local_only": {
+      "path": "/tmp/said-coupled-report-finalize-20261007.py",
+      "bytes": 5688,
+      "sha256": "ae7c98070eb2979825ddcd70441bce697cd06ae92b7fd744007763493f6fcb63"
+    }
+  }
+}

@@ -59,11 +59,16 @@ def regularizer_audit(actual,reference):
         assert math.isclose(a['total_nested_regularizer'],a['Omega_F']/3+a['total_inside_sparsity']+expected,
                             rel_tol=2e-6,abs_tol=1e-7)
         anchor_sparse=(b['F_sparse']+2*b['O_sparse']+2*b['E_sparse'])/3
+        # Original Anchor logs predate the applied inclusion_loss field.
+        # Reconstruct it from the recorded raw loss and exact ramp weight.
+        anchor_inclusion=b['inc_weight']*b['inc']
+        if 'inclusion_loss' in b:
+            assert math.isclose(b['inclusion_loss'],anchor_inclusion,rel_tol=2e-6,abs_tol=1e-7)
         matched.append(dict(step=a['step'],nested_regularizer=a['total_nested_regularizer'],
             conditional_inside=a['total_inside_sparsity'],outside_penalty=expected,Omega_F=a['Omega_F'],
-            actual_Anchor_global_sparse=anchor_sparse,actual_Anchor_inclusion=b['inclusion_loss'],
+            actual_Anchor_global_sparse=anchor_sparse,actual_Anchor_inclusion=anchor_inclusion,
             counterfactual_old_global_sparse_same_current_masks=old,
-            delta_vs_matched_Anchor_total=a['total_nested_regularizer']-anchor_sparse-b['inclusion_loss']))
+            delta_vs_matched_Anchor_total=a['total_nested_regularizer']-anchor_sparse-anchor_inclusion))
     means=lambda rs,ks:{k:statistics.fmean(r[k] for r in rs) for k in ks}
     return dict(passed=True,updates=500,old_child_global_sparse_applied=False,independent_inclusion_applied=False,
         outside_coefficient_exact_Anchor=True,soft_parent_and_soft_child_inside=True,
@@ -73,6 +78,7 @@ def regularizer_audit(actual,reference):
         routing_example=routing_example(),last50=means(actual[-50:],REG_KEYS),
         matched_last50=means(matched[-50:],tuple(k for k in matched[0] if k!='step')),
         matched_all500=matched,comparison_population='Identical steps and samples, learned masks may differ',
+        Anchor_inclusion_reconstruction='Recorded inc_weight * recorded raw inc; no re-evaluation of Anchor masks',
         exact_low_support_caveat='Conditional support is normalized: uniformly tiny nonzero parent support does not guarantee tiny inside loss; relative low-support coordinates have small contributions.')
 
 
