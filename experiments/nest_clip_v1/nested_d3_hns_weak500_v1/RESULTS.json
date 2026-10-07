@@ -1,0 +1,801 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6062,
+        "R@5": 0.8274,
+        "R@10": 0.8938
+      },
+      "T2I": {
+        "R@1": 0.4152,
+        "R@5": 0.67264,
+        "R@10": 0.76928
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9110000729560852,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.893000066280365,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.883,
+        "R@5": 0.973,
+        "R@10": 0.993
+      },
+      "T2I": {
+        "R@1": 0.7186,
+        "R@5": 0.9122,
+        "R@10": 0.9514
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.777,
+        "R@5": 0.9552,
+        "R@10": 0.9812
+      },
+      "T2I": {
+        "R@1": 0.7756,
+        "R@5": 0.9526,
+        "R@10": 0.9776
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.56761378584583,
+        "R@5": 0.755722178374112,
+        "R@10": 0.817416469350171
+      },
+      "T2I": {
+        "R@1": 0.56761378584583,
+        "R@5": 0.7605893186003683,
+        "R@10": 0.8204419889502762
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.711482771092811,
+    "J_long3": 0.7486379518213516,
+    "J_long": 0.8391500348091125,
+    "Short4_R1": 0.65575
+  },
+  "scores_percent": {
+    "Score5_R1": 71.1482771092811,
+    "J_long3": 74.86379518213516,
+    "J_long": 83.91500348091125,
+    "Short4_R1": 65.575,
+    "Score5": 71.1482771092811,
+    "Short4": 65.575
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3",
+    "bare_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d"
+  },
+  "checkpoint_sha256": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-07T18:44:45.373027+00:00",
+  "arm": "HNS-Weak",
+  "spec": {
+    "axis": "hns_beta",
+    "beta": [
+      1.0,
+      1.0
+    ],
+    "weights": [
+      1.35,
+      1.35,
+      0.3
+    ],
+    "r": 2.0,
+    "mode": "nested_detail_d3",
+    "experiment_dir": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1",
+    "branch": "experiment/nested-d3-hns-weak500-v1"
+  },
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "resume": null,
+  "initialized_from_common0": true,
+  "configuration": {
+    "arm": "A3",
+    "experiment_name": "ArmB-Summary0.2-4epoch",
+    "condition_mode": "dual_branch",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "full_native_mix": 0,
+    "sampling_mode": "nested_detail_d3",
+    "inclusion_hierarchy": "detail_chain",
+    "sampling_seed": 0,
+    "shuffle_seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 4,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "checkpoint_pair_blocks": false,
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "score_chunk": 64,
+    "checkpoint_interval": 1217,
+    "save_initial_checkpoint": false,
+    "monitor_resources": true,
+    "feasibility_abort_seconds": 15,
+    "four_epoch_followup": true,
+    "fusion_lr": 0.0002,
+    "visual_mask_lr_scale": 1,
+    "view_weights": [
+      1.35,
+      1.35,
+      0.3
+    ],
+    "sparsity_scale": 1,
+    "inclusion_max": 0,
+    "hparam_search": true,
+    "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+    "base_model": "ViT-B/16",
+    "resource_policy": "local_reproduction500",
+    "hns_enabled": true,
+    "hns_beta": [
+      1.0,
+      1.0
+    ]
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-07T18:05:17.896849+00:00",
+    "supervisor_pid": 476977,
+    "step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "resume": null,
+    "start_updates": 0,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "arm": "HNS-Weak",
+    "spec": {
+      "axis": "hns_beta",
+      "beta": [
+        1.0,
+        1.0
+      ],
+      "weights": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "r": 2.0,
+      "mode": "nested_detail_d3",
+      "experiment_dir": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1",
+      "branch": "experiment/nested-d3-hns-weak500-v1"
+    },
+    "git_head": "1cd348f968834865b8bd4619b5f43d372918d0c7",
+    "source_sha256": {
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/BASELINE_PROVENANCE.json": "f212c4926a8e16c65594c3817371bf2bab03f39ba9703c15850354ee733dcb24",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/CPU_TESTS.json": "469242d32c661f5d179ab149f4650c7bcd6a5e886609fd4cf7cc6bdc272d0010",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/DDP_CORRECTNESS.json": "c3e7480e30f3f0d68ddc75d33282e24d526c8bdaee31f7e22982c2b28b6e42c6",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/HNS_V1_GRADIENT_REFERENCE.json": "da0273cffe07d3f6c0a4b0dff389884db95f6593940adbfea012f842200d6c93",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/INC0_HIERARCHY_REFERENCE.json": "19388972c222e0b18672f2a24b52c34584ee3fbc2d0a8dd3c785c693ba440074",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/MATCHED_PREFLIGHT.json": "358e74d912e644e35091dec337e4fd11bc89a149d33d0b767205b8f3541aca4f",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/SEARCH_PLAN.json": "f7668ffa05756316380f0b7fd26882497bb7f3247d30478d9f82320a902d3785",
+      "experiments/nest_clip_v1/nested_d3_hns_weak500_v1/config.json": "412ad099d9c5ef123dd05483f684c2dd0a5b72604f18ff78de70c8e3d939c7ef",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+      "model/balanced_hparam_search.py": "b500febecdf8eff6d7a90f4020c6808a70a04ccebc63ecddd0d6565d28808d8e",
+      "model/hard_nested_sparsity.py": "3f63db56c683faf7102793fa1f3a6f62430a20eaa0a67c094380afd4397f696f",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "recovery/check_stage500_publish.py": "48eeb51403058b67c612cb16d0c0acd507074d21f7743beb41fdcc3e5d714a45",
+      "recovery/hns_ddp_correctness.py": "e5f0d0717919595ea4d9512d007e174b1d4f238c02143c4bf67d8e4a0bafc9ce",
+      "recovery/hns_final_two500.py": "f09ab80ea3ba9b9e852be5b75d9412558595197e8d9db35fec517577706f4787",
+      "recovery/hns_gradient_audit.py": "076a84d8bd5e9d11c7a4bbc51a6fd61a8d38c4cb4c777d0dba17d83304cc56ad",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/nested_d3_local_search.py": "7956707b439ffaf459ec272739a8ab325b54c1b844ca94ac75d29c4d252bb2c7",
+      "recovery/nested_d3_local_search_evidence.py": "af991fca567c4de69b4564570af74a3fc3e6bf5a20da617add7e39c7b7a6d5d2",
+      "recovery/nested_detail_gradients.py": "3828dc36860a115852b75b679cd8c51979547e30b2a0c9096e6653ef49ef3f1b",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "tests/test_hns_final_two500.py": "e822b1f3335eabd75e4d96b710a14940bc974e47c09076ded028da8d544e02f8",
+      "tests/test_nested_d3_local_search.py": "a2c0a633125771e96ddca963b998bffaa7131342e0f91f7b73a14536df7ce9d8",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "tools/nest_clip.py": "d713089c849c6420bed14271d88c54f27f79c866293c4d6644821f90b5104dd3",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "train/train_nested_semantic_mask.py": "1c15e6787f9f08f317bf98322e0d39dbf61d54d36b0b05b3ed4a93348fb90cf7"
+    },
+    "CPU_tests": {
+      "passed": true,
+      "failed_count": 0,
+      "exit_code": 0,
+      "total_tests": 107,
+      "test_files": [
+        "tests/test_hns_final_two500.py",
+        "tests/test_nested_d3_hns500.py",
+        "tests/test_balanced_hparams.py",
+        "tests/test_nested_d3_local_search.py",
+        "tests/test_nested_d3_inc0_500.py"
+      ],
+      "elapsed_seconds": 13.696,
+      "checked_utc": "2026-10-07T18:04:39.269354+00:00",
+      "raw_junit": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-cpu.xml",
+        "sha256": "000017f92efc23505310b1af00cfad50c943b955628034e8c5d6fe58bafddf39",
+        "bytes": 14659,
+        "uploaded": false
+      }
+    },
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "anchor_reference": {
+      "result_sha256": "20bb077eba0a8291afd47fb80cd0f66b5269a5b35fc9f65077d5550919053386",
+      "checkpoint_sha256": "efb161ba1b5847bc919750821c421595afaac4490676c0dad20790e21f77bada",
+      "actual_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns500-20261008/HNS/step500/steps.jsonl",
+      "actual_steps_sha256": "c5f9113dc8d81ea5e8a9e56986d5e938496fc2e235658f11d6a9bc15eb4a6dfa",
+      "reference_used_for_resume": false
+    },
+    "config_changes": {
+      "hns_beta": [
+        1.0,
+        1.0
+      ]
+    },
+    "initial_resources": {
+      "timestamp_utc": "2026-10-07T18:06:53.445860+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 494648946688,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 486925406208,
+        "rss": 3120140288,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 88399872,
+        "dirty": 0,
+        "writeback": 0,
+        "pgpgin": 10387138344,
+        "pgpgout": 10267497269,
+        "pgfault": 19109401839,
+        "pgmajfault": 392667,
+        "inactive_anon": 540672,
+        "active_anon": 3123191808,
+        "inactive_file": 4683194368,
+        "active_file": 482240626688,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 486925406208,
+        "total_rss": 3120140288,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 88399872,
+        "total_dirty": 0,
+        "total_writeback": 0,
+        "total_pgpgin": 10387138344,
+        "total_pgpgout": 10267497269,
+        "total_pgfault": 19109401839,
+        "total_pgmajfault": 392667,
+        "total_inactive_anon": 540672,
+        "total_active_anon": 3123191808,
+        "total_inactive_file": 4683194368,
+        "total_active_file": 482240626688,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 138595178
+      },
+      "file": 486925406208,
+      "inactive_file": 4683194368,
+      "active_file": 482240626688,
+      "anon": 3120140288,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 1265258,
+        "nr_throttled": 11,
+        "throttled_time": 5813167999
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27447791860
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22069284685
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.86,
+          "avg60": 1.65,
+          "avg300": 0.53,
+          "total": 487296011278
+        },
+        "full": {
+          "avg10": 0.86,
+          "avg60": 1.65,
+          "avg300": 0.53,
+          "total": 481941029658
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "automatic_retry": false,
+    "automatic_full": false,
+    "automatic_combinations": false,
+    "sampling_audit": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "sha256": "a7a138c353e597af9ec619a40faf4ad6ae046e41c9ba45b1701595d30f0d1f25",
+      "uploaded": false
+    },
+    "pod_identity": "interactive93293",
+    "disposable_cache": "Ephemeral Docker overlay; NFS original source retained"
+  },
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false,
+    "all500_inclusion_loss_weight_zero_and_disabled": true
+  },
+  "quality_delta_vs_anchor_pp": {
+    "Score5": -0.053779238382176686,
+    "J_long3": -0.2882987306369529,
+    "J_long": -0.2449974250793474,
+    "Short4": 0.2980000000000018,
+    "Urban_I2T": -0.4000000000000057,
+    "Urban_T2I": -0.4000000000000057
+  },
+  "recall_delta_vs_anchor_pp": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.20000000000000018,
+        "R@5": -0.18000000000000238,
+        "R@10": 0.0400000000000067
+      },
+      "T2I": {
+        "R@1": -0.028000000000000247,
+        "R@5": -0.14800000000000368,
+        "R@10": -0.060000000000004494
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": -0.3999948501586914,
+        "R@5": -0.09999871253967285,
+        "R@10": 0.0
+      },
+      "T2I": {
+        "R@1": -0.3999948501586914,
+        "R@5": -0.09999871253967285,
+        "R@10": 0.0
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 1.100000000000001,
+        "R@5": -0.5000000000000004,
+        "R@10": 0.0
+      },
+      "T2I": {
+        "R@1": -0.08000000000000229,
+        "R@5": -0.31999999999999806,
+        "R@10": 0.0
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": -0.23999999999999577,
+        "R@5": 0.08000000000000229,
+        "R@10": 0.039999999999995595
+      },
+      "T2I": {
+        "R@1": 0.05999999999999339,
+        "R@5": 0.11999999999999789,
+        "R@10": -0.13999999999999568
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": -0.44725072349381945,
+        "R@5": -0.36832412523020164,
+        "R@10": -0.3288608260983983
+      },
+      "T2I": {
+        "R@1": -0.3025519600105331,
+        "R@5": -0.039463299131814455,
+        "R@10": -0.1315443304393593
+      }
+    }
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "image2text_R1": 0.6062,
+      "image2text_R5": 0.8274,
+      "image2text_R10": 0.8938,
+      "text2image_R1": 0.4152,
+      "text2image_R5": 0.67264,
+      "text2image_R10": 0.76928,
+      "checkpoint_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d",
+      "native_only": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.9110000729560852,
+        "R5": 0.9850000739097595,
+        "R10": 0.9970000386238098
+      },
+      "text2image": {
+        "R1": 0.893000066280365,
+        "R5": 0.987000048160553,
+        "R10": 0.9950000643730164
+      },
+      "checkpoint_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d",
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ],
+      "native_only": true
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.883,
+          "T2I": 0.7186
+        },
+        "R@5": {
+          "I2T": 0.973,
+          "T2I": 0.9122
+        },
+        "R@10": {
+          "I2T": 0.993,
+          "T2I": 0.9514
+        }
+      },
+      "checkpoint_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "elapsed_seconds": 19.168541193008423,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.777,
+          "T2I": 0.7756
+        },
+        "R@5": {
+          "I2T": 0.9552,
+          "T2I": 0.9526
+        },
+        "R@10": {
+          "I2T": 0.9812,
+          "T2I": 0.9776
+        }
+      },
+      "checkpoint_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "elapsed_seconds": 286.9381654262543,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.56761378584583,
+          "T2I": 0.56761378584583
+        },
+        "R@5": {
+          "I2T": 0.755722178374112,
+          "T2I": 0.7605893186003683
+        },
+        "R@10": {
+          "I2T": 0.817416469350171,
+          "T2I": 0.8204419889502762
+        }
+      },
+      "checkpoint_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 480.60480427742004,
+      "device": "cuda:0",
+      "native_student_only": true
+    }
+  },
+  "native_evaluation_sources": {
+    "COCO": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/coco_native.json",
+      "sha256": "0de02674c32b8fc1f22b2f19d59e017ed479756032a0959331e7af9ab3ebde2c"
+    },
+    "Urban-1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/urban_native.json",
+      "sha256": "87399a808543c4574797994bee4ae31b83823f407683308f77e1f1d8ca513a6c"
+    },
+    "Flickr30k-test1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/flickr_test1k/flickr_test1k.json",
+      "sha256": "3a6c9435538dec45697274c8c5491058aaad50c9dcfa4b7c987980d44c1b0e41"
+    },
+    "DOCCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/docci/docci.json",
+      "sha256": "ec7bc31a60c886e9a9ed3a6e5dd6bcb9cb03373706401eee6e775aecd0fec6d1"
+    },
+    "Long-DCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/long_dci/long_dci.json",
+      "sha256": "1a7439eb59990e4b7fc957b9e57706bd9bc71a38a2b76a48641a163ae75784f5"
+    }
+  },
+  "checkpoint_uploaded": false,
+  "bare_uploaded": false,
+  "automatic_full": false,
+  "automatic_combinations": false,
+  "classification": "COMPLETED_FIXED_ARM_AWAITING_FINAL_COMPARISON",
+  "gradient_weighted_lowest_Dall_ratio": 0.4971140381525272,
+  "quality_raw_fraction": {
+    "Score5": 0.711482771092811,
+    "J_long3": 0.7486379518213516,
+    "J_long": 0.8391500348091125,
+    "Short4": 0.65575,
+    "Urban_I2T": 0.9110000729560852,
+    "Urban_T2I": 0.893000066280365
+  },
+  "all_baseline_comparisons": {
+    "INC0": {
+      "quality_delta_pp": {
+        "Score5": -0.010032283776995055,
+        "J_long3": -0.11472047296166021,
+        "J_long": -0.07999967813492326,
+        "Short4": 0.14700000000000824,
+        "Urban_I2T": 0.0,
+        "Urban_T2I": -0.09999871253967285
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": -0.060000000000004494,
+            "R@5": -0.20000000000000018,
+            "R@10": 0.14000000000000679
+          },
+          "T2I": {
+            "R@1": 0.00800000000000245,
+            "R@5": -0.06399999999999739,
+            "R@10": 0.012000000000000899
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.0,
+            "R@5": -0.29999613761901855,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.09999871253967285,
+            "R@5": 0.0,
+            "R@10": 0.0
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.9000000000000008,
+            "R@5": -0.30000000000000027,
+            "R@10": 0.20000000000000018
+          },
+          "T2I": {
+            "R@1": -0.25999999999999357,
+            "R@5": -0.28000000000000247,
+            "R@10": -0.10000000000000009
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": -0.15999999999999348,
+            "R@5": 0.12000000000000899,
+            "R@10": 0.07999999999999119
+          },
+          "T2I": {
+            "R@1": -0.060000000000004494,
+            "R@5": 0.039999999999995595,
+            "R@10": -0.10000000000000009
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.36832412523020164,
+            "R@5": -0.17100762957117377,
+            "R@10": -0.18416206261510082
+          },
+          "T2I": {
+            "R@1": 0.0,
+            "R@5": -0.013154433043938152,
+            "R@10": 0.0
+          }
+        }
+      }
+    },
+    "HNS-v1": {
+      "quality_delta_pp": {
+        "Score5": -0.05377923838217891,
+        "J_long3": -0.28829873063696,
+        "J_long": -0.24499742507935185,
+        "Short4": 0.29800000000000937,
+        "Urban_I2T": -0.3999948501586914,
+        "Urban_T2I": -0.3999948501586914
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.20000000000000018,
+            "R@5": -0.18000000000000238,
+            "R@10": 0.0400000000000067
+          },
+          "T2I": {
+            "R@1": -0.028000000000000247,
+            "R@5": -0.14800000000000368,
+            "R@10": -0.060000000000004494
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": -0.3999948501586914,
+            "R@5": -0.09999871253967285,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.3999948501586914,
+            "R@5": -0.09999871253967285,
+            "R@10": 0.0
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 1.100000000000001,
+            "R@5": -0.5000000000000004,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.08000000000000229,
+            "R@5": -0.31999999999999806,
+            "R@10": 0.0
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": -0.23999999999999577,
+            "R@5": 0.08000000000000229,
+            "R@10": 0.039999999999995595
+          },
+          "T2I": {
+            "R@1": 0.05999999999999339,
+            "R@5": 0.11999999999999789,
+            "R@10": -0.13999999999999568
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.44725072349381945,
+            "R@5": -0.36832412523020164,
+            "R@10": -0.3288608260983983
+          },
+          "T2I": {
+            "R@1": -0.3025519600105331,
+            "R@5": -0.039463299131814455,
+            "R@10": -0.1315443304393593
+          }
+        }
+      }
+    }
+  },
+  "HNS_last50": {
+    "HNS_enabled": 1.0,
+    "HNS_align": 2.872024450302124,
+    "HNS_original_sparse": 1.2984567499160766,
+    "V_DF_hard": 0.024662647657096387,
+    "V_3D_hard": 0.03707395821809769,
+    "HNS_surcharge": 0.02057886980473995,
+    "HNS_regularizer": 1.3190356135368346,
+    "lambda_h": 1.0,
+    "HNS_beta_DF": 1.0,
+    "HNS_beta_3D": 1.0,
+    "HNS_mask_width": 512.0,
+    "HNS_valid_count": 1023.94,
+    "HNS_DF_violation_count": 12929.6,
+    "HNS_DF_child_only_count": 12929.6,
+    "HNS_DF_parent_only_count": 18065.08,
+    "HNS_DF_intersection_count": 404716.58,
+    "HNS_DF_hard_violation_ratio": 0.024662647657096387,
+    "HNS_DF_IoU": 0.9280361962318421,
+    "HNS_DF_exact_equality_ratio": 0.0,
+    "HNS_DF_coordinate_equality_ratio": 0.9408791041374207,
+    "HNS_3D_violation_count": 19436.38,
+    "HNS_3D_child_only_count": 19436.38,
+    "HNS_3D_parent_only_count": 45030.86,
+    "HNS_3D_intersection_count": 372615.32,
+    "HNS_3D_hard_violation_ratio": 0.0370739583671093,
+    "HNS_3D_IoU": 0.8528104150295257,
+    "HNS_3D_exact_equality_ratio": 0.000234375,
+    "HNS_3D_coordinate_equality_ratio": 0.8770320188999176,
+    "HNS_F_keep": 0.8064396607875824,
+    "HNS_Dall_keep": 0.7966440606117249,
+    "HNS_D3_keep": 0.7478239953517913,
+    "HNS_gap_F_D": 0.009795600175857544,
+    "HNS_gap_D_D3": 0.04882006525993347,
+    "HNS_triple_exact_equality_ratio": 0.0,
+    "HNS_triple_coordinate_equality_ratio": 0.8386546146869659
+  },
+  "decision": {
+    "classification": "COMPLETED_FIXED_ARM_AWAITING_FINAL_COMPARISON",
+    "selection_rule": "Highest raw Score5; candidates strictly <0.0005 raw (0.05pp) from raw maximum form tie cohort, then J_long3, J_long, Urban T2I, Short4, lowest summed last50 violations. BEST_LONG_CANDIDATE uses J_long3 then J_long. Mask aesthetics never override clear Score5 advantage.",
+    "automatic_full": false,
+    "automatic_third_arm": false,
+    "mask_behaviour_is_scientific_result_not_a_stop_condition": true
+  },
+  "base_commit": "bdfd647f7b7e1a2518e4b65a8a959bc65c5606ad",
+  "beta": [
+    1.0,
+    1.0
+  ]
+}

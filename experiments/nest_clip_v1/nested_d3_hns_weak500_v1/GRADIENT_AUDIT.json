@@ -1,0 +1,623 @@
+{
+  "passed": true,
+  "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/step000500.pt",
+  "checkpoint_sha256": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3",
+  "checkpoint_unchanged": true,
+  "no_parameter_updates": true,
+  "state_digest_before": "f175d64c91912fabdc8ca841efa88e7a6064bc4a0dd3648fac4d11e16854ac39",
+  "state_digest_after": "f175d64c91912fabdc8ca841efa88e7a6064bc4a0dd3648fac4d11e16854ac39",
+  "completed_steps": 500,
+  "protocol": "First frozen seed0 epoch0 global1024 batch at immutable step500;256/rank; no optimizer step",
+  "sample_ids_sha256": "416f198d48ed2416481a08ed2139b06ee73e51243724c088ce542afffdeefb27",
+  "records": 1024,
+  "local_only": true,
+  "NFS_fallback": false,
+  "telemetry": {
+    "HNS_enabled": true,
+    "HNS_align": 2.6722638607025146,
+    "HNS_original_sparse": 1.303236722946167,
+    "V_DF_hard": 0.02603912353515625,
+    "V_3D_hard": 0.04126548767089844,
+    "HNS_surcharge": 0.022434871643781662,
+    "HNS_regularizer": 1.3256715536117554,
+    "lambda_h": 1.0,
+    "HNS_beta_DF": 1.0,
+    "HNS_beta_3D": 1.0,
+    "HNS_mask_width": 512,
+    "HNS_valid_count": 1024,
+    "HNS_DF_violation_count": 13652.0,
+    "HNS_DF_child_only_count": 13652.0,
+    "HNS_DF_parent_only_count": 18984.0,
+    "HNS_DF_intersection_count": 403778.0,
+    "HNS_DF_hard_violation_ratio": 0.02603912353515625,
+    "HNS_DF_IoU": 0.9245061278343201,
+    "HNS_DF_exact_equality_ratio": 0.0,
+    "HNS_DF_coordinate_equality_ratio": 0.9377517700195312,
+    "HNS_3D_violation_count": 21635.0,
+    "HNS_3D_child_only_count": 21635.0,
+    "HNS_3D_parent_only_count": 42969.0,
+    "HNS_3D_intersection_count": 374461.0,
+    "HNS_3D_hard_violation_ratio": 0.04126548767089844,
+    "HNS_3D_IoU": 0.8532982468605042,
+    "HNS_3D_exact_equality_ratio": 0.0,
+    "HNS_3D_coordinate_equality_ratio": 0.8767776489257812,
+    "HNS_F_keep": 0.8063545227050781,
+    "HNS_Dall_keep": 0.7961845397949219,
+    "HNS_D3_keep": 0.7554931640625,
+    "HNS_gap_F_D": 0.01016998291015625,
+    "HNS_gap_D_D3": 0.040691375732421875,
+    "HNS_triple_exact_equality_ratio": 0.0,
+    "HNS_triple_coordinate_equality_ratio": 0.8362808227539062
+  },
+  "components": {
+    "alignment": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "shared_visual_backbone": {
+          "raw": 81.67324829101562,
+          "weighted": 81.67324829101562
+        },
+        "shared_text_backbone": {
+          "raw": 66.6529541015625,
+          "weighted": 66.6529541015625
+        },
+        "shared_text_mask_and_pool": {
+          "raw": 1.956676959991455,
+          "weighted": 1.956676959991455
+        },
+        "shared_visual_mask": {
+          "raw": 1.0902942419052124,
+          "weighted": 1.0902942419052124
+        },
+        "fusion_shared_module": {
+          "raw": 2.566509485244751,
+          "weighted": 2.566509485244751
+        }
+      },
+      "positive_HardST_output_gradient_norms": {
+        "F": {
+          "raw": 0.0,
+          "weighted": 0.0,
+          "connected": false
+        },
+        "Dall": {
+          "raw": 0.0,
+          "weighted": 0.0,
+          "connected": false
+        },
+        "D3": {
+          "raw": 0.0,
+          "weighted": 0.0,
+          "connected": false
+        }
+      },
+      "output_scope_note": "These are actual paired positive output tensors. CE uses a separate all-pairs mask computation sharing parameters, so disconnected alignment at these tensors does not imply absence of per-view alignment gradient.",
+      "group_cosines": {
+        "shared_visual_backbone": {
+          "with_alignment": 1.0000001192092896,
+          "with_original_sparsity": null
+        },
+        "shared_text_backbone": {
+          "with_alignment": 1.0,
+          "with_original_sparsity": null
+        },
+        "shared_text_mask_and_pool": {
+          "with_alignment": 0.9999998807907104,
+          "with_original_sparsity": -0.1723988801240921
+        },
+        "shared_visual_mask": {
+          "with_alignment": 0.9999998807907104,
+          "with_original_sparsity": -0.15708734095096588
+        },
+        "fusion_shared_module": {
+          "with_alignment": 1.0000001192092896,
+          "with_original_sparsity": -0.13105730712413788
+        }
+      }
+    },
+    "original_sparsity": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "shared_visual_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_mask_and_pool": {
+          "raw": 0.2688678503036499,
+          "weighted": 0.2688678503036499
+        },
+        "shared_visual_mask": {
+          "raw": 0.30339857935905457,
+          "weighted": 0.30339857935905457
+        },
+        "fusion_shared_module": {
+          "raw": 0.4282931983470917,
+          "weighted": 0.4282931983470917
+        }
+      },
+      "positive_HardST_output_gradient_norms": {
+        "F": {
+          "raw": 0.0004133869952056557,
+          "weighted": 0.0004133869952056557,
+          "connected": true
+        },
+        "Dall": {
+          "raw": 0.0008215436828322709,
+          "weighted": 0.0008215436828322709,
+          "connected": true
+        },
+        "D3": {
+          "raw": 0.0008002746617421508,
+          "weighted": 0.0008002746617421508,
+          "connected": true
+        }
+      },
+      "output_scope_note": "These are actual paired positive output tensors. CE uses a separate all-pairs mask computation sharing parameters, so disconnected alignment at these tensors does not imply absence of per-view alignment gradient.",
+      "group_cosines": {
+        "shared_visual_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_mask_and_pool": {
+          "with_alignment": -0.1723988801240921,
+          "with_original_sparsity": 0.9999998807907104
+        },
+        "shared_visual_mask": {
+          "with_alignment": -0.15708734095096588,
+          "with_original_sparsity": 1.0
+        },
+        "fusion_shared_module": {
+          "with_alignment": -0.13105730712413788,
+          "with_original_sparsity": 0.9999999403953552
+        }
+      }
+    },
+    "V_DF": {
+      "coefficient": 0.3333333333333333,
+      "group_norms": {
+        "shared_visual_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_mask_and_pool": {
+          "raw": 0.0015975602436810732,
+          "weighted": 0.0005325200812270243
+        },
+        "shared_visual_mask": {
+          "raw": 0.0005372858140617609,
+          "weighted": 0.00017909527135392028
+        },
+        "fusion_shared_module": {
+          "raw": 0.0021434102673083544,
+          "weighted": 0.0007144700891027848
+        }
+      },
+      "positive_HardST_output_gradient_norms": {
+        "F": {
+          "raw": 0.0002228579978691414,
+          "weighted": 7.42859992897138e-05,
+          "connected": true
+        },
+        "Dall": {
+          "raw": 0.0002228579978691414,
+          "weighted": 7.42859992897138e-05,
+          "connected": true
+        },
+        "D3": {
+          "raw": 0.0,
+          "weighted": 0.0,
+          "connected": false
+        }
+      },
+      "output_scope_note": "These are actual paired positive output tensors. CE uses a separate all-pairs mask computation sharing parameters, so disconnected alignment at these tensors does not imply absence of per-view alignment gradient.",
+      "group_cosines": {
+        "shared_visual_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_mask_and_pool": {
+          "with_alignment": -0.03613800182938576,
+          "with_original_sparsity": -0.04611958563327789
+        },
+        "shared_visual_mask": {
+          "with_alignment": 0.1516357660293579,
+          "with_original_sparsity": -0.945477306842804
+        },
+        "fusion_shared_module": {
+          "with_alignment": -0.039475664496421814,
+          "with_original_sparsity": -0.3205503523349762
+        }
+      }
+    },
+    "V_3D": {
+      "coefficient": 0.3333333333333333,
+      "group_norms": {
+        "shared_visual_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_mask_and_pool": {
+          "raw": 0.007656791713088751,
+          "weighted": 0.002552263904362917
+        },
+        "shared_visual_mask": {
+          "raw": 0.0014917755033820868,
+          "weighted": 0.0004972585011273623
+        },
+        "fusion_shared_module": {
+          "raw": 0.006944812834262848,
+          "weighted": 0.002314937611420949
+        }
+      },
+      "positive_HardST_output_gradient_norms": {
+        "F": {
+          "raw": 0.0,
+          "weighted": 0.0,
+          "connected": false
+        },
+        "Dall": {
+          "raw": 0.0002805488766171038,
+          "weighted": 9.351629220570126e-05,
+          "connected": true
+        },
+        "D3": {
+          "raw": 0.0002805488766171038,
+          "weighted": 9.351629220570126e-05,
+          "connected": true
+        }
+      },
+      "output_scope_note": "These are actual paired positive output tensors. CE uses a separate all-pairs mask computation sharing parameters, so disconnected alignment at these tensors does not imply absence of per-view alignment gradient.",
+      "group_cosines": {
+        "shared_visual_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_mask_and_pool": {
+          "with_alignment": 0.04103812202811241,
+          "with_original_sparsity": -0.018751069903373718
+        },
+        "shared_visual_mask": {
+          "with_alignment": 0.07872140407562256,
+          "with_original_sparsity": -0.8701359033584595
+        },
+        "fusion_shared_module": {
+          "with_alignment": -0.08522137999534607,
+          "with_original_sparsity": -0.268502414226532
+        }
+      }
+    },
+    "total_HNS": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "shared_visual_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_backbone": {
+          "raw": 0.0,
+          "weighted": 0.0
+        },
+        "shared_text_mask_and_pool": {
+          "raw": 0.26881054043769836,
+          "weighted": 0.26881054043769836
+        },
+        "shared_visual_mask": {
+          "raw": 0.30279672145843506,
+          "weighted": 0.30279672145843506
+        },
+        "fusion_shared_module": {
+          "raw": 0.42745158076286316,
+          "weighted": 0.42745158076286316
+        }
+      },
+      "positive_HardST_output_gradient_norms": {
+        "F": {
+          "raw": 0.0004200085822958499,
+          "weighted": 0.0004200085822958499,
+          "connected": true
+        },
+        "Dall": {
+          "raw": 0.0008433690527454019,
+          "weighted": 0.0008433690527454019,
+          "connected": true
+        },
+        "D3": {
+          "raw": 0.0008271433180198073,
+          "weighted": 0.0008271433180198073,
+          "connected": true
+        }
+      },
+      "output_scope_note": "These are actual paired positive output tensors. CE uses a separate all-pairs mask computation sharing parameters, so disconnected alignment at these tensors does not imply absence of per-view alignment gradient.",
+      "group_cosines": {
+        "shared_visual_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_backbone": {
+          "with_alignment": null,
+          "with_original_sparsity": null
+        },
+        "shared_text_mask_and_pool": {
+          "with_alignment": -0.17211759090423584,
+          "with_original_sparsity": 0.9999437928199768
+        },
+        "shared_visual_mask": {
+          "with_alignment": -0.15718062222003937,
+          "with_original_sparsity": 0.9999995827674866
+        },
+        "fusion_shared_module": {
+          "with_alignment": -0.13184286653995514,
+          "with_original_sparsity": 0.9999790191650391
+        }
+      }
+    },
+    "total_training": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "shared_visual_backbone": {
+          "raw": 81.67324829101562,
+          "weighted": 81.67324829101562
+        },
+        "shared_text_backbone": {
+          "raw": 66.6529541015625,
+          "weighted": 66.6529541015625
+        },
+        "shared_text_mask_and_pool": {
+          "raw": 1.9286751747131348,
+          "weighted": 1.9286751747131348
+        },
+        "shared_visual_mask": {
+          "raw": 1.0847326517105103,
+          "weighted": 1.0847326517105103
+        },
+        "fusion_shared_module": {
+          "raw": 2.5456643104553223,
+          "weighted": 2.5456643104553223
+        }
+      },
+      "positive_HardST_output_gradient_norms": {
+        "F": {
+          "raw": 0.0004200085822958499,
+          "weighted": 0.0004200085822958499,
+          "connected": true
+        },
+        "Dall": {
+          "raw": 0.0008433690527454019,
+          "weighted": 0.0008433690527454019,
+          "connected": true
+        },
+        "D3": {
+          "raw": 0.0008271433180198073,
+          "weighted": 0.0008271433180198073,
+          "connected": true
+        }
+      },
+      "output_scope_note": "These are actual paired positive output tensors. CE uses a separate all-pairs mask computation sharing parameters, so disconnected alignment at these tensors does not imply absence of per-view alignment gradient.",
+      "group_cosines": {
+        "shared_visual_backbone": {
+          "with_alignment": 1.0000001192092896,
+          "with_original_sparsity": null
+        },
+        "shared_text_backbone": {
+          "with_alignment": 1.0,
+          "with_original_sparsity": null
+        },
+        "shared_text_mask_and_pool": {
+          "with_alignment": 0.990530252456665,
+          "with_original_sparsity": -0.03553548455238342
+        },
+        "shared_visual_mask": {
+          "with_alignment": 0.9612510800361633,
+          "with_original_sparsity": 0.12125121802091599
+        },
+        "fusion_shared_module": {
+          "with_alignment": 0.9860501885414124,
+          "with_original_sparsity": 0.03577958419919014
+        }
+      }
+    }
+  },
+  "endpoint_gradient_direction": {
+    "V_DF": {
+      "HardST_output": {
+        "parent": "F",
+        "child": "Dall",
+        "parent_norm": 0.0002228579978691414,
+        "child_norm": 0.0002228579978691414,
+        "parent_child_norm_ratio": 1.0,
+        "parent_positive_count": 0,
+        "parent_negative_count": 13652,
+        "child_positive_count": 13652,
+        "child_negative_count": 0,
+        "gradient_descent_parent_expansion_verified": true,
+        "gradient_descent_child_contraction_verified": true
+      },
+      "soft_probability": {
+        "parent": "F",
+        "child": "Dall",
+        "parent_norm": 0.0002228579978691414,
+        "child_norm": 0.0002228579978691414,
+        "parent_child_norm_ratio": 1.0,
+        "parent_positive_count": 0,
+        "parent_negative_count": 13652,
+        "child_positive_count": 13652,
+        "child_negative_count": 0,
+        "gradient_descent_parent_expansion_verified": true,
+        "gradient_descent_child_contraction_verified": true
+      }
+    },
+    "V_3D": {
+      "HardST_output": {
+        "parent": "Dall",
+        "child": "D3",
+        "parent_norm": 0.0002805488766171038,
+        "child_norm": 0.0002805488766171038,
+        "parent_child_norm_ratio": 1.0,
+        "parent_positive_count": 0,
+        "parent_negative_count": 21635,
+        "child_positive_count": 21635,
+        "child_negative_count": 0,
+        "gradient_descent_parent_expansion_verified": true,
+        "gradient_descent_child_contraction_verified": true
+      },
+      "soft_probability": {
+        "parent": "Dall",
+        "child": "D3",
+        "parent_norm": 0.0002805488766171038,
+        "child_norm": 0.0002805488766171038,
+        "parent_child_norm_ratio": 1.0,
+        "parent_positive_count": 0,
+        "parent_negative_count": 21635,
+        "child_positive_count": 21635,
+        "child_negative_count": 0,
+        "gradient_descent_parent_expansion_verified": true,
+        "gradient_descent_child_contraction_verified": true
+      }
+    }
+  },
+  "shared_branch_note": "F/Dall/D3 share mask parameters. Separate view branches below mean output tensors; parameter groups are shared, never fabricated private parameters.",
+  "native_backbone_regularizer_gradient_note": "INC0 architecture detaches native token-hidden inputs to mask modules. Hierarchy and global sparsity therefore have zero native visual/text backbone gradient; inherited detach preserved. Alignment updates native backbones.",
+  "pairwise_equality_definition": "Fraction of valid pairs with entire512-dimensional binary masks exactly equal; coordinate equality reported separately",
+  "started_utc": "2026-10-07T18:52:03.361969+00:00",
+  "ended_utc": "2026-10-07T18:52:42.703801+00:00",
+  "group_cosines": {
+    "shared_visual_backbone": {
+      "hierarchy_norm": 0.0,
+      "cosine_hierarchy_original_sparsity": null,
+      "cosine_hierarchy_alignment": null
+    },
+    "shared_text_backbone": {
+      "hierarchy_norm": 0.0,
+      "cosine_hierarchy_original_sparsity": null,
+      "cosine_hierarchy_alignment": null
+    },
+    "shared_text_mask_and_pool": {
+      "hierarchy_norm": 0.0028507092501968145,
+      "cosine_hierarchy_original_sparsity": -0.025403250008821487,
+      "cosine_hierarchy_alignment": 0.02999109774827957
+    },
+    "shared_visual_mask": {
+      "hierarchy_norm": 0.0006679645157419145,
+      "cosine_hierarchy_original_sparsity": -0.901265025138855,
+      "cosine_hierarchy_alignment": 0.09925995767116547
+    },
+    "fusion_shared_module": {
+      "hierarchy_norm": 0.0028951687272638083,
+      "cosine_hierarchy_original_sparsity": -0.2937963604927063,
+      "cosine_hierarchy_alignment": -0.07788366079330444
+    }
+  },
+  "gradient_additivity_passed": true,
+  "matched_cohort_delta_vs_INC0": {
+    "HNS_enabled": 0,
+    "HNS_align": -0.20608234405517578,
+    "HNS_original_sparse": 0.028255462646484375,
+    "V_DF_hard": -0.002361297607421875,
+    "V_3D_hard": -0.002330780029296875,
+    "HNS_surcharge": -0.025562923401594162,
+    "HNS_regularizer": 0.0026924610137939453,
+    "lambda_h": 0.0,
+    "HNS_mask_width": 0,
+    "HNS_valid_count": 0,
+    "HNS_DF_violation_count": -1238.0,
+    "HNS_DF_child_only_count": -1238.0,
+    "HNS_DF_parent_only_count": -1018.0,
+    "HNS_DF_intersection_count": 9580.0,
+    "HNS_DF_hard_violation_ratio": -0.002361297607421875,
+    "HNS_DF_IoU": 0.006689250469207764,
+    "HNS_DF_exact_equality_ratio": 0.0,
+    "HNS_DF_coordinate_equality_ratio": 0.004302978515625,
+    "HNS_3D_violation_count": -1222.0,
+    "HNS_3D_child_only_count": -1222.0,
+    "HNS_3D_parent_only_count": -2478.0,
+    "HNS_3D_intersection_count": 10820.0,
+    "HNS_3D_hard_violation_ratio": -0.002330780029296875,
+    "HNS_3D_IoU": 0.011285603046417236,
+    "HNS_3D_exact_equality_ratio": 0.0,
+    "HNS_3D_coordinate_equality_ratio": 0.00705718994140625,
+    "HNS_F_keep": 0.016330718994140625,
+    "HNS_Dall_keep": 0.015911102294921875,
+    "HNS_D3_keep": 0.018306732177734375,
+    "HNS_gap_F_D": 0.00041961669921875,
+    "HNS_gap_D_D3": -0.0023956298828125,
+    "HNS_triple_exact_equality_ratio": 0.0,
+    "HNS_triple_coordinate_equality_ratio": 0.00904083251953125
+  },
+  "beta": [
+    1.0,
+    1.0
+  ],
+  "matched_cohort_delta_vs_HNS_v1": {
+    "HNS_enabled": 0,
+    "HNS_align": -0.06166243553161621,
+    "HNS_original_sparse": -0.015118241310119629,
+    "V_DF_hard": 0.003692626953125,
+    "V_3D_hard": 0.008646011352539062,
+    "HNS_surcharge": -0.014209110289812088,
+    "HNS_regularizer": -0.029327392578125,
+    "lambda_h": 0.0,
+    "HNS_mask_width": 0,
+    "HNS_valid_count": 0,
+    "HNS_DF_violation_count": 1936.0,
+    "HNS_DF_child_only_count": 1936.0,
+    "HNS_DF_parent_only_count": 1931.0,
+    "HNS_DF_intersection_count": -9738.0,
+    "HNS_DF_hard_violation_ratio": 0.003692626953125,
+    "HNS_DF_IoU": -0.009768068790435791,
+    "HNS_DF_exact_equality_ratio": 0.0,
+    "HNS_DF_coordinate_equality_ratio": -0.0073757171630859375,
+    "HNS_3D_violation_count": 4533.0,
+    "HNS_3D_child_only_count": 4533.0,
+    "HNS_3D_parent_only_count": -3085.0,
+    "HNS_3D_intersection_count": -4717.0,
+    "HNS_3D_hard_violation_ratio": 0.008646011352539062,
+    "HNS_3D_IoU": -0.0041847825050354,
+    "HNS_3D_exact_equality_ratio": 0.0,
+    "HNS_3D_coordinate_equality_ratio": -0.0027618408203125,
+    "HNS_F_keep": -0.014890670776367188,
+    "HNS_Dall_keep": -0.014881134033203125,
+    "HNS_D3_keep": -0.0003509521484375,
+    "HNS_gap_F_D": -9.5367431640625e-06,
+    "HNS_gap_D_D3": -0.014530181884765625,
+    "HNS_triple_exact_equality_ratio": 0.0,
+    "HNS_triple_coordinate_equality_ratio": -0.0068340301513671875
+  },
+  "hierarchy_gradient_norm_ratio_vs_HNS_v1": {
+    "shared_visual_backbone": null,
+    "shared_text_backbone": null,
+    "shared_text_mask_and_pool": 0.6169947474553641,
+    "shared_visual_mask": 0.9310075337053402,
+    "fusion_shared_module": 0.7587322991873987
+  },
+  "weighted_inner_outer_gradient_norm_ratio": {
+    "shared_visual_backbone": null,
+    "shared_text_backbone": null,
+    "shared_text_mask_and_pool": 4.792803115484454,
+    "shared_visual_mask": 2.7765026813282057,
+    "fusion_shared_module": 3.24007631212105
+  }
+}

@@ -1,0 +1,1397 @@
+{
+  "completed_updates": 500,
+  "training_wall_seconds": 1140.8332244455814,
+  "full_cycle_seconds": {
+    "count": 500,
+    "median": 2.1265437602996826,
+    "p95": 2.294769549369812,
+    "p99": 2.3972223401069637,
+    "max": 25.392080307006836
+  },
+  "data_wait_seconds_slowest_rank": {
+    "count": 500,
+    "median": 0.0006956495344638824,
+    "p95": 0.0010396163910627344,
+    "p99": 0.0013829807937145186,
+    "max": 20.77464371174574
+  },
+  "rank_data_wait_seconds": {
+    "0": {
+      "count": 500,
+      "median": 0.0006027854979038239,
+      "p95": 0.0008367985486984253,
+      "p99": 0.0012590132653713226,
+      "max": 20.005973622202873
+    },
+    "1": {
+      "count": 500,
+      "median": 0.0005822256207466125,
+      "p95": 0.000728420540690422,
+      "p99": 0.0008648844063282009,
+      "max": 20.04311089962721
+    },
+    "2": {
+      "count": 500,
+      "median": 0.0006451904773712158,
+      "p95": 0.0008587028831243512,
+      "p99": 0.0013085221499204629,
+      "max": 20.77464371174574
+    },
+    "3": {
+      "count": 500,
+      "median": 0.000594012439250946,
+      "p95": 0.0007362548261880874,
+      "p99": 0.0011045627295970908,
+      "max": 19.770890809595585
+    }
+  },
+  "steps_gt3s": 2,
+  "steps_gt10s": 2,
+  "peak_cgroup_memory_bytes": 536870785024,
+  "peak_file_cache_bytes": 504063901696,
+  "peak_anon_bytes": 31687610368,
+  "oom_kill": 0,
+  "true_training_IO_errors": 0,
+  "pod_or_supervisor_anomaly_observed": false,
+  "GPU_peak_allocated_GiB": {
+    "0": 27.760391235351562,
+    "1": 27.760391235351562,
+    "2": 27.760391235351562,
+    "3": 27.760391235351562
+  },
+  "local_only_proof": {
+    "passed": true,
+    "records": 128,
+    "ranks": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "NFS_fallback": false
+  },
+  "PSI_scope": "Host /proc/pressure, cgroupv1; not per-cgroup PSI",
+  "memory_interpretation": "Cgroup includes file cache; neither memory.current nor file cache is RSS/OOM proof",
+  "raw_artifact_time_range_basis": "Exact command intervals for logs; conservative supervisor start to end containment window for other raw artifacts",
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/commands.json",
+      "bytes": 9365,
+      "sha256": "63b88da0029d0a55dcf4e56414df616279b021ac538086f7790c8986220dad42",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-coco.log",
+      "bytes": 695,
+      "sha256": "e7193ea7725d19af963ac691a6e73e4b85b7fd88495d23b0d91022d50a52aedc",
+      "time_range_utc": [
+        "2026-10-07T18:28:34.063325+00:00",
+        "2026-10-07T18:30:42.314630+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-docci.log",
+      "bytes": 782,
+      "sha256": "e138c3b424c235dfd10ef557f4bcc975b0bc8edffacbcec3f8a0929bcf5d35fb",
+      "time_range_utc": [
+        "2026-10-07T18:31:35.470765+00:00",
+        "2026-10-07T18:36:32.033277+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-flickr_test1k.log",
+      "bytes": 789,
+      "sha256": "779d2756b8d2c105534c6ea6b71e30c439edab3e9943074f99e6267a188e3b71",
+      "time_range_utc": [
+        "2026-10-07T18:31:06.395280+00:00",
+        "2026-10-07T18:31:35.461039+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-long_dci.log",
+      "bytes": 853,
+      "sha256": "99d178517831d7cc293fc5ce59261d7f86d9e1476eca32d49e3b4f615a797a8b",
+      "time_range_utc": [
+        "2026-10-07T18:36:32.043842+00:00",
+        "2026-10-07T18:44:42.962166+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-urban.log",
+      "bytes": 1191,
+      "sha256": "61456ddde72b3f4fdb6986be5c344c1a40340f640a7eefb07f5029c8b09576a0",
+      "time_range_utc": [
+        "2026-10-07T18:30:42.326233+00:00",
+        "2026-10-07T18:31:06.385607+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/export500.log",
+      "bytes": 558,
+      "sha256": "f7b8041f878c6851be269be0eb506c3f0d65e26b5f3476fa04a95c655f557522",
+      "time_range_utc": [
+        "2026-10-07T18:27:52.851033+00:00",
+        "2026-10-07T18:28:15.996802+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/gradient500.log",
+      "bytes": 18888,
+      "sha256": "027ff892d2dcf9682ede3fbd7de840c0d961dc4a4657df2606f49f6dfcdb684d",
+      "time_range_utc": [
+        "2026-10-07T18:26:31.375704+00:00",
+        "2026-10-07T18:27:50.542003+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/launch-provenance.json",
+      "bytes": 9637,
+      "sha256": "e8f8bcbca5972cdd0a74826042b17f5138d0fd688b9da300e4f34278c8ce7315",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/prelaunch-local-path-proof-5000.json",
+      "bytes": 992338,
+      "sha256": "747576f6336672d6469bffd871e2b568796c62b8b9fe640c55cfc4e42d5772e8",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/resource-telemetry.jsonl",
+      "bytes": 992325,
+      "sha256": "b163a82529797ea6caaa4e0552a401a01f0427624b439d51f6acdca285e4c191",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "sha256": "a7a138c353e597af9ec619a40faf4ad6ae046e41c9ba45b1701595d30f0d1f25",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/checkpoint_timing.jsonl",
+      "bytes": 58,
+      "sha256": "0a3f1fcf1e75c162e6b0b17c5d79abcd5812774ef2b0eb228447bc5e7cbbf416",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/cycle_timing.jsonl",
+      "bytes": 37654,
+      "sha256": "6fff45f6c363f27a3156f3b13a0c1f39aabb751f62b46024e712e902e36ec84d",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/steps.jsonl",
+      "bytes": 25527613,
+      "sha256": "bc9943f621b449ede31832e0ab1e75c2d446636a8a7ef0c50e80118857114886",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/train500.log",
+      "bytes": 87454,
+      "sha256": "9381482e804c2f1799c6e63b67ecc53f37e8f45529460298cd0c93c6a93a4f56",
+      "time_range_utc": [
+        "2026-10-07T18:06:53.856524+00:00",
+        "2026-10-07T18:26:16.071761+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/verify500.log",
+      "bytes": 608,
+      "sha256": "b50cf5b3753c5bd3c00a661944cc38a1866a26bece36b9362ba10356668893ba",
+      "time_range_utc": [
+        "2026-10-07T18:28:16.005470+00:00",
+        "2026-10-07T18:28:34.054303+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480006.jsonl",
+      "bytes": 1030,
+      "sha256": "e7194a59be98450325d72958b5432abab5fd0bb6d097972e55d3bd4a933e5202",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480010.jsonl",
+      "bytes": 965,
+      "sha256": "15291cff44550e28aa27ebcc017b88d19541a1f37b781492e35dd8f3160682aa",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480012.jsonl",
+      "bytes": 999,
+      "sha256": "53bbd2de9727083c4819bec0105a4d3ae5f873e03eae74529c1aa8323227676b",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480014.jsonl",
+      "bytes": 999,
+      "sha256": "ab1bfa31419854850ed60030427feac76ed354fdf636e7e4dd14c3188c448d05",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480016.jsonl",
+      "bytes": 997,
+      "sha256": "805d92dde7008105c27fabb214fb16ffa251cfca215c4cf9eff0817250bdc2fd",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480018.jsonl",
+      "bytes": 1012,
+      "sha256": "b6fce246659ce46a317714b3ab9c1188bb23e28a26c5be9c1a5929bb38c5da76",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480020.jsonl",
+      "bytes": 1045,
+      "sha256": "c6a047bc4dd5e2494a7f821824a6f1ea4f7d0dfb217b03fa17c5f62cf96ddc21",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank0-pid480021.jsonl",
+      "bytes": 1015,
+      "sha256": "fb452e2384095d1dbeb9a77b9c630c3639bc39f5e577648d2f2637ab708815c1",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid479994.jsonl",
+      "bytes": 1060,
+      "sha256": "25a39d6a3d7e1b852024d8642b40f7c27b6b7e9e7af8abf42b02f24d0488829c",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid479995.jsonl",
+      "bytes": 1014,
+      "sha256": "962b7938c7dafaa4ea0b99ca69dd865df7936b28ade684fd3ac19039d391c906",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid479996.jsonl",
+      "bytes": 1038,
+      "sha256": "cec2f239beae5b8105e249878e012dee57c6a69f5b385eb1ca38cc802363b5d0",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid479998.jsonl",
+      "bytes": 1015,
+      "sha256": "6ca7d9ca5f4b04b234bc3b2af47e9f9b9c469d71d9f630bff6d06950f7bd4577",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid480000.jsonl",
+      "bytes": 989,
+      "sha256": "1e6239799b0cff7e37e58fb9b09944b1c6be511dc38ef86999f84db368b1df47",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid480002.jsonl",
+      "bytes": 1061,
+      "sha256": "50eb6d984bbbaa6ca02c9689b82146559a4a4e77acb560f9f3c95cc8ccfb7491",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid480004.jsonl",
+      "bytes": 1038,
+      "sha256": "b497ae421865802c0c6c2b1335c76c629dce393131482eb30b9fa013483fffef",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank1-pid480007.jsonl",
+      "bytes": 963,
+      "sha256": "c0377525c786c52ebc034dffab9dc08653a445c03a146d1a9f4a435babfca0a8",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480001.jsonl",
+      "bytes": 997,
+      "sha256": "a1d0bde55228b6607bcab5472b93693f1a8a2ad36d75d33acc33c96840c61984",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480003.jsonl",
+      "bytes": 1023,
+      "sha256": "6a88891f0d1a39d54c456d21bfb36d80e9c010de7c51664c330a63b11a9cc591",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480005.jsonl",
+      "bytes": 988,
+      "sha256": "972a60204eacbf42860cf347e8525ae9c5abac7437c8c93657b95f6f080318d5",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480008.jsonl",
+      "bytes": 998,
+      "sha256": "d106d8e448c8e6d513e7a0855298aea5f0c1fed3b34ecc6e8c16098db3376759",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480011.jsonl",
+      "bytes": 1005,
+      "sha256": "1fc51ea1f6e5cb189965de394d2902b4fd68566b4a7753b89c89bcba2c56ade5",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480013.jsonl",
+      "bytes": 1028,
+      "sha256": "8af9e83e54e7b751df908d84b0b4111da14e9b5d6d2e07d123be0a0f616ee1d7",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480015.jsonl",
+      "bytes": 990,
+      "sha256": "ede1cfcd00be65c7ca50c3521c9fecf2c646166cde954f9daef3719fd18892c4",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank2-pid480017.jsonl",
+      "bytes": 1014,
+      "sha256": "c5e29e59ff6b2d4249a63eecf5007eabdb9d77c1c609f4b41658c42c877eccf0",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479984.jsonl",
+      "bytes": 997,
+      "sha256": "e8f56361780195b2bc8effb23871aff41cd50a19433af466e80fbab5913b89c6",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479985.jsonl",
+      "bytes": 1045,
+      "sha256": "6092e77e15e92412fb2b641e72d2115f3f77a87421cac74b40280782df428eef",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479986.jsonl",
+      "bytes": 990,
+      "sha256": "dee1ab389f7216676010be2de987725b91969007326f38d1ad4ab5595165a28b",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479987.jsonl",
+      "bytes": 975,
+      "sha256": "6e834e42e1986509cac4b2c437a636ec945eebcd8d167baae2078e7bd3c94d95",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479988.jsonl",
+      "bytes": 1014,
+      "sha256": "2259fe5e3c0099493976a483961f79109286d3c887fdcd3f7342d5f06cdf0d0b",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479989.jsonl",
+      "bytes": 1045,
+      "sha256": "190ca2fc6e7a187bb1d6b12f550532e40f95264a77ef23537fdca3674c1a97c5",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479990.jsonl",
+      "bytes": 1037,
+      "sha256": "deff034deea25ae1531074338644e04343baa1e5d6a83ebfe2e8d61a67e51d66",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/image-paths-rank3-pid479991.jsonl",
+      "bytes": 1021,
+      "sha256": "08a105caee13b69d9e0fb11582afab0104b847bc6dffd5d8cd6cfcca54401962",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/rank0.jsonl",
+      "bytes": 2693394,
+      "sha256": "51c3cb0259271f520b98cd985f77488af51f319766e26e8da55118821a1631e2",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/rank1.jsonl",
+      "bytes": 2692074,
+      "sha256": "9913eed96f427d13621f20ff6270e9e7d979af037d8d52fd9afc451e80c20de6",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/rank2.jsonl",
+      "bytes": 2691838,
+      "sha256": "ef0739b779d96fea1150fe410d782e14bb4b38c5b1a382288e61b02f13c02ecd",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-hns-final-two500-20261008-HNS-Weak/rank3.jsonl",
+      "bytes": 2692132,
+      "sha256": "c748b2a3543e1b5e6d8f874b35e511db1267d052def46b940437e48dd1d0c722",
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:44:45.373133+00:00"
+      ],
+      "uploaded": false
+    }
+  ],
+  "io_PSI": {
+    "some": {
+      "count": 2232,
+      "median": 0.0,
+      "p95": 0.01,
+      "p99": 0.92,
+      "max": 6.0
+    },
+    "full": {
+      "count": 2232,
+      "median": 0.0,
+      "p95": 0.01,
+      "p99": 0.89,
+      "max": 6.0
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 2232,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.35830000000000384,
+      "max": 1.05
+    },
+    "full": {
+      "count": 2232,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    }
+  },
+  "local_binary_assets": [
+    {
+      "passed": true,
+      "completed_steps": 5,
+      "optimizer_counters": [
+        5
+      ],
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 0,
+        "next_batch": 5
+      },
+      "model_adapter_optimizer": true,
+      "four_rank_RNG_and_loader_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/step000005.pt",
+      "bytes": 1884187962,
+      "sha256": "dbc4eb749c4e7ef5c07751a922bd76396af3a9da08cb9599bef695a3636463bb"
+    },
+    {
+      "passed": true,
+      "completed_steps": 500,
+      "optimizer_counters": [
+        500
+      ],
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 0,
+        "next_batch": 500
+      },
+      "model_adapter_optimizer": true,
+      "four_rank_RNG_and_loader_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/step000500.pt",
+      "bytes": 1884188474,
+      "sha256": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+      "bytes": 612069312,
+      "sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d",
+      "uploaded": false
+    }
+  ],
+  "additional_local_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/launch-provenance.json",
+      "bytes": 4599,
+      "sha256": "1ec51d3affb43f5a7b40579e585d536c9411c8bfaa70cb46b8a6b264ff7c9afc",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/smoke5.log",
+      "bytes": 33565,
+      "sha256": "ee9b694a1f508e63233a9cb0c4d527996ce5d5ed12503bb0d1331fa21a28525d",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/commands.json",
+      "bytes": 1124,
+      "sha256": "155fbabdd1762f14fed46edfa9569dbd797ba80bbb03e0e393d7511c6317619c",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/resource-telemetry.jsonl",
+      "bytes": 32796,
+      "sha256": "9f605f70da54f02db112d7e20759a62cc73c439ce6df035a58a815a215fb1ab2",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/text_examples.json",
+      "bytes": 14827,
+      "sha256": "647672bcf46ef7fa668c173468f31d14077103b9231e0c33600c21280f76770c",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/acceptance.json",
+      "bytes": 1289,
+      "sha256": "ac0f06bfab608b00aaa42fadcf52bc7ce9995c149d5077cae1625255789e1c75",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/step000005.pt",
+      "bytes": 1884188474,
+      "sha256": "795d9a0c3275cc6470243deb0aebf0e38b6bbb6deadf5f9466f366ba1f594ea6",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/checkpoint_timing.jsonl",
+      "bytes": 57,
+      "sha256": "7b2191590918d0ce62b9c6e1bd4ad10794c4bebd217972af70e738a331e644d9",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/config.json",
+      "bytes": 8574,
+      "sha256": "22a48725cbf29a2ffc9f7487cfb106f6702409e9907bab09b57488fa24bbbcd6",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/steps.jsonl",
+      "bytes": 256806,
+      "sha256": "4a060732052b5f5094c11683ab444f07d99eb3aaa969b0f4d1be8bb3a5ca0940",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500/cycle_timing.jsonl",
+      "bytes": 364,
+      "sha256": "072d1ed36ae754a63824ec994dfe1809aab23f1d927c03b2f89d3aed176c1a5e",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank1-pid477338.jsonl",
+      "bytes": 1060,
+      "sha256": "30b6aa73920bdcb676ecc8559d8f8ae06cd4925cda89658591e0909bbce878ad",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank0-pid477376.jsonl",
+      "bytes": 999,
+      "sha256": "057ddc9d382efca6667b19a164e1a085ce3cbbab3cf523db18ca127b4c91b5f5",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/heartbeat-rank3.json",
+      "bytes": 80,
+      "sha256": "23f8e0e95daacf45a03046be07eaa297340ce531dcee2a39e4d9836cca1d56e3",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/rank3.jsonl",
+      "bytes": 26762,
+      "sha256": "c6da8daad4e9130211080a594d07d2ef513f8e6f7b120bef4986c1c89700538f",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank2-pid477364.jsonl",
+      "bytes": 1023,
+      "sha256": "33f796e8fcd40ce4f734a875e067bf259d71a3bff7a7d59d5d5aede32821f3c0",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/rank2.jsonl",
+      "bytes": 26762,
+      "sha256": "1f3c6b7892bb67fada79c8de8e31201509e6f1e22c0466a0a61d2c59292435a9",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank1-pid477339.jsonl",
+      "bytes": 1014,
+      "sha256": "ed97f9bf18f6d5cb057584bcd26ec48a4bc6d9634ff75b29eb1e2925ebd118b7",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank0-pid477377.jsonl",
+      "bytes": 997,
+      "sha256": "47599f67804be6de2537b7c4b37c75ea9e53a4cba0310c038dffe1c3ecbcb4bf",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/rank0.jsonl",
+      "bytes": 26776,
+      "sha256": "abd84ceeb0e2f1ac4bd3f2e771b733e3c58e756a0d6767ba3643a3814dddd182",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank2-pid477365.jsonl",
+      "bytes": 988,
+      "sha256": "a188b7abcb717c0dbf5070da20a62cafb8c193aaf266fbffd3a80a1021ea6897",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank0-pid477373.jsonl",
+      "bytes": 1030,
+      "sha256": "89ff896ed6e8d8d22a407e3c3ed6903c2d791b7d558df1e12eaa40563eee6e1e",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank1-pid477341.jsonl",
+      "bytes": 1015,
+      "sha256": "5803999504af95f7b79755c4c3540adb0527f203c854c20021b04161a75827dd",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank3-pid477350.jsonl",
+      "bytes": 990,
+      "sha256": "59148a15f43ce2e7dfc51a649123422e3105d47b9f326cf3b2ff5573f888460e",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank3-pid477351.jsonl",
+      "bytes": 975,
+      "sha256": "a6e4ccf43813dae5b75b4c136bbdd1a1e1929210e87ad9a8b65a91e1a7db5a17",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank2-pid477363.jsonl",
+      "bytes": 997,
+      "sha256": "d8a3cf722dfce290c312683123a38529d1f3464a16a49aa9f6f1dbe11d67cf51",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/rank1.jsonl",
+      "bytes": 26759,
+      "sha256": "4b18dac74e715cea32ae78041dd9c60df3140dff275bf730ee04676faf90afe8",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank3-pid477352.jsonl",
+      "bytes": 1014,
+      "sha256": "cca35b755cd0dd85f80fe6d4437c7fe4f64cc609d4fed177161543131331638c",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/heartbeat-rank1.json",
+      "bytes": 80,
+      "sha256": "f255a265b49c0d8e27fd65b56c8ef7dbdb635f6e8bd8c36560d7b0dd89beefdc",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank2-pid477366.jsonl",
+      "bytes": 998,
+      "sha256": "ab7a9e54f1e965a5b3cd50a7969fe405b2c273823d62cc453d898b4beba71837",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank0-pid477375.jsonl",
+      "bytes": 999,
+      "sha256": "28dbc1af1dc67681ebe93fd5a583b6e36c0a6512c66cbdb9e58c2dea92c5d3c0",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/heartbeat-rank2.json",
+      "bytes": 80,
+      "sha256": "6adaf3555a9b2d274317014ab23f1064091f8ec92362d43208bb889687d47a55",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank1-pid477342.jsonl",
+      "bytes": 989,
+      "sha256": "b8608600e5c1a56eb7fd39a3b95aa84aece0e7e3c250d1681dfa50fb107a9915",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/heartbeat-rank0.json",
+      "bytes": 80,
+      "sha256": "cdee407db625645f924957c512d687456fb54db6bcedb0e6480a24c671a51c85",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank0-pid477374.jsonl",
+      "bytes": 965,
+      "sha256": "07c422817551c0fe99e72c22e81a447ec644498a297ae8e636b50ee070e70ed6",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank3-pid477348.jsonl",
+      "bytes": 997,
+      "sha256": "95778268c65faad30fb7eb1a3392e8b32f65d8af557faf4f3c71d0cf5dbabecb",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank3-pid477349.jsonl",
+      "bytes": 1045,
+      "sha256": "3c355ab0ffda7ae3edff8d1af012635bc60f68d8865bfdbb6f4e054b37a2adf9",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank2-pid477367.jsonl",
+      "bytes": 1005,
+      "sha256": "09486491cfa3f4adb20f85cbca037ea12444ec86747c7d3b772af393179c2edc",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/root/said_s02_stage500/hns-final-two500-20261008-HNS-Weak.smoke5-phases/image-paths-rank1-pid477340.jsonl",
+      "bytes": 1038,
+      "sha256": "92ec1dea2bdeb771af729805ab699c9206f8cb757922086ee7d1242755c26b6b",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/HNS-gradient-audit500.log",
+      "bytes": 839,
+      "sha256": "a71b34e84d514a56ac15d90260b21ddf83597a8e1daf598d94f19db7c0e66af3",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/commands.json",
+      "bytes": 11004,
+      "sha256": "0327bef4e566fea5ff586db7aa10b9fc6c33f7e84f9920cc75a3f2802b3a8163",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/supervisor-result.json",
+      "bytes": 15475,
+      "sha256": "954c45826d78e1d4eea77fcdd86612fb492388444f23c17e16913de5e64db25d",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:05:17.896849+00:00",
+        "2026-10-07T18:52:45.236543+00:00"
+      ]
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/HNS-gradient-audit500-recovery.log",
+      "bytes": 11991,
+      "sha256": "cf829ed8bff0d5132a3af5e47feec8e04149f5ca61290a151b3a8788027bd37a",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:51:56.110726+00:00",
+        "2026-10-07T18:52:45.227234+00:00"
+      ]
+    }
+  ],
+  "additional_command_intervals": [
+    {
+      "name": "smoke5",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_final_two500",
+        "--arm",
+        "HNS-Weak",
+        "--smoke-worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/step500",
+        "--run-type",
+        "smoke",
+        "--max-updates",
+        "5"
+      ],
+      "started_utc": "2026-10-07T18:05:17.939504+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.smoke5/smoke5.log",
+      "ended_utc": "2026-10-07T18:06:29.510514+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_final_two500",
+        "--arm",
+        "HNS-Weak",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-07T18:06:53.856524+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/train500.log",
+      "ended_utc": "2026-10-07T18:26:16.071761+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_final_two500",
+        "--arm",
+        "HNS-Weak",
+        "--gradient"
+      ],
+      "started_utc": "2026-10-07T18:26:31.375704+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/gradient500.log",
+      "ended_utc": "2026-10-07T18:27:50.542003+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-07T18:27:52.851033+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/export500.log",
+      "ended_utc": "2026-10-07T18:28:15.996802+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-07T18:28:16.005470+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/verify500.log",
+      "ended_utc": "2026-10-07T18:28:34.054303+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-coco",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/coco_native.json"
+      ],
+      "started_utc": "2026-10-07T18:28:34.063325+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-coco.log",
+      "ended_utc": "2026-10-07T18:30:42.314630+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-urban",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/urban_native.json"
+      ],
+      "started_utc": "2026-10-07T18:30:42.326233+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-urban.log",
+      "ended_utc": "2026-10-07T18:31:06.385607+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-flickr_test1k",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/flickr_test1k",
+        "flickr_test1k:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-10-07T18:31:06.395280+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-flickr_test1k.log",
+      "ended_utc": "2026-10-07T18:31:35.461039+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-docci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/docci",
+        "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-10-07T18:31:35.470765+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-docci.log",
+      "ended_utc": "2026-10-07T18:36:32.033277+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval500-long_dci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/student_step500.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/step500/long_dci",
+        "long_dci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-10-07T18:36:32.043842+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/eval500-long_dci.log",
+      "ended_utc": "2026-10-07T18:44:42.962166+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "HNS-gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_gradient_audit",
+        "--run",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak",
+        "--experiment",
+        "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1"
+      ],
+      "started_utc": "2026-10-07T18:45:16.596063+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/HNS-gradient-audit500.log",
+      "ended_utc": "2026-10-07T18:45:21.618751+00:00",
+      "returncode": 2
+    },
+    {
+      "name": "HNS-gradient-audit500-recovery",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "--no-python",
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-c",
+        "import sys;from recovery import hns_gradient_audit as audit;sys.argv=['audit', '--run', '/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak', '--experiment', '/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1'];audit.main()"
+      ],
+      "started_utc": "2026-10-07T18:51:56.110726+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/HNS-gradient-audit500-recovery.log",
+      "ended_utc": "2026-10-07T18:52:45.227234+00:00",
+      "returncode": 0
+    }
+  ],
+  "audit_launcher_recovery": "AUDIT_LAUNCH_RECOVERY.json; no retraining or reevaluation"
+}

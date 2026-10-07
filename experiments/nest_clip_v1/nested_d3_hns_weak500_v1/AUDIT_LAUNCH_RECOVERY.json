@@ -1,0 +1,50 @@
+{
+  "training_restarted": false,
+  "formal_updates": 500,
+  "training_and_evaluation_already_passed": true,
+  "reason": "torchrun argparse abbreviated --run to --run-path/--run_path; no audit worker launched",
+  "original_failed_command": {
+    "name": "HNS-gradient-audit500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nnodes=1",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "recovery.hns_gradient_audit",
+      "--run",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak",
+      "--experiment",
+      "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1"
+    ],
+    "started_utc": "2026-10-07T18:45:16.596063+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/HNS-gradient-audit500.log",
+    "ended_utc": "2026-10-07T18:45:21.618751+00:00",
+    "returncode": 2
+  },
+  "all_original_launch_sources_unchanged": true,
+  "launcher_source_sha256": "8ef19795b48b8f6e4825a8765bb6eb11a33c8046b3a608eff83f7b3926ae9451",
+  "started_utc": "2026-10-07T18:51:56.053807+00:00",
+  "passed": true,
+  "ended_utc": "2026-10-07T18:52:45.250059+00:00",
+  "recovery_command": {
+    "name": "HNS-gradient-audit500-recovery",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nnodes=1",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "--no-python",
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-c",
+      "import sys;from recovery import hns_gradient_audit as audit;sys.argv=['audit', '--run', '/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak', '--experiment', '/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_weak500_v1'];audit.main()"
+    ],
+    "started_utc": "2026-10-07T18:51:56.110726+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak/HNS-gradient-audit500-recovery.log",
+    "ended_utc": "2026-10-07T18:52:45.227234+00:00",
+    "returncode": 0
+  },
+  "checkpoint_sha256_after": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3"
+}

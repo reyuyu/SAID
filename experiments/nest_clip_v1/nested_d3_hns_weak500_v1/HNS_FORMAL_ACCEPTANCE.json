@@ -1,0 +1,120 @@
+{
+  "passed": true,
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1140.8332244455814,
+        "peak_allocated_gib": 27.760391235351562,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1140.8367981240153,
+        "peak_allocated_gib": 27.760391235351562,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1140.8311163634062,
+        "peak_allocated_gib": 27.760391235351562,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 500,
+        "updates_this_run": 500,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 1140.8560007214546,
+        "peak_allocated_gib": 27.760391235351562,
+        "peak_reserved_gib": 28.44921875,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  },
+  "first_five_gate": {
+    "passed": true,
+    "records": 5120,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false,
+    "checkpoint": {
+      "passed": true,
+      "optimizer_steps": [
+        5
+      ],
+      "fresh_common0": true,
+      "initialization_exact": true,
+      "optimizer_groups_order_exact": true,
+      "finite_states": true,
+      "authorized_sources": [
+        "model/balanced_hparam_search.py",
+        "model/hard_nested_sparsity.py",
+        "train/train_nested_semantic_mask.py"
+      ]
+    },
+    "gate": "BEFORE_UPDATE6",
+    "rank_agreement": [
+      {
+        "rank": 0,
+        "difference": 0.0
+      },
+      {
+        "rank": 1,
+        "difference": 0.0
+      },
+      {
+        "rank": 2,
+        "difference": 0.0
+      },
+      {
+        "rank": 3,
+        "difference": 0.0
+      }
+    ]
+  },
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3",
+    "bare_sha256": "a386dd0b4ee96ac67816325206e32adc5f014657e04bc9b3c277a7a00270fa8d"
+  },
+  "checkpoint_sha256": "2456c2367b70bbabbfe24ac0eb5e3c0dbf2307e32fe94ba4229f8ad4b2115bd3"
+}

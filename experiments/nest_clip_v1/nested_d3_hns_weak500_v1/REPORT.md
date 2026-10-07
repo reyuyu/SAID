@@ -1,0 +1,38 @@
+# HNS-Weak: frozen HNS local500
+
+Beta [1.0, 1.0]; original sparse [1,2,2], alignment [1.35,1.35,.30], fixed K3, old inclusion0.
+Independent common0 smoke5 then fresh formal500; resume=None, horizon4868. Actual Hard-ST ReLU adjacent-edge surcharge, joint parent/child gradients.
+All512000 samples/strings/tokens/indices and LR verified against pinned HNS-v1. Local-only; no full, copy or full decode audit.
+
+| Dataset | I2T R1/R5/R10 (%) | T2I R1/R5/R10 (%) |
+|---|---|---|
+| COCO | 60.620000 / 82.740000 / 89.380000 | 41.520000 / 67.264000 / 76.928000 |
+| Urban-1k | 91.100007 / 98.500007 / 99.700004 | 89.300007 / 98.700005 / 99.500006 |
+| Flickr30k-test1k | 88.300000 / 97.300000 / 99.300000 | 71.860000 / 91.220000 / 95.140000 |
+| DOCCI | 77.700000 / 95.520000 / 98.120000 | 77.560000 / 95.260000 / 97.760000 |
+| Long-DCI | 56.761379 / 75.572218 / 81.741647 | 56.761379 / 76.058932 / 82.044199 |
+
+Raw quality: `{"Score5": 0.711482771092811, "J_long3": 0.7486379518213516, "J_long": 0.8391500348091125, "Short4": 0.65575, "Urban_I2T": 0.9110000729560852, "Urban_T2I": 0.893000066280365}`.
+
+## vs INC0
+
+Quality deltas(pp): `{"Score5": -0.010032283776995055, "J_long3": -0.11472047296166021, "J_long": -0.07999967813492326, "Short4": 0.14700000000000824, "Urban_I2T": 0.0, "Urban_T2I": -0.09999871253967285}`.
+All R1/R5/R10 deltas(pp): `{"COCO": {"I2T": {"R@1": -0.060000000000004494, "R@5": -0.20000000000000018, "R@10": 0.14000000000000679}, "T2I": {"R@1": 0.00800000000000245, "R@5": -0.06399999999999739, "R@10": 0.012000000000000899}}, "Urban-1k": {"I2T": {"R@1": 0.0, "R@5": -0.29999613761901855, "R@10": 0.0}, "T2I": {"R@1": -0.09999871253967285, "R@5": 0.0, "R@10": 0.0}}, "Flickr30k-test1k": {"I2T": {"R@1": 0.9000000000000008, "R@5": -0.30000000000000027, "R@10": 0.20000000000000018}, "T2I": {"R@1": -0.25999999999999357, "R@5": -0.28000000000000247, "R@10": -0.10000000000000009}}, "DOCCI": {"I2T": {"R@1": -0.15999999999999348, "R@5": 0.12000000000000899, "R@10": 0.07999999999999119}, "T2I": {"R@1": -0.060000000000004494, "R@5": 0.039999999999995595, "R@10": -0.10000000000000009}}, "Long-DCI": {"I2T": {"R@1": -0.36832412523020164, "R@5": -0.17100762957117377, "R@10": -0.18416206261510082}, "T2I": {"R@1": 0.0, "R@5": -0.013154433043938152, "R@10": 0.0}}}`.
+
+## vs HNS-v1
+
+Quality deltas(pp): `{"Score5": -0.05377923838217891, "J_long3": -0.28829873063696, "J_long": -0.24499742507935185, "Short4": 0.29800000000000937, "Urban_I2T": -0.3999948501586914, "Urban_T2I": -0.3999948501586914}`.
+All R1/R5/R10 deltas(pp): `{"COCO": {"I2T": {"R@1": 0.20000000000000018, "R@5": -0.18000000000000238, "R@10": 0.0400000000000067}, "T2I": {"R@1": -0.028000000000000247, "R@5": -0.14800000000000368, "R@10": -0.060000000000004494}}, "Urban-1k": {"I2T": {"R@1": -0.3999948501586914, "R@5": -0.09999871253967285, "R@10": 0.0}, "T2I": {"R@1": -0.3999948501586914, "R@5": -0.09999871253967285, "R@10": 0.0}}, "Flickr30k-test1k": {"I2T": {"R@1": 1.100000000000001, "R@5": -0.5000000000000004, "R@10": 0.0}, "T2I": {"R@1": -0.08000000000000229, "R@5": -0.31999999999999806, "R@10": 0.0}}, "DOCCI": {"I2T": {"R@1": -0.23999999999999577, "R@5": 0.08000000000000229, "R@10": 0.039999999999995595}, "T2I": {"R@1": 0.05999999999999339, "R@5": 0.11999999999999789, "R@10": -0.13999999999999568}}, "Long-DCI": {"I2T": {"R@1": -0.44725072349381945, "R@5": -0.36832412523020164, "R@10": -0.3288608260983983}, "T2I": {"R@1": -0.3025519600105331, "R@5": -0.039463299131814455, "R@10": -0.1315443304393593}}}`.
+
+## Structure and gradients
+
+Last50 valid-pair telemetry: `{"HNS_enabled": 1.0, "HNS_align": 2.872024450302124, "HNS_original_sparse": 1.2984567499160766, "V_DF_hard": 0.024662647657096387, "V_3D_hard": 0.03707395821809769, "HNS_surcharge": 0.02057886980473995, "HNS_regularizer": 1.3190356135368346, "lambda_h": 1.0, "HNS_beta_DF": 1.0, "HNS_beta_3D": 1.0, "HNS_mask_width": 512.0, "HNS_valid_count": 1023.94, "HNS_DF_violation_count": 12929.6, "HNS_DF_child_only_count": 12929.6, "HNS_DF_parent_only_count": 18065.08, "HNS_DF_intersection_count": 404716.58, "HNS_DF_hard_violation_ratio": 0.024662647657096387, "HNS_DF_IoU": 0.9280361962318421, "HNS_DF_exact_equality_ratio": 0.0, "HNS_DF_coordinate_equality_ratio": 0.9408791041374207, "HNS_3D_violation_count": 19436.38, "HNS_3D_child_only_count": 19436.38, "HNS_3D_parent_only_count": 45030.86, "HNS_3D_intersection_count": 372615.32, "HNS_3D_hard_violation_ratio": 0.0370739583671093, "HNS_3D_IoU": 0.8528104150295257, "HNS_3D_exact_equality_ratio": 0.000234375, "HNS_3D_coordinate_equality_ratio": 0.8770320188999176, "HNS_F_keep": 0.8064396607875824, "HNS_Dall_keep": 0.7966440606117249, "HNS_D3_keep": 0.7478239953517913, "HNS_gap_F_D": 0.009795600175857544, "HNS_gap_D_D3": 0.04882006525993347, "HNS_triple_exact_equality_ratio": 0.0, "HNS_triple_coordinate_equality_ratio": 0.8386546146869659}`.
+Selected1/100/200/300/400/500 and full500 curve: TRAINING_DIAGNOSTICS.json. Equality is whole mask, not coordinate equality.
+Readonly immutable1024 audit: GRADIENT_AUDIT.json; original8-batch alignment protocol: GRADIENT_SPOTCHECK.json.
+Measured hierarchy norm ratios vs HNS-v1: `{"shared_visual_backbone": null, "shared_text_backbone": null, "shared_text_mask_and_pool": 0.6169947474553641, "shared_visual_mask": 0.9310075337053402, "fusion_shared_module": 0.7587322991873987}`.
+Measured weighted inner/outer norm ratios: `{"shared_visual_backbone": null, "shared_text_backbone": null, "shared_text_mask_and_pool": 4.792803115484454, "shared_visual_mask": 2.7765026813282057, "fusion_shared_module": 3.24007631212105}`.
+Endpoint parent expansion and child contraction: `{"V_DF": {"HardST_output": {"parent": "F", "child": "Dall", "parent_norm": 0.0002228579978691414, "child_norm": 0.0002228579978691414, "parent_child_norm_ratio": 1.0, "parent_positive_count": 0, "parent_negative_count": 13652, "child_positive_count": 13652, "child_negative_count": 0, "gradient_descent_parent_expansion_verified": true, "gradient_descent_child_contraction_verified": true}, "soft_probability": {"parent": "F", "child": "Dall", "parent_norm": 0.0002228579978691414, "child_norm": 0.0002228579978691414, "parent_child_norm_ratio": 1.0, "parent_positive_count": 0, "parent_negative_count": 13652, "child_positive_count": 13652, "child_negative_count": 0, "gradient_descent_parent_expansion_verified": true, "gradient_descent_child_contraction_verified": true}}, "V_3D": {"HardST_output": {"parent": "Dall", "child": "D3", "parent_norm": 0.0002805488766171038, "child_norm": 0.0002805488766171038, "parent_child_norm_ratio": 1.0, "parent_positive_count": 0, "parent_negative_count": 21635, "child_positive_count": 21635, "child_negative_count": 0, "gradient_descent_parent_expansion_verified": true, "gradient_descent_child_contraction_verified": true}, "soft_probability": {"parent": "Dall", "child": "D3", "parent_norm": 0.0002805488766171038, "child_norm": 0.0002805488766171038, "parent_child_norm_ratio": 1.0, "parent_positive_count": 0, "parent_negative_count": 21635, "child_positive_count": 21635, "child_negative_count": 0, "gradient_descent_parent_expansion_verified": true, "gradient_descent_child_contraction_verified": true}}}`.
+No independent view-specific parameter branches exist; output norms and shared parameter groups are distinguished. Original hidden-input detach means regularizers have zero native-backbone gradient; preserved unchanged.
+Do not assume trained-model gradients scale exactly with beta; masks, sigmoid derivatives and shared-parameter conflicts change. One seed at500 does not establish causation.
+
+Checkpoint/bare/raw logs stay server-local. RUNTIME_STATS.json records paths, sizes, SHA256 and time intervals. /root disposable overlay; NFS originals retained.
