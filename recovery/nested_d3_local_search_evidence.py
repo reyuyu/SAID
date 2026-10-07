@@ -167,7 +167,7 @@ def arm_report(arm,result,diag,masks,gradient,stats):
         f'Sampling:`{diag["sampling"]}`.',
         f'Full cycle(s):`{stats["full_cycle_seconds"]}`; slowest-rank data_wait(s):`{stats["data_wait_seconds_slowest_rank"]}`.',
         f'OOM kills:{stats["oom_kill"]}; true training I/O errors:0; Pod anomaly:false. GPU peak:`{stats["GPU_peak_allocated_GiB"]}` GiB.',
-        'First5 gate passed before update6; all512000 actual IDs,F/Dall token hashes and selected-index digests checked. Weight/sparsity arms also match all D3 text/token hashes exactly to Anchor.',
+        'First5 gate passed before update6; all512000 actual IDs,F/Dall token hashes and selected-index digests checked. Arms with frozen lowest-view sampling also match its text/token/K/index trajectory exactly to the declared reference.',
         'Strict bare/native inference only:normalized native image embedding @ normalized native full-caption text embedding.T. No masks/gates/local-view inference/rerank/ensemble/TTA.',
         f'Common0 SHA256:`{search.STEP0_SHA}`.',f'Checkpoint SHA256:`{result["checkpoint_sha256"]}`.',
         f'Bare SHA256:`{result["strict_export"]["bare_sha256"]}`.',
@@ -218,8 +218,8 @@ def review_arm(arm):
     old_masks=json.loads((search.ANCHOR_EXP/'MASK_HIERARCHY_AUDIT.json').read_text())['last50']
     old_diag=json.loads((search.ANCHOR_EXP/'TRAINING_DIAGNOSTICS.json').read_text())
     low='Dk' if search.random_k_arm(arm) else 'D3'
-    mask_delta={k:v-old_masks[k.replace('Dk','D3')] for k,v in masks.items()}
-    keep_delta={v:s['keep_ratio']-old_diag['last50_views']['D3' if v=='Dk' else v]['keep_ratio'] for v,s in diag['last50_views'].items()}
+    mask_delta={k:v-old_masks[k if k in old_masks else k.replace('Dk','D3')] for k,v in masks.items()}
+    keep_delta={v:s['keep_ratio']-old_diag['last50_views'][v if v in old_diag['last50_views'] else 'D3']['keep_ratio'] for v,s in diag['last50_views'].items()}
     stats['local_binary_assets']=inventory+[dict(path=str(bare),bytes=bare.stat().st_size,sha256=sha(bare),uploaded=False)]
     q,old=quality(result),quality(anchor)
     result.update(arm=arm,spec=search.ARMS[arm],completed_steps=500,stopped_at_500=True,resume=None,

@@ -54,6 +54,10 @@ def random_k_arm(arm):
     return ARMS[arm]['mode'] in ('nested_detail_kr234','nested_detail_kr2m1')
 
 
+def frozen_lowest_reference(arm):
+    return not random_k_arm(arm) or ARMS[arm].get('strict_lowest_reference',False)
+
+
 def experiment_dir(arm):
     return Path(ARMS[arm].get('experiment_dir',EXP/arm))
 
@@ -115,17 +119,20 @@ def matched_stream(actual,reference,arm):
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
             s,ref=h['sampling'],old[h['rank']]['sampling']
-            keys=SHARED_STREAM if random_k_arm(arm) else FULL_STREAM
+            keys=FULL_STREAM if frozen_lowest_reference(arm) else SHARED_STREAM
             assert all(s[k]==ref[k] for k in keys), ('Stream drift',arm,a['step'],h['rank'])
             assert s['nested_d3_exact'] and h['gradients_finite'] and h['batch']==256 and h['updates']==a['step']
             choices=[expected_indices(n,sid,arm) for n,sid in zip(s['n'],s['sample_ids'])]
             assert [len(c) for c in choices]==s['K']
             assert s['lowest_selected_sentence_indices_sha256']==indices_digest(s['sample_ids'],choices)
-            if not random_k_arm(arm):
-                assert s['lowest_selected_sentence_indices_sha256']==ref['D3_selected_sentence_indices_sha256']
+            if frozen_lowest_reference(arm):
+                reference_digest=ref.get('lowest_selected_sentence_indices_sha256',ref.get('D3_selected_sentence_indices_sha256'))
+                assert reference_digest is not None
+                assert s['lowest_selected_sentence_indices_sha256']==reference_digest
+                assert s['K']==ref['K'] and s['n']==ref['n']
             count+=len(s['sample_ids'])
     return dict(passed=True,records=count,all_sample_ids_F_Dall_strings_tokens_exact=True,
-        all_lowest_strings_tokens_exact_anchor=not random_k_arm(arm),all_selected_indices_replay_verified=True,
+        all_lowest_strings_tokens_exact_anchor=frozen_lowest_reference(arm),all_selected_indices_replay_verified=True,
         all_LR_exact=True,epoch=0,seed=0,horizon=4868,cross_run_numeric_comparison=False)
 
 
@@ -207,10 +214,14 @@ def sampling_audit():
             old=previous[len(evidence)];assert old['sample_id']==sid and old['rank']==rank
             assert view['valid']==old['valid']
             for label,key,pos in [('F','tokens_f',0),('Dall','tokens_o',1),('D3','tokens_e',2)]:
-                if label=='D3' and random_k_arm(ARM):continue
-                assert view['views'][pos]==old['strings'][label] and view[key].tolist()==old['token_ids'][label]
+                if label=='D3' and not frozen_lowest_reference(ARM):continue
+                old_label='Dk' if label=='D3' and 'Dk' in old['strings'] else label
+                assert view['views'][pos]==old['strings'][old_label] and view[key].tolist()==old['token_ids'][old_label]
             assert view['detail_indices']==expected_indices(view['n'],sid,ARM)
-            if not random_k_arm(ARM):assert view['detail_indices']==old['sentence_indices']['D3']
+            if frozen_lowest_reference(ARM):
+                old_indices=old['sentence_indices'].get('D3',old['sentence_indices'].get('lowest'))
+                assert view['detail_indices']==old_indices
+                if 'K' in old:assert len(view['detail_indices'])==old['K']
             assert view['detail_indices']==sorted(set(view['detail_indices']))
             assert set(view['detail_indices'])<=set(view['dall_indices'])
             label='Dk' if random_k_arm(ARM) else 'D3'
@@ -224,7 +235,7 @@ def sampling_audit():
     assert before[1][0]==after[0] and np.array_equal(before[1][1],after[1]) and before[1][2:]==after[2:]
     raw=RUN/'sampling-audit-1000.json';dump(raw,evidence)
     result=dict(passed=True,records=1000,all_sample_ids_F_Dall_tokens_exact_anchor=True,
-        all_lowest_text_tokens_indices_exact_anchor=not random_k_arm(ARM),selected_indices_replay_verified=True,
+        all_lowest_text_tokens_indices_exact_anchor=frozen_lowest_reference(ARM),selected_indices_replay_verified=True,
         global_python_numpy_torch_RNG_unchanged=True,fallback_unchanged=True,examples=evidence[:4],
         raw_evidence=dict(path=str(raw),bytes=raw.stat().st_size,sha256=sha(raw),uploaded=False))
     dump(ARM_EXP/'SAMPLING_AUDIT.json',result);return result

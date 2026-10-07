@@ -19,6 +19,7 @@ BRANCH = 'experiment/nested-d3-kr2m1-weaksparse500-v1'
 MAIN_LOG = RUN_ROOT.parent/(RUN_ROOT.name+'.runner.log')
 IDENTITY = RUN_ROOT.parent/(RUN_ROOT.name+'.runner.json')
 ENTRY = 'recovery.nested_d3_followup500'
+PUBLISH_MESSAGE = 'Report independent KR2M1 and WeakSparse local500 experiments'
 ARMS = {
     'KR2M1': dict(axis='granularity',weights=[1.35,1.35,.30],r=2.,
         mode='nested_detail_kr2m1',experiment_dir=str(ROOT/'experiments/nest_clip_v1/kr2m1_500_v1')),
@@ -140,7 +141,7 @@ def publish():
     review=inspect();assert review['passed']
     subprocess.run(['git','diff','--cached','--check'],cwd=ROOT,check=True)
     assert not git('diff','--name-only','--',*[str(p.relative_to(ROOT)) for p in paths])
-    subprocess.run(['git','commit','-m','Report independent KR2M1 and WeakSparse local500 experiments'],cwd=ROOT,check=True)
+    subprocess.run(['git','commit','-m',PUBLISH_MESSAGE],cwd=ROOT,check=True)
     head=git('rev-parse','HEAD')
     subprocess.run(['git','push','origin','HEAD:refs/heads/'+BRANCH],cwd=ROOT,check=True,timeout=120)
     subprocess.run(['git','fetch','origin','refs/heads/'+BRANCH+':refs/remotes/origin/'+BRANCH],cwd=ROOT,check=True,timeout=120)

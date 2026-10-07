@@ -50,7 +50,7 @@ class BalancedSearch(NestedFusionMask):
         assert len(self.view_sparsity_weights)==3
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
         assert (math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12)
-                or self.view_sparsity_weights == [.5,1.,1.5]), 'Unreviewed sparsity coefficients'
+                or self.view_sparsity_weights in ([.5,1.,1.5],[1.,2.,3.])), 'Unreviewed sparsity coefficients'
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}

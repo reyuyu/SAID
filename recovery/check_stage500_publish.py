@@ -119,6 +119,11 @@ ALLOWED.update('experiments/nest_clip_v1/'+arm+'/'+name
     for arm in ('kr2m1_500_v1','weaksparse_051015_500_v1') for name in (
     'config.json','REPORT.md','RESULTS.json','TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json',
     'MASK_HIERARCHY_AUDIT.json','SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
+ALLOWED.update(('recovery/kr234_sparsity123_500.py','tests/test_kr234_sparsity123_500.py'))
+ALLOWED.update('experiments/nest_clip_v1/kr234_sparsity123_500_v1/'+name for name in (
+    'config.json','CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
+    'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
+    'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),
