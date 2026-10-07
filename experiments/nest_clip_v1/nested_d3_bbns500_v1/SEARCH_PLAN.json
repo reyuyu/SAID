@@ -1,0 +1,72 @@
+{
+  "arm": "BBNS",
+  "axis": "visual_support_regularization",
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "fresh_common0": true,
+  "updates": 500,
+  "horizon": 4868,
+  "local_only_root": "/root/said_s02_stage500/ShareGPT4V/",
+  "NFS_fallback": false,
+  "audit_records": 16384,
+  "bands": {
+    "Dall_F": {
+      "kappa": 0.6466294646263122,
+      "tau_low": 0.6404582858085632,
+      "tau_high": 0.6976943612098694
+    },
+    "D3_Dall": {
+      "kappa": 0.6413809061050415,
+      "tau_low": 0.6085701584815979,
+      "tau_high": 0.6629944801330566
+    }
+  },
+  "band_rule": "independent per edge kappa=P20(C), tau_low=P20(R), tau_high=P80(R); only Anchor support data, no retrieval selection",
+  "epsilon": 0.000001,
+  "formula": "alignment + Omega_F/3 + edge(Dall,F) + edge(D3,Dall)",
+  "edge_formula": "relu(kappa-C)^2 + relu(tau_low-R)^2 + relu(R-tau_high)^2",
+  "gradients": {
+    "cover": "child.detach -> parent",
+    "refine": "parent.detach -> child"
+  },
+  "old_child_sparse": false,
+  "old_inclusion": false,
+  "ramp": false,
+  "beta": false,
+  "legacy_inclusion_max_config_unused": 1,
+  "classification": {
+    "strong": {
+      "Score5_gt": 71.158309,
+      "J_long3_ge": 74.978516,
+      "Urban_T2I_ge": 89.6,
+      "Short4_ge": 65.3
+    },
+    "positive": {
+      "delta_Score5_ge": 0.05,
+      "delta_J_long3_ge": 0,
+      "delta_Urban_T2I_ge": -0.1,
+      "expected_support_band": true
+    },
+    "regularization_success": {
+      "abs_delta_Score5_le": 0.05,
+      "abs_delta_J_long3_le": 0.05,
+      "abs_delta_Urban_T2I_le": 0.1,
+      "abs_delta_Short4_le": 0.15,
+      "D3_keep_ge": 0.77,
+      "mean_coverage_ordered": true,
+      "expected_support_band": true
+    },
+    "expected_support_band": {
+      "each_edge_mean_C_ge_kappa": true,
+      "each_edge_mean_R_inside_band": true,
+      "last50_zero_refine_fraction_ge": 0.5,
+      "last50_zero_edge_fraction_ge": 0.4
+    },
+    "negative": "Score5,J_long3,Urban_T2I all below Anchor",
+    "otherwise": "BBNS_TRADEOFF"
+  },
+  "strict_stream_records": 512000,
+  "automatic_full": false,
+  "automatic_other_arms": false,
+  "automatic_band_changes": false,
+  "automatic_commit_push_fetch_verify": true
+}
