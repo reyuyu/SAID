@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "records": 1000,
+  "seed": 0,
+  "epoch": 0,
+  "sampler_order_exact": true,
+  "sample_ids_text_token_K_indices_image_path_and_preprocess_exact": true,
+  "global_RNG_unchanged": true,
+  "image_decode_source": "Both dataset classes read only the local mirror, never NFS",
+  "common_initialization_and_model_optimizer_candidate_scheduler_conditions": {
+    "passed": true,
+    "base_commit": "bdfd647f7b7e1a2518e4b65a8a959bc65c5606ad",
+    "base_branch": "experiment/nested-d3-hard-nested-sparsity500-v1",
+    "fetched_remote_HEAD": "bdfd647f7b7e1a2518e4b65a8a959bc65c5606ad",
+    "sole_configuration_addition": {
+      "hns_beta": [
+        1.0,
+        1.0
+      ]
+    },
+    "common0_SHA256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "checkpoint_identity": "efb161ba1b5847bc919750821c421595afaac4490676c0dad20790e21f77bada",
+    "baseline_raw_quality": {
+      "Score5": 0.7120205634766328,
+      "J_long3": 0.7515209391277212,
+      "J_long": 0.8416000090599061,
+      "Short4": 0.65277,
+      "Urban_I2T": 0.9150000214576721,
+      "Urban_T2I": 0.8970000147819519
+    },
+    "INC0_raw_quality": {
+      "Score5": 0.711583093930581,
+      "J_long3": 0.7497851565509682,
+      "J_long": 0.8399500315904618,
+      "Short4": 0.65428,
+      "Urban_I2T": 0.9110000729560852,
+      "Urban_T2I": 0.8940000534057617
+    },
+    "source_and_report_provenance": {
+      "RESULTS.json": {
+        "path": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns500_v1/RESULTS.json",
+        "sha256": "20bb077eba0a8291afd47fb80cd0f66b5269a5b35fc9f65077d5550919053386"
+      },
+      "REPORT.md": {
+        "path": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns500_v1/REPORT.md",
+        "sha256": "2d1f8ed33c3cd62f608e54584cefebc8b15b8dcb026fb4d028f5dd1487d0b86f"
+      }
+    },
+    "frozen_source_SHA256": {
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/said_cvssl_data.py": "3cd78dfe7a82e1482166665ee452eedd15c8342b42268e4e89590ef1ea74339e",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/s02_full_stage.py": "115987f9cebc288f81dc9069f63d239bd047ab424df984e7ce565e30f5cb424e",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+    },
+    "optimizer_groups": {
+      "backbone": 149708289,
+      "text_mask_and_shared_pool": 3152897,
+      "visual_mask": 3152384,
+      "fusion_adapter": 917504
+    },
+    "parameter_counts": {
+      "total": 157058050,
+      "trainable": 156931074,
+      "added": 4069888,
+      "optimizer_groups": {
+        "backbone": 149708289,
+        "text_mask_and_shared_pool": 3152897,
+        "visual_mask": 3152384,
+        "fusion_adapter": 917504
+      }
+    },
+    "precision": "fp32 parameters,bf16 encoder,no scaler",
+    "mask_width": 512,
+    "mask_to_mask_stop_gradient": false,
+    "original_hidden_detach_preserved": true,
+    "no_NFS_fallback": true,
+    "no_copy_or_full_decode_audit": true
+  },
+  "started_utc": "2026-10-07T18:01:49.473430+00:00",
+  "ended_utc": "2026-10-07T18:03:09.652601+00:00",
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-final-two500-20261008/HNS-Weak.preflight/matched-real1000.json",
+      "bytes": 11543287,
+      "sha256": "386673413cf89563a5a1fd96fc791160aa03ac8ded3f629a9e48a4c86cdb9240",
+      "uploaded": false,
+      "time_range_utc": [
+        "2026-10-07T18:01:49.473430+00:00",
+        "2026-10-07T18:03:09.676634+00:00"
+      ]
+    }
+  ]
+}

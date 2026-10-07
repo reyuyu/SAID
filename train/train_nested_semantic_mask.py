@@ -117,6 +117,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old.get('inclusion_hierarchy','siblings') == current.get('inclusion_hierarchy','siblings'), 'Resume inclusion hierarchy changed'
         assert old.get('view_sparsity_weights',[1.,2.,2.]) == current.get('view_sparsity_weights',[1.,2.,2.]), 'Resume view sparsity allocation changed'
         assert old.get('hns_enabled',False) == current.get('hns_enabled',False), 'Resume HNS changed'
+        assert old.get('hns_beta',[2.,2.]) == current.get('hns_beta',[2.,2.]), 'Resume HNS beta changed'
         if not allow_legacy_b0:
             assert old.get('trial_id')==current.get('trial_id'), 'Resume trial identity changed'
     for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
@@ -376,6 +377,8 @@ def main():
             model_options['view_sparsity_weights']=cfg['view_sparsity_weights']
         if 'hns_enabled' in cfg:
             model_options['hns_enabled']=cfg['hns_enabled']
+        if 'hns_beta' in cfg:
+            model_options['hns_beta']=cfg['hns_beta']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
     module = module_class(clip.float(), arm=cfg['arm'],

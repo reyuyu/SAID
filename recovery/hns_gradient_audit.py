@@ -48,10 +48,13 @@ def output_direction(graph,name,parent_name,child_name,world):
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--baseline-hierarchy',action='store_true')
+    parser.add_argument('--run',type=str)
+    parser.add_argument('--experiment',type=str)
     args=parser.parse_args();started=now();seed_all(0);torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32=False
     rank,local,world,_=setup();assert world==4
-    run=ROOT/'runtime/SAID-nest-clip-v1/nested-d3-hns500-20261008/HNS'
+    run=ROOT/'runtime/SAID-nest-clip-v1/nested-d3-hns500-20261008/HNS' if args.run is None else __import__('pathlib').Path(args.run)
+    experiment=EXP if args.experiment is None else __import__('pathlib').Path(args.experiment)
     checkpoint=(BASE_RUN if args.baseline_hierarchy else run)/'step500/step000500.pt'
     checkpoint_sha=sha(checkpoint);payload=torch.load(checkpoint,map_location='cpu',weights_only=False)
     assert payload['completed_steps']==500 and payload['scheduler_horizon']==4868
@@ -59,7 +62,7 @@ def main():
     clip,_=longclip.load_from_clip('ViT-B/16',device='cpu',args=argparse.Namespace())
     clip.load_state_dict(payload['model'],strict=True)
     module=BalancedSearch(clip.float(),arm=cfg['arm'],search_hparams=hparams(cfg),
-        inclusion_hierarchy='detail_chain',hns_enabled=True,fusion=cfg['fusion'],visual=cfg['visual'],
+        inclusion_hierarchy='detail_chain',hns_enabled=True,hns_beta=cfg.get('hns_beta',[2.,2.]),fusion=cfg['fusion'],visual=cfg['visual'],
         condition_mode=cfg['condition_mode'],checkpoint_encoders=cfg['checkpoint_encoders'],
         image_chunk=cfg['image_chunk'],text_chunk=cfg['text_chunk'],shuffle_seed=cfg['shuffle_seed'],
         checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'])
@@ -90,7 +93,7 @@ def main():
         }
         assert sorted(i for group in groups.values() for i in group)==list(range(len(parameters)))
         vectors={}
-        coefficients=dict(alignment=1.,original_sparsity=1.,V_DF=2/3*graph['lambda_h'],V_3D=2/3*graph['lambda_h'],total_HNS=1.,total_training=1.)
+        coefficients=dict(alignment=1.,original_sparsity=1.,V_DF=graph['beta'][0]/3*graph['lambda_h'],V_3D=graph['beta'][1]/3*graph['lambda_h'],total_HNS=1.,total_training=1.)
         for name in coefficients:
             gradients=torch.autograd.grad(graph[name],parameters,allow_unused=True,retain_graph=True)
             vector=torch.cat([torch.zeros_like(p).flatten() if g is None else g.float().flatten() for p,g in zip(parameters,gradients)])
@@ -112,6 +115,11 @@ def main():
         conflict={group:dict(hierarchy_norm=float(v.norm()),
             cosine_hierarchy_original_sparsity=cosine(v,vectors['original_sparsity'][group]),
             cosine_hierarchy_alignment=cosine(v,vectors['alignment'][group])) for group,v in hierarchy.items()}
+        for name in components:
+            components[name]['group_cosines']={group:dict(
+                with_alignment=cosine(v,vectors['alignment'][group]),
+                with_original_sparsity=cosine(v,vectors['original_sparsity'][group]))
+                for group,v in vectors[name].items()}
         for group in groups:
             torch.testing.assert_close(vectors['total_HNS'][group],vectors['original_sparsity'][group]+hierarchy[group],atol=2e-5,rtol=2e-4)
             torch.testing.assert_close(vectors['total_training'][group],vectors['alignment'][group]+vectors['total_HNS'][group],atol=3e-5,rtol=3e-4)
@@ -131,11 +139,18 @@ def main():
             pairwise_equality_definition='Fraction of valid pairs with entire512-dimensional binary masks exactly equal; coordinate equality reported separately',
             started_utc=started,ended_utc=now())
         if not args.baseline_hierarchy:value.update(group_cosines=conflict,gradient_additivity_passed=True)
-        destination=EXP/('INC0_HIERARCHY_REFERENCE.json' if args.baseline_hierarchy else 'GRADIENT_AUDIT.json')
+        destination=experiment/('INC0_HIERARCHY_REFERENCE.json' if args.baseline_hierarchy else 'GRADIENT_AUDIT.json')
         if not args.baseline_hierarchy:
-            old=json.loads((EXP/'INC0_HIERARCHY_REFERENCE.json').read_text())
+            old=json.loads((experiment/'INC0_HIERARCHY_REFERENCE.json').read_text())
             assert old['sample_ids_sha256']==ids_digest
             value['matched_cohort_delta_vs_INC0']={k:telemetry[k]-old['telemetry'][k] for k in telemetry if isinstance(telemetry[k],(int,float)) and k in old['telemetry']}
+            value['beta']=list(graph['beta'])
+            reference=experiment/'HNS_V1_GRADIENT_REFERENCE.json'
+            if reference.is_file():
+                baseline=json.loads(reference.read_text());assert baseline['sample_ids_sha256']==ids_digest
+                value['matched_cohort_delta_vs_HNS_v1']={k:telemetry[k]-baseline['telemetry'][k] for k in telemetry if isinstance(telemetry[k],(int,float)) and k in baseline['telemetry']}
+                value['hierarchy_gradient_norm_ratio_vs_HNS_v1']={g:None if not b['hierarchy_norm'] else conflict[g]['hierarchy_norm']/b['hierarchy_norm'] for g,b in baseline['group_cosines'].items()}
+                value['weighted_inner_outer_gradient_norm_ratio']={g:None if not components['V_DF']['group_norms'][g]['weighted'] else components['V_3D']['group_norms'][g]['weighted']/components['V_DF']['group_norms'][g]['weighted'] for g in conflict}
         dump(destination,value);print(json.dumps(dict(passed=True,baseline=args.baseline_hierarchy,output=str(destination))),flush=True)
     dist.barrier();dist.destroy_process_group()
 

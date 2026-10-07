@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "world": 4,
+  "backend": "gloo",
+  "production_objective": true,
+  "global_batch": 8,
+  "valid_counts": [
+    0,
+    2,
+    1,
+    1
+  ],
+  "global_valid": 4,
+  "completed_updates": 199,
+  "lambda_h": 0.995,
+  "beta": [
+    1.0,
+    1.0
+  ],
+  "loss_matches_global_reference": true,
+  "all_trainable_gradients_match_global_reference": true,
+  "one_AdamW_update_all_ranks_exact": true,
+  "all_rank_parameters_exact": true,
+  "max_rank_difference": 0.0,
+  "global_reference_scope": "Loss and every parameter gradient; cross-partition AdamW is not compared because near-zero reduction roundoff can be magnified by epsilon. Separate lambda0 equivalence tests compare the identical-partition AdamW update exactly.",
+  "max_gradient_difference": 3.0517578125e-05,
+  "gradient_tolerance": {
+    "atol": 0.0008,
+    "rtol": 8e-05
+  },
+  "no_double_world_scaling": true,
+  "single_process_loss": 521.8372802734375,
+  "distributed_loss": 521.8372802734375
+}

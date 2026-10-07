@@ -12,16 +12,17 @@ from recovery.s02_nfs500 import dump
 from tests.test_nested_fusion import TinyFusionCLIP
 
 
-def make():
+def make(beta=(2.,2.)):
     return BalancedSearch(TinyFusionCLIP(32),search_hparams=dict(view_weights=[1.35,1.35,.3],inclusion_max=0),
-        hns_enabled=True,inclusion_hierarchy='detail_chain',fusion='balanced_stack',visual='patch',
+        hns_enabled=True,hns_beta=beta,inclusion_hierarchy='detail_chain',fusion='balanced_stack',visual='patch',
         text_tokens=6,checkpoint_encoders=False,image_chunk=2,text_chunk=2)
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--output',required=True);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--output',required=True)
+    parser.add_argument('--beta',type=float,nargs=2,default=[2.,2.]);args=parser.parse_args()
     torch.set_num_threads(1);torch.manual_seed(44219)
-    module=make();reference=copy.deepcopy(module)
+    module=make(args.beta);reference=copy.deepcopy(module)
     images=torch.randn(8,8);views=[torch.randint(0,31,(8,6)) for _ in range(3)]
     valid=torch.tensor([0,0,1,1,1,0,1,0],dtype=torch.bool)
     # Compute the global single-process reference before joining any group.
@@ -49,7 +50,7 @@ def main():
         difference=max(difference,float((p-peer).abs().max()))
     assert difference==0
     if rank==0:dump(args.output,dict(passed=True,world=4,backend='gloo',production_objective=True,
-        global_batch=8,valid_counts=[0,2,1,1],global_valid=4,completed_updates=199,lambda_h=.995,
+        global_batch=8,valid_counts=[0,2,1,1],global_valid=4,completed_updates=199,lambda_h=.995,beta=args.beta,
         loss_matches_global_reference=True,all_trainable_gradients_match_global_reference=True,
         one_AdamW_update_all_ranks_exact=True,all_rank_parameters_exact=True,max_rank_difference=difference,
         global_reference_scope='Loss and every parameter gradient; cross-partition AdamW is not compared because near-zero reduction roundoff can be magnified by epsilon. Separate lambda0 equivalence tests compare the identical-partition AdamW update exactly.',

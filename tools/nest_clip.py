@@ -80,6 +80,8 @@ def main():
                 model_options['view_sparsity_weights']=config['view_sparsity_weights']
             if 'hns_enabled' in config:
                 model_options['hns_enabled']=config['hns_enabled']
+            if 'hns_beta' in config:
+                model_options['hns_beta']=config['hns_beta']
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),

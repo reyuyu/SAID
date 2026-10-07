@@ -70,6 +70,7 @@ def arm_config(arm):
     if spec['axis']=='sparsity':cfg['view_sparsity_weights']=arm_sparsity(arm)
     if spec['axis']=='inclusion':cfg['inclusion_max']=spec['inclusion_max']
     if spec['axis']=='hns':cfg['hns_enabled']=True
+    if spec['axis']=='hns_beta':cfg['hns_beta']=spec['beta']
     return cfg
 
 
@@ -119,10 +120,13 @@ def matched_stream(actual,reference,arm):
         assert a['actual_lrs']==b['actual_lrs'] and math.isfinite(a['loss']) and a['nonfinite']==0
         if ARMS[arm]['axis']=='inclusion' and ARMS[arm]['inclusion_max']==0:
             assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
-        if ARMS[arm]['axis']=='hns':
+        if ARMS[arm]['axis'] in ('hns','hns_beta'):
             assert a['inc_weight']==a['inclusion_loss']==0 and a['inclusion_enabled'] is False
             assert a['HNS_enabled'] is True and a['lambda_h']==min(1.,(a['step']-1)/200.)
-            expected=a['lambda_h']*(2*a['V_DF_hard']+2*a['V_3D_hard'])/3
+            beta=ARMS[arm].get('beta',[2.,2.])
+            if ARMS[arm]['axis']=='hns_beta':
+                assert [a['HNS_beta_DF'],a['HNS_beta_3D']]==beta
+            expected=a['lambda_h']*(beta[0]*a['V_DF_hard']+beta[1]*a['V_3D_hard'])/3
             assert math.isclose(a['HNS_surcharge'],expected,rel_tol=3e-6,abs_tol=1e-7)
             assert math.isclose(a['HNS_regularizer'],a['HNS_original_sparse']+expected,rel_tol=3e-6,abs_tol=1e-7)
         old={h['rank']:h for h in b['rank_health']}
@@ -166,6 +170,11 @@ def checkpoint_invariants(current,reference):
     if ARMS[ARM]['axis']=='hns':
         assert new_model.pop('hns_enabled') is True
         assert old_model.pop('hns_enabled',False) is False
+        assert new_model['search_hparams']['inclusion_max']==old_model['search_hparams']['inclusion_max']==0
+    if ARMS[ARM]['axis']=='hns_beta':
+        assert new_model.pop('hns_beta')==ARMS[ARM]['beta']
+        assert old_model.pop('hns_beta',[2.,2.])==[2.,2.]
+        assert new_model['hns_enabled']==old_model['hns_enabled'] is True
         assert new_model['search_hparams']['inclusion_max']==old_model['search_hparams']['inclusion_max']==0
     assert new_model==old_model
     changed={k for k,v in old['code_sha256'].items() if cfg['code_sha256'][k]!=v}

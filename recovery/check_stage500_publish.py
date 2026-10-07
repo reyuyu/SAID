@@ -141,6 +141,16 @@ ALLOWED.update(HNS_ROOT+name for name in (
     'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json',
     'references/JOINT_VG_RESULTS.json'))
 ALLOWED.update(HNS_ROOT+'evaluations/'+name+'.json' for name in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))
+ALLOWED.update(('recovery/hns_final_two500.py','tests/test_hns_final_two500.py'))
+ALLOWED.update('experiments/nest_clip_v1/'+arm+'/'+name
+    for arm in ('nested_d3_hns_weak500_v1','nested_d3_hns_innerfocus500_v1') for name in (
+        'config.json','CPU_TESTS.json','SEARCH_PLAN.json','BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json',
+        'DDP_CORRECTNESS.json','INC0_HIERARCHY_REFERENCE.json','HNS_V1_GRADIENT_REFERENCE.json',
+        'REPORT.md','RESULTS.json','TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
+        'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json','GRADIENT_AUDIT.json',
+        'SMOKE_EVIDENCE.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json','DECISION.json',
+        'SEARCH_SUMMARY.md','FINAL_COMPARISON.json',
+        *('evaluations/'+ds+'.json' for ds in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),

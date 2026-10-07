@@ -39,7 +39,7 @@ def detail_chain_inclusion(pf, dall, ds):
 
 class BalancedSearch(NestedFusionMask):
     def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings',
-                 view_sparsity_weights=(1.,2.,2.), hns_enabled=False, **options):
+                 view_sparsity_weights=(1.,2.,2.), hns_enabled=False, hns_beta=(2.,2.), **options):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
@@ -48,6 +48,8 @@ class BalancedSearch(NestedFusionMask):
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
         self.inclusion_hierarchy = inclusion_hierarchy
         self.hns_enabled = bool(hns_enabled)
+        self.hns_beta = tuple(float(v) for v in hns_beta)
+        assert len(self.hns_beta)==2 and all(math.isfinite(v) and v>=0 for v in self.hns_beta)
         if self.hns_enabled:
             assert inclusion_hierarchy == 'detail_chain'
             assert self.search_hparams['inclusion_max'] == 0.
@@ -144,13 +146,14 @@ class BalancedSearch(NestedFusionMask):
             loss=align+hp['sparsity_scale']*sparse
             if self.hns_enabled:
                 world=world_rank()[0]
-                surcharge,hns=hns_terms(mf,mo,me,valid,completed,world,valid_count)
+                surcharge,hns=hns_terms(mf,mo,me,valid,completed,world,valid_count,self.hns_beta)
                 loss=loss+surcharge
                 values=global_sum(torch.stack((align.detach(),sparse.detach(),hns['V_DF'].detach(),
                     hns['V_3D'].detach(),surcharge.detach())))/world
                 logs.update(HNS_enabled=True,HNS_align=values[0],HNS_original_sparse=values[1],
                     V_DF_hard=values[2],V_3D_hard=values[3],HNS_surcharge=values[4],
-                    HNS_regularizer=values[1]+values[4],lambda_h=hns['lambda_h'])
+                    HNS_regularizer=values[1]+values[4],lambda_h=hns['lambda_h'],
+                    HNS_beta_DF=self.hns_beta[0],HNS_beta_3D=self.hns_beta[1])
                 telemetry,width=hard_telemetry(mf,mo,me,valid)
                 totals=global_sum(torch.stack(list(telemetry.values())))
                 totals=dict(zip(telemetry,totals))
@@ -174,7 +177,7 @@ class BalancedSearch(NestedFusionMask):
                     self.hns_graph=dict(alignment=align,original_sparsity=sparse,
                         V_DF=hns['V_DF'],V_3D=hns['V_3D'],total_HNS=sparse+surcharge,
                         total_training=loss,masks=dict(F=mf,Dall=mo,D3=me),
-                        probabilities=dict(F=pf,Dall=po,D3=pe),lambda_h=hns['lambda_h'])
+                        probabilities=dict(F=pf,Dall=po,D3=pe),lambda_h=hns['lambda_h'],beta=self.hns_beta)
             if inclusion_enabled:
                 loss=loss+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
@@ -198,6 +201,7 @@ class BalancedSearch(NestedFusionMask):
             loss=10*af+hp['sparsity_scale']*sf
             if self.hns_enabled:
                 logs.update(HNS_enabled=True,lambda_h=hierarchy_weight(completed),
+                    HNS_beta_DF=self.hns_beta[0],HNS_beta_3D=self.hns_beta[1],
                     HNS_align=global_sum(10*af)/world_rank()[0],HNS_original_sparse=global_sum(sf)/world_rank()[0],
                     HNS_surcharge=0.,HNS_regularizer=global_sum(sf)/world_rank()[0],V_DF_hard=0.,V_3D_hard=0.)
             logs.update(inc=0.,inclusion_loss=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)
