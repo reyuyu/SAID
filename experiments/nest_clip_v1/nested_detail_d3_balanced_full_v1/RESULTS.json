@@ -1,0 +1,772 @@
+{
+  "additional_DeBias_reference_comparison": {
+    "Long_DCI_R1_bidirectional_mean_percent": 60.589318600368316,
+    "DeBias_derived_Long_DCI_R1_bidirectional_mean_percent": 59.300185,
+    "delta_pp": 1.289133600368316,
+    "reference_is_derived": true,
+    "reference_derivation": "3*J_long3-2*J_long, assuming shared frozen aggregate definitions",
+    "reference_rounding_error_bound_pp": 0.0000025,
+    "DeBias_individual_Long_I2T_T2I_available": false
+  },
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6162,
+        "R@5": 0.8378,
+        "R@10": 0.8986
+      },
+      "T2I": {
+        "R@1": 0.43132,
+        "R@5": 0.68564,
+        "R@10": 0.78108
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.937000036239624,
+        "R@5": 0.9910000562667847,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.9270000457763672,
+        "R@5": 0.9910000562667847,
+        "R@10": 0.9960000514984131
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.9,
+        "R@5": 0.984,
+        "R@10": 0.993
+      },
+      "T2I": {
+        "R@1": 0.7404,
+        "R@5": 0.9212,
+        "R@10": 0.958
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.802,
+        "R@5": 0.964,
+        "R@10": 0.9852
+      },
+      "T2I": {
+        "R@1": 0.8124,
+        "R@5": 0.9608,
+        "R@10": 0.9838
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.6018153117600631,
+        "R@5": 0.780320968166272,
+        "R@10": 0.84017363851618
+      },
+      "T2I": {
+        "R@1": 0.6099710602473033,
+        "R@5": 0.7865035516969219,
+        "R@10": 0.8371481189160748
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7378106454023358,
+    "J_long3": 0.7816977423372262,
+    "J_long": 0.8696000205039978,
+    "Short4_R1": 0.67198
+  },
+  "scores_percent": {
+    "Score5_R1": 73.78106454023357,
+    "J_long3": 78.16977423372262,
+    "J_long": 86.96000205039978,
+    "Short4_R1": 67.19800000000001,
+    "Score5": 73.78106454023357,
+    "Short4": 67.19800000000001
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      4868
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "d159163e3e127e20ea17f8932454545e2648f2d2f052c60ac3667ac15b79542f",
+    "bare_sha256": "2b0150feb3588063da3c93b3f93ac1b4bb2b3df223e06ed1e5ba458a4e3f2487"
+  },
+  "checkpoint_sha256": "d159163e3e127e20ea17f8932454545e2648f2d2f052c60ac3667ac15b79542f",
+  "evaluation_checkpoint_immutable": true,
+  "step": 4868,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-06T23:54:15.176669+00:00",
+  "comparison_baselines": {
+    "S02_full": {
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6216,
+            "R@5": 0.8434,
+            "R@10": 0.9024
+          },
+          "T2I": {
+            "R@1": 0.43324,
+            "R@5": 0.6896,
+            "R@10": 0.78436
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.9280000329017639,
+            "R@5": 0.9880000352859497,
+            "R@10": 0.9940000176429749
+          },
+          "T2I": {
+            "R@1": 0.9180000424385071,
+            "R@5": 0.9890000224113464,
+            "R@10": 0.9940000176429749
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.898,
+            "R@5": 0.985,
+            "R@10": 0.996
+          },
+          "T2I": {
+            "R@1": 0.7398,
+            "R@5": 0.9214,
+            "R@10": 0.959
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.792,
+            "R@5": 0.9586,
+            "R@10": 0.9834
+          },
+          "T2I": {
+            "R@1": 0.7998,
+            "R@5": 0.9586,
+            "R@10": 0.9822
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.5851091817942646,
+            "R@5": 0.7736122073138648,
+            "R@10": 0.8316232570376216
+          },
+          "T2I": {
+            "R@1": 0.6053670086819258,
+            "R@5": 0.7841357537490135,
+            "R@10": 0.8355695869508024
+          }
+        }
+      },
+      "scores_percent": {
+        "Score5_R1": 73.20916265816462,
+        "J_long3": 77.1379377636077,
+        "J_long": 85.94500188350678,
+        "Short4_R1": 67.316,
+        "Score5": 73.20916265816462,
+        "Short4": 67.316
+      }
+    },
+    "DeBias": {
+      "model": "DeBias-CLIP B/16 unified reproduction",
+      "source": "User-provided full-training request",
+      "scores_percent": {
+        "Score5": 73.226838,
+        "J_long3": 77.430063,
+        "J_long": 86.495002,
+        "Short4": 66.9220005
+      },
+      "metrics": {
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.933
+          },
+          "T2I": {
+            "R@1": 0.931
+          }
+        }
+      },
+      "derived_metrics_percent": {
+        "Short4": 66.9220005,
+        "Long_DCI_R1_bidirectional_mean": 59.300185
+      },
+      "derivation": {
+        "Short4": "(5*Score5-3*J_long3)/2",
+        "Long_DCI_R1_bidirectional_mean": "3*J_long3-2*J_long",
+        "definitions": "Frozen search.py scores: Score5 averages10 R1 directions, J_long3 averages Urban/DOCCI/Long6 directions, J_long averages Urban/DOCCI4 directions; Short4 averages COCO/Flickr4 directions.",
+        "assumption": "User's unified reproduction uses these same aggregate definitions",
+        "rounding_error_bounds_pp": {
+          "Short4": 2e-06,
+          "Long_DCI_R1_bidirectional_mean": 2.5e-06
+        },
+        "measured": false
+      },
+      "reference_limitations": "User supplied three measured aggregate metrics and Urban R@1. Short4 and Long bidirectional mean are explicitly derived from rounded aggregates under the shared frozen definitions. Individual Long I2T/T2I, other dataset directions and R@5/10 remain missing; none are guessed. No complete DeBias reference JSON was available at report completion."
+    }
+  },
+  "delta_vs_baselines_pp": {
+    "S02_full": {
+      "J_long3": 1.031836470114925,
+      "J_long": 1.015000166893003,
+      "Score5": 0.571901882068957,
+      "Short4": -0.117999999999995
+    },
+    "DeBias": {
+      "Score5": 0.5542265402335715,
+      "J_long3": 0.7397112337226162,
+      "J_long": 0.4650000503997802,
+      "Short4": 0.2759995000000117
+    }
+  },
+  "dataset_delta_vs_baselines_pp": {
+    "S02_full": {
+      "COCO": {
+        "I2T": {
+          "R@1": -0.5400000000000071,
+          "R@5": -0.5600000000000049,
+          "R@10": -0.38000000000000256
+        },
+        "T2I": {
+          "R@1": -0.19200000000000328,
+          "R@5": -0.39599999999999635,
+          "R@10": -0.32799999999999496
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.9000003337860107,
+          "R@5": 0.3000020980834961,
+          "R@10": 0.3000020980834961
+        },
+        "T2I": {
+          "R@1": 0.9000003337860107,
+          "R@5": 0.20000338554382324,
+          "R@10": 0.20000338554382324
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.20000000000000018,
+          "R@5": -0.10000000000000009,
+          "R@10": -0.30000000000000027
+        },
+        "T2I": {
+          "R@1": 0.05999999999999339,
+          "R@5": -0.019999999999997797,
+          "R@10": -0.10000000000000009
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": 1.0000000000000009,
+          "R@5": 0.539999999999996,
+          "R@10": 0.17999999999999128
+        },
+        "T2I": {
+          "R@1": 1.2600000000000056,
+          "R@5": 0.21999999999999797,
+          "R@10": 0.16000000000000458
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": 1.6706129965798455,
+          "R@5": 0.6708760852407236,
+          "R@10": 0.8550381478558355
+        },
+        "T2I": {
+          "R@1": 0.4604051565377465,
+          "R@5": 0.23677979479084232,
+          "R@10": 0.15785319652723562
+        }
+      }
+    },
+    "DeBias": {
+      "Urban-1k": {
+        "I2T": {
+          "R@1": 0.4000036239623972
+        },
+        "T2I": {
+          "R@1": -0.3999954223632862
+        }
+      }
+    }
+  },
+  "decision": {
+    "status": "FULL_STRONG_POSITIVE",
+    "strong": true,
+    "positive": true,
+    "tradeoff": false,
+    "negative": false,
+    "scores_delta_pp": {
+      "Score5": 0.571901882068957,
+      "J_long3": 1.031836470114925,
+      "J_long": 1.015000166893003,
+      "Short4": -0.117999999999995
+    },
+    "Urban_delta_pp": {
+      "I2T": 0.9000000000000057,
+      "T2I": 0.9000000000000057
+    },
+    "declared_before_training": true,
+    "clear_gain_pp": 0.1,
+    "material_decline_pp": 0.2,
+    "automatic_new_experiments": false,
+    "automatic_continuation": false
+  },
+  "status": "FULL_STRONG_POSITIVE",
+  "completed_steps": 4868,
+  "stopped_at_4868": true,
+  "initialized_from_common0": true,
+  "resume": null,
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "configuration": {
+    "arm": "A3",
+    "experiment_name": "ArmB-Summary0.2-4epoch",
+    "condition_mode": "dual_branch",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "full_native_mix": 0,
+    "sampling_mode": "nested_detail_d3",
+    "inclusion_hierarchy": "detail_chain",
+    "sampling_seed": 0,
+    "shuffle_seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 4,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "checkpoint_pair_blocks": false,
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "score_chunk": 64,
+    "checkpoint_interval": 1217,
+    "save_initial_checkpoint": false,
+    "monitor_resources": true,
+    "feasibility_abort_seconds": 15,
+    "four_epoch_followup": true,
+    "fusion_lr": 0.0002,
+    "visual_mask_lr_scale": 1,
+    "view_weights": [
+      1.35,
+      1.35,
+      0.3
+    ],
+    "sparsity_scale": 1,
+    "inclusion_max": 1,
+    "hparam_search": true,
+    "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+    "base_model": "ViT-B/16",
+    "resource_policy": "local_reproduction500"
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-06T20:35:57.027373+00:00",
+    "supervisor_pid": 92769,
+    "step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "resume": null,
+    "start_updates": 0,
+    "stop_updates": 4868,
+    "horizon": 4868,
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "NFS_fallback": false,
+    "git_head": "3f3b10bce416a89dd37848d9ddb23d16c0915918",
+    "source_sha256": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "9f797d0da9006ed297da415cd1b37785de9a19130dd7d8ce23c1191c3bd41b80",
+      "train/train_nested_semantic_mask.py": "5b28a2a8da7b40a683b9fe618251e17a85bbf43aeaa541f8fa36dd69ff456ebf",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "51c145e032ed09fabf8f401d4e1bef28245db9a64aa9cf5529012d8e79f4c070",
+      "recovery/nested_detail_d3_balanced_full.py": "b0155c7345355c5940b7a5f94ea18d06d6240d652ce392f4a7f0ade6797b1794",
+      "recovery/nested_detail_d3_balanced_full_evidence.py": "41b32b262ccd0af8f0fdae6a63efe1d5b7f8a2fd93b49c936da4decbdd5bec20",
+      "recovery/nested_detail_d3_balanced500.py": "9286dfd1398e14f91c1e4d1de3c0a330c3d440bbec2e742357df6c1ff3559b62",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3",
+      "tools/nest_clip.py": "5810297a7894f76ffca1ed65795b9a35f100811ba0c281503f30c02d9ed7f165",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "tools/eval_urban1k_cls.py": "42cc728f587b3b2bd83bde8d205900f7aa8ff4387491a3c3a0f95ffbac0475c7",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+      "experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/config.json": "e36cb77fbcfd814f4205b7119f64bc359ba6b5dbe388e36c27c45398744c334e",
+      "tests/test_nested_detail_d3_balanced_full.py": "d882967fd914b7146010cf75dee3119735bc99a63e36fbbf4eb23d32d6fee6b4"
+    },
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "initial_resources": {
+      "timestamp_utc": "2026-10-06T20:37:22.567827+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 491290021888,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 485008707584,
+        "rss": 1612058624,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 114352128,
+        "dirty": 0,
+        "writeback": 2027520,
+        "pgpgin": 4311429408,
+        "pgpgout": 4192624176,
+        "pgfault": 7519803885,
+        "pgmajfault": 118998,
+        "inactive_anon": 2297856,
+        "active_anon": 1612554240,
+        "inactive_file": 8150208512,
+        "active_file": 476855844864,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 485008707584,
+        "total_rss": 1612058624,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 114352128,
+        "total_dirty": 0,
+        "total_writeback": 2027520,
+        "total_pgpgin": 4311429408,
+        "total_pgpgout": 4192624176,
+        "total_pgfault": 7519803885,
+        "total_pgmajfault": 118998,
+        "total_inactive_anon": 2297856,
+        "total_active_anon": 1612554240,
+        "total_inactive_file": 8150208512,
+        "total_active_file": 476855844864,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 61322075
+      },
+      "file": 485008707584,
+      "inactive_file": 8150208512,
+      "active_file": 476855844864,
+      "anon": 1612058624,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 630624,
+        "nr_throttled": 4,
+        "throttled_time": 828881023
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 27418334659
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.0,
+          "avg300": 0.0,
+          "total": 22047459327
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.18,
+          "avg60": 0.21,
+          "avg300": 0.11,
+          "total": 487128010442
+        },
+        "full": {
+          "avg10": 0.18,
+          "avg60": 0.18,
+          "avg300": 0.1,
+          "total": 481774155898
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "method_changes": "Only --max-updates500->4868; input JSON identical to reviewed500 config",
+    "reference500_checkpoint_used_for_resume": false,
+    "CPU_tests": {
+      "passed": true,
+      "passed_count": 104,
+      "failed_count": 0,
+      "exit_code": 0,
+      "seconds": 12.95,
+      "command": ".venv/bin/python -m pytest -q tests/test_nested_detail_d3_balanced_full.py tests/test_nested_detail_d3_balanced.py tests/test_nested_detail_d3.py tests/test_nested_detail_equal_weight.py tests/test_nested_detail.py tests/test_balanced_hparams.py tests/test_nested_resume.py recovery/test_nested_detail500.py",
+      "warning": "pkg_resources deprecation only",
+      "before_launch": true
+    },
+    "automatic_retry": false,
+    "persistent_checkpoints": [
+      500,
+      1217,
+      2434,
+      3651,
+      4868
+    ],
+    "original_epoch_tail_batch_per_rank": 180,
+    "classification_rules": {
+      "clear_gain_pp": 0.1,
+      "material_decline_pp": 0.2,
+      "Urban_maintained_tolerance_pp": 0.2,
+      "strong": "Score5/J_long3/UrbanT2I strictly improve;Short4 decline<=.2pp",
+      "positive": "Score5 or J_long3 improves>=.1pp;Urban both maintained within.2pp;global guards-.2pp",
+      "tradeoff": "long or Urban improves but Score5 or Short4 declines>.2pp",
+      "fallback": "FULL_INCONCLUSIVE for outcomes not covered by explicit positive/negative rules"
+    },
+    "disposable_cache": "Ephemeral Docker overlay; NFS source originals retained",
+    "pod_identity": "interactive93293"
+  },
+  "full_stream_proof": {
+    "passed": true,
+    "all_steps": 4868,
+    "records_checked": 4983616,
+    "epochs": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "actual_D3_selected_index_digests_verified": true,
+    "all_LR_exact": true,
+    "all_gradients_finite": true,
+    "first500_records_exact_reference": 512000,
+    "first500_F_Dall_D3_strings_tokens_indices_exact": true,
+    "strict_subset_samples": 4981188,
+    "degenerate_samples": 2428,
+    "strict_subset_ratio": 0.999512803554688,
+    "epoch_tail_rank_batches": 16,
+    "epoch_tail_batch_per_rank": 180,
+    "global_RNG_untouched": true,
+    "source": "Frozen DistributedSampler, immutable original D3 sampler, actual rank-health n/IDs/epoch"
+  },
+  "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step004868.pt",
+  "native_evaluation_provenance": {
+    "COCO": {
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/coco_native.json",
+      "sha256": "f3291145ff966f536990ed8273b2ec0d75a30fea2f02a02c4fc5aada33a5d5db"
+    },
+    "Urban-1k": {
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/urban_native.json",
+      "sha256": "b364c28934293acdf36caa72e930c34526195a03b42bb998f4055616455a7452"
+    },
+    "Flickr30k-test1k": {
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/flickr_test1k/flickr_test1k.json",
+      "sha256": "9535ac54d75e3205e07b47d524955e08aac5e02a7c97dee74e844d692eb5894a"
+    },
+    "DOCCI": {
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/docci/docci.json",
+      "sha256": "2f4d45953329fb63bb37890dbae3d2f0286d7868e0185892997e4ddea6834bb4"
+    },
+    "Long-DCI": {
+      "result_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/long_dci/long_dci.json",
+      "sha256": "85af6b3b2421258b491f570dee7c6fcdcb18b36c66d71bc60a970f810155d985"
+    }
+  },
+  "automatic_new_experiments": false,
+  "checkpoint_uploaded": false,
+  "bare_uploaded": false,
+  "commands": [
+    {
+      "name": "train4868",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nnodes=1",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.nested_detail_d3_balanced_full",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_detail_d3_balanced_full_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "4868"
+      ],
+      "started_utc": "2026-10-06T20:37:22.578841+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/train4868.log",
+      "ended_utc": "2026-10-06T23:36:25.968379+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export4868",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step004868.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--expect-updates",
+        "4868"
+      ],
+      "started_utc": "2026-10-06T23:36:28.446956+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/export4868.log",
+      "ended_utc": "2026-10-06T23:36:54.628319+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify4868",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step004868.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-06T23:36:54.640178+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/verify4868.log",
+      "ended_utc": "2026-10-06T23:37:13.691076+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-coco",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--dataset",
+        "coco",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/coco_native.json"
+      ],
+      "started_utc": "2026-10-06T23:37:13.702720+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-coco.log",
+      "ended_utc": "2026-10-06T23:40:14.050563+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-urban",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_nest_native",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--dataset",
+        "urban",
+        "--root",
+        "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/urban_native.json"
+      ],
+      "started_utc": "2026-10-06T23:40:14.064360+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-urban.log",
+      "ended_utc": "2026-10-06T23:40:39.123923+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-flickr_test1k",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/flickr_test1k",
+        "flickr_test1k:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/images"
+      ],
+      "started_utc": "2026-10-06T23:40:39.135002+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-flickr_test1k.log",
+      "ended_utc": "2026-10-06T23:41:08.205180+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-docci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/docci",
+        "docci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/images"
+      ],
+      "started_utc": "2026-10-06T23:41:08.216852+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-docci.log",
+      "ended_utc": "2026-10-06T23:46:04.767930+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "eval4868-long_dci",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+        "--device",
+        "cuda:0",
+        "--batch-size",
+        "64",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/long_dci",
+        "long_dci:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/long_dci_reconstructed.jsonl:/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/images"
+      ],
+      "started_utc": "2026-10-06T23:46:04.780988+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-long_dci.log",
+      "ended_utc": "2026-10-06T23:54:12.645340+00:00",
+      "returncode": 0
+    }
+  ]
+}

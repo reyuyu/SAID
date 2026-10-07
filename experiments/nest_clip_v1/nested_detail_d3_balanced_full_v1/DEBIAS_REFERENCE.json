@@ -4,7 +4,8 @@
   "scores_percent": {
     "Score5": 73.226838,
     "J_long3": 77.430063,
-    "J_long": 86.495002
+    "J_long": 86.495002,
+    "Short4": 66.9220005
   },
   "metrics": {
     "Urban-1k": {
@@ -12,5 +13,20 @@
       "T2I": {"R@1": 0.931}
     }
   },
-  "reference_limitations": "User supplied only three aggregate metrics and Urban R@1. Short4, other datasets and R@5/10 absent; no missing numbers inferred. Awaiting optional full reference JSON path."
+  "derived_metrics_percent": {
+    "Short4": 66.9220005,
+    "Long_DCI_R1_bidirectional_mean": 59.300185
+  },
+  "derivation": {
+    "Short4": "(5*Score5-3*J_long3)/2",
+    "Long_DCI_R1_bidirectional_mean": "3*J_long3-2*J_long",
+    "definitions": "Frozen search.py scores: Score5 averages10 R1 directions, J_long3 averages Urban/DOCCI/Long6 directions, J_long averages Urban/DOCCI4 directions; Short4 averages COCO/Flickr4 directions.",
+    "assumption": "User's unified reproduction uses these same aggregate definitions",
+    "rounding_error_bounds_pp": {
+      "Short4": 0.000002,
+      "Long_DCI_R1_bidirectional_mean": 0.0000025
+    },
+    "measured": false
+  },
+  "reference_limitations": "User supplied three measured aggregate metrics and Urban R@1. Short4 and Long bidirectional mean are explicitly derived from rounded aggregates under the shared frozen definitions. Individual Long I2T/T2I, other dataset directions and R@5/10 remain missing; none are guessed. No complete DeBias reference JSON was available at report completion."
 }

@@ -1,0 +1,1746 @@
+{
+  "raw_inventory_finalized_after_supervisor_exit": true,
+  "raw_artifact_time_range_basis": "Per-command logs use command start/end; prelaunch audits use the conservative supervisor-start to training-launch window; telemetry uses first/last record UTC. Other training artifacts use a conservative train-start to evaluation-end window, not exact per-record bounds.",
+  "completed_updates": 4868,
+  "full_cycle_seconds": {
+    "count": 4868,
+    "median": 2.1244181394577026,
+    "p95": 2.270459258556366,
+    "p99": 2.3351109576225277,
+    "max": 33.47019958496094
+  },
+  "steady_steps7_plus_cycle_seconds": {
+    "count": 4862,
+    "median": 2.1243770122528076,
+    "p95": 2.270167279243469,
+    "p99": 2.332113540172577,
+    "max": 33.47019958496094
+  },
+  "data_wait_seconds_slowest_rank": {
+    "count": 4868,
+    "median": 0.0007021352648735046,
+    "p95": 0.0009491208940744399,
+    "p99": 0.001381881013512611,
+    "max": 28.7423033490777
+  },
+  "rank_data_wait_seconds": {
+    "0": {
+      "count": 4868,
+      "median": 0.0006244480609893799,
+      "p95": 0.0008238188922405241,
+      "p99": 0.0012380759418010702,
+      "max": 27.90220256149769
+    },
+    "1": {
+      "count": 4868,
+      "median": 0.0006145723164081573,
+      "p95": 0.0007634233683347701,
+      "p99": 0.0010645741224288938,
+      "max": 28.20514429360628
+    },
+    "2": {
+      "count": 4868,
+      "median": 0.0006005801260471344,
+      "p95": 0.0007674694061279297,
+      "p99": 0.0010852854698896403,
+      "max": 28.70928505808115
+    },
+    "3": {
+      "count": 4868,
+      "median": 0.0005970336496829987,
+      "p95": 0.0007577300071716308,
+      "p99": 0.0010217242687940585,
+      "max": 28.7423033490777
+    }
+  },
+  "steps_gt3s": 7,
+  "steps_gt10s": 6,
+  "peak_cgroup_memory_bytes": 536871043072,
+  "peak_file_cache_bytes": 505087008768,
+  "peak_anon_bytes": 30531239936,
+  "oom_kill": 0,
+  "true_training_io_error_count": 0,
+  "pod_or_supervisor_anomaly_observed": false,
+  "local_only_proof": {
+    "passed": true,
+    "count": 512,
+    "ranks": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "NFS_fallback": false
+  },
+  "GPU_peak_allocated_GiB": {
+    "0": 27.760382652282715,
+    "1": 27.760382652282715,
+    "2": 27.760382652282715,
+    "3": 27.760382652282715
+  },
+  "checkpoint_timing": [
+    {
+      "step": 1217,
+      "four_rank_max_seconds": 16.325565338134766
+    },
+    {
+      "step": 2434,
+      "four_rank_max_seconds": 16.555328369140625
+    },
+    {
+      "step": 3651,
+      "four_rank_max_seconds": 16.514026641845703
+    },
+    {
+      "step": 4868,
+      "four_rank_max_seconds": 16.31390953063965
+    }
+  ],
+  "training_wall_seconds": 10719.255413874984,
+  "PSI_scope": "Host /proc/pressure, cgroupv1; not per-cgroup PSI",
+  "memory_interpretation": "Includes file/page cache, not RSS; actual oom_kill verified separately",
+  "local_raw_artifacts": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/train4868.log",
+      "bytes": 582549,
+      "sha256": "80481d33bb5df41158c8fbc931c4c5488e0b5535667477bb3acf8f51a9bd5650",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:36:25.968379+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/export4868.log",
+      "bytes": 565,
+      "sha256": "05a226dcd2b62b6b6f2178763259fd388ba158122577cbc464e6bdc02ca388af",
+      "time_range_utc": [
+        "2026-10-06T23:36:28.446956+00:00",
+        "2026-10-06T23:36:54.628319+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/verify4868.log",
+      "bytes": 609,
+      "sha256": "eb24d088a6d767fc365a3afbf9152b9aa02e129aa6e7c9eaabb96522ba3f4585",
+      "time_range_utc": [
+        "2026-10-06T23:36:54.640178+00:00",
+        "2026-10-06T23:37:13.691076+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-coco.log",
+      "bytes": 696,
+      "sha256": "745135551989d4ea412cbc159a80d16a105aca4b39e02a00b2a7b612e9fafa76",
+      "time_range_utc": [
+        "2026-10-06T23:37:13.702720+00:00",
+        "2026-10-06T23:40:14.050563+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-flickr_test1k.log",
+      "bytes": 785,
+      "sha256": "3ae570228f49b5db2e1a6498c8fb76f0393aa0e49023397e07a9274f9e3f9808",
+      "time_range_utc": [
+        "2026-10-06T23:40:39.135002+00:00",
+        "2026-10-06T23:41:08.205180+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-urban.log",
+      "bytes": 1192,
+      "sha256": "96f563afeb282b688fce1db841e382c162d828fa1616be20ccc01a4762033a11",
+      "time_range_utc": [
+        "2026-10-06T23:40:14.064360+00:00",
+        "2026-10-06T23:40:39.123923+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-docci.log",
+      "bytes": 782,
+      "sha256": "5e29c8fef43ff7d7d275c20f8f4a03f45b5ade1d8ebe1891c7a43267fca4f521",
+      "time_range_utc": [
+        "2026-10-06T23:41:08.216852+00:00",
+        "2026-10-06T23:46:04.767930+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/eval4868-long_dci.log",
+      "bytes": 855,
+      "sha256": "1fa9b3bc2be9b0fef9de87e3cdd6072dcbc7a3dae5055a65e8d826c2ce66ff25",
+      "time_range_utc": [
+        "2026-10-06T23:46:04.780988+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/review-final.log",
+      "bytes": 580,
+      "sha256": "e6bb20ecbb03c139546866653951da508e155ba8d4446881d51faad0ec89b2ae",
+      "time_range_utc": [
+        "2026-10-06T23:54:15.185649+00:00",
+        "2026-10-06T23:58:46.936147+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/resource-telemetry.jsonl",
+      "bytes": 5311755,
+      "sha256": "36ec1611c70aed1d24e369219250a7bd85170d99e8918d4a2f7d31888aed7913",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.597498+00:00",
+        "2026-10-06T23:58:45.931571+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/sampling-audit-4000.json",
+      "bytes": 46962946,
+      "sha256": "df4a62b2ce5c88d79147054fb3477f39620a79b964d6a4042be76a715fdd935d",
+      "time_range_utc": [
+        "2026-10-06T20:35:57.027373+00:00",
+        "2026-10-06T20:37:22.578841+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/prelaunch-local-path-proof-5000.json",
+      "bytes": 992338,
+      "sha256": "747576f6336672d6469bffd871e2b568796c62b8b9fe640c55cfc4e42d5772e8",
+      "time_range_utc": [
+        "2026-10-06T20:35:57.027373+00:00",
+        "2026-10-06T20:37:22.578841+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/steps.jsonl",
+      "bytes": 242162400,
+      "sha256": "d579bf46cb141ef3ac4abc5abecf203e9e2aeae321c47e592d50d4af46a92989",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/checkpoint_timing.jsonl",
+      "bytes": 239,
+      "sha256": "c935845edb2e61bd38b6e62e0a4d02015096c3391925730751adab110e399edc",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/cycle_timing.jsonl",
+      "bytes": 371339,
+      "sha256": "9865c037cb3923e5e2d31c89240c17c28998f7129ad44b2c27edbc83153bb350",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98395.jsonl",
+      "bytes": 1024,
+      "sha256": "aecee4d1af960fa46bf686e16d192542c29497c73b8246f811320321094972af",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100988.jsonl",
+      "bytes": 1021,
+      "sha256": "39b3dc57e01338149f09d448bfbae18ef0c475bd4bfe8a6d7a816d019be023b8",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100957.jsonl",
+      "bytes": 1045,
+      "sha256": "4f45d73075651a46b9fa1fcaeabbc33489e04d36eb53c4515a313c366260fb54",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93298.jsonl",
+      "bytes": 1056,
+      "sha256": "9b7539f22825bb0b064ec5720c50831b89865e567877c49b2abd23220257b20c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98402.jsonl",
+      "bytes": 1041,
+      "sha256": "3e884b6065665daef2d2a087ce860841b097272a3ff915de09db8ef31d7d9e0c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93295.jsonl",
+      "bytes": 1017,
+      "sha256": "fa8b28fc49174e14d9087853741952d37c217f0cc4ce48165140d7532de7fd24",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98422.jsonl",
+      "bytes": 1017,
+      "sha256": "afdab6c435e8c382b753438afccaff0949bd2ff51853906a9ce286e6906622bf",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/rank3.jsonl",
+      "bytes": 26143866,
+      "sha256": "3dee72a871d705a83885b4c99ee3aac3f0d510248ebfe8c2f8b5455341984e17",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93339.jsonl",
+      "bytes": 993,
+      "sha256": "e93ef5698503fcad1ceb755407f612baa1dcbc6f48e69a384e7f2b55846f1cce",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/rank2.jsonl",
+      "bytes": 26143843,
+      "sha256": "8a6a5103bf5db9c23debba3887ab9ca24bcdde23d4516b8cc13a21230986ca36",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100974.jsonl",
+      "bytes": 1022,
+      "sha256": "6d9e2af7ab779da5b364ea7c94f740b2c2494ee4c45ab39d622fbe071682047f",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93290.jsonl",
+      "bytes": 986,
+      "sha256": "cae59887a16a6be95db414ed33cef8afa644dc2312614b8ba99901e4cc853082",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95756.jsonl",
+      "bytes": 1011,
+      "sha256": "680964d309fcbf5b7f339f401ec604b03a1dced277fc76053f077d9114796a66",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100995.jsonl",
+      "bytes": 1013,
+      "sha256": "02b3b7f27e2238a4978adede75242201752f5bf8dbf1eb81328fc4fb2e4bfd4d",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93346.jsonl",
+      "bytes": 1001,
+      "sha256": "b04f59d2ff59c94f5f2c8dcc0a05b95307e642f54fc011b35195e2501827e49a",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98417.jsonl",
+      "bytes": 1057,
+      "sha256": "43bb89a7ae84e3a375bd7a685d080bc5350fe2dea14a55e04ccc327e4438472e",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93320.jsonl",
+      "bytes": 993,
+      "sha256": "200bc2c208e46c06620e730c5c05d5a261973d80bf4060bbe12b5e1246a6a61b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98409.jsonl",
+      "bytes": 1018,
+      "sha256": "9af8c4687f46c202db31dc4905ef495dd47c3c124e09bbb1d70b63685d2785a8",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95801.jsonl",
+      "bytes": 1018,
+      "sha256": "028da53e21737205d65ca6a9a12e676d7449e4b02e5eb1a99b901266bc2ddd07",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93288.jsonl",
+      "bytes": 993,
+      "sha256": "023ea9dfb0ec176e2ffb9de2fd01cec750d12c1f9893ef5a510a25332d78bbc8",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98416.jsonl",
+      "bytes": 1034,
+      "sha256": "e5191e588eae0fbad5f4a78aca88199b06fffdcc6dcda1b0ba829f1bc69e0bff",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95798.jsonl",
+      "bytes": 1018,
+      "sha256": "de28911d821732a2de48a0f2d46ec3ab5ff866f7b1d7b179f53cbb9e93f24634",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98426.jsonl",
+      "bytes": 1058,
+      "sha256": "95401b80a418c0c21243a98125dcd94478919969ca7cf6f90d6c5dbe31df41f7",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100993.jsonl",
+      "bytes": 1038,
+      "sha256": "ce999ccf19d9ec7aca92a5753d73d548dcdf5517b3353676baea67346d8653bb",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100982.jsonl",
+      "bytes": 998,
+      "sha256": "e19537841ca62129c2113f90fdcb3aa1ff242a42c3541d06d2adc347a4feb61d",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95782.jsonl",
+      "bytes": 1018,
+      "sha256": "d36e1185c2c2635419a81c333a4a7af9f6969ac2eb83c3577ad35fc3590a8915",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98424.jsonl",
+      "bytes": 1018,
+      "sha256": "321cd4f0c78f8414c361791f00050fdd0c3ebe7901ca8abb626227c8d9543583",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100956.jsonl",
+      "bytes": 966,
+      "sha256": "9352f76e8554f01d4eb923e2842589bd12b08008f9eaa38479820506b6024656",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98398.jsonl",
+      "bytes": 1018,
+      "sha256": "51276fda078e3b8fa95d62105b896e0f33719f3fa16afb5d8864ce16d7da8996",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95797.jsonl",
+      "bytes": 1035,
+      "sha256": "5be95487a8d39b3c8f7807b5ed206aa3aa9a4a06320fb052fb6b5fae6975bf06",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100994.jsonl",
+      "bytes": 1015,
+      "sha256": "d58ee196f288fba40224c051c050a930fc855a0126fa00dfc5d724a1ba10feef",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/rank0.jsonl",
+      "bytes": 26156007,
+      "sha256": "c3bc52bea0798a17f9ac36640d2b9062106a6d5160ae0f812d2d68be4a299a81",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98404.jsonl",
+      "bytes": 987,
+      "sha256": "6df40fc90712c3f939303c1e4b01c76f48fefc4acd33d59e3c12c04b36709aae",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100976.jsonl",
+      "bytes": 1005,
+      "sha256": "681cf036bef6f133063f6a85c9fcf2b909c45aa1ee0800286da6bf50c86faa39",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98394.jsonl",
+      "bytes": 1019,
+      "sha256": "756d5f25cb8cdaf837a464423ff04b4a531e19613639baa0396657513cad6fd0",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93299.jsonl",
+      "bytes": 1010,
+      "sha256": "274720ff90a37e249fc141003bbb33165d480899b5ff2960a45698da5d6b1e96",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95783.jsonl",
+      "bytes": 1007,
+      "sha256": "47b4a2692ad0e4f11fc6c7c810dec632c6a0e1e924c076f3d27d61b4704d3e30",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95784.jsonl",
+      "bytes": 1018,
+      "sha256": "772fb79e7874c4f0f5ca1b5c229a61a4123577495dafb081a59e14724827daa1",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98410.jsonl",
+      "bytes": 1009,
+      "sha256": "8372631b15c97c46a13d8ed877b89be1c2728db8c88c356725355a98852ac954",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98423.jsonl",
+      "bytes": 1056,
+      "sha256": "5a29e4a9601f39e0a86cdd12db11f2ef913ccf08d6333977f15f1b1107ff30c5",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98397.jsonl",
+      "bytes": 1010,
+      "sha256": "8bd5701ba058861b9364ae687826306b90e63aa1b9504564c820f02551ab3c84",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93302.jsonl",
+      "bytes": 985,
+      "sha256": "6d026b64d917027223709ebadb4b2ed3c9b279338985217d86707b122ba9eeb2",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95754.jsonl",
+      "bytes": 993,
+      "sha256": "75bb37b228843c33c1b244fe1ac55736b4cd0b89ff7e16ffd0539356095093b4",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95776.jsonl",
+      "bytes": 1010,
+      "sha256": "4644aba361f4ec05ab72abeab6eae15722350ce065af58420d723986dcb12e24",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93300.jsonl",
+      "bytes": 1034,
+      "sha256": "6eefa235abb80a57630f7567f1924d27fc0188e3bd822722d7fa11faf1597b59",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93291.jsonl",
+      "bytes": 971,
+      "sha256": "9bb0a7d32f8f1304f610721a10ee3ce82c96da4a1db0b6b127de91d5520becd6",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93349.jsonl",
+      "bytes": 1010,
+      "sha256": "301c68a9154b87fc95a244f7b6023031743d1817644193ed34ae317df0dab6f3",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98411.jsonl",
+      "bytes": 970,
+      "sha256": "27fefd5fa133e9f932fa7b7fce6180db771587db0af49cc8ded743b24f3b6355",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100960.jsonl",
+      "bytes": 989,
+      "sha256": "e3576035e7850eec230cff950874fb19608490707a73aa7988fa9f579a835016",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100979.jsonl",
+      "bytes": 1039,
+      "sha256": "fdb628d2a794f26cbdcbc76e547821502caff11356986890b56ee35c6b0b702d",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95774.jsonl",
+      "bytes": 995,
+      "sha256": "b83f1ff489fca12b38e841680614ae59c69b7ac7edc1e311244843e1c36c2480",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98405.jsonl",
+      "bytes": 1057,
+      "sha256": "b0a417f7fb04791ac7adf9d54cd8ac9744e5144f5f980e345af2f759c9003a21",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100975.jsonl",
+      "bytes": 1038,
+      "sha256": "32d8cdf90fc1117e581516b92b70b473f8ecd47eb808c5e78d37ea8569e64bdf",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95781.jsonl",
+      "bytes": 1010,
+      "sha256": "8c825aa3fe1640e86c99d1499b1cc244cdb245996bdb932178f1ee310455c60b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95800.jsonl",
+      "bytes": 992,
+      "sha256": "d9ebce5e7f6f82284b784ad367f5e3a73a4bbbbb88412a67670f3bc0ccc2af06",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95780.jsonl",
+      "bytes": 985,
+      "sha256": "07f4a674ebc26cae149a0faaa9c0d1f893cd92e94f121647c2e7379855b36a09",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95773.jsonl",
+      "bytes": 986,
+      "sha256": "b8d4f9f66d1807ab09a3761f3ecadd5fef6fcb1a911c12017363d237d1d979c9",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95772.jsonl",
+      "bytes": 987,
+      "sha256": "e854ae1f631d2b74ac4ff3e778b1a429740a19f11359d607991b376785a7d7d6",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95785.jsonl",
+      "bytes": 994,
+      "sha256": "c5555953c42c34dfb402e289e68b7c85b258712c0a8bef5a1c143e4b537b828e",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/rank1.jsonl",
+      "bytes": 26144491,
+      "sha256": "b0c518eb24766c7c20f2f4725eeb76dee07776926a0775300eee9cba6099c51b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100983.jsonl",
+      "bytes": 1037,
+      "sha256": "c94bd0e72e53c5a974f6b2f0326681598f773437321d625c0204239011bb60de",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93323.jsonl",
+      "bytes": 1011,
+      "sha256": "0a69635140579bfef6bcc853017a2ba9a6cb325af8c1b095680942802bf93580",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93304.jsonl",
+      "bytes": 1034,
+      "sha256": "3a0b4ae329cec04b6b0d7a7926cd0169116b54ec090bcf349bdcd84a23d6135d",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98415.jsonl",
+      "bytes": 986,
+      "sha256": "b1a322d75faae7b0ecc0ffd0f705e4e26a567e040e11b7ba61218d25f4609081",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98421.jsonl",
+      "bytes": 994,
+      "sha256": "323f964d4b3293e38d8d0c9c8b6e589a8d617480b13c3cf7f237a0e03e83448b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98403.jsonl",
+      "bytes": 994,
+      "sha256": "7bd7c12bb5b8e1b213794efc6b58f53bebe81007f3358a326d0881e4ba990d25",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98413.jsonl",
+      "bytes": 1011,
+      "sha256": "48ee82e553ec18e047e231e34255491f47e938656a16f5f35398687c75494101",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98428.jsonl",
+      "bytes": 994,
+      "sha256": "995634529729328ebae14b2b5ec9a52228ff9e9c7991b3269e2120f9878df31c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95802.jsonl",
+      "bytes": 986,
+      "sha256": "3cd905af378d5eace51531b823f7f09d41978b64ab2efc96f9daafb5ad90e0e6",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100986.jsonl",
+      "bytes": 966,
+      "sha256": "6b9bf80eb27ee7518e952ef2dca893c77617bc17f8a24d92a81a4b90529c4af5",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95803.jsonl",
+      "bytes": 993,
+      "sha256": "7bf68f971ccf0d4fa95698fe96edf4e5a5f5a50c6d6c0b6c08c8b4c53d1eeda3",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100962.jsonl",
+      "bytes": 993,
+      "sha256": "cb0503e1ce920627073be6a524c9e6c27273233c9e4f2bdc19bbba125e8803c7",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98407.jsonl",
+      "bytes": 988,
+      "sha256": "6a1bc30d4f1f19fe950e87fc93d3be8c70aed0706c18609991456341649e5b53",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100990.jsonl",
+      "bytes": 1014,
+      "sha256": "a2ed4b1e93905c7439f810227ba33331cf1b78f340a97f7c38a6d24a337b27f7",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95760.jsonl",
+      "bytes": 1033,
+      "sha256": "4db2a6b91a3c897f67912a19265ae4f1dab2a9c28fe497735fbc1651d765f93c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93292.jsonl",
+      "bytes": 1010,
+      "sha256": "630f1f32863abbca2cd9202ee8032ef6bc029fe943a38b7c557cb4600cef1544",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100987.jsonl",
+      "bytes": 990,
+      "sha256": "14b03f0728bb285912662359980dd5ff20a6db1295ff425f9af1308893228937",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95777.jsonl",
+      "bytes": 1018,
+      "sha256": "45d1dbd7df9e6c7a157a3345bcfe639b5c14a5d068103d1a500f740b9d8c6f52",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100977.jsonl",
+      "bytes": 1047,
+      "sha256": "33b6ccc3648b0f48a444b07427fe1703ae33b62d814530d16e7ddd018a9c9cb3",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98399.jsonl",
+      "bytes": 1034,
+      "sha256": "6958ef65dd12dacb883aeeaa9696a8de945facbbfc21b4cee7e2d6a41f5f03de",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98414.jsonl",
+      "bytes": 992,
+      "sha256": "1bf074966780a6bb4e935276de570e93a5f965b5ec442050ad9ae885bfcf413b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95775.jsonl",
+      "bytes": 987,
+      "sha256": "6c859a941d129347f1339ab7e1f25cf2f6c7747f74c66a3c219848b47ddb7ada",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93347.jsonl",
+      "bytes": 1024,
+      "sha256": "4d4ec6a3761edce0e11c1e2c93506d70cadec92b258155b4a4ae002dd7aeb5c1",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93318.jsonl",
+      "bytes": 995,
+      "sha256": "dfc6f0fb9c364a5683293ebb668a0b161fa95d6e4074eeb98a612eb573a4eb09",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93319.jsonl",
+      "bytes": 995,
+      "sha256": "3ae35af6b11c41871cf3d18d244ce336937279eafb15a02f1fc5c14fbfc5c201",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93289.jsonl",
+      "bytes": 1041,
+      "sha256": "fbc0b52763aff3933468b56b90bbb5d0e326959040a0ac99053266b63ea0b9ec",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100985.jsonl",
+      "bytes": 972,
+      "sha256": "68b0d616db615e8c772a1552edd924604083aceb8eb3f59aa9332e2b1b92bd81",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93306.jsonl",
+      "bytes": 959,
+      "sha256": "8cfa6184482012e11358f769c30ba99e9faa70cbe77e5fd1c6f56a4a4e6a6363",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98418.jsonl",
+      "bytes": 1012,
+      "sha256": "da3569ffdfad1f536282765a004273d88c2dd6b36149703f7241212777ab18e1",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93322.jsonl",
+      "bytes": 1041,
+      "sha256": "6eea364f11e35a7300a2377211141975b06f587a4cdcee13fc0b50955220e6ec",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93313.jsonl",
+      "bytes": 1026,
+      "sha256": "7ccfe248e37c4a451a74418f28e3b147d5a22966f38d02b2b5fe4d031b6887a4",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95770.jsonl",
+      "bytes": 1035,
+      "sha256": "17a21d3b0aeaf14c0da8f42071a58665f0187eab8c66889f26ea37a6e09d984e",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98412.jsonl",
+      "bytes": 1034,
+      "sha256": "5ce127d666f7bc21d7e7b182ca27975b84e41ac2d945f3e7c24a97293ffdd3dc",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98396.jsonl",
+      "bytes": 986,
+      "sha256": "7ba205dd18b16c40ee83d12d5062521ad4de2cab8357736d7ba2b5329c9353ff",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95759.jsonl",
+      "bytes": 1017,
+      "sha256": "d9fad87e6ceb710462591bb4fdf0e409beef1c69b6a5f55f73f0eb7700c49f74",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid98419.jsonl",
+      "bytes": 1011,
+      "sha256": "ab6be73ac32c82dda6eeb00755b3138db6a3e8753527876ae65952cb3be052b7",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95758.jsonl",
+      "bytes": 985,
+      "sha256": "b4b03380737f4149538625d19f739fe06e6f429f4c2c56cb4b2fb536199b69e4",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100973.jsonl",
+      "bytes": 1037,
+      "sha256": "ce56c5c408d99425e4b66cc886dd1e4a0c88ff9ed445f67a874017b0de28ddc3",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95757.jsonl",
+      "bytes": 1033,
+      "sha256": "fb9b8adb44aaf4e8ab7369484d80c419a47568171058d2286f01933264f969d3",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93293.jsonl",
+      "bytes": 1041,
+      "sha256": "aaad1e0fda0875ab2fdd8d518730896a88575ac3ae98cddb2853eadf677c6df6",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100959.jsonl",
+      "bytes": 992,
+      "sha256": "bbdd4d180d3081ebe11e9e0c5503de0375ea02547846623ffeecd81f2c90f420",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100984.jsonl",
+      "bytes": 1006,
+      "sha256": "fd5cc5ebc751fe2b23b8c4b101109b1f8f0734ef772e1c3c4f06943f06b75ef3",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93344.jsonl",
+      "bytes": 984,
+      "sha256": "77057283e1b33deb7533fbaf54aa3be8c5eaed0391435e8b3342beb11530ddf9",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95786.jsonl",
+      "bytes": 1033,
+      "sha256": "974f27b7ff869a2fc92597229c1ddaea8f4b71bda92a31af58afb5e1e6f9fba6",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100996.jsonl",
+      "bytes": 966,
+      "sha256": "ab02a6298e45f89aa3d556d55f188ad33a6af9abb8cacc08170ea0008fd21624",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93321.jsonl",
+      "bytes": 1008,
+      "sha256": "34cd3ec08c036bba8bafc5dddc39f34ff8a0c982d54e8af265e8639c0914799b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid98400.jsonl",
+      "bytes": 985,
+      "sha256": "cbe41ccfb6f197f53f038ee2d03c823996ad34740da5b651c1477fe185396a2a",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93303.jsonl",
+      "bytes": 1057,
+      "sha256": "1473c8dac0868865a23e206a2fe99f70ffd26262b8cd2ab57dc3ce6e96f50097",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95799.jsonl",
+      "bytes": 1018,
+      "sha256": "ef92d8a3e5037dceed762f72eeed86abc575813ba48836c94d6848b898a7399c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100991.jsonl",
+      "bytes": 1022,
+      "sha256": "416cb6d592bfc6bc5537a086451a9c404a6f051ed28a626184847de40c5a0e4a",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95753.jsonl",
+      "bytes": 1011,
+      "sha256": "558df7fc2ed83cb15cf507b843366084f5bb7aa1dec11922c067e944609c6f38",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100955.jsonl",
+      "bytes": 1028,
+      "sha256": "85a99f944c9e61731c4041e01ae60cb48c0be9262a590a52ff899387bd51ae42",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid95755.jsonl",
+      "bytes": 1058,
+      "sha256": "db1d91deb1ff78210772fc0823bd659c06be8dd38aac9dbbabe6f1b36da5482f",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid95779.jsonl",
+      "bytes": 1034,
+      "sha256": "fedb050f4eee8b9f7c3bb559bfce85a71f47378ef911f1d0a43752cdabc83cd5",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100978.jsonl",
+      "bytes": 992,
+      "sha256": "c720a05ff95b1781a17f49c0ddcfaa4a437cec9cfb06dcd477c14a0d33b7b9e5",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98401.jsonl",
+      "bytes": 987,
+      "sha256": "4b901efe1c2b2d9fc98395ce6ecbd1038dce8372275237baa01ea7405f4364fb",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid95771.jsonl",
+      "bytes": 995,
+      "sha256": "bba34e4f65d19d48d19d681c7e5053de442ed7f3364ec09d31f1d9ecc4deda4e",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100997.jsonl",
+      "bytes": 1013,
+      "sha256": "6098690ccd5965c0f02add36d1367dd9885585f16db0055fffbb229dff4fff01",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93345.jsonl",
+      "bytes": 994,
+      "sha256": "61ce271e7b315aec63cd528a8be4ba330a736005a4cb637799111888be7035b0",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid98427.jsonl",
+      "bytes": 995,
+      "sha256": "e88f518611360897c7e9500f3ba8478c8a685d7772336191c68a19f48ed26f0b",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid100981.jsonl",
+      "bytes": 1038,
+      "sha256": "bb68c5a283ac833c7fe412520b5a97520355445ffe56092c55cfb402a384f58e",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid98406.jsonl",
+      "bytes": 967,
+      "sha256": "10a5db180e4520b566134b0bb5fd019c9289da5f1f237ff0979d202d54e80898",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100958.jsonl",
+      "bytes": 990,
+      "sha256": "e309d59d079ba6640ef51c5b64336960427a3d6c104299259aaf07d49e59521d",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid95796.jsonl",
+      "bytes": 962,
+      "sha256": "8d85961a8115738ee89874e989f70162727e1feda00ad6094f0c8a5726ad3a38",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid93294.jsonl",
+      "bytes": 1033,
+      "sha256": "481f38db7ad5043284cbce21a3c8580dd0ee8c3cc8a48d41a4d3f84c31c98de9",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93348.jsonl",
+      "bytes": 986,
+      "sha256": "157d73655191c9cbba52aaf513a9bbbae032412341817623412613cb5ccad74a",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank0-pid93314.jsonl",
+      "bytes": 961,
+      "sha256": "55b80053347d16218ac5f469316464a015dc580af6f6bb880ab8ce589211646e",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid93343.jsonl",
+      "bytes": 1019,
+      "sha256": "1cedf8262660d62313750854c4630065a854169393cfcdc4ec8f505445790dd1",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid93301.jsonl",
+      "bytes": 1011,
+      "sha256": "956000319fb91cce2f2a450e0541538ba934955a279fae7e8ff211f258d4571c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank3-pid100961.jsonl",
+      "bytes": 1038,
+      "sha256": "9943099e798cedb04125bc82f992f2440886cdcdbf972a0ba781131f31470723",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank1-pid100972.jsonl",
+      "bytes": 1014,
+      "sha256": "001b770aba8cf3850f6c8880f5b1ab6219fb1a56ddc894faf255b84e97b88b7c",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    },
+    {
+      "path": "/root/said_s02_stage500/formal-nested-detail-d3-balanced-full-phase-20261006/image-paths-rank2-pid100992.jsonl",
+      "bytes": 1016,
+      "sha256": "ceb936e022fa882741fb31e908d6edc1dc5d7e9f2aeba1489929e3c510bd27cb",
+      "time_range_utc": [
+        "2026-10-06T20:37:22.578841+00:00",
+        "2026-10-06T23:54:12.645340+00:00"
+      ],
+      "uploaded": false
+    }
+  ],
+  "io_PSI": {
+    "some": {
+      "count": 21615,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.64,
+      "max": 11.06
+    },
+    "full": {
+      "count": 21615,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.64,
+      "max": 11.06
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 21615,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.02,
+      "max": 1.99
+    },
+    "full": {
+      "count": 21615,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 1.81
+    }
+  },
+  "local_large_binary_assets": [
+    {
+      "passed": true,
+      "completed_steps": 5,
+      "global_step": 5,
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 0,
+        "next_batch": 5
+      },
+      "optimizer_counters": [
+        5
+      ],
+      "model_adapter_optimizer": true,
+      "rng_ranks": 4,
+      "loader_rng_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step000005.pt",
+      "bytes": 1884187770,
+      "sha256": "5c6fbf26dd2eb9fbcb1a7b4906c2b0b7ddd4de5ce3443839068a04fbc7f26fcf"
+    },
+    {
+      "passed": true,
+      "completed_steps": 500,
+      "global_step": 500,
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 0,
+        "next_batch": 500
+      },
+      "optimizer_counters": [
+        500
+      ],
+      "model_adapter_optimizer": true,
+      "rng_ranks": 4,
+      "loader_rng_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step000500.pt",
+      "bytes": 1884187770,
+      "sha256": "52202a62e8a6a30d7f87045e8ae4a23ba13e7296d6785626728d53b5ee5c2a87"
+    },
+    {
+      "passed": true,
+      "completed_steps": 1217,
+      "global_step": 1217,
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 1,
+        "next_batch": 0
+      },
+      "optimizer_counters": [
+        1217
+      ],
+      "model_adapter_optimizer": true,
+      "rng_ranks": 4,
+      "loader_rng_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step001217.pt",
+      "bytes": 1884188282,
+      "sha256": "b5e59502d0c7dbec8687c6c4cff944b19e72d8cfed181f55732d0add0c31a789"
+    },
+    {
+      "passed": true,
+      "completed_steps": 2434,
+      "global_step": 2434,
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 2,
+        "next_batch": 0
+      },
+      "optimizer_counters": [
+        2434
+      ],
+      "model_adapter_optimizer": true,
+      "rng_ranks": 4,
+      "loader_rng_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step002434.pt",
+      "bytes": 1884188282,
+      "sha256": "611400d80f1386ade88309ad951ebaab69aebf84d1a82fcc51624a81d5e39fcb"
+    },
+    {
+      "passed": true,
+      "completed_steps": 3651,
+      "global_step": 3651,
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 3,
+        "next_batch": 0
+      },
+      "optimizer_counters": [
+        3651
+      ],
+      "model_adapter_optimizer": true,
+      "rng_ranks": 4,
+      "loader_rng_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step003651.pt",
+      "bytes": 1884188282,
+      "sha256": "3aebb4fbd65c2eb17d2eef12c087c8e0d1cc9bbfcac503faf84a769e2c6c9457"
+    },
+    {
+      "passed": true,
+      "completed_steps": 4868,
+      "global_step": 4868,
+      "horizon": 4868,
+      "cursor": {
+        "next_epoch": 4,
+        "next_batch": 0
+      },
+      "optimizer_counters": [
+        4868
+      ],
+      "model_adapter_optimizer": true,
+      "rng_ranks": 4,
+      "loader_rng_present": true,
+      "fresh_common0": true,
+      "uploaded": false,
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step004868.pt",
+      "bytes": 1884188282,
+      "sha256": "d159163e3e127e20ea17f8932454545e2648f2d2f052c60ac3667ac15b79542f"
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/student_step4868.pt",
+      "bytes": 612069633,
+      "sha256": "2b0150feb3588063da3c93b3f93ac1b4bb2b3df223e06ed1e5ba458a4e3f2487",
+      "uploaded": false
+    }
+  ],
+  "sampling_raw_evidence": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/sampling-audit-4000.json",
+    "bytes": 46962946,
+    "sha256": "df4a62b2ce5c88d79147054fb3477f39620a79b964d6a4042be76a715fdd935d",
+    "uploaded": false
+  }
+}
