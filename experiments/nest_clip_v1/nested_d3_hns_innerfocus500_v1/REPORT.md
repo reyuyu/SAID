@@ -36,3 +36,24 @@ No independent view-specific parameter branches exist; output norms and shared p
 Do not assume trained-model gradients scale exactly with beta; masks, sigmoid derivatives and shared-parameter conflicts change. One seed at500 does not establish causation.
 
 Checkpoint/bare/raw logs stay server-local. RUNTIME_STATS.json records paths, sizes, SHA256 and time intervals. /root disposable overlay; NFS originals retained.
+
+
+## Evidence-based interpretation
+
+Q1. Uniform weakening does not improve the primary objective: Weak minus v1 Score5 -0.053779pp, J_long3 -0.288299pp, Short4 +0.298pp. This shows a short/long tradeoff, not evidence that v1 is excessively strong overall.
+
+Q2. Asymmetric (1,2) does not replace (2,2): Inner minus v1 Score5 -0.051396pp and J_long3 -0.135660pp. Inner minus Weak improves J_long3 +0.152638pp but Score5 only +0.002383pp.
+
+Q3. Increasing only the inner coefficient, Weak -> Inner, improves Urban and DOCCI and aggregate J_long3, but Long-DCI mean R1 falls by 0.092081pp. Thus this supports a local rich-text effect, not a claim that inner nesting chiefly causes true Long-DCI gains.
+
+Q4. Weakening only the outer edge, v1 -> Inner, improves Flickr mean R1 +0.160pp and Short4 +0.075pp, but COCO mean R1 -0.010pp, Urban mean R1 -0.100pp and Long-DCI mean R1 -0.467pp; DOCCI mean R1 +0.160pp. Short restoration is partial and long performance is not preserved.
+
+Q5. No additional Joint-VG-like collapse is observed relative to v1. All runs share an early step8 density peak near0.957, then decline. New-arm last50 F>Dall>D3, whole-mask DF equality0, inner equality0.000234375, triple equality0. The full500 equality and density maxima are recorded separately; temporary early densification is not concealed.
+
+Q6. Uniform strength has a short/long tradeoff; inner-only strengthening improves Urban/DOCCI locally but does not improve Long-DCI. These tests do not justify replacing uniform(2,2) with granularity-dependent(1,2). One seed at500 updates cannot establish general causation or full-training ordering.
+
+Recommendation: **HNS-v1**, beta(2,2), for human consideration of full training. Both BEST_SCORE5_CANDIDATE and BEST_LONG_CANDIDATE are HNS-v1. Inner has the highest Urban+DOCCI J_long, but it is not the three-dataset long champion. No full training has been started.
+
+Two formal runs independently started from common0 and stopped at500. Each1000-real preflight and all512000 actual samples/texts/tokens/indices/LRs matched; four-rank synchronization, optimizer/RNG/cursor and strict export checks passed. CPU coverage:107 frozen-production/selection/report tests plus2 actual-launcher regression tests. E1's argparse launch failure was repaired by a read-only audit invocation; no retraining or reevaluation. See AUDIT_LAUNCH_RECOVERY.json on the E1 branch.
+
+All four GPUs and runner final status were verified idle after publication. Code/config/tests and reviewed small JSON/Markdown are published; image mirror, optimizer/model checkpoints, bare weights and raw logs stay server-local. /root is disposable overlay; NFS originals remain the source of truth.
