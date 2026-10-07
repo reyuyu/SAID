@@ -105,6 +105,20 @@ def sample_interior_split_k(n, sampling_seed, epoch, sample_id):
     return random.Random(int.from_bytes(hashlib.sha256(material).digest(), 'big')).randint(2, n-2)
 
 
+def sample_kr2m1_detail_indices(n, sampling_seed, epoch, sample_id):
+    """Uniform K=2..m-1, then an ordered subset, using two private RNGs."""
+    m = n-1
+    if m < 1:
+        return []
+    key = f'{int(sampling_seed)}:{int(epoch)}:{int(sample_id)}:nested_detail_kr2m1_k_v1'.encode()
+    k_rng = random.Random(int.from_bytes(hashlib.sha256(key).digest(), 'big'))
+    k = k_rng.randrange(2, m) if m >= 3 else 1
+    # Keep the frozen subset namespace; K=3 agrees with fixed-D3 indices.
+    key = f'{int(sampling_seed)}:{int(epoch)}:{int(sample_id)}:nested_detail_d3_v1'.encode()
+    subset_rng = random.Random(int.from_bytes(hashlib.sha256(key).digest(), 'big'))
+    return sorted(subset_rng.sample(range(1, n), k))
+
+
 def sample_contiguous_detail_indices(n, sampling_seed, epoch, sample_id):
     m = n-1
     if m < 1:
@@ -125,17 +139,19 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
     n=0, K=0 marks the overlong-first-segment fallback (no complete visible
     segment count); n=1, K=0 marks a single visible segment.
     """
-    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'interior_random_k', 'summary_contiguous_detail'):
+    if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'nested_detail_kr2m1', 'interior_random_k', 'summary_contiguous_detail'):
         raise ValueError(f'Unknown sampling_mode: {sampling_mode}')
     original = text_views(caption)
     result = dict(original, reference_views=original['views'],
                   reference_tokens_o=original['tokens_o'],
                   reference_tokens_e=original['tokens_e'])
-    if sampling_mode in ('nested_detail_d3','nested_detail_kr234'):
+    if sampling_mode in ('nested_detail_d3','nested_detail_kr234','nested_detail_kr2m1'):
         result['partial_detail'] = True
-    if sampling_mode == 'nested_detail_kr234':
+    if sampling_mode in ('nested_detail_kr234','nested_detail_kr2m1'):
         result['random_detail_k'] = True
-    if sampling_mode in ('nested_detail', 'nested_detail_d3','nested_detail_kr234'):
+    if sampling_mode == 'nested_detail_kr2m1':
+        result['random_detail_k_rule'] = 'kr2m1'
+    if sampling_mode in ('nested_detail', 'nested_detail_d3','nested_detail_kr234','nested_detail_kr2m1'):
         if not original['valid']:
             padding = torch.zeros_like(original['tokens_f'])
             result.update(tokens_o=padding, tokens_e=padding.clone(), valid=False,
@@ -145,7 +161,9 @@ def sampled_text_views(caption, sampling_mode='fixed_first', sampling_seed=0,
                 detail_pool_size=0, detail_indices=[], dall_indices=[])
             return result
         parts = original['views'][0].split('. ')
-        indices = (sample_random_partial_detail_indices(len(parts), sampling_seed, epoch, sample_id)
+        indices = (sample_kr2m1_detail_indices(len(parts), sampling_seed, epoch, sample_id)
+                   if sampling_mode == 'nested_detail_kr2m1' else
+                   sample_random_partial_detail_indices(len(parts), sampling_seed, epoch, sample_id)
                    if sampling_mode == 'nested_detail_kr234' else
                    sample_partial_detail_indices(len(parts), sampling_seed, epoch, sample_id)
                    if sampling_mode == 'nested_detail_d3' else
@@ -286,6 +304,9 @@ def sampling_diagnostics(batch):
             (batch['views'][i][1] == '. '.join(batch['views'][i][0].split('. ')[1:])
              and batch['dall_indices'][i] == list(range(1, ns[i]))
              and (len(batch['detail_indices'][i]) in
+                 (range(2, ns[i]-1) if ns[i]>=4 else [1])
+                  if batch.get('random_detail_k_rule') == 'kr2m1' else
+                  len(batch['detail_indices'][i]) in
                   ([2,3,4] if ns[i]>=6 else [2,3] if ns[i]==5 else [2] if ns[i]==4 else [1])
                   if batch.get('random_detail_k',False) else
                   len(batch['detail_indices'][i]) == (min(3, ns[i]-2) if partial and ns[i]>=3 else 1))
@@ -384,7 +405,7 @@ class NestedDataset(Dataset):
         self.index_dir, self.image_root = Path(index_dir), Path(image_root)
         self.metadata = json.loads((self.index_dir / 'metadata.json').read_text())
         self.transform = reference_view_a_transform()
-        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'interior_random_k', 'summary_contiguous_detail'):
+        if sampling_mode not in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'nested_detail_kr2m1', 'interior_random_k', 'summary_contiguous_detail'):
             raise ValueError(sampling_mode)
         self.sampling_mode, self.sampling_seed, self.epoch = sampling_mode, int(sampling_seed), 0
         self._records = self._offsets = self._file = None
@@ -434,4 +455,7 @@ def collate(samples):
     if 'random_detail_k' in samples[0]:
         assert all(s['random_detail_k'] for s in samples)
         result['random_detail_k'] = True
+    if 'random_detail_k_rule' in samples[0]:
+        assert all(s['random_detail_k_rule'] == samples[0]['random_detail_k_rule'] for s in samples)
+        result['random_detail_k_rule'] = samples[0]['random_detail_k_rule']
     return result

@@ -312,12 +312,12 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
-    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'interior_random_k', 'summary_contiguous_detail')
-    if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3','nested_detail_kr234'):
+    assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'nested_detail_kr2m1', 'interior_random_k', 'summary_contiguous_detail')
+    if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3','nested_detail_kr234','nested_detail_kr2m1'):
         assert cfg.get('inclusion_hierarchy') == 'detail_chain'
         allowed = (([1.,1.,1.], [1.35,1.35,.30], [1.4,1.4,.20], [1.375,1.375,.25],
                     [1.325,1.325,.35], [1.3,1.3,.40]) if cfg['sampling_mode']=='nested_detail_d3'
-                   else ([1.35,1.35,.30],) if cfg['sampling_mode']=='nested_detail_kr234'
+                   else ([1.35,1.35,.30],) if cfg['sampling_mode'] in ('nested_detail_kr234','nested_detail_kr2m1')
                    else ([1.4,1.4,.2], [1.,1.,1.]))
         assert cfg['view_weights'] in allowed, 'Only reviewed Nested Detail weights are authorized'
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
@@ -571,6 +571,7 @@ def main():
                                            ['All Detail', 'Atomic Detail'] if cfg['sampling_mode']=='nested_detail' else
                                            ['All Detail', 'Partial Detail D3'] if cfg['sampling_mode']=='nested_detail_d3' else
                                            ['All Detail', 'Random Detail K234'] if cfg['sampling_mode']=='nested_detail_kr234' else
+                                           ['All Detail', 'Random Detail K2..m-1'] if cfg['sampling_mode']=='nested_detail_kr2m1' else
                                            ['Summary', 'Detail'] if cfg['sampling_mode']=='summary_detail' else
                                            ['prefix', 'remainder'] if cfg['sampling_mode'] in ('random_k', 'interior_random_k') else ['overview','elaboration']),
                         sample_ids=batch['sample_id'][:8].tolist(),

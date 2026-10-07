@@ -21,6 +21,9 @@ RUN_ROOT=ROOT/'runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007'
 ANCHOR_EXP=ROOT/'experiments/nest_clip_v1/nested_detail_d3_balanced_500_v1'
 ANCHOR_RUN=ROOT/'runtime/SAID-nest-clip-v1/nested-detail-d3-balanced500-20261007'
 BRANCH='experiment/nested-d3-local-search500-v1'
+ENTRY_MODULE='recovery.nested_d3_local_search'
+EXTRA_SOURCES=set()
+PHASE_PREFIX='formal-nested-d3-local-search500-20261007-'
 ARMS={
     'W20':dict(axis='alignment',weights=[1.40,1.40,.20],r=2.,mode='nested_detail_d3'),
     'W25':dict(axis='alignment',weights=[1.375,1.375,.25],r=2.,mode='nested_detail_d3'),
@@ -42,12 +45,25 @@ def sparsity_coefficients(r):
     return [5/(3+r)*v for v in (1.,2.,r)]
 
 
+def arm_sparsity(arm):
+    spec=ARMS[arm]
+    return spec.get('sparsity_weights',sparsity_coefficients(spec['r']))
+
+
+def random_k_arm(arm):
+    return ARMS[arm]['mode'] in ('nested_detail_kr234','nested_detail_kr2m1')
+
+
+def experiment_dir(arm):
+    return Path(ARMS[arm].get('experiment_dir',EXP/arm))
+
+
 def arm_config(arm):
     cfg=json.loads((ANCHOR_EXP/'config.json').read_text())
     spec=ARMS[arm]
     cfg['view_weights']=spec['weights']
     cfg['sampling_mode']=spec['mode']
-    if spec['axis']=='sparsity':cfg['view_sparsity_weights']=sparsity_coefficients(spec['r'])
+    if spec['axis']=='sparsity':cfg['view_sparsity_weights']=arm_sparsity(arm)
     return cfg
 
 
@@ -55,7 +71,7 @@ def frozen_config(cfg,arm):
     expected=arm_config(arm)
     assert expected.keys()<=cfg.keys()
     assert all(cfg[k]==v for k,v in expected.items()), 'Frozen arm config drift'
-    assert cfg.get('view_sparsity_weights',[1.,2.,2.])==sparsity_coefficients(ARMS[arm]['r'])
+    assert cfg.get('view_sparsity_weights',[1.,2.,2.])==arm_sparsity(arm)
     assert ARMS[arm]['weights'][0]==ARMS[arm]['weights'][1]
     assert math.isclose(sum(ARMS[arm]['weights']),3.,abs_tol=1e-12)
 
@@ -63,8 +79,8 @@ def frozen_config(cfg,arm):
 def activate(arm):
     global ARM,RUN,PHASE,ARM_EXP,CONFIG
     assert arm in ARMS
-    ARM=arm;RUN=RUN_ROOT/arm;ARM_EXP=EXP/arm;CONFIG=ARM_EXP/'config.json'
-    PHASE=LOCAL/('formal-nested-d3-local-search500-20261007-'+arm)
+    ARM=arm;RUN=RUN_ROOT/arm;ARM_EXP=experiment_dir(arm);CONFIG=ARM_EXP/'config.json'
+    PHASE=LOCAL/(PHASE_PREFIX+arm)
     local.RUN,local.PHASE,local.CONFIG=RUN,PHASE,CONFIG
 
 
@@ -74,8 +90,10 @@ def indices_digest(ids,choices):
 
 
 def expected_indices(n,sid,arm,epoch=0):
-    from train.nested_semantic_data import sample_partial_detail_indices,sample_random_partial_detail_indices
-    fn=sample_random_partial_detail_indices if arm=='KR234' else sample_partial_detail_indices
+    from train.nested_semantic_data import (sample_partial_detail_indices,
+        sample_random_partial_detail_indices,sample_kr2m1_detail_indices)
+    fn={'nested_detail_kr234':sample_random_partial_detail_indices,
+        'nested_detail_kr2m1':sample_kr2m1_detail_indices}.get(ARMS[arm]['mode'],sample_partial_detail_indices)
     return fn(n,0,epoch,sid)
 
 
@@ -97,17 +115,17 @@ def matched_stream(actual,reference,arm):
         assert {h['rank'] for h in a['rank_health']}==set(old)=={0,1,2,3}
         for h in a['rank_health']:
             s,ref=h['sampling'],old[h['rank']]['sampling']
-            keys=SHARED_STREAM if arm=='KR234' else FULL_STREAM
+            keys=SHARED_STREAM if random_k_arm(arm) else FULL_STREAM
             assert all(s[k]==ref[k] for k in keys), ('Stream drift',arm,a['step'],h['rank'])
             assert s['nested_d3_exact'] and h['gradients_finite'] and h['batch']==256 and h['updates']==a['step']
             choices=[expected_indices(n,sid,arm) for n,sid in zip(s['n'],s['sample_ids'])]
             assert [len(c) for c in choices]==s['K']
             assert s['lowest_selected_sentence_indices_sha256']==indices_digest(s['sample_ids'],choices)
-            if arm!='KR234':
+            if not random_k_arm(arm):
                 assert s['lowest_selected_sentence_indices_sha256']==ref['D3_selected_sentence_indices_sha256']
             count+=len(s['sample_ids'])
     return dict(passed=True,records=count,all_sample_ids_F_Dall_strings_tokens_exact=True,
-        all_lowest_strings_tokens_exact_anchor=arm!='KR234',all_selected_indices_replay_verified=True,
+        all_lowest_strings_tokens_exact_anchor=not random_k_arm(arm),all_selected_indices_replay_verified=True,
         all_LR_exact=True,epoch=0,seed=0,horizon=4868,cross_run_numeric_comparison=False)
 
 
@@ -121,7 +139,7 @@ def checkpoint_invariants(current,reference):
               'accumulation','seed','sampling_seed','shuffle_seed','workers','optimizer_groups'):
         if k in old:assert cfg[k]==old[k],('Frozen construction drift',k)
     new_model,old_model=copy.deepcopy(cfg['runtime_model']),copy.deepcopy(old['runtime_model'])
-    assert new_model.pop('view_sparsity_weights',[1.,2.,2.])==sparsity_coefficients(ARMS[ARM]['r'])
+    assert new_model.pop('view_sparsity_weights',[1.,2.,2.])==arm_sparsity(ARM)
     assert old_model.pop('view_sparsity_weights',[1.,2.,2.])==[1.,2.,2.]
     assert new_model['search_hparams'].pop('view_weights')==ARMS[ARM]['weights']
     old_model['search_hparams'].pop('view_weights');assert new_model==old_model
@@ -189,13 +207,13 @@ def sampling_audit():
             old=previous[len(evidence)];assert old['sample_id']==sid and old['rank']==rank
             assert view['valid']==old['valid']
             for label,key,pos in [('F','tokens_f',0),('Dall','tokens_o',1),('D3','tokens_e',2)]:
-                if label=='D3' and ARM=='KR234':continue
+                if label=='D3' and random_k_arm(ARM):continue
                 assert view['views'][pos]==old['strings'][label] and view[key].tolist()==old['token_ids'][label]
             assert view['detail_indices']==expected_indices(view['n'],sid,ARM)
-            if ARM!='KR234':assert view['detail_indices']==old['sentence_indices']['D3']
+            if not random_k_arm(ARM):assert view['detail_indices']==old['sentence_indices']['D3']
             assert view['detail_indices']==sorted(set(view['detail_indices']))
             assert set(view['detail_indices'])<=set(view['dall_indices'])
-            label='Dk' if ARM=='KR234' else 'D3'
+            label='Dk' if random_k_arm(ARM) else 'D3'
             evidence.append(dict(rank=rank,sample_id=sid,epoch=0,actual_path=str(path),valid=view['valid'],
                 strings=dict(zip(('F','Dall',label),view['views'])),
                 token_ids={v:view[k].tolist() for v,k in [('F','tokens_f'),('Dall','tokens_o'),(label,'tokens_e')]},
@@ -206,7 +224,7 @@ def sampling_audit():
     assert before[1][0]==after[0] and np.array_equal(before[1][1],after[1]) and before[1][2:]==after[2:]
     raw=RUN/'sampling-audit-1000.json';dump(raw,evidence)
     result=dict(passed=True,records=1000,all_sample_ids_F_Dall_tokens_exact_anchor=True,
-        all_lowest_text_tokens_indices_exact_anchor=ARM!='KR234',selected_indices_replay_verified=True,
+        all_lowest_text_tokens_indices_exact_anchor=not random_k_arm(ARM),selected_indices_replay_verified=True,
         global_python_numpy_torch_RNG_unchanged=True,fallback_unchanged=True,examples=evidence[:4],
         raw_evidence=dict(path=str(raw),bytes=raw.stat().st_size,sha256=sha(raw),uploaded=False))
     dump(ARM_EXP/'SAMPLING_AUDIT.json',result);return result
@@ -223,11 +241,11 @@ def gradient():
     protocol.WEIGHTS=dict(zip(('F','Dall','Ds'),ARMS[ARM]['weights']))
     protocol.FullLocalDataset=GradientDataset
     original=protocol.BalancedSearch
-    protocol.BalancedSearch=lambda *a,**kw:original(*a,view_sparsity_weights=sparsity_coefficients(ARMS[ARM]['r']),**kw)
+    protocol.BalancedSearch=lambda *a,**kw:original(*a,view_sparsity_weights=arm_sparsity(ARM),**kw)
     protocol.main()
     if os.environ['RANK']=='0':
         path=ARM_EXP/'GRADIENT_SPOTCHECK.json';value=json.loads(path.read_text())
-        label='Dk' if ARM=='KR234' else 'D3'
+        label='Dk' if random_k_arm(ARM) else 'D3'
         def relabel(x):
             if isinstance(x,dict):return {(label if k=='Ds' else k):relabel(v) for k,v in x.items()}
             if isinstance(x,list):return [relabel(v) for v in x]
@@ -246,7 +264,7 @@ def gradient():
 
 def source_paths():
     from train.train_nested_semantic_mask import code_manifest
-    return sorted(set(code_manifest())|{
+    return sorted(set(code_manifest())|EXTRA_SOURCES|{
         'recovery/nested_d3_local_search.py','recovery/nested_d3_local_search_evidence.py',
         str((EXP/'SEARCH_PLAN.json').relative_to(ROOT)),str((EXP/'CPU_TESTS.json').relative_to(ROOT)),
         'tests/test_nested_d3_local_search.py','recovery/nested_detail_gradients.py',
@@ -275,7 +293,7 @@ class Supervisor(local.Supervisor):
         assert sha(STEP0)==STEP0_SHA and not system_snapshot()['memory_events'].get('oom_kill',0)
         hashes=ensure_local_index()
         assert not subprocess.check_output(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader'],text=True).strip()
-        forbidden={'recovery.s02_full_stage','recovery.s02_local500','recovery.s02_local_full',
+        forbidden={ENTRY_MODULE,'recovery.s02_full_stage','recovery.s02_local500','recovery.s02_local_full',
             'recovery.local_ssd_stage','recovery.s02_nfs500','train.train_nested_semantic_mask',
             'recovery.nested_d3_local_search','recovery.nested_detail_d3_balanced_full'}
         for p in Path('/proc').iterdir():
@@ -303,7 +321,7 @@ class Supervisor(local.Supervisor):
             assert hashlib.sha256(subprocess.check_output(['git','show',launch['git_head']+':'+p],cwd=ROOT)).hexdigest()==h
         dump(RUN/'launch-provenance.json',launch)
         command=[str(ROOT/'.venv/bin/torchrun'),'--standalone','--nnodes=1','--nproc-per-node=4','--max-restarts=0',
-            '-m','recovery.nested_d3_local_search','--arm',ARM,'--worker','--config',str(CONFIG),
+            '-m',ENTRY_MODULE,'--arm',ARM,'--worker','--config',str(CONFIG),
             '--init-state',str(STEP0),'--index-dir',str(local.INDEX),'--image-root',str(IMAGES),
             '--output-dir',str(self.train),'--run-type','formal','--max-updates','500']
         try:
@@ -315,7 +333,7 @@ class Supervisor(local.Supervisor):
             proof=matched_stream(rows(self.train/'steps.jsonl'),rows(ANCHOR_RUN/'step500/steps.jsonl'),ARM)
             assert proof['records']==512000;dump(RUN/'full-stream-proof.json',proof)
             self.execute('gradient500',[str(ROOT/'.venv/bin/torchrun'),'--standalone','--nnodes=1',
-                '--nproc-per-node=4','--max-restarts=0','-m','recovery.nested_d3_local_search','--arm',ARM,'--gradient'])
+                '--nproc-per-node=4','--max-restarts=0','-m',ENTRY_MODULE,'--arm',ARM,'--gradient'])
             pipeline.EXP,pipeline.RUN=RUN/'reviewed',RUN
             self.result=pipeline.Supervisor.evaluate(self,500)
             p=self.result['scores_percent'];p.update(Score5=p['Score5_R1'],Short4=p['Short4_R1'])
@@ -331,7 +349,7 @@ class Supervisor(local.Supervisor):
 
 def prepare():
     for arm in ARMS:
-        path=EXP/arm/'config.json';expected=arm_config(arm)
+        path=experiment_dir(arm)/'config.json';expected=arm_config(arm)
         assert path.exists() and json.loads(path.read_text())==expected,'Arm configs must be reviewed and committed'
     print(json.dumps(dict(prepared=True,arms=list(ARMS),automatic_full=False,automatic_combinations=False)))
 

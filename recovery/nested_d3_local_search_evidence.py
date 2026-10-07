@@ -58,7 +58,7 @@ def checkpoint_proof(payload,step,arm):
 
 
 def diagnostics(steps,arm):
-    low='Dk' if arm=='KR234' else 'D3';spec=search.ARMS[arm]
+    low='Dk' if search.random_k_arm(arm) else 'D3';spec=search.ARMS[arm]
     def view_means(records):
         output={}
         for v,p,w in zip(('F','Dall',low),('F','O','E'),spec['weights']):
@@ -100,7 +100,7 @@ def diagnostics(steps,arm):
 
 
 def runtime(arm,steps,saved):
-    run=search.RUN_ROOT/arm;train=run/'step500';phase=search.LOCAL/('formal-nested-d3-local-search500-20261007-'+arm)
+    run=search.RUN_ROOT/arm;train=run/'step500';phase=search.LOCAL/(search.PHASE_PREFIX+arm)
     cycles=rows(train/'cycle_timing.jsonl');phases={r:rows(phase/f'rank{r}.jsonl') for r in range(4)}
     assert [c['step'] for c in cycles]==list(range(1,501))
     assert all([p['step'] for p in pp]==list(range(1,501)) for pp in phases.values())
@@ -141,10 +141,10 @@ def recall_delta(result,anchor):
 
 
 def arm_report(arm,result,diag,masks,gradient,stats):
-    spec=search.ARMS[arm];low='Dk' if arm=='KR234' else 'D3'
+    spec=search.ARMS[arm];low='Dk' if search.random_k_arm(arm) else 'D3'
     lines=[f'# {arm}: isolated Nested D3 local500 search arm','',
         f'Completed exactly500 fresh-common0 optimizer updates, horizon4868. Only changed axis:`{spec["axis"]}`.',
-        f'Alignment:{spec["weights"]}; sparsity coefficients:{search.sparsity_coefficients(spec["r"])} (mass5); mode:{spec["mode"]}.',
+        f'Alignment:{spec["weights"]}; absolute sparsity coefficients:{search.arm_sparsity(arm)} (mass{sum(search.arm_sparsity(arm))}); mode:{spec["mode"]}.',
         'Other construction,optimizer/LR,workers8,batch256/rank,inclusion chain/ramp200/max1,preprocess and native protocol frozen. No combination/full run.',
         f'Local-only:`{search.IMAGES}`; missing/symlink/escape fails, NFS fallback forbidden. /root is disposable overlay; NFS originals retained.',
         '', '| Dataset | I2T R@1 / R@5 / R@10 (%) | T2I R@1 / R@5 / R@10 (%) |','|---|---|---|']
@@ -172,8 +172,8 @@ def arm_report(arm,result,diag,masks,gradient,stats):
         f'Common0 SHA256:`{search.STEP0_SHA}`.',f'Checkpoint SHA256:`{result["checkpoint_sha256"]}`.',
         f'Bare SHA256:`{result["strict_export"]["bare_sha256"]}`.',
         'Checkpoints/bare/raw logs stay local. RUNTIME_STATS.json records raw paths,bytes,SHA256 and UTC containment windows.',
-        'Selection/classification and Pareto analysis occur after all seven arms, in SEARCH_SUMMARY.md. No arm-specific tuning or early metric stop.']
-    (search.EXP/arm/'REPORT.md').write_text('\n'.join(lines)+'\n')
+        'Selection/classification occurs after all declared arms, in SEARCH_SUMMARY.md. No arm-specific tuning or early metric stop.']
+    (search.experiment_dir(arm)/'REPORT.md').write_text('\n'.join(lines)+'\n')
 
 
 def review_arm(arm):
@@ -217,7 +217,7 @@ def review_arm(arm):
     diag,masks=diagnostics(steps,arm);stats=runtime(arm,steps,saved)
     old_masks=json.loads((search.ANCHOR_EXP/'MASK_HIERARCHY_AUDIT.json').read_text())['last50']
     old_diag=json.loads((search.ANCHOR_EXP/'TRAINING_DIAGNOSTICS.json').read_text())
-    low='Dk' if arm=='KR234' else 'D3'
+    low='Dk' if search.random_k_arm(arm) else 'D3'
     mask_delta={k:v-old_masks[k.replace('Dk','D3')] for k,v in masks.items()}
     keep_delta={v:s['keep_ratio']-old_diag['last50_views']['D3' if v=='Dk' else v]['keep_ratio'] for v,s in diag['last50_views'].items()}
     stats['local_binary_assets']=inventory+[dict(path=str(bare),bytes=bare.stat().st_size,sha256=sha(bare),uploaded=False)]

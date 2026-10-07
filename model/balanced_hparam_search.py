@@ -49,7 +49,8 @@ class BalancedSearch(NestedFusionMask):
         self.view_sparsity_weights = [float(v) for v in view_sparsity_weights]
         assert len(self.view_sparsity_weights)==3
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
-        assert math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12), 'Sparsity mass must stay5'
+        assert (math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12)
+                or self.view_sparsity_weights == [.5,1.,1.5]), 'Unreviewed sparsity coefficients'
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -119,8 +120,8 @@ class BalancedSearch(NestedFusionMask):
             if self.summary_t2i_weight != 1.:
                 assert hp["view_weights"] == [1.,1.,1.]
                 align = align * (6/(5+self.summary_t2i_weight))
-            # Preserve the original default arithmetic exactly; only S25/S30
-            # redistribute the same total coefficient mass of5 across views.
+            # Preserve default arithmetic; explicit coefficients are absolute,
+            # including WeakSparse's mass3, and are never normalized.
             cf,co,ce=self.view_sparsity_weights
             sparse=((sf+2*so+2*se)/3 if self.view_sparsity_weights==[1.,2.,2.] else
                     (cf*sf+co*so+ce*se)/3)

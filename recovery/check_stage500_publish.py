@@ -111,6 +111,14 @@ ALLOWED.update(SEARCH_ROOT+name for name in (
 ALLOWED.update(SEARCH_ROOT+arm+'/'+name for arm in ('W20','W25','W35','W40','S25','S30','KR234') for name in (
     'config.json','REPORT.md','RESULTS.json','TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json',
     'MASK_HIERARCHY_AUDIT.json','SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
+ALLOWED.update(('recovery/nested_d3_followup500.py','tests/test_nested_d3_followup500.py'))
+FOLLOWUP_ROOT='experiments/nest_clip_v1/nested_d3_followup500_v1/'
+ALLOWED.update(FOLLOWUP_ROOT+name for name in (
+    'CPU_TESTS.json','SEARCH_PLAN.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json'))
+ALLOWED.update('experiments/nest_clip_v1/'+arm+'/'+name
+    for arm in ('kr2m1_500_v1','weaksparse_051015_500_v1') for name in (
+    'config.json','REPORT.md','RESULTS.json','TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json',
+    'MASK_HIERARCHY_AUDIT.json','SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json'))
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),
