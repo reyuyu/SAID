@@ -53,3 +53,26 @@ Mask points/last50 and500→1217 changes:TRAINING_DIAGNOSTICS.json, MASK_HIERARC
 Parent/final/baseline checkpoint and bare SHA256 records:RESUME_PROVENANCE.json, BASELINE_PROVENANCE.json, RESULTS.json. Binary assets never uploaded.
 Raw log local paths/sizes/SHA256/time ranges:RUNTIME_STATS.json. `/root` ephemeral cache; NFS originals retained. No copy/full image audit.
 No training beyond1217 or additional experiment was started.
+
+## Interpretation and last50 mask changes
+
+`PROMISING_FOR_FULL`, with **weak positive** evidence: Score5 is only0.033233pp above HNS-v1. The positive rule is satisfied because J_long3 improves and J_long's0.029998pp decline is below the predeclared0.05pp material-decline threshold. This also lies in the near-equal Score5 range; it is not a strong improvement or proof of temporal over-regularization. Full validation may be worthwhile after human review; it has not been started.
+
+Against D3 Balanced, Score5/J_long3/Short4 improve by0.057018/0.011030/0.126000pp, while J_long drops0.114999pp and Urban I2T/T2I drops0.600/0.100pp. This auxiliary comparison has a long/Urban tradeoff.
+
+All mask entries below are last50 means. Coverage/violation entries are percentages; changes are percentage points.
+
+| Quantity | Parent500 | HNS-v1@1217 | Half@1217 | HNS change500→1217 | Half change500→1217 |
+|---|---:|---:|---:|---:|---:|
+| F keep | 80.3912 | 74.5096 | 74.2315 | -5.8816 | -6.1597 |
+| Dall keep | 79.5907 | 72.9030 | 72.6878 | -6.6877 | -6.9029 |
+| D3 keep | 74.4171 | 68.0372 | 68.4788 | -6.3799 | -5.9383 |
+| Dall⊆F violation | 2.5931 | 3.5721 | 3.7264 | +0.9790 | +1.1333 |
+| D3⊆Dall violation | 3.5867 | 5.2289 | 5.5646 | +1.6422 | +1.9779 |
+| Weighted hierarchy surcharge (loss units) | 0.041199 | 0.058673 | 0.030970 | +0.017474 | -0.010229 |
+
+Half slows D3 contraction slightly, but F/Dall contraction is slightly faster. Its final IoUs are0.883110/0.805350, compared with HNS-v1's0.886534/0.805559. These observations do not justify a blanket claim that masks are healthier. The mathematical same-graph half-gradient test is distinct from comparing two diverged parameter trajectories: their actual weighted surcharges need not have an exact1:2 ratio.
+
+Training full-cycle median/p95/p99/max:2.129494/2.277603/2.334391/9.823475s. Slowest-rank data-wait median/p95/p99/max:0.000692/0.000901/0.001778/1.700740s. One step>3s, none>10s. GPU peak27.7584GiB/rank; cgroup peak500GiB includes file cache, not RSS. Actual oom_kill and training image-I/O error counts are both0.
+
+The final operator check found all four GPUs idle with no compute processes. Checkpoints/bare/raw logs remain in the persistent runtime directory; images remain in the disposable `/root` cache. No post1217 update or extra experiment was launched.
