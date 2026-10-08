@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "only_post500_audit_reexecuted": true,
+  "training_updates_reexecuted": 0,
+  "checkpoint_sha256_before": "485b9d043142e06d0c5b690db86479bfc2df311adfa58aa2f26f1ba49c92d45e",
+  "checkpoint_sha256_after": "485b9d043142e06d0c5b690db86479bfc2df311adfa58aa2f26f1ba49c92d45e",
+  "failure_reason": "torchrun argparse abbreviation collision --run/--run-path; audit module not entered",
+  "remedy": "Insert -- before module; original launch sources and trained weights unchanged",
+  "preserved_failed_log": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-sg500-v1/HNS-SG/HNS-SG-matched-gradient-audit500.log",
+    "bytes": 839,
+    "sha256": "a71b34e84d514a56ac15d90260b21ddf83597a8e1daf598d94f19db7c0e66af3",
+    "uploaded": false
+  },
+  "actual_audit_command": [
+    "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+    "--standalone",
+    "--nnodes=1",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "--",
+    "recovery.hns_sg_gradient_audit",
+    "--run",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-sg500-v1/HNS-SG",
+    "--experiment",
+    "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_sg500_v1"
+  ],
+  "reviewed_utc": "2026-10-08T04:36:16.901538+00:00"
+}

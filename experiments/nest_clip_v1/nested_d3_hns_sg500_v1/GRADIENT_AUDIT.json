@@ -1,0 +1,1240 @@
+{
+  "passed": true,
+  "records": 1024,
+  "sample_ids_sha256": "416f198d48ed2416481a08ed2139b06ee73e51243724c088ce542afffdeefb27",
+  "checkpoints": {
+    "HNS-v1": {
+      "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns500-20261008/HNS/step500/step000500.pt",
+      "checkpoint_sha256": "efb161ba1b5847bc919750821c421595afaac4490676c0dad20790e21f77bada",
+      "checkpoint_unchanged": true,
+      "state_digest_before": "724890b160d9b3dfacec22c0ccb045e01bcfa32b6776cb9003631bf724ea0f60",
+      "state_digest_after": "724890b160d9b3dfacec22c0ccb045e01bcfa32b6776cb9003631bf724ea0f60",
+      "telemetry": {
+        "HNS_enabled": true,
+        "HNS_align": 2.733926296234131,
+        "HNS_original_sparse": 1.3183549642562866,
+        "V_DF_hard": 0.02234649658203125,
+        "V_3D_hard": 0.032619476318359375,
+        "HNS_surcharge": 0.03664398193359375,
+        "HNS_regularizer": 1.3549989461898804,
+        "lambda_h": 1.0,
+        "HNS_beta_DF": 2.0,
+        "HNS_beta_3D": 2.0,
+        "HNS_detach_child": false,
+        "HNS_mask_width": 512,
+        "HNS_valid_count": 1024,
+        "HNS_DF_violation_count": 11716.0,
+        "HNS_DF_child_only_count": 11716.0,
+        "HNS_DF_parent_only_count": 17053.0,
+        "HNS_DF_intersection_count": 413516.0,
+        "HNS_DF_hard_violation_ratio": 0.02234649658203125,
+        "HNS_DF_IoU": 0.9342741966247559,
+        "HNS_DF_exact_equality_ratio": 0.0,
+        "HNS_DF_coordinate_equality_ratio": 0.9451274871826172,
+        "HNS_3D_violation_count": 17102.0,
+        "HNS_3D_child_only_count": 17102.0,
+        "HNS_3D_parent_only_count": 46054.0,
+        "HNS_3D_intersection_count": 379178.0,
+        "HNS_3D_hard_violation_ratio": 0.032619476318359375,
+        "HNS_3D_IoU": 0.8574830293655396,
+        "HNS_3D_exact_equality_ratio": 0.0,
+        "HNS_3D_coordinate_equality_ratio": 0.8795394897460938,
+        "HNS_F_keep": 0.8212451934814453,
+        "HNS_Dall_keep": 0.811065673828125,
+        "HNS_D3_keep": 0.7558441162109375,
+        "HNS_gap_F_D": 0.010179519653320312,
+        "HNS_gap_D_D3": 0.0552215576171875,
+        "HNS_triple_exact_equality_ratio": 0.0,
+        "HNS_triple_coordinate_equality_ratio": 0.8431148529052734
+      },
+      "modes": {
+        "HNS-v1": {
+          "detach_child": false,
+          "forward_values": {
+            "alignment": 2.733926296234131,
+            "original_sparsity": 1.3183549642562866,
+            "V_DF": 0.02234649658203125,
+            "V_3D": 0.032619476318359375,
+            "total_hierarchy": 0.03664398193359375,
+            "total_training": 4.088925361633301
+          },
+          "components": {
+            "alignment": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 93.80618286132812,
+                  "weighted": 93.80618286132812
+                },
+                "shared_text_backbone": {
+                  "raw": 71.66699981689453,
+                  "weighted": 71.66699981689453
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.712309718132019,
+                  "weighted": 1.712309718132019
+                },
+                "shared_visual_mask": {
+                  "raw": 0.8811776638031006,
+                  "weighted": 0.8811776638031006
+                },
+                "fusion_shared_module": {
+                  "raw": 1.4886915683746338,
+                  "weighted": 1.4886915683746338
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0,
+                "D3": 0.0
+              }
+            },
+            "original_sparsity": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.26175570487976074,
+                  "weighted": 0.26175570487976074
+                },
+                "shared_visual_mask": {
+                  "raw": 0.27842700481414795,
+                  "weighted": 0.27842700481414795
+                },
+                "fusion_shared_module": {
+                  "raw": 0.44340193271636963,
+                  "weighted": 0.44340193271636963
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0004171864711679518,
+                "Dall": 0.0008291857084259391,
+                "D3": 0.0008004605188034475
+              }
+            },
+            "V_DF": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.0014798047486692667,
+                  "weighted": 0.0009865364991128445
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0002621170715428889,
+                  "weighted": 0.0001747447143619259
+                },
+                "fusion_shared_module": {
+                  "raw": 0.001534548937343061,
+                  "weighted": 0.0010230326248953738
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0002064523141598329,
+                "Dall": 0.0002064523141598329,
+                "D3": 0.0
+              }
+            },
+            "V_3D": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.006115364376455545,
+                  "weighted": 0.004076909584303697
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0008334603626281023,
+                  "weighted": 0.0005556402417520682
+                },
+                "fusion_shared_module": {
+                  "raw": 0.004537608474493027,
+                  "weighted": 0.0030250723163286843
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0002494327782187611,
+                "D3": 0.0002494327782187611
+              }
+            },
+            "total_hierarchy": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.004620313178747892,
+                  "weighted": 0.004620313178747892
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0007174640777520835,
+                  "weighted": 0.0007174640777520835
+                },
+                "fusion_shared_module": {
+                  "raw": 0.0038157973904162645,
+                  "weighted": 0.0038157973904162645
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00013763488095719367,
+                "Dall": 0.00021585929789580405,
+                "D3": 0.00016628853336442262
+              }
+            },
+            "total_training": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 93.80618286132812,
+                  "weighted": 93.80618286132812
+                },
+                "shared_text_backbone": {
+                  "raw": 71.66699981689453,
+                  "weighted": 71.66699981689453
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.6684895753860474,
+                  "weighted": 1.6684895753860474
+                },
+                "shared_visual_mask": {
+                  "raw": 0.8758126497268677,
+                  "weighted": 0.8758126497268677
+                },
+                "fusion_shared_module": {
+                  "raw": 1.4695634841918945,
+                  "weighted": 1.4695634841918945
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00043930389801971614,
+                "Dall": 0.0008786529069766402,
+                "D3": 0.0008507012971676886
+              }
+            }
+          },
+          "group_cosines": {
+            "shared_visual_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_mask_and_pool": {
+              "hierarchy_norm": 0.004620313178747892,
+              "cosine_hierarchy_original_sparsity": -0.009581704623997211,
+              "cosine_hierarchy_alignment": 0.015192613005638123
+            },
+            "shared_visual_mask": {
+              "hierarchy_norm": 0.0007174640777520835,
+              "cosine_hierarchy_original_sparsity": -0.8389729261398315,
+              "cosine_hierarchy_alignment": 0.1676580160856247
+            },
+            "fusion_shared_module": {
+              "hierarchy_norm": 0.0038157973904162645,
+              "cosine_hierarchy_original_sparsity": -0.25660544633865356,
+              "cosine_hierarchy_alignment": 0.036125268787145615
+            }
+          },
+          "endpoint_gradient_direction": {
+            "V_DF": {
+              "HardST_output": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.0002064523141598329,
+                "child_norm": 0.0002064523141598329,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 11716,
+                "child_positive_count": 11716,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              },
+              "soft_probability": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.0002064523141598329,
+                "child_norm": 0.0002064523141598329,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 11716,
+                "child_positive_count": 11716,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              }
+            },
+            "V_3D": {
+              "HardST_output": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002494327782187611,
+                "child_norm": 0.0002494327782187611,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 17102,
+                "child_positive_count": 17102,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              },
+              "soft_probability": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002494327782187611,
+                "child_norm": 0.0002494327782187611,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 17102,
+                "child_positive_count": 17102,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              }
+            }
+          },
+          "gradient_additivity_passed": true,
+          "parent_endpoint_gradient_exact_to_no_SG": null,
+          "output_scope_note": "Alignment uses separate all-pairs masks sharing parameters, so zero alignment gradient at these positive outputs does not mean no child alignment gradient."
+        },
+        "HNS-SG": {
+          "detach_child": true,
+          "forward_values": {
+            "alignment": 2.733926296234131,
+            "original_sparsity": 1.3183549642562866,
+            "V_DF": 0.02234649658203125,
+            "V_3D": 0.032619476318359375,
+            "total_hierarchy": 0.03664398193359375,
+            "total_training": 4.088925361633301
+          },
+          "components": {
+            "alignment": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 93.80618286132812,
+                  "weighted": 93.80618286132812
+                },
+                "shared_text_backbone": {
+                  "raw": 71.66699981689453,
+                  "weighted": 71.66699981689453
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.712309718132019,
+                  "weighted": 1.712309718132019
+                },
+                "shared_visual_mask": {
+                  "raw": 0.8811776638031006,
+                  "weighted": 0.8811776638031006
+                },
+                "fusion_shared_module": {
+                  "raw": 1.4886915683746338,
+                  "weighted": 1.4886915683746338
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0,
+                "D3": 0.0
+              }
+            },
+            "original_sparsity": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.26175570487976074,
+                  "weighted": 0.26175570487976074
+                },
+                "shared_visual_mask": {
+                  "raw": 0.27842700481414795,
+                  "weighted": 0.27842700481414795
+                },
+                "fusion_shared_module": {
+                  "raw": 0.44340193271636963,
+                  "weighted": 0.44340193271636963
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0004171864711679518,
+                "Dall": 0.0008291857084259391,
+                "D3": 0.0008004605188034475
+              }
+            },
+            "V_DF": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.0045649390667676926,
+                  "weighted": 0.0030432927111784616
+                },
+                "shared_visual_mask": {
+                  "raw": 0.004229189362376928,
+                  "weighted": 0.002819459574917952
+                },
+                "fusion_shared_module": {
+                  "raw": 0.0066528767347335815,
+                  "weighted": 0.004435251156489054
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0002064523141598329,
+                "Dall": 0.0,
+                "D3": 0.0
+              }
+            },
+            "V_3D": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.007101492490619421,
+                  "weighted": 0.004734328327079614
+                },
+                "shared_visual_mask": {
+                  "raw": 0.006308932788670063,
+                  "weighted": 0.004205955192446709
+                },
+                "fusion_shared_module": {
+                  "raw": 0.01006400678306818,
+                  "weighted": 0.006709337855378786
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0002494327782187611,
+                "D3": 0.0
+              }
+            },
+            "total_hierarchy": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.00747643830254674,
+                  "weighted": 0.00747643830254674
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0069079590030014515,
+                  "weighted": 0.0069079590030014515
+                },
+                "fusion_shared_module": {
+                  "raw": 0.010936456732451916,
+                  "weighted": 0.010936456732451916
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00013763488095719367,
+                "Dall": 0.00016628853336442262,
+                "D3": 0.0
+              }
+            },
+            "total_training": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 93.80618286132812,
+                  "weighted": 93.80618286132812
+                },
+                "shared_text_backbone": {
+                  "raw": 71.66699981689453,
+                  "weighted": 71.66699981689453
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.6675654649734497,
+                  "weighted": 1.6675654649734497
+                },
+                "shared_visual_mask": {
+                  "raw": 0.8751054406166077,
+                  "weighted": 0.8751054406166077
+                },
+                "fusion_shared_module": {
+                  "raw": 1.4690091609954834,
+                  "weighted": 1.4690091609954834
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00043930389801971614,
+                "Dall": 0.0008456954965367913,
+                "D3": 0.0008004605188034475
+              }
+            }
+          },
+          "group_cosines": {
+            "shared_visual_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_mask_and_pool": {
+              "hierarchy_norm": 0.00747643830254674,
+              "cosine_hierarchy_original_sparsity": -0.6448657512664795,
+              "cosine_hierarchy_alignment": -0.014694911427795887
+            },
+            "shared_visual_mask": {
+              "hierarchy_norm": 0.0069079590030014515,
+              "cosine_hierarchy_original_sparsity": -0.8949411511421204,
+              "cosine_hierarchy_alignment": 0.16706836223602295
+            },
+            "fusion_shared_module": {
+              "hierarchy_norm": 0.010936456732451916,
+              "cosine_hierarchy_original_sparsity": -0.8601132035255432,
+              "cosine_hierarchy_alignment": 0.188868910074234
+            }
+          },
+          "endpoint_gradient_direction": {
+            "V_DF": {
+              "HardST_output": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.0002064523141598329,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 11716,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              },
+              "soft_probability": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.0002064523141598329,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 11716,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              }
+            },
+            "V_3D": {
+              "HardST_output": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002494327782187611,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 17102,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              },
+              "soft_probability": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002494327782187611,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 17102,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              }
+            }
+          },
+          "gradient_additivity_passed": true,
+          "parent_endpoint_gradient_exact_to_no_SG": true,
+          "output_scope_note": "Alignment uses separate all-pairs masks sharing parameters, so zero alignment gradient at these positive outputs does not mean no child alignment gradient."
+        }
+      }
+    },
+    "HNS-SG": {
+      "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-sg500-v1/HNS-SG/step500/step000500.pt",
+      "checkpoint_sha256": "485b9d043142e06d0c5b690db86479bfc2df311adfa58aa2f26f1ba49c92d45e",
+      "checkpoint_unchanged": true,
+      "state_digest_before": "28208cce4ec6ddb3b3d1d0e0db639b070565cb31c42b5b73ac38b714a6c62d59",
+      "state_digest_after": "28208cce4ec6ddb3b3d1d0e0db639b070565cb31c42b5b73ac38b714a6c62d59",
+      "telemetry": {
+        "HNS_enabled": true,
+        "HNS_align": 2.813204526901245,
+        "HNS_original_sparse": 1.3276513814926147,
+        "V_DF_hard": 0.024898529052734375,
+        "V_3D_hard": 0.036792755126953125,
+        "HNS_surcharge": 0.0411275252699852,
+        "HNS_regularizer": 1.368778944015503,
+        "lambda_h": 1.0,
+        "HNS_beta_DF": 2.0,
+        "HNS_beta_3D": 2.0,
+        "HNS_detach_child": true,
+        "HNS_mask_width": 512,
+        "HNS_valid_count": 1024,
+        "HNS_DF_violation_count": 13054.0,
+        "HNS_DF_child_only_count": 13054.0,
+        "HNS_DF_parent_only_count": 18511.0,
+        "HNS_DF_intersection_count": 411786.0,
+        "HNS_DF_hard_violation_ratio": 0.024898529052734375,
+        "HNS_DF_IoU": 0.9284451007843018,
+        "HNS_DF_exact_equality_ratio": 0.0,
+        "HNS_DF_coordinate_equality_ratio": 0.9397945404052734,
+        "HNS_3D_violation_count": 19290.0,
+        "HNS_3D_child_only_count": 19290.0,
+        "HNS_3D_parent_only_count": 40011.0,
+        "HNS_3D_intersection_count": 384829.0,
+        "HNS_3D_hard_violation_ratio": 0.036792755126953125,
+        "HNS_3D_IoU": 0.8669388294219971,
+        "HNS_3D_exact_equality_ratio": 0.0,
+        "HNS_3D_coordinate_equality_ratio": 0.8868923187255859,
+        "HNS_F_keep": 0.8207263946533203,
+        "HNS_Dall_keep": 0.8103179931640625,
+        "HNS_D3_keep": 0.7707958221435547,
+        "HNS_gap_F_D": 0.010408401489257812,
+        "HNS_gap_D_D3": 0.03952217102050781,
+        "HNS_triple_exact_equality_ratio": 0.0,
+        "HNS_triple_coordinate_equality_ratio": 0.8471279144287109
+      },
+      "modes": {
+        "HNS-v1": {
+          "detach_child": false,
+          "forward_values": {
+            "alignment": 2.813204526901245,
+            "original_sparsity": 1.3276513814926147,
+            "V_DF": 0.024898529052734375,
+            "V_3D": 0.036792755126953125,
+            "total_hierarchy": 0.0411275252699852,
+            "total_training": 4.181983470916748
+          },
+          "components": {
+            "alignment": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 157.52972412109375,
+                  "weighted": 157.52972412109375
+                },
+                "shared_text_backbone": {
+                  "raw": 69.67366027832031,
+                  "weighted": 69.67366027832031
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.1887258291244507,
+                  "weighted": 1.1887258291244507
+                },
+                "shared_visual_mask": {
+                  "raw": 0.9085713028907776,
+                  "weighted": 0.9085713028907776
+                },
+                "fusion_shared_module": {
+                  "raw": 1.5594210624694824,
+                  "weighted": 1.5594210624694824
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0,
+                "D3": 0.0
+              }
+            },
+            "original_sparsity": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.28562450408935547,
+                  "weighted": 0.28562450408935547
+                },
+                "shared_visual_mask": {
+                  "raw": 0.2726445496082306,
+                  "weighted": 0.2726445496082306
+                },
+                "fusion_shared_module": {
+                  "raw": 0.37108394503593445,
+                  "weighted": 0.37108394503593445
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00041705468902364373,
+                "Dall": 0.0008288034587167203,
+                "D3": 0.0008083388675004244
+              }
+            },
+            "V_DF": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.0020691370591521263,
+                  "weighted": 0.0013794247061014175
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0003482190368231386,
+                  "weighted": 0.00023214602454875905
+                },
+                "fusion_shared_module": {
+                  "raw": 0.0026404098607599735,
+                  "weighted": 0.001760273240506649
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00021792241022922099,
+                "Dall": 0.00021792241022922099,
+                "D3": 0.0
+              }
+            },
+            "V_3D": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.007038804702460766,
+                  "weighted": 0.004692536468307177
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0009536321740597486,
+                  "weighted": 0.0006357547827064991
+                },
+                "fusion_shared_module": {
+                  "raw": 0.005239079240709543,
+                  "weighted": 0.003492719493806362
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0002649086818564683,
+                "D3": 0.0002649086818564683
+              }
+            },
+            "total_hierarchy": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.005387811455875635,
+                  "weighted": 0.005387811455875635
+                },
+                "shared_visual_mask": {
+                  "raw": 0.0008490673499181867,
+                  "weighted": 0.0008490673499181867
+                },
+                "fusion_shared_module": {
+                  "raw": 0.004855264909565449,
+                  "weighted": 0.004855264909565449
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00014528160681948066,
+                "Dall": 0.0002286839735461399,
+                "D3": 0.00017660579760558903
+              }
+            },
+            "total_training": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 157.52972412109375,
+                  "weighted": 157.52972412109375
+                },
+                "shared_text_backbone": {
+                  "raw": 69.67366027832031,
+                  "weighted": 69.67366027832031
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.1717987060546875,
+                  "weighted": 1.1717987060546875
+                },
+                "shared_visual_mask": {
+                  "raw": 0.8899549245834351,
+                  "weighted": 0.8899549245834351
+                },
+                "fusion_shared_module": {
+                  "raw": 1.5368502140045166,
+                  "weighted": 1.5368502140045166
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0004416348529048264,
+                "Dall": 0.0008839824586175382,
+                "D3": 0.0008642803877592087
+              }
+            }
+          },
+          "group_cosines": {
+            "shared_visual_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_mask_and_pool": {
+              "hierarchy_norm": 0.005387811455875635,
+              "cosine_hierarchy_original_sparsity": 0.07755962759256363,
+              "cosine_hierarchy_alignment": -0.03670249879360199
+            },
+            "shared_visual_mask": {
+              "hierarchy_norm": 0.0008490673499181867,
+              "cosine_hierarchy_original_sparsity": -0.812981903553009,
+              "cosine_hierarchy_alignment": 0.21911834180355072
+            },
+            "fusion_shared_module": {
+              "hierarchy_norm": 0.004855264909565449,
+              "cosine_hierarchy_original_sparsity": -0.18900266289710999,
+              "cosine_hierarchy_alignment": -0.05339107662439346
+            }
+          },
+          "endpoint_gradient_direction": {
+            "V_DF": {
+              "HardST_output": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.00021792241022922099,
+                "child_norm": 0.00021792241022922099,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 13054,
+                "child_positive_count": 13054,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              },
+              "soft_probability": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.00021792241022922099,
+                "child_norm": 0.00021792241022922099,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 13054,
+                "child_positive_count": 13054,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              }
+            },
+            "V_3D": {
+              "HardST_output": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002649086818564683,
+                "child_norm": 0.0002649086818564683,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 19290,
+                "child_positive_count": 19290,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              },
+              "soft_probability": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002649086818564683,
+                "child_norm": 0.0002649086818564683,
+                "child_gradient_exactly_zero": false,
+                "parent_positive_count": 0,
+                "parent_negative_count": 19290,
+                "child_positive_count": 19290,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": true
+              }
+            }
+          },
+          "gradient_additivity_passed": true,
+          "parent_endpoint_gradient_exact_to_no_SG": null,
+          "output_scope_note": "Alignment uses separate all-pairs masks sharing parameters, so zero alignment gradient at these positive outputs does not mean no child alignment gradient."
+        },
+        "HNS-SG": {
+          "detach_child": true,
+          "forward_values": {
+            "alignment": 2.813204526901245,
+            "original_sparsity": 1.3276513814926147,
+            "V_DF": 0.024898529052734375,
+            "V_3D": 0.036792755126953125,
+            "total_hierarchy": 0.0411275252699852,
+            "total_training": 4.181983470916748
+          },
+          "components": {
+            "alignment": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 157.52972412109375,
+                  "weighted": 157.52972412109375
+                },
+                "shared_text_backbone": {
+                  "raw": 69.67366027832031,
+                  "weighted": 69.67366027832031
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.1887258291244507,
+                  "weighted": 1.1887258291244507
+                },
+                "shared_visual_mask": {
+                  "raw": 0.9085713028907776,
+                  "weighted": 0.9085713028907776
+                },
+                "fusion_shared_module": {
+                  "raw": 1.5594210624694824,
+                  "weighted": 1.5594210624694824
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0,
+                "D3": 0.0
+              }
+            },
+            "original_sparsity": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.28562450408935547,
+                  "weighted": 0.28562450408935547
+                },
+                "shared_visual_mask": {
+                  "raw": 0.2726445496082306,
+                  "weighted": 0.2726445496082306
+                },
+                "fusion_shared_module": {
+                  "raw": 0.37108394503593445,
+                  "weighted": 0.37108394503593445
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00041705468902364373,
+                "Dall": 0.0008288034587167203,
+                "D3": 0.0008083388675004244
+              }
+            },
+            "V_DF": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.005832354072481394,
+                  "weighted": 0.003888236048320929
+                },
+                "shared_visual_mask": {
+                  "raw": 0.004998070653527975,
+                  "weighted": 0.003332047102351983
+                },
+                "fusion_shared_module": {
+                  "raw": 0.007141877431422472,
+                  "weighted": 0.004761251620948315
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00021792241022922099,
+                "Dall": 0.0,
+                "D3": 0.0
+              }
+            },
+            "V_3D": {
+              "coefficient": 0.6666666666666666,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.009195128455758095,
+                  "weighted": 0.006130085637172063
+                },
+                "shared_visual_mask": {
+                  "raw": 0.007884309627115726,
+                  "weighted": 0.00525620641807715
+                },
+                "fusion_shared_module": {
+                  "raw": 0.011094131506979465,
+                  "weighted": 0.007396087671319643
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0,
+                "Dall": 0.0002649086818564683,
+                "D3": 0.0
+              }
+            },
+            "total_hierarchy": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_backbone": {
+                  "raw": 0.0,
+                  "weighted": 0.0
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 0.009633613750338554,
+                  "weighted": 0.009633613750338554
+                },
+                "shared_visual_mask": {
+                  "raw": 0.008439772762358189,
+                  "weighted": 0.008439772762358189
+                },
+                "fusion_shared_module": {
+                  "raw": 0.011855262331664562,
+                  "weighted": 0.011855262331664562
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.00014528160681948066,
+                "Dall": 0.00017660579760558903,
+                "D3": 0.0
+              }
+            },
+            "total_training": {
+              "coefficient": 1.0,
+              "group_norms": {
+                "shared_visual_backbone": {
+                  "raw": 157.52972412109375,
+                  "weighted": 157.52972412109375
+                },
+                "shared_text_backbone": {
+                  "raw": 69.67366027832031,
+                  "weighted": 69.67366027832031
+                },
+                "shared_text_mask_and_pool": {
+                  "raw": 1.1732081174850464,
+                  "weighted": 1.1732081174850464
+                },
+                "shared_visual_mask": {
+                  "raw": 0.8898652791976929,
+                  "weighted": 0.8898652791976929
+                },
+                "fusion_shared_module": {
+                  "raw": 1.5370800495147705,
+                  "weighted": 1.5370800495147705
+                }
+              },
+              "positive_HardST_output_gradient_norms": {
+                "F": 0.0004416348529048264,
+                "Dall": 0.0008474105852656066,
+                "D3": 0.0008083388675004244
+              }
+            }
+          },
+          "group_cosines": {
+            "shared_visual_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_backbone": {
+              "hierarchy_norm": 0.0,
+              "cosine_hierarchy_original_sparsity": null,
+              "cosine_hierarchy_alignment": null
+            },
+            "shared_text_mask_and_pool": {
+              "hierarchy_norm": 0.009633613750338554,
+              "cosine_hierarchy_original_sparsity": -0.7409854531288147,
+              "cosine_hierarchy_alignment": 0.30945301055908203
+            },
+            "shared_visual_mask": {
+              "hierarchy_norm": 0.008439772762358189,
+              "cosine_hierarchy_original_sparsity": -0.8823422193527222,
+              "cosine_hierarchy_alignment": 0.2472764551639557
+            },
+            "fusion_shared_module": {
+              "hierarchy_norm": 0.011855262331664562,
+              "cosine_hierarchy_original_sparsity": -0.8204612731933594,
+              "cosine_hierarchy_alignment": 0.17090830206871033
+            }
+          },
+          "endpoint_gradient_direction": {
+            "V_DF": {
+              "HardST_output": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.00021792241022922099,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 13054,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              },
+              "soft_probability": {
+                "parent": "F",
+                "child": "Dall",
+                "parent_norm": 0.00021792241022922099,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 13054,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              }
+            },
+            "V_3D": {
+              "HardST_output": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002649086818564683,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 19290,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              },
+              "soft_probability": {
+                "parent": "Dall",
+                "child": "D3",
+                "parent_norm": 0.0002649086818564683,
+                "child_norm": 0.0,
+                "child_gradient_exactly_zero": true,
+                "parent_positive_count": 0,
+                "parent_negative_count": 19290,
+                "child_positive_count": 0,
+                "child_negative_count": 0,
+                "parent_expansion_verified": true,
+                "child_contraction_verified": false
+              }
+            }
+          },
+          "gradient_additivity_passed": true,
+          "parent_endpoint_gradient_exact_to_no_SG": true,
+          "output_scope_note": "Alignment uses separate all-pairs masks sharing parameters, so zero alignment gradient at these positive outputs does not mean no child alignment gradient."
+        }
+      }
+    }
+  },
+  "protocol": "First frozen seed0 epoch0 global1024 batch, immutable step500; SG/no-SG recomputed on IDENTICAL actual positive mask graph at EACH checkpoint. No optimizer update.",
+  "same_graph_forward_exact": true,
+  "child_hierarchy_gradient_exactly_zero": true,
+  "parent_hierarchy_gradient_exact_to_no_SG": true,
+  "original_sparsity_child_gradient_nonzero": true,
+  "alignment_sparsity_unmodified": true,
+  "global_valid_normalization": true,
+  "no_double_world_scaling": true,
+  "local_only": true,
+  "NFS_fallback": false,
+  "no_parameter_updates": true,
+  "shared_parameter_caveat": "Dall is child on DF but parent on3D. Total hierarchy Dall gradient need not be zero. Shared parameter updates may indirectly change any view.",
+  "native_backbone_note": "Original hidden-input detach preserved; hierarchy/sparse have zero native-backbone gradient, alignment remains active.",
+  "started_utc": "2026-10-08T04:35:08.114920+00:00",
+  "ended_utc": "2026-10-08T04:36:09.156226+00:00"
+}

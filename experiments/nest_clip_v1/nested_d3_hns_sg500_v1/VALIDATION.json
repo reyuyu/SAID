@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "reviewed_utc": "2026-10-08T04:33:01.011483+00:00",
+  "all512000_actual_records_verified": true,
+  "common0_and_optimizer_RNG_cursor_verified": true,
+  "source_SHA256_archived_and_unchanged": true,
+  "strict_export_embeddings_exact": true,
+  "native_eval_protocols_identical_anchor": true,
+  "four_rank_parameters_synchronized": true,
+  "gradient_protocol_identical_anchor": true,
+  "CPU_tests": {
+    "passed": true,
+    "exit_code": 0,
+    "tests": 76,
+    "failed_count": 0,
+    "skipped": 0,
+    "command": ".venv/bin/python -m pytest -q tests/test_hns_sg500.py tests/test_nested_d3_hns500.py tests/test_hns_final_two500.py tests/test_nested_resume.py recovery/test_local500_policy.py --junitxml=runtime/hns-sg500-cpu-tests.xml",
+    "junit_local_path": "/opt/data/private/lklk/SAID/runtime/hns-sg500-cpu-tests.xml",
+    "junit_sha256": "ca2bb99f57554d521954e4436af94b7acd8a66022c99f326340b21630c8e2132",
+    "junit_bytes": 9710,
+    "checks": [
+      "Binary Hard-ST forward equivalence and exact zero edge-local child hierarchy gradient",
+      "Unchanged parent hierarchy gradient, unchanged alignment/sparsity parameter gradients and active child sparsity gradient",
+      "Independent production SG objective/all parameter gradients",
+      "Current default no-SG vs fetched HNS-v1 loss/all gradients/AdamW exact",
+      "Pinned optimizer/LR/RNG/horizon/checkpoint functions and optimizer group/order exact",
+      "Reject full/resume/NFS-root for SG",
+      "Actual gradient-audit same-graph six-component endpoint/group decomposition",
+      "Final report test on real baseline schemas with temporary synthetic fixture only",
+      "Four-rank production objective/global-valid normalization/AdamW agreement in DDP_CORRECTNESS.json"
+    ],
+    "warning": "Inherited pkg_resources deprecation",
+    "raw_test_output_uploaded": false
+  },
+  "matched_SG_noSG_gradient_audit_passed": true,
+  "same_graph_forward_exact": true,
+  "child_hierarchy_gradient_exact_zero": true,
+  "parent_gradient_exact": true
+}
