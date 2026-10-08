@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "world": 4,
+  "backend": "gloo",
+  "production_forward": true,
+  "default_macros": [
+    10,
+    1,
+    1
+  ],
+  "same_partition_old_new_gradient_exact": {
+    "trainable_parameters_checked": 33,
+    "parameters_with_gradient": 33,
+    "max_abs_error": 0.0,
+    "exact": true
+  },
+  "single_global_batch_gradient_reference": {
+    "trainable_parameters_checked": 33,
+    "parameters_with_gradient": 33,
+    "max_abs_error": 3.0517578125e-05,
+    "exact": false
+  },
+  "global_valid_count": 4,
+  "valid_per_rank": [
+    0,
+    2,
+    1,
+    1
+  ],
+  "AdamW_old_new_exact": true,
+  "no_double_world_scale": true,
+  "completed": 199,
+  "ramp": 0.995
+}

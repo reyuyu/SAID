@@ -12,6 +12,7 @@ from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_
 
 DEFAULTS = dict(fusion_lr=1e-4, visual_mask_lr_scale=1., view_weights=[1.,1.,1.],
                 sparsity_scale=1., inclusion_max=1.)
+MACRO_DEFAULTS = dict(lambda_align=10., lambda_sparse=1., lambda_hierarchy=1.)
 DIAGNOSTIC_UPDATES = (1,100,200,500,1217,2000,3000,3651,4868)
 
 
@@ -24,7 +25,29 @@ def hparams(config):
         if key != 'view_weights':
             result[key] = float(result[key])
             assert math.isfinite(result[key]) and (result[key]>=0 if key=='inclusion_max' else result[key]>0), key
+    # Opt-in macro interface: legacy configs/IDs retain their exact schema.
+    if any(key in config for key in MACRO_DEFAULTS):
+        result.update(macro_hparams(config))
     return result
+
+
+def macro_hparams(config):
+    result={key:float(config.get(key,value)) for key,value in MACRO_DEFAULTS.items()}
+    assert all(math.isfinite(v) and v>0 for v in result.values()), 'Invalid macro scale'
+    return result
+
+
+def macro_terms(legacy_alignment, original_sparse, ramped_hierarchy, scales):
+    """Scale each complete legacy component once, preserving default arithmetic.
+
+    The legacy alignment already contains10; lambda_align/10 replaces that
+    outer coefficient. The unchanged HNS kernel already contains beta2/2 and
+    ramp; only its whole output is scaled. No internal coefficients change.
+    """
+    a=legacy_alignment if scales['lambda_align']==10. else (scales['lambda_align']/10.)*legacy_alignment
+    s=original_sparse if scales['lambda_sparse']==1. else scales['lambda_sparse']*original_sparse
+    h=ramped_hierarchy if scales['lambda_hierarchy']==1. else scales['lambda_hierarchy']*ramped_hierarchy
+    return a,s,h
 
 
 def trial_id(config):
@@ -43,6 +66,8 @@ class BalancedSearch(NestedFusionMask):
         super().__init__(clip, **options)
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
+        self.macro_hparams = macro_hparams(search_hparams or {})
+        assert hns_enabled or self.macro_hparams==MACRO_DEFAULTS, 'Macros apply only to HNS'
         self.summary_t2i_weight = float((search_hparams or {}).get("summary_t2i_weight", 1.))
         assert 0 < self.summary_t2i_weight <= 1.
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
@@ -145,12 +170,21 @@ class BalancedSearch(NestedFusionMask):
             if self.hns_enabled:
                 world=world_rank()[0]
                 surcharge,hns=hns_terms(mf,mo,me,valid,completed,world,valid_count)
-                loss=loss+surcharge
+                wa,ws,wh=macro_terms(align,sparse,surcharge,self.macro_hparams)
+                loss=(wa+ws)+wh
                 values=global_sum(torch.stack((align.detach(),sparse.detach(),hns['V_DF'].detach(),
                     hns['V_3D'].detach(),surcharge.detach())))/world
                 logs.update(HNS_enabled=True,HNS_align=values[0],HNS_original_sparse=values[1],
                     V_DF_hard=values[2],V_3D_hard=values[3],HNS_surcharge=values[4],
                     HNS_regularizer=values[1]+values[4],lambda_h=hns['lambda_h'])
+                raw_h=(2*values[2]+2*values[3])/3
+                weighted=global_sum(torch.stack((wa.detach(),ws.detach(),wh.detach())))/world
+                logs.update(macro_raw_align=values[0]/10,macro_raw_sparse=values[1],
+                    macro_raw_hierarchy=raw_h,macro_weighted_align=weighted[0],
+                    macro_weighted_sparse=weighted[1],macro_weighted_hierarchy=weighted[2],
+                    macro_lambda_align=self.macro_hparams['lambda_align'],
+                    macro_lambda_sparse=self.macro_hparams['lambda_sparse'],
+                    macro_lambda_hierarchy=self.macro_hparams['lambda_hierarchy'])
                 telemetry,width=hard_telemetry(mf,mo,me,valid)
                 totals=global_sum(torch.stack(list(telemetry.values())))
                 totals=dict(zip(telemetry,totals))
@@ -175,6 +209,10 @@ class BalancedSearch(NestedFusionMask):
                         V_DF=hns['V_DF'],V_3D=hns['V_3D'],total_HNS=sparse+surcharge,
                         total_training=loss,masks=dict(F=mf,Dall=mo,D3=me),
                         probabilities=dict(F=pf,Dall=po,D3=pe),lambda_h=hns['lambda_h'])
+                    self.hns_graph.update(raw_align=align/10,raw_sparse=sparse,
+                        raw_hierarchy=(2*hns['V_DF']+2*hns['V_3D'])/3,
+                        weighted_align=wa,weighted_sparse=ws,weighted_hierarchy=wh,
+                        weighted_regularizer=ws+wh)
             if inclusion_enabled:
                 loss=loss+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
@@ -197,9 +235,18 @@ class BalancedSearch(NestedFusionMask):
         else:
             loss=10*af+hp['sparsity_scale']*sf
             if self.hns_enabled:
+                wa,ws,wh=macro_terms(10*af,sf,af*0,self.macro_hparams)
+                loss=wa+ws
                 logs.update(HNS_enabled=True,lambda_h=hierarchy_weight(completed),
                     HNS_align=global_sum(10*af)/world_rank()[0],HNS_original_sparse=global_sum(sf)/world_rank()[0],
                     HNS_surcharge=0.,HNS_regularizer=global_sum(sf)/world_rank()[0],V_DF_hard=0.,V_3D_hard=0.)
+                logs.update(macro_raw_align=global_sum(af)/world_rank()[0],
+                    macro_raw_sparse=global_sum(sf)/world_rank()[0],macro_raw_hierarchy=0.,
+                    macro_weighted_align=global_sum(wa)/world_rank()[0],
+                    macro_weighted_sparse=global_sum(ws)/world_rank()[0],macro_weighted_hierarchy=0.,
+                    macro_lambda_align=self.macro_hparams['lambda_align'],
+                    macro_lambda_sparse=self.macro_hparams['lambda_sparse'],
+                    macro_lambda_hierarchy=self.macro_hparams['lambda_hierarchy'])
             logs.update(inc=0.,inclusion_loss=0.,hard_inclusion_violation=0.,oe_iou=0.,O_candidates=0,E_candidates=0)
         logs.update(loss=global_sum(loss)/world_rank()[0],inc_weight=weight,inclusion_enabled=inclusion_enabled,valid_global=valid_count,
                     fusion=self.fusion,visual=self.visual,condition_mode=self.condition_mode,shuffle_shift=0,

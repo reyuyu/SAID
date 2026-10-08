@@ -1,0 +1,71 @@
+{
+  "arms": {
+    "E1-A12": {
+      "lambda_align": 12.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 1.0
+    },
+    "E2-S08": {
+      "lambda_align": 10.0,
+      "lambda_sparse": 0.8,
+      "lambda_hierarchy": 1.0
+    },
+    "E3-H075": {
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 0.75
+    },
+    "E4-H125": {
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 1.25
+    }
+  },
+  "order": [
+    "E1-A12",
+    "E2-S08",
+    "E3-H075",
+    "E4-H125"
+  ],
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "resume": null,
+  "independent_smoke5_and_formal500": true,
+  "max_updates": 500,
+  "horizon": 4868,
+  "alignment_internal": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity_internal": [
+    1,
+    2,
+    2
+  ],
+  "beta": [
+    2,
+    2
+  ],
+  "no_SG": true,
+  "old_soft_inclusion": 0,
+  "ramp": "min(1,completed BEFORE update /200)",
+  "batch_per_rank": 256,
+  "world": 4,
+  "workers": 8,
+  "seed": 0,
+  "evaluation": "Validated native four-GPU scheduler, batch64",
+  "GPU_mapping": {
+    "coco": 0,
+    "docci": 1,
+    "long_dci": 2,
+    "flickr": 3,
+    "urban": 3
+  },
+  "score_ranking": "Score5 primary; <0.05pp single-seed differences are small, unconfirmed",
+  "balanced_selection": "Highest Score5 with J_long3/Short4/UrbanT2I deltas >= -0.2/-0.2/-0.3pp; baseline eligible",
+  "stop_after_all_four": true,
+  "automatic_1217_2434_3651_4868": false,
+  "automatic_combination": false,
+  "fifth_arm": false,
+  "second_seed": false
+}
