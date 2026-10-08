@@ -118,6 +118,7 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old.get('view_sparsity_weights',[1.,2.,2.]) == current.get('view_sparsity_weights',[1.,2.,2.]), 'Resume view sparsity allocation changed'
         assert old.get('hns_enabled',False) == current.get('hns_enabled',False), 'Resume HNS changed'
         assert old.get('hns_beta',[2.,2.]) == current.get('hns_beta',[2.,2.]), 'Resume HNS beta changed'
+        assert old.get('hns_detach_child',False) == current.get('hns_detach_child',False), 'Resume HNS child routing changed'
         if not allow_legacy_b0:
             assert old.get('trial_id')==current.get('trial_id'), 'Resume trial identity changed'
     for key in ('arm', 'horizon', 'init_sha256', 'data', 'batch_size', 'world_size',
@@ -292,6 +293,16 @@ def validate_nested_view_weights(cfg, run_type, max_updates, resume, image_root)
     """Method admission only; explicitly allow the reviewed W20+KR234500 arm."""
     mode = cfg['sampling_mode']
     assert cfg.get('inclusion_hierarchy') == 'detail_chain'
+    if cfg.get('hns_detach_child',False):
+        canonical = Path(__file__).resolve().parents[1] / 'configs/nested_d3_hns_sg500.json'
+        expected = json.loads(canonical.read_text())
+        assert all(cfg.get(k) == v for k,v in expected.items()), 'HNS-SG frozen config drift'
+        assert cfg.get('hns_beta',[2.,2.]) == [2.,2.]
+        assert cfg.get('view_sparsity_weights',[1.,2.,2.]) == [1.,2.,2.]
+        assert cfg.get('summary_t2i_weight',1.) == 1.
+        assert resume is None, 'HNS-SG must be fresh common0'
+        assert (run_type,max_updates) in (('formal',500),('smoke',5)), 'HNS-SG stops at500'
+        assert Path(image_root).resolve() == Path('/root/said_s02_stage500/ShareGPT4V')
     allowed = (([1.,1.,1.], [1.35,1.35,.30], [1.4,1.4,.20], [1.375,1.375,.25],
                 [1.325,1.325,.35], [1.3,1.3,.40]) if mode=='nested_detail_d3'
                else ([1.35,1.35,.30],) if mode in ('nested_detail_kr234','nested_detail_kr2m1')
@@ -396,6 +407,8 @@ def main():
             model_options['hns_enabled']=cfg['hns_enabled']
         if 'hns_beta' in cfg:
             model_options['hns_beta']=cfg['hns_beta']
+        if 'hns_detach_child' in cfg:
+            model_options['hns_detach_child']=cfg['hns_detach_child']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
     module = module_class(clip.float(), arm=cfg['arm'],

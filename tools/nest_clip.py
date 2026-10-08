@@ -82,6 +82,8 @@ def main():
                 model_options['hns_enabled']=config['hns_enabled']
             if 'hns_beta' in config:
                 model_options['hns_beta']=config['hns_beta']
+            if 'hns_detach_child' in config:
+                model_options['hns_detach_child']=config['hns_detach_child']
         module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
                               image_chunk=config.get('image_chunk', 32),
                               text_chunk=config.get('text_chunk', 64),

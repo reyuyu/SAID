@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "exit_code": 0,
+  "tests": 76,
+  "failed_count": 0,
+  "skipped": 0,
+  "command": ".venv/bin/python -m pytest -q tests/test_hns_sg500.py tests/test_nested_d3_hns500.py tests/test_hns_final_two500.py tests/test_nested_resume.py recovery/test_local500_policy.py --junitxml=runtime/hns-sg500-cpu-tests.xml",
+  "junit_local_path": "/opt/data/private/lklk/SAID/runtime/hns-sg500-cpu-tests.xml",
+  "junit_sha256": "e48ff5772bf1febd718b8e9be274ed5d20e860d0a53bb0eb1ffb962f80b84907",
+  "junit_bytes": 9710,
+  "checks": [
+    "Binary Hard-ST forward equivalence and exact zero edge-local child hierarchy gradient",
+    "Unchanged parent hierarchy gradient, unchanged alignment/sparsity parameter gradients and active child sparsity gradient",
+    "Independent production SG objective/all parameter gradients",
+    "Current default no-SG vs fetched HNS-v1 loss/all gradients/AdamW exact",
+    "Pinned optimizer/LR/RNG/horizon/checkpoint functions and optimizer group/order exact",
+    "Reject full/resume/NFS-root for SG",
+    "Actual gradient-audit same-graph six-component endpoint/group decomposition",
+    "Final report test on real baseline schemas with temporary synthetic fixture only",
+    "Four-rank production objective/global-valid normalization/AdamW agreement in DDP_CORRECTNESS.json"
+  ],
+  "warning": "Inherited pkg_resources deprecation",
+  "raw_test_output_uploaded": false
+}

@@ -12,17 +12,18 @@ from recovery.s02_nfs500 import dump
 from tests.test_nested_fusion import TinyFusionCLIP
 
 
-def make(beta=(2.,2.)):
+def make(beta=(2.,2.), detach_child=False):
     return BalancedSearch(TinyFusionCLIP(32),search_hparams=dict(view_weights=[1.35,1.35,.3],inclusion_max=0),
-        hns_enabled=True,hns_beta=beta,inclusion_hierarchy='detail_chain',fusion='balanced_stack',visual='patch',
+        hns_enabled=True,hns_beta=beta,hns_detach_child=detach_child,inclusion_hierarchy='detail_chain',fusion='balanced_stack',visual='patch',
         text_tokens=6,checkpoint_encoders=False,image_chunk=2,text_chunk=2)
 
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--output',required=True)
-    parser.add_argument('--beta',type=float,nargs=2,default=[2.,2.]);args=parser.parse_args()
+    parser.add_argument('--beta',type=float,nargs=2,default=[2.,2.])
+    parser.add_argument('--detach-child',action='store_true');args=parser.parse_args()
     torch.set_num_threads(1);torch.manual_seed(44219)
-    module=make(args.beta);reference=copy.deepcopy(module)
+    module=make(args.beta,args.detach_child);reference=copy.deepcopy(module)
     images=torch.randn(8,8);views=[torch.randint(0,31,(8,6)) for _ in range(3)]
     valid=torch.tensor([0,0,1,1,1,0,1,0],dtype=torch.bool)
     # Compute the global single-process reference before joining any group.
@@ -55,7 +56,8 @@ def main():
         one_AdamW_update_all_ranks_exact=True,all_rank_parameters_exact=True,max_rank_difference=difference,
         global_reference_scope='Loss and every parameter gradient; cross-partition AdamW is not compared because near-zero reduction roundoff can be magnified by epsilon. Separate lambda0 equivalence tests compare the identical-partition AdamW update exactly.',
         max_gradient_difference=largest,gradient_tolerance=dict(atol=8e-4,rtol=8e-5),
-        no_double_world_scaling=True,single_process_loss=float(expected.detach()),distributed_loss=float(loss_mean)))
+        no_double_world_scaling=True,detach_child=args.detach_child,
+        single_process_loss=float(expected.detach()),distributed_loss=float(loss_mean)))
     dist.barrier();dist.destroy_process_group()
 
 

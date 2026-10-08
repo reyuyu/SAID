@@ -1,0 +1,22 @@
+{
+  "experiment": "HNS-SG",
+  "base_commit": "bdfd647f7b7e1a2518e4b65a8a959bc65c5606ad",
+  "sole_variable": "Detach child only inside adjacent hard-support ReLU hierarchy",
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "smoke": "Independent common0 smoke5; formal then independently restarts common0",
+  "formal_updates": 500,
+  "horizon": 4868,
+  "resume": null,
+  "image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "alignment": [1.35, 1.35, 0.30],
+  "global_sparsity": [1, 2, 2],
+  "old_soft_inclusion": 0,
+  "HNS_beta": [2, 2],
+  "HNS_ramp_updates": 200,
+  "selection_rule": "Raw Score5 strictly above HNS-v1 with J_long3 decline <=0.20pp: STRONG_POSITIVE. Score5 within0.05pp and Short4 or J_long3 gain >=0.10pp or measured optimization advantage: POSITIVE. Clear structure/optimization/individual retrieval benefit with lower aggregate: MIXED. Otherwise NEGATIVE. No hard-violation cutoff veto.",
+  "optimization_advantage_convention": "At the SAME SG checkpoint and real1024 batch, visual-mask hierarchy/sparsity cosine improves by >0.05 when toggling only backward routing, with no joint keep inflation>=5pp or both gaps<=.002. This is descriptive, not statistical significance or causal full-training evidence.",
+  "matched_gradient_protocol": "First frozen epoch0 seed0 global1024 at both immutable500 checkpoints; SG/no-SG components recomputed from identical Hard-ST mask graph; no optimizer updates",
+  "automatic_full": false,
+  "automatic_other_experiments": false
+}

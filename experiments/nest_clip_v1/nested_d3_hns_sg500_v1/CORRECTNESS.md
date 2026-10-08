@@ -1,0 +1,15 @@
+# HNS-SG correctness and frozen scope
+
+The parent is pinned HNS-v1 commit bdfd647f7b7e1a2518e4b65a8a959bc65c5606ad. Its config is reused with only `hns_detach_child=true`. The production helper evaluates `ReLU(child.detach()-parent)` on the same positive Hard-ST masks. Forward values, count telemetry, ramp200, beta2/2 and world/global-valid normalization remain unchanged. No soft inclusion, duplicate hierarchy term, margin or direct D3-to-F edge is introduced.
+
+CPU tests cover all four binary endpoints and actual sigmoid/Hard-ST gradients, exact zero direct child hierarchy gradient, identical parent gradient, unchanged alignment and global sparsity gradients, nonzero child sparsity gradient, independently reconstructed production objective/all parameter gradients, original fetched HNS loss/gradients/AdamW equality when SG is disabled, optimizer group/order equality and frozen trainer optimizer/LR/RNG/horizon/checkpoint function ASTs. Tests also reject full, resume and NFS-root admission for this experiment.
+
+DDP_CORRECTNESS.json comes from the actual production objective on four gloo ranks with uneven valid counts, including a rank with zero valid local records. It compares global loss/every parameter gradient, synchronized AdamW update and parameter agreement against a one-process global reference; no extra world scaling is added.
+
+MATCHED_PREFLIGHT.json verifies1000 actual local image/preprocess tensors, frozen text/token/K/index/order, private RNG, common0 and parameter/optimizer construction against fetched HNS-v1. Formal first5 gate checks initialization, optimizer counters/groups, four-rank agreement and sample/LR streams before update6. All512000 consumed records are checked after500.
+
+GRADIENT_AUDIT.json will separately decompose alignment, original sparsity, each adjacent edge, total hierarchy and total training at both immutable HNS-v1 and HNS-SG checkpoints. Within each checkpoint both routing choices use the identical actual graph and masks. Groups include visual/text backbones, text mask/shared pool, visual mask and fusion/shared module. Dall is a child on DF and a parent on3D: its total hierarchy gradient can be nonzero as a parent. No fictitious independent view-specific parameter branches are claimed.
+
+Native hidden-input detach is inherited unchanged. Hierarchy/global sparsity therefore have zero native-backbone gradients, while alignment trains native backbones. Edge-local child detach does not stop shared-parameter updates from indirectly changing child outputs. Density changes and single-seed results do not establish causation for full-training performance.
+
+Fresh independent smoke5 precedes a fresh common0 formal500. Images are local-only; missing/symlink/escape fails. Checkpoints persist on the project mount; no copy/full decode audit runs. Strict bare/native full-caption evaluation uses the five frozen evaluators. No full4868 or other arm is launched. Binary weights, images, large raw logs and token evidence stay local; GitHub receives reviewed small artifacts only.

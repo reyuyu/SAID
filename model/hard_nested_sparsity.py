@@ -8,16 +8,16 @@ def hierarchy_weight(completed):
     return min(1., completed / 200.)
 
 
-def hard_violation(child, parent):
+def hard_violation(child, parent, detach_child=False):
     # ReLU, not child*(1-parent): no surrogate gradient at equal zero masks.
     # Both Hard-ST inputs retain their original graph.
-    return torch.relu(child - parent).mean(-1)
+    return torch.relu((child.detach() if detach_child else child) - parent).mean(-1)
 
 
-def hns_terms(mf, md, m3, valid, completed, world, valid_count, beta=(2., 2.)):
+def hns_terms(mf, md, m3, valid, completed, world, valid_count, beta=(2., 2.), detach_child=False):
     assert len(beta) == 2 and all(math.isfinite(v) and v >= 0 for v in beta)
-    df = world / valid_count * hard_violation(md, mf)[valid].sum()
-    d3 = world / valid_count * hard_violation(m3, md)[valid].sum()
+    df = world / valid_count * hard_violation(md, mf, detach_child)[valid].sum()
+    d3 = world / valid_count * hard_violation(m3, md, detach_child)[valid].sum()
     weight = hierarchy_weight(completed)
     return weight * (beta[0] * df + beta[1] * d3) / 3, dict(V_DF=df, V_3D=d3, lambda_h=weight)
 
