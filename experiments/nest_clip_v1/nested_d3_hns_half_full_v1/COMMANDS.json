@@ -1,0 +1,98 @@
+[
+  {
+    "name": "train3651",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nnodes=1",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "--",
+      "recovery.hns_half_full",
+      "--worker",
+      "--candidate",
+      "A",
+      "--config",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-half-full/experiments/nest_clip_v1/nested_d3_hns_half_full_v1/config.json",
+      "--init-state",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step3651",
+      "--run-type",
+      "formal",
+      "--max-updates",
+      "3651",
+      "--resume",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half2434_v1/step2434/step002434.pt"
+    ],
+    "started_utc": "2026-10-08T12:58:42.315480+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/train3651.log",
+    "ended_utc": "2026-10-08T13:44:19.237673+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "export3651",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step3651/step003651.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step3651/student_step3651.pt",
+      "--expect-updates",
+      "3651"
+    ],
+    "started_utc": "2026-10-08T13:45:05.134058+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/export3651.log",
+    "ended_utc": "2026-10-08T13:45:30.287193+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "verify3651",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "verify-export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step3651/step003651.pt",
+      "--bare",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step3651/student_step3651.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step3651/export-check.json",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V"
+    ],
+    "started_utc": "2026-10-08T13:45:30.310033+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/verify3651.log",
+    "ended_utc": "2026-10-08T13:45:48.359750+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "five-eval3651",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.eval_five_parallel",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step3651/student_step3651.pt",
+      "--training-checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step3651/step003651.pt",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step3651"
+    ],
+    "started_utc": "2026-10-08T13:45:49.180314+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/five-eval3651.log",
+    "ended_utc": "2026-10-08T13:54:07.104749+00:00",
+    "returncode": 0
+  }
+]
