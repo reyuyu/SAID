@@ -1,6 +1,7 @@
 {
   "passed": true,
-  "tests": 5,
-  "command": ".venv/bin/python -m pytest -q tests/test_epoch_curve_eval.py",
-  "scope": "CPU-only: interleaved sequential queue, strict export identity, discrete crossings, gains and directional units, failure stop before another checkpoint or analysis"
+  "tests": 7,
+  "command": ".venv/bin/python -m pytest -q tests/test_epoch_curve_eval.py tests/test_epoch_curve_analysis.py",
+  "scope": "CPU-only: interleaved queue, strict export identity, crossings and zero intervals, gains and directional units, failure stop, relative versus absolute slowdown and bounded temporal claims",
+  "output": "7 passed in 0.10s"
 }

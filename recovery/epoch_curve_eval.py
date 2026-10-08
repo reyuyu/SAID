@@ -298,11 +298,11 @@ def report(results,inventory,start):
         interpretation='One seed, four discrete epoch observations. Slower relative growth is not necessarily an absolute retrieval decline. Alignment loss share is not a gradient norm.')
     save('RESULTS.json',dict(status='COMPLETE',models=results,conclusions=conclusions,training=False))
     with (EXP/'aggregate_curve.csv').open('w',newline='') as f:
-        w=csv.writer(f);w.writerow(['epoch','update','metric','Balanced','HNS','delta_HNS_minus_Balanced_pp'])
+        w=csv.writer(f,lineterminator='\n');w.writerow(['epoch','update','metric','Balanced','HNS','delta_HNS_minus_Balanced_pp'])
         for key,points in aggregate.items():
             for p in points:w.writerow([p['epoch'],p['update'],key,p['Balanced'],p['HNS'],p['delta']])
     with (EXP/'directional_r1_curve.csv').open('w',newline='') as f:
-        w=csv.writer(f);w.writerow(['epoch','update','direction','Balanced_R1','HNS_R1','delta_pp'])
+        w=csv.writer(f,lineterminator='\n');w.writerow(['epoch','update','direction','Balanced_R1','HNS_R1','delta_pp'])
         for key,points in directions.items():
             for p in points:w.writerow([p['epoch'],p['update'],key,p['Balanced'],p['HNS'],p['delta']])
     lines=['# D3 Balanced vs HNS-v1 epoch replay','',
@@ -347,16 +347,20 @@ def report(results,inventory,start):
 
 def publish():
     from recovery import check_stage500_publish as review
-    assert git('branch','--show-current')==BRANCH and not git('diff','--cached','--name-only')
-    paths=[ROOT/'recovery/epoch_curve_eval.py',ROOT/'tests/test_epoch_curve_eval.py']
+    assert git('branch','--show-current')==BRANCH
+    paths=[ROOT/p for p in ('recovery/epoch_curve_eval.py','tests/test_epoch_curve_eval.py',
+        'recovery/epoch_curve_analysis.py','tests/test_epoch_curve_analysis.py')]
     names=('REPORT.md','RESULTS.json','CHECKPOINT_INVENTORY.json','EVAL_COMMANDS.json','EXPORT_AUDIT_SUMMARY.json',
         'EPOCH_CURVES.json','DIRECTIONAL_R1_CURVES.json','TRAINING_DIAGNOSTICS_COMPARISON.json','RUNTIME_STATS.json',
-        'STATE.json','CPU_TESTS.json','aggregate_curve.csv','directional_r1_curve.csv','PROGRESS.json')
+        'STATE.json','CPU_TESTS.json','aggregate_curve.csv','directional_r1_curve.csv','PROGRESS.json',
+        'SCIENTIFIC_INTERPRETATION.json')
     paths += [EXP/n for n in names]
     paths += [EXP/f'evaluations/{m}/step{s}/{d}.json' for m,s in queue()
               for d in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI')]
     paths += [EXP/f'evidence/{m}/step{s}/{n}.json' for m,s in queue() for n in ('export-check','EVAL_PARALLEL_RUN')]
     relative=[str(p.relative_to(ROOT)) for p in paths];assert all(p.is_file() for p in paths)
+    staged=set(git('diff','--cached','--name-only').splitlines())
+    assert staged<=set(relative),'Unrelated staged changes; preserve them'
     subprocess.run(['git','add','--',*relative],cwd=ROOT,check=True)
     review.ALLOWED=set(relative);checked=review.inspect();assert checked['passed']
     subprocess.run(['git','diff','--cached','--check'],cwd=ROOT,check=True)
