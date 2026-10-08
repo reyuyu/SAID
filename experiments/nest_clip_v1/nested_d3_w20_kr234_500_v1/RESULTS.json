@@ -1,0 +1,1007 @@
+{
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6058,
+        "R@5": 0.8272,
+        "R@10": 0.8932
+      },
+      "T2I": {
+        "R@1": 0.41464,
+        "R@5": 0.67256,
+        "R@10": 0.76732
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9100000262260437,
+        "R@5": 0.9850000739097595,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.893000066280365,
+        "R@5": 0.9880000352859497,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.878,
+        "R@5": 0.975,
+        "R@10": 0.99
+      },
+      "T2I": {
+        "R@1": 0.7176,
+        "R@5": 0.9136,
+        "R@10": 0.952
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7768,
+        "R@5": 0.954,
+        "R@10": 0.9818
+      },
+      "T2I": {
+        "R@1": 0.7788,
+        "R@5": 0.9512,
+        "R@10": 0.9772
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5643251775848461,
+        "R@5": 0.7521704814522494,
+        "R@10": 0.8150486714022626
+      },
+      "T2I": {
+        "R@1": 0.5651144435674822,
+        "R@5": 0.7592738752959748,
+        "R@10": 0.8184688239936859
+      }
+    }
+  },
+  "scores": {
+    "Score5_R1": 0.7104079713658737,
+    "J_long3": 0.7480066189431228,
+    "J_long": 0.8396500231266022,
+    "Short4_R1": 0.65401
+  },
+  "scores_percent": {
+    "Score5_R1": 71.04079713658737,
+    "J_long3": 74.80066189431228,
+    "J_long": 83.96500231266022,
+    "Short4_R1": 65.401,
+    "Score5": 71.04079713658737,
+    "Short4": 65.401
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "e540a7d23be3c1db04d4a434be938300a2d007157c5b612c64a0cea07bdc6c82",
+    "bare_sha256": "2618cd73fdb9eb310bc5612312d1e989cabd11137795fd8fc9b3932e7fd7dc69"
+  },
+  "checkpoint_sha256": "e540a7d23be3c1db04d4a434be938300a2d007157c5b612c64a0cea07bdc6c82",
+  "evaluation_checkpoint_immutable": true,
+  "step": 500,
+  "horizon": 4868,
+  "native_full_caption_only": true,
+  "finished_at": "2026-10-08T02:58:25.160137+00:00",
+  "arm": "W20-KR234",
+  "spec": {
+    "axis": "authorized_alignment_plus_granularity",
+    "weights": [
+      1.4,
+      1.4,
+      0.2
+    ],
+    "r": 2.0,
+    "mode": "nested_detail_kr234",
+    "strict_lowest_reference": true,
+    "experiment_dir": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1"
+  },
+  "completed_steps": 500,
+  "stopped_at_500": true,
+  "resume": null,
+  "initialized_from_common0": true,
+  "configuration": {
+    "arm": "A3",
+    "experiment_name": "ArmB-Summary0.2-4epoch",
+    "condition_mode": "dual_branch",
+    "fusion": "balanced_stack",
+    "visual": "patch",
+    "full_native_mix": 0,
+    "sampling_mode": "nested_detail_kr234",
+    "inclusion_hierarchy": "detail_chain",
+    "sampling_seed": 0,
+    "shuffle_seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "accumulation": 1,
+    "epochs": 4,
+    "seed": 0,
+    "workers": 8,
+    "checkpoint_encoders": true,
+    "checkpoint_pair_blocks": false,
+    "image_chunk": 128,
+    "text_chunk": 128,
+    "score_chunk": 64,
+    "checkpoint_interval": 1217,
+    "save_initial_checkpoint": false,
+    "monitor_resources": true,
+    "feasibility_abort_seconds": 15,
+    "four_epoch_followup": true,
+    "fusion_lr": 0.0002,
+    "visual_mask_lr_scale": 1,
+    "view_weights": [
+      1.4,
+      1.4,
+      0.2
+    ],
+    "sparsity_scale": 1,
+    "inclusion_max": 1,
+    "hparam_search": true,
+    "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+    "base_model": "ViT-B/16",
+    "resource_policy": "local_reproduction500"
+  },
+  "launch_provenance": {
+    "started_utc": "2026-10-08T02:17:55.283443+00:00",
+    "supervisor_pid": 544899,
+    "step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "resume": null,
+    "start_updates": 0,
+    "stop_updates": 500,
+    "horizon": 4868,
+    "arm": "W20-KR234",
+    "spec": {
+      "axis": "authorized_alignment_plus_granularity",
+      "weights": [
+        1.4,
+        1.4,
+        0.2
+      ],
+      "r": 2.0,
+      "mode": "nested_detail_kr234",
+      "strict_lowest_reference": true,
+      "experiment_dir": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1"
+    },
+    "git_head": "9ab16167194a4fd9da4c67cee4fdcb002268c6db",
+    "source_sha256": {
+      "configs/nested_d3_w20_kr234_500.json": "bf841df6b9d4c4caae4f681081131f232835ff0907acba558511e70bcf6c1255",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_train_gate.py": "5846e554ad65b7f34e67c902cb671afd593258dc88c189a89b6e9d29be0e1985",
+      "experiments/nest_clip_v1/armb_summary02_4epoch_v1/training_phase_timing.py": "9a122549263a6ca007147dcb8be6db62800bb33c85cd2fb0234ba33e3ed5a8f3",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/BASELINE_PROVENANCE.json": "a0be44678e6ea9ac80359b410919083b58a699b67ab1369fa46f71bc605f7809",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/CORRECTNESS.md": "8f1cc464f5207c1bed5d9de7cd337fab4dfd9224d0e2c06642f3bdd5ef001c7a",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/CPU_TESTS.json": "7059d351e669a5022604cf803d78f4f7284b3017551855dd580efb9651e8c619",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/MATCHED_PREFLIGHT.json": "d31a1a896a920fe2b89532ee3d8c22468f1aaef694479365250f482d2cc31355",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/PREUPDATE_LAUNCH_RECOVERY.json": "16a3bbbc8265292856ed0a42c05bebf6cd1170d6835177d22a0e6fb35b434dd4",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/SEARCH_PLAN.json": "5680d786876189e206781c6909b16bc52b94c9cff86e4eac149f54831aab4135",
+      "experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/config.json": "bf841df6b9d4c4caae4f681081131f232835ff0907acba558511e70bcf6c1255",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+      "model/balanced_hparam_search.py": "b500febecdf8eff6d7a90f4020c6808a70a04ccebc63ecddd0d6565d28808d8e",
+      "model/hard_nested_sparsity.py": "3f63db56c683faf7102793fa1f3a6f62430a20eaa0a67c094380afd4397f696f",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "recovery/check_stage500_publish.py": "b3588d8e78693c5f2a33124abd768e6421f9e3cf7be13a3dcb2a40c8c8e86b32",
+      "recovery/local500_policy.py": "f7fe7aebfec054606752cb33e43d088dc964501f61b696b496f016c2c357a244",
+      "recovery/nested_d3_followup500.py": "2b2283e8ff0d765e8f244f5210c8f040534c9ead5d9e824eb76101fdd215f4a3",
+      "recovery/nested_d3_local_search.py": "7956707b439ffaf459ec272739a8ab325b54c1b844ca94ac75d29c4d252bb2c7",
+      "recovery/nested_d3_local_search_evidence.py": "af991fca567c4de69b4564570af74a3fc3e6bf5a20da617add7e39c7b7a6d5d2",
+      "recovery/nested_detail_gradients.py": "3828dc36860a115852b75b679cd8c51979547e30b2a0c9096e6653ef49ef3f1b",
+      "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+      "recovery/s02_local500.py": "251c504ca5a180bb9d02d25cd6fb212b97d887c9409549e865b374865645bf4f",
+      "recovery/w20_kr234_500.py": "81cbe9fba9907a4b73fc9e740f149729816af56d0dbc81570f4f771b9d1ee278",
+      "tests/test_nested_d3_local_search.py": "a2c0a633125771e96ddca963b998bffaa7131342e0f91f7b73a14536df7ce9d8",
+      "tests/test_w20_kr234_500.py": "5b265d68cd95420ecad7e22b49a9ea4e15253483b1528aa0df67c71d6dffe7c7",
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "tools/nest_clip.py": "d713089c849c6420bed14271d88c54f27f79c866293c4d6644821f90b5104dd3",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "train/train_nested_semantic_mask.py": "2a5a398a4af2ce86e63c07d1f68304c35138640f9566ac3f500b2f81f2cd0356"
+    },
+    "CPU_tests": {
+      "passed": true,
+      "exit_code": 0,
+      "tests": 101,
+      "failed_count": 0,
+      "skipped": 0,
+      "command": ".venv/bin/python -m pytest -q tests/test_w20_kr234_500.py tests/test_nested_d3_local_search.py tests/test_nested_detail_d3_balanced.py tests/test_nested_resume.py recovery/test_local500_policy.py --junitxml=runtime/w20-kr234-cpu-tests.xml",
+      "junit_local_path": "/opt/data/private/lklk/SAID/runtime/w20-kr234-cpu-tests.xml",
+      "junit_sha256": "4030c7e449e498602076a342b2e8393627d9732a73ad4945c806e4d073c9fa07",
+      "junit_bytes": 15786,
+      "checks": [
+        "Exactly two authorized config changes; rejects HNS, inclusion, sparsity, worker, LR drift",
+        "Current non-HNS production vs fetched historical KR234 loss, all parameter gradients, AdamW update exact at completed0/99/199/499",
+        "Independent W20 loss and every-gradient reconstruction, original detached-child soft inclusion",
+        "Fetched KR234 text/token/RNG/fallback exact across pool boundaries and epochs",
+        "Raw Score5 classification and candidacy; no rounding or unrelated quality guard",
+        "Final report with real baseline schemas and explicitly synthetic fixture only, in temporary test directory",
+        "Fail-fast local runtime policy; original resume/sampler and D3 controls",
+        "Actual native trainer admission allows exactly fresh W20+KR234 formal500/smoke5, rejects full/resume/NFS/HNS/changed coefficients"
+      ],
+      "warning": "Inherited pkg_resources deprecation",
+      "raw_test_output_uploaded": false
+    },
+    "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "local_index_sha256": {
+      "records.jsonl": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+      "offsets.npy": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+      "metadata.json": "656e5b32e51152af40b4c85be9f4e5ca64b4e8b0b95c88e73ee4f0795125bb49"
+    },
+    "NFS_fallback": false,
+    "anchor_reference": {
+      "result_sha256": "583e6ab4ee5e631f8818e6ad519f891e213cc3398ccb9f81050e9ee5fd120bbb",
+      "checkpoint_sha256": "a13ae36ce0d12ffc8b5d973bc045b31f3f5e9d717ec7edec7e0c97e053cafb2e",
+      "actual_steps_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-local-search500-20261007/KR234/step500/steps.jsonl",
+      "actual_steps_sha256": "d57d76078aa640f21d0ec19ec68684de9bf66dde78ea09cd286e0fbfa9f57abd",
+      "reference_used_for_resume": false
+    },
+    "config_changes": {
+      "view_weights": [
+        1.4,
+        1.4,
+        0.2
+      ]
+    },
+    "initial_resources": {
+      "timestamp_utc": "2026-10-08T02:18:13.987792+00:00",
+      "cgroup_version": 1,
+      "cgroup_path": "/sys/fs/cgroup/memory",
+      "memory_current": 502822244352,
+      "memory_max": "536870912000",
+      "memory_stat": {
+        "cache": 496889966592,
+        "rss": 1570066432,
+        "rss_huge": 0,
+        "shmem": 0,
+        "mapped_file": 69881856,
+        "dirty": 0,
+        "writeback": 0,
+        "pgpgin": 13095103395,
+        "pgpgout": 12973407946,
+        "pgfault": 24248663703,
+        "pgmajfault": 444246,
+        "inactive_anon": 1622016,
+        "active_anon": 1569705984,
+        "inactive_file": 10466148352,
+        "active_file": 486419386368,
+        "unevictable": 0,
+        "hierarchical_memory_limit": 536870912000,
+        "total_cache": 496889966592,
+        "total_rss": 1570066432,
+        "total_rss_huge": 0,
+        "total_shmem": 0,
+        "total_mapped_file": 69881856,
+        "total_dirty": 0,
+        "total_writeback": 0,
+        "total_pgpgin": 13095103395,
+        "total_pgpgout": 12973407946,
+        "total_pgfault": 24248663703,
+        "total_pgmajfault": 444246,
+        "total_inactive_anon": 1622016,
+        "total_active_anon": 1569705984,
+        "total_inactive_file": 10466148352,
+        "total_active_file": 486419386368,
+        "total_unevictable": 0
+      },
+      "memory_events": {
+        "oom_kill_disable": 0,
+        "under_oom": 0,
+        "oom_kill": 0,
+        "limit_hits_cumulative": 218986004
+      },
+      "file": 496889966592,
+      "inactive_file": 10466148352,
+      "active_file": 486419386368,
+      "anon": 1570066432,
+      "shmem": 0,
+      "cpu_stat": {
+        "nr_periods": 1491100,
+        "nr_throttled": 12,
+        "throttled_time": 6138077653
+      },
+      "memory_PSI": {
+        "some": {
+          "avg10": 0.0,
+          "avg60": 0.01,
+          "avg300": 0.14,
+          "total": 27464644663
+        },
+        "full": {
+          "avg10": 0.0,
+          "avg60": 0.01,
+          "avg300": 0.14,
+          "total": 22080865585
+        }
+      },
+      "io_PSI": {
+        "some": {
+          "avg10": 0.25,
+          "avg60": 0.12,
+          "avg300": 0.23,
+          "total": 487344911985
+        },
+        "full": {
+          "avg10": 0.25,
+          "avg60": 0.12,
+          "avg300": 0.22,
+          "total": 481989581480
+        }
+      },
+      "PSI_scope": "host /proc/pressure; not cgroup-specific on this v1 host",
+      "cgroup_memory_PSI": null,
+      "cgroup_io_PSI": null
+    },
+    "automatic_retry": false,
+    "automatic_full": false,
+    "automatic_combinations": false,
+    "sampling_audit": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-w20-kr234-500-v1/W20-KR234/sampling-audit-1000.json",
+      "bytes": 11690600,
+      "sha256": "45599056670210c9cde67286065d73510c5c69db0ca44328fb72392e2d2af489",
+      "uploaded": false
+    },
+    "pod_identity": "interactive93293",
+    "disposable_cache": "Ephemeral Docker overlay; NFS original source retained"
+  },
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "stream_proof": {
+    "passed": true,
+    "records": 512000,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false,
+    "all_lowest_text_tokens_K_indices_exact_KR234": true,
+    "all_F_Dall_LR_exact_W20": true,
+    "all_total_losses_reconstructed": true,
+    "alignment": [
+      1.4,
+      1.4,
+      0.2
+    ],
+    "sparsity": [
+      1,
+      2,
+      2
+    ],
+    "inclusion": "Original detached-child soft chain, ramp200/max1",
+    "HNS": false
+  },
+  "quality_delta_vs_anchor_pp": {
+    "Score5": -0.02280266559036015,
+    "J_long3": -0.15400444265062374,
+    "J_long": -0.05999903440475629,
+    "Short4": 0.17399999999999638,
+    "Urban_I2T": 0.09999871253967285,
+    "Urban_T2I": -0.3999948501586914
+  },
+  "recall_delta_vs_anchor_pp": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.18000000000000238,
+        "R@5": 0.10000000000000009,
+        "R@10": 0.060000000000004494
+      },
+      "T2I": {
+        "R@1": -0.12400000000000189,
+        "R@5": -0.019999999999997797,
+        "R@10": -0.20000000000000018
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.09999871253967285,
+        "R@5": -0.09999871253967285,
+        "R@10": 0.09999871253967285
+      },
+      "T2I": {
+        "R@1": -0.3999948501586914,
+        "R@5": 0.29999613761901855,
+        "R@10": -0.10000467300415039
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.8000000000000007,
+        "R@5": -0.30000000000000027,
+        "R@10": -0.20000000000000018
+      },
+      "T2I": {
+        "R@1": -0.15999999999999348,
+        "R@5": -0.019999999999997797,
+        "R@10": 0.07999999999999119
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": -0.13999999999999568,
+        "R@5": 0.05999999999999339,
+        "R@10": 0.18000000000000238
+      },
+      "T2I": {
+        "R@1": 0.20000000000000018,
+        "R@5": -0.13999999999999568,
+        "R@10": 0.0
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": -0.5919494869771058,
+        "R@5": -0.31570639305446013,
+        "R@10": -0.14469876348329747
+      },
+      "T2I": {
+        "R@1": -0.09208103130755596,
+        "R@5": -0.15785319652722452,
+        "R@10": -0.09208103130754486
+      }
+    }
+  },
+  "native_evaluation_provenance": {
+    "COCO": {
+      "image2text_R1": 0.6058,
+      "image2text_R5": 0.8272,
+      "image2text_R10": 0.8932,
+      "text2image_R1": 0.41464,
+      "text2image_R5": 0.67256,
+      "text2image_R10": 0.76732,
+      "checkpoint_sha256": "2618cd73fdb9eb310bc5612312d1e989cabd11137795fd8fc9b3932e7fd7dc69",
+      "native_only": true
+    },
+    "Urban-1k": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.9100000262260437,
+        "R5": 0.9850000739097595,
+        "R10": 0.9970000386238098
+      },
+      "text2image": {
+        "R1": 0.893000066280365,
+        "R5": 0.9880000352859497,
+        "R10": 0.9940000176429749
+      },
+      "checkpoint_sha256": "2618cd73fdb9eb310bc5612312d1e989cabd11137795fd8fc9b3932e7fd7dc69",
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ],
+      "native_only": true
+    },
+    "Flickr30k-test1k": {
+      "protocol": "flickr_test1k",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.878,
+          "T2I": 0.7176
+        },
+        "R@5": {
+          "I2T": 0.975,
+          "T2I": 0.9136
+        },
+        "R@10": {
+          "I2T": 0.99,
+          "T2I": 0.952
+        }
+      },
+      "checkpoint_sha256": "2618cd73fdb9eb310bc5612312d1e989cabd11137795fd8fc9b3932e7fd7dc69",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "elapsed_seconds": 19.34632658958435,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "DOCCI": {
+      "protocol": "docci",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.7768,
+          "T2I": 0.7788
+        },
+        "R@5": {
+          "I2T": 0.954,
+          "T2I": 0.9512
+        },
+        "R@10": {
+          "I2T": 0.9818,
+          "T2I": 0.9772
+        }
+      },
+      "checkpoint_sha256": "2618cd73fdb9eb310bc5612312d1e989cabd11137795fd8fc9b3932e7fd7dc69",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "elapsed_seconds": 283.11076831817627,
+      "device": "cuda:0",
+      "native_student_only": true
+    },
+    "Long-DCI": {
+      "protocol": "long_dci",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "metrics": {
+        "R@1": {
+          "I2T": 0.5643251775848461,
+          "T2I": 0.5651144435674822
+        },
+        "R@5": {
+          "I2T": 0.7521704814522494,
+          "T2I": 0.7592738752959748
+        },
+        "R@10": {
+          "I2T": 0.8150486714022626,
+          "T2I": 0.8184688239936859
+        }
+      },
+      "checkpoint_sha256": "2618cd73fdb9eb310bc5612312d1e989cabd11137795fd8fc9b3932e7fd7dc69",
+      "manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+      "elapsed_seconds": 482.50768780708313,
+      "device": "cuda:0",
+      "native_student_only": true
+    }
+  },
+  "native_evaluation_sources": {
+    "COCO": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-w20-kr234-500-v1/W20-KR234/step500/coco_native.json",
+      "sha256": "454cfb2f55ae4a21781d9f4e46eaf71ffb3d7507845123097e63b47b8b98955a"
+    },
+    "Urban-1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-w20-kr234-500-v1/W20-KR234/step500/urban_native.json",
+      "sha256": "c3de848d259bebcec0f8842243b9e4f14120465f6996010aa1dca12597ff0b45"
+    },
+    "Flickr30k-test1k": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-w20-kr234-500-v1/W20-KR234/step500/flickr_test1k/flickr_test1k.json",
+      "sha256": "5f45df0a59e2517a06da7ef7de8b7137b78774fdd6e6fed9063f62271e066519"
+    },
+    "DOCCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-w20-kr234-500-v1/W20-KR234/step500/docci/docci.json",
+      "sha256": "6ccb73da81629e0a4fd18fd87a1d8acf21b9fe0df0853b089ebdce57669a3b1b"
+    },
+    "Long-DCI": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-w20-kr234-500-v1/W20-KR234/step500/long_dci/long_dci.json",
+      "sha256": "0c582089c6a9eb72960c6d5aa6889da41ed4c655b3b706a8ee6b62efcb2ea5bf"
+    }
+  },
+  "checkpoint_uploaded": false,
+  "bare_uploaded": false,
+  "automatic_full": false,
+  "automatic_combinations": false,
+  "classification": "MIXED",
+  "gradient_weighted_lowest_Dall_ratio": 0.3154556056029591,
+  "next_full_candidate": false,
+  "next_action": "NO_FULL_CANDIDACY",
+  "authorized_combination": [
+    "W20 alignment",
+    "KR234 granularity"
+  ],
+  "no_additional_combination": true,
+  "comparisons": {
+    "Anchor": {
+      "quality_delta_pp": {
+        "Score5": -0.02280266559036015,
+        "J_long3": -0.15400444265062374,
+        "J_long": -0.05999903440475629,
+        "Short4": 0.17399999999999638,
+        "Urban_I2T": 0.09999871253967285,
+        "Urban_T2I": -0.3999948501586914
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.18000000000000238,
+            "R@5": 0.10000000000000009,
+            "R@10": 0.060000000000004494
+          },
+          "T2I": {
+            "R@1": -0.12400000000000189,
+            "R@5": -0.019999999999997797,
+            "R@10": -0.20000000000000018
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.09999871253967285,
+            "R@5": -0.09999871253967285,
+            "R@10": 0.09999871253967285
+          },
+          "T2I": {
+            "R@1": -0.3999948501586914,
+            "R@5": 0.29999613761901855,
+            "R@10": -0.10000467300415039
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.8000000000000007,
+            "R@5": -0.30000000000000027,
+            "R@10": -0.20000000000000018
+          },
+          "T2I": {
+            "R@1": -0.15999999999999348,
+            "R@5": -0.019999999999997797,
+            "R@10": 0.07999999999999119
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": -0.13999999999999568,
+            "R@5": 0.05999999999999339,
+            "R@10": 0.18000000000000238
+          },
+          "T2I": {
+            "R@1": 0.20000000000000018,
+            "R@5": -0.13999999999999568,
+            "R@10": 0.0
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.5919494869771058,
+            "R@5": -0.31570639305446013,
+            "R@10": -0.14469876348329747
+          },
+          "T2I": {
+            "R@1": -0.09208103130755596,
+            "R@5": -0.15785319652722452,
+            "R@10": -0.09208103130754486
+          }
+        }
+      },
+      "quality_percent": {
+        "Score5": 71.06359980217773,
+        "J_long3": 74.9546663369629,
+        "J_long": 84.02500134706497,
+        "Short4": 65.227,
+        "Urban_I2T": 90.9,
+        "Urban_T2I": 89.7
+      }
+    },
+    "W20": {
+      "quality_delta_pp": {
+        "Score5": -0.047549462803964104,
+        "J_long3": -0.1572491046732738,
+        "J_long": -0.05500020265578609,
+        "Short4": 0.11700000000000044,
+        "Urban_I2T": -0.3000020980834961,
+        "Urban_T2I": -0.09999871253967285
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.18000000000000238,
+            "R@5": -0.31999999999999806,
+            "R@10": 0.18000000000000238
+          },
+          "T2I": {
+            "R@1": 0.048000000000003595,
+            "R@5": -0.056000000000000494,
+            "R@10": -0.024000000000001798
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": -0.3000020980834961,
+            "R@5": 0.10000467300415039,
+            "R@10": -0.09999871253967285
+          },
+          "T2I": {
+            "R@1": -0.09999871253967285,
+            "R@5": 0.0,
+            "R@10": -0.10000467300415039
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.20000000000000018,
+            "R@5": 0.20000000000000018,
+            "R@10": -0.20000000000000018
+          },
+          "T2I": {
+            "R@1": 0.0400000000000067,
+            "R@5": -0.08000000000000229,
+            "R@10": 0.05999999999999339
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.060000000000004494,
+            "R@5": -0.060000000000004494,
+            "R@10": 0.10000000000000009
+          },
+          "T2I": {
+            "R@1": 0.12000000000000899,
+            "R@5": -0.13999999999999568,
+            "R@10": -0.060000000000004494
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.5393317548013643,
+            "R@5": -0.5130228887134991,
+            "R@10": -0.302551960010522
+          },
+          "T2I": {
+            "R@1": -0.18416206261510082,
+            "R@5": 0.07892659826361781,
+            "R@10": 0.05261773217575261
+          }
+        }
+      },
+      "quality_percent": {
+        "Score5": 71.08834659939134,
+        "J_long3": 74.95791099898555,
+        "J_long": 84.02000251531601,
+        "Short4": 65.28399999999999,
+        "Urban_I2T": 91.3,
+        "Urban_T2I": 89.4
+      }
+    },
+    "KR234": {
+      "quality_delta_pp": {
+        "Score5": -0.0671037671018615,
+        "J_long3": -0.24583961183645142,
+        "J_long": -0.15499988079070715,
+        "Short4": 0.20099999999999563,
+        "Urban_I2T": -0.6000041961669922,
+        "Urban_T2I": 0.10000467300415039
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.0,
+            "R@5": 0.060000000000004494,
+            "R@10": 0.11999999999999789
+          },
+          "T2I": {
+            "R@1": 0.024000000000001798,
+            "R@5": 0.0160000000000049,
+            "R@10": -0.20799999999999708
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": -0.6000041961669922,
+            "R@5": -0.1999974250793457,
+            "R@10": -0.09999871253967285
+          },
+          "T2I": {
+            "R@1": 0.10000467300415039,
+            "R@5": 0.1999974250793457,
+            "R@10": -0.10000467300415039
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.6000000000000005,
+            "R@5": -0.10000000000000009,
+            "R@10": -0.20000000000000018
+          },
+          "T2I": {
+            "R@1": 0.18000000000000238,
+            "R@5": -0.0400000000000067,
+            "R@10": -0.10000000000000009
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": -0.07999999999999119,
+            "R@5": -0.12000000000000899,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.039999999999995595,
+            "R@5": 0.12000000000000899,
+            "R@10": -0.14000000000000679
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.39463299131806684,
+            "R@5": -0.11838989739542116,
+            "R@10": -0.18416206261510082
+          },
+          "T2I": {
+            "R@1": -0.4604051565377576,
+            "R@5": -0.31570639305446013,
+            "R@10": -0.31570639305444903
+          }
+        }
+      },
+      "quality_percent": {
+        "Score5": 71.10790090368924,
+        "J_long3": 75.04650150614873,
+        "J_long": 84.12000219345093,
+        "Short4": 65.2,
+        "Urban_I2T": 91.6,
+        "Urban_T2I": 89.2
+      }
+    }
+  },
+  "quality_raw_fraction": {
+    "Score5": 0.7104079713658737,
+    "J_long3": 0.7480066189431228,
+    "J_long": 0.8396500231266022,
+    "Short4": 0.65401,
+    "Urban_I2T": 0.9100000262260437,
+    "Urban_T2I": 0.893000066280365
+  },
+  "known_500_references": {
+    "INC0": {
+      "Score5": 71.15830939305809,
+      "delta_Score5_pp": -0.11751225647071983,
+      "exceeds": false,
+      "not_used_to_change_selection_rule": true
+    },
+    "HNS-v1": {
+      "Score5": 71.20205634766327,
+      "delta_Score5_pp": -0.16125921107590369,
+      "exceeds": false,
+      "not_used_to_change_selection_rule": true
+    }
+  },
+  "interaction_vs_additive_baseline_pp": {
+    "Score5": -0.09185056431546545,
+    "J_long3": -0.24908427385910148,
+    "J_long": -0.15000104904173694,
+    "Short4": 0.14399999999999968,
+    "Urban_I2T": -1.0000050067901611,
+    "Urban_T2I": 0.40000081062316895
+  },
+  "alignment_share_lowest_percent": 43.86912721909779,
+  "weighted_lowest_Dall_gradient_ratio": 0.3154556056029591,
+  "diagnostic_baselines": {
+    "Anchor": {
+      "lowest_alignment_share_percent": 49.67367037361017,
+      "weighted_lowest_Dall_gradient_ratio": 0.50491701409273,
+      "raw_gradient_norms": {
+        "F": 10.726763010025024,
+        "Dall": 14.324304819107056,
+        "D3": 32.54663348197937
+      },
+      "weighted_gradient_norms": {
+        "F": 48.27043354511261,
+        "Dall": 64.45937168598175,
+        "D3": 32.54663348197937
+      }
+    },
+    "W20": {
+      "lowest_alignment_share_percent": 40.79969306346457,
+      "weighted_lowest_Dall_gradient_ratio": 0.325981774626433,
+      "raw_gradient_norms": {
+        "F": 12.149347186088562,
+        "Dall": 15.94963026046753,
+        "D3": 36.39502143859863
+      },
+      "weighted_gradient_norms": {
+        "F": 56.69695353507996,
+        "Dall": 74.43160788218181,
+        "D3": 24.263347625732425
+      }
+    },
+    "KR234": {
+      "lowest_alignment_share_percent": 53.30965052547507,
+      "weighted_lowest_Dall_gradient_ratio": 0.5243405517939317,
+      "raw_gradient_norms": {
+        "F": 11.163501501083374,
+        "Dall": 14.599633574485779,
+        "Dk": 34.448309659957886
+      },
+      "weighted_gradient_norms": {
+        "F": 50.23575675487519,
+        "Dall": 65.69835108518602,
+        "Dk": 34.448309659957886
+      }
+    }
+  },
+  "questions": {
+    "Q1": "Descriptive interaction deltas recorded; one seed cannot establish statistical synergy",
+    "Q2_exceeds_KR234_raw_Score5": false,
+    "Q3_exceeds_known_500": {
+      "INC0": false,
+      "HNS-v1": false
+    },
+    "Q4_directional_tradeoffs_vs_KR234": {
+      "COCO": {
+        "I2T": {
+          "R@1": 0.0,
+          "R@5": 0.060000000000004494,
+          "R@10": 0.11999999999999789
+        },
+        "T2I": {
+          "R@1": 0.024000000000001798,
+          "R@5": 0.0160000000000049,
+          "R@10": -0.20799999999999708
+        }
+      },
+      "Urban-1k": {
+        "I2T": {
+          "R@1": -0.6000041961669922,
+          "R@5": -0.1999974250793457,
+          "R@10": -0.09999871253967285
+        },
+        "T2I": {
+          "R@1": 0.10000467300415039,
+          "R@5": 0.1999974250793457,
+          "R@10": -0.10000467300415039
+        }
+      },
+      "Flickr30k-test1k": {
+        "I2T": {
+          "R@1": 0.6000000000000005,
+          "R@5": -0.10000000000000009,
+          "R@10": -0.20000000000000018
+        },
+        "T2I": {
+          "R@1": 0.18000000000000238,
+          "R@5": -0.0400000000000067,
+          "R@10": -0.10000000000000009
+        }
+      },
+      "DOCCI": {
+        "I2T": {
+          "R@1": -0.07999999999999119,
+          "R@5": -0.12000000000000899,
+          "R@10": 0.0
+        },
+        "T2I": {
+          "R@1": -0.039999999999995595,
+          "R@5": 0.12000000000000899,
+          "R@10": -0.14000000000000679
+        }
+      },
+      "Long-DCI": {
+        "I2T": {
+          "R@1": -0.39463299131806684,
+          "R@5": -0.11838989739542116,
+          "R@10": -0.18416206261510082
+        },
+        "T2I": {
+          "R@1": -0.4604051565377576,
+          "R@5": -0.31570639305446013,
+          "R@10": -0.31570639305444903
+        }
+      }
+    },
+    "Q5_long_rich_vs_W20": {
+      "Score5": -0.047549462803964104,
+      "J_long3": -0.1572491046732738,
+      "J_long": -0.05500020265578609,
+      "Short4": 0.11700000000000044,
+      "Urban_I2T": -0.3000020980834961,
+      "Urban_T2I": -0.09999871253967285
+    }
+  },
+  "trajectory_reference": "KR234 exact512000 IDs/F/Dall/K/indices/Dk text/tokens/LR; Anchor and W20 shared F/Dall/LR",
+  "HNS": false,
+  "GPU_idle_after_evaluation": true
+}
