@@ -1,5 +1,20 @@
 # SAID · S0 Dual-Mask
 
+
+## 当前最佳方案
+
+**当前指定最佳方案：HNS-v1 @ Epoch 3 / step3651。**
+
+- Urban-1k I2T R@1：**94.1%**（当前最高）
+- Urban-1k T2I R@1：**92.6%**
+- Score5：**73.774418%**
+- J_long3：**78.188029%**
+- J_long：**87.040003%**
+- Short4：**67.154%**
+- 实验分支：`experiment/nested-d3-hns-full-v1`
+
+> 说明：这里“最佳方案”按当前项目指定的 Urban-1k I2T R@1=94.1% 方案标记。若按五数据集综合 Score5，当前最高仍为 **D3 Balanced @ Epoch 3 / step3651：73.830182%**。两种“best”请勿混用。
+
 由 [reyuyu](https://github.com/reyuyu) 维护的视觉–语言检索实验仓库。SAID 基于 SmartCLIP / LongCLIP，研究用描述前缀选择视觉特征，并利用剩余后缀补充监督。这里保存我的实验实现、固定训练配置、检查点校验信息和原生检索评测结果。
 
 ## 实验配置
