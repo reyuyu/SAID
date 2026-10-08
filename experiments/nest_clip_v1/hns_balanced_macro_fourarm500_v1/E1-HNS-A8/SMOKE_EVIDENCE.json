@@ -1,0 +1,398 @@
+{
+  "passed": true,
+  "independent_common0": true,
+  "stream": {
+    "passed": true,
+    "records": 5120,
+    "all_sample_ids_F_Dall_strings_tokens_exact": true,
+    "all_lowest_strings_tokens_exact_anchor": true,
+    "all_selected_indices_replay_verified": true,
+    "all_LR_exact": true,
+    "epoch": 0,
+    "seed": 0,
+    "horizon": 4868,
+    "cross_run_numeric_comparison": false,
+    "hierarchy_method": "HNS",
+    "only_macro_scales_changed": true,
+    "IDs_F_Dall_D3_text_tokens_indices_and_LR_exact": true
+  },
+  "checkpoint": {
+    "passed": true,
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8.smoke5/step500/step000005.pt",
+    "sha256": "7b9ed31b8758f87941ee286663377bf3dcb3c9669348e1baab4a410657b2f0df",
+    "bytes": 1884188730,
+    "completed_steps": 5,
+    "optimizer_counters": [
+      5
+    ],
+    "scheduler": {
+      "type": "native_manual_learning_rate_function",
+      "horizon": 4868,
+      "completed_steps": 5,
+      "last_update_index": 4,
+      "optimizer_lrs": {
+        "backbone": 2.5e-08,
+        "text_mask_and_shared_pool": 0.000999998334063834,
+        "visual_mask": 0.000999998334063834,
+        "fusion_adapter": 0.00019999966681276683
+      }
+    },
+    "scaler": {
+      "enabled": false,
+      "dtype": "bfloat16",
+      "state": null
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "cursor": {
+      "next_epoch": 0,
+      "next_batch": 5
+    },
+    "rng_ranks": 4,
+    "loader_generator_restorable": true,
+    "configuration": {
+      "arm": "A3",
+      "experiment_name": "ArmB-Summary0.2-4epoch",
+      "condition_mode": "dual_branch",
+      "fusion": "balanced_stack",
+      "visual": "patch",
+      "full_native_mix": 0,
+      "sampling_mode": "nested_detail_d3",
+      "inclusion_hierarchy": "detail_chain",
+      "sampling_seed": 0,
+      "shuffle_seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "accumulation": 1,
+      "epochs": 4,
+      "seed": 0,
+      "workers": 8,
+      "checkpoint_encoders": true,
+      "checkpoint_pair_blocks": false,
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "score_chunk": 64,
+      "checkpoint_interval": 1217,
+      "save_initial_checkpoint": false,
+      "monitor_resources": true,
+      "feasibility_abort_seconds": 15,
+      "four_epoch_followup": true,
+      "fusion_lr": 0.0002,
+      "visual_mask_lr_scale": 1.0,
+      "view_weights": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "sparsity_scale": 1.0,
+      "inclusion_max": 0.0,
+      "hparam_search": true,
+      "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+      "base_model": "ViT-B/16",
+      "resource_policy": "local_reproduction500",
+      "hns_enabled": true,
+      "lambda_align": 8.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 1.0,
+      "config": "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/experiments/nest_clip_v1/hns_balanced_macro_fourarm500_v1/E1-HNS-A8/config.json",
+      "init_state": "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "index_dir": "/root/said_s02_stage500/data_index",
+      "image_root": "/root/said_s02_stage500/ShareGPT4V",
+      "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8.smoke5/step500",
+      "run_type": "smoke",
+      "max_updates": 5,
+      "resume": null,
+      "legacy_b0": false,
+      "expected_parent_trainer_sha256": null,
+      "horizon": 4868,
+      "batches_per_epoch": 1217,
+      "loader_batches_this_epoch": 5,
+      "training_records": 1245901,
+      "sampler_num_samples": 311476,
+      "sampler_padding": 3,
+      "tail_batch": 180,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+      "data": {
+        "annotation": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+        "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+        "original_records": 1246901,
+        "training_records": 1245901,
+        "skip": 1000,
+        "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+        "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+      },
+      "code_sha256": {
+        "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+        "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+        "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+        "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+        "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+        "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+        "model/balanced_hparam_search.py": "15fba463fdff37a654cd6e8a04e720dc577414b0a5ade0f124885aaee3c8b089",
+        "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+      },
+      "runtime_model": {
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "checkpoint_pair_blocks": false,
+        "checkpoint_encoders": true,
+        "encoder_checkpoint_active": true,
+        "condition_mode": "dual_branch",
+        "arm": "A3",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "search_hparams": {
+          "fusion_lr": 0.0002,
+          "visual_mask_lr_scale": 1.0,
+          "view_weights": [
+            1.35,
+            1.35,
+            0.3
+          ],
+          "sparsity_scale": 1.0,
+          "inclusion_max": 0.0,
+          "lambda_align": 8.0,
+          "lambda_sparse": 1.0,
+          "lambda_hierarchy": 1.0
+        },
+        "inclusion_hierarchy": "detail_chain",
+        "hns_enabled": true
+      },
+      "adapter_initialization": {
+        "module": "FusionBranch",
+        "state_sha256": "340976d102ce0ec24a6e4fb31fc274b303b7e9d141d0e6244a1de53a0425d5a7",
+        "parameters": {
+          "visual_blocks.0.attn.in_proj_weight": {
+            "shape": [
+              1536,
+              512
+            ],
+            "nonzero": 786432
+          },
+          "visual_blocks.0.attn.in_proj_bias": {
+            "shape": [
+              1536
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.attn.out_proj.weight": {
+            "shape": [
+              512,
+              512
+            ],
+            "nonzero": 262144
+          },
+          "visual_blocks.0.attn.out_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.ln_1.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_1.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.mlp.c_fc.weight": {
+            "shape": [
+              2048,
+              512
+            ],
+            "nonzero": 1048576
+          },
+          "visual_blocks.0.mlp.c_fc.bias": {
+            "shape": [
+              2048
+            ],
+            "nonzero": 2048
+          },
+          "visual_blocks.0.mlp.c_proj.weight": {
+            "shape": [
+              512,
+              2048
+            ],
+            "nonzero": 1048574
+          },
+          "visual_blocks.0.mlp.c_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_adapter.weight": {
+            "shape": [
+              512,
+              768
+            ],
+            "nonzero": 393216
+          },
+          "gate.weight": {
+            "shape": [
+              512,
+              1024
+            ],
+            "nonzero": 0
+          }
+        }
+      },
+      "git_head": "561d3fdd678c4278d9124aa76e395742294d903c",
+      "torch": "2.5.1+cu124",
+      "cuda": "12.4",
+      "nccl": [
+        2,
+        21,
+        5
+      ],
+      "environment": {},
+      "ranks": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 777105,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7899041399359703
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 777106,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7404595017433167
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 777107,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7461193725466728
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 777108,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7549937516450882
+        }
+      ],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      },
+      "parameter_counts": {
+        "total": 157058050,
+        "trainable": 156931074,
+        "added": 4069888,
+        "optimizer_groups": {
+          "backbone": 149708289,
+          "text_mask_and_shared_pool": 3152897,
+          "visual_mask": 3152384,
+          "fusion_adapter": 917504
+        }
+      },
+      "component_initialization": {
+        "clip": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+        "text_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_adapter": "3672e1e4b12390e7ae1dd76c065bab7a0faefc29062170ca94f253f7beb471ae",
+        "crossscore_query": null,
+        "crossscore_key": null,
+        "crossscore_readout": null,
+        "channel_gate": "e5b95cc7da27bc0230bb4b3fe03a38815057e87d75d19a533b3e9a7152ef0da3"
+      },
+      "start_updates": 0,
+      "updates_planned_this_run": 5
+    },
+    "uploaded": false
+  },
+  "acceptance": {
+    "passed": true,
+    "ranks": [
+      {
+        "rank": 0,
+        "completed_updates": 5,
+        "updates_this_run": 5,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 51.98453877866268,
+        "peak_allocated_gib": 27.76038360595703,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 1,
+        "completed_updates": 5,
+        "updates_this_run": 5,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 51.9551420584321,
+        "peak_allocated_gib": 27.76038360595703,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 2,
+        "completed_updates": 5,
+        "updates_this_run": 5,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 52.00836230069399,
+        "peak_allocated_gib": 27.76038360595703,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      },
+      {
+        "rank": 3,
+        "completed_updates": 5,
+        "updates_this_run": 5,
+        "max_parameter_difference_from_rank0": 0.0,
+        "seconds": 52.02032119780779,
+        "peak_allocated_gib": 27.76038360595703,
+        "peak_reserved_gib": 28.447265625,
+        "final_nccl_all_reduce": 10.0
+      }
+    ],
+    "speed_gate": null,
+    "resource_failure": null
+  }
+}

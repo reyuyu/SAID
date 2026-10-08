@@ -1,0 +1,346 @@
+{
+  "full_cycle_seconds": {
+    "count": 500,
+    "median": 2.1257095336914062,
+    "p95": 2.2654517769813536,
+    "p99": 2.3228990364074704,
+    "max": 28.263059616088867
+  },
+  "data_wait_seconds": {
+    "count": 500,
+    "median": 0.000668797641992569,
+    "p95": 0.0010190483182668682,
+    "p99": 0.0013303431123495096,
+    "max": 24.50972716510296
+  },
+  "steps_gt3s": 2,
+  "steps_gt10s": 2,
+  "peak_cgroup_memory_bytes": 536192294912,
+  "peak_file_cache_bytes": 504659513344,
+  "oom_kill": 0,
+  "GPU_peak_GiB": {
+    "0": 27.760392665863037,
+    "1": 27.760392665863037,
+    "2": 27.760392665863037,
+    "3": 27.760392665863037
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_balanced_macro_fourarm",
+        "--arm",
+        "E1-HNS-A8",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/experiments/nest_clip_v1/hns_balanced_macro_fourarm500_v1/E1-HNS-A8/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-08T20:51:52.353181+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/train500.log",
+      "ended_utc": "2026-10-08T21:11:19.636472+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/experiments/nest_clip_v1/hns_balanced_macro_fourarm500_v1/E1-HNS-A8/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-08T21:11:34.406992+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/gradient-audit500.log",
+      "ended_utc": "2026-10-08T21:12:36.564463+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-08T21:12:41.200633+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/export500.log",
+      "ended_utc": "2026-10-08T21:12:59.387938+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-08T21:12:59.399043+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/verify500.log",
+      "ended_utc": "2026-10-08T21:13:17.450851+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations"
+      ],
+      "started_utc": "2026-10-08T21:13:17.473533+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/five-eval500.log",
+      "ended_utc": "2026-10-08T21:21:40.435699+00:00",
+      "returncode": 0
+    }
+  ],
+  "raw_assets": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/launch-provenance.json",
+      "bytes": 1570,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/train500.log",
+      "bytes": 88985,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/verify500.log",
+      "bytes": 648,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/commands.json",
+      "bytes": 4719,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/resource-telemetry.jsonl",
+      "bytes": 781607,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/first-five-gate.json",
+      "bytes": 1027,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/gradient-audit500.log",
+      "bytes": 13284,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/export500.log",
+      "bytes": 610,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/five-eval500.log",
+      "bytes": 2142,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/config.json",
+      "bytes": 8763,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/steps.jsonl",
+      "bytes": 25683309,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/text_examples.json",
+      "bytes": 14827,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/checkpoint_timing.jsonl",
+      "bytes": 59,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/acceptance.json",
+      "bytes": 1302,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/cycle_timing.jsonl",
+      "bytes": 37644,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000005.pt",
+      "bytes": 1884188154,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+      "bytes": 1884188730,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+      "bytes": 612069312,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/export-check.json",
+      "bytes": 302,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/EVAL_PARALLEL_RUN.json",
+      "bytes": 13807,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/urban_native.json",
+      "bytes": 863,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/coco_native.json",
+      "bytes": 281,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/flickr_test1k/extended_summary.json",
+      "bytes": 618,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/flickr_test1k/flickr_test1k.json",
+      "bytes": 549,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/logs/docci.log",
+      "bytes": 821,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/logs/urban.log",
+      "bytes": 1233,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/logs/coco.log",
+      "bytes": 734,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/logs/long_dci.log",
+      "bytes": 897,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/logs/flickr.log",
+      "bytes": 829,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/docci/docci.json",
+      "bytes": 541,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/docci/extended_summary.json",
+      "bytes": 602,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/long_dci/long_dci.json",
+      "bytes": 617,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/long_dci/extended_summary.json",
+      "bytes": 681,
+      "uploaded": false
+    }
+  ],
+  "io_PSI": {
+    "some": {
+      "count": 355,
+      "median": 0.0,
+      "p95": 0.5360000000000003,
+      "p99": 3.6313999999999877,
+      "max": 5.32
+    },
+    "full": {
+      "count": 355,
+      "median": 0.0,
+      "p95": 0.5360000000000003,
+      "p99": 3.6313999999999877,
+      "max": 5.25
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 355,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.024599999999999796,
+      "max": 0.18
+    },
+    "full": {
+      "count": 355,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    }
+  },
+  "true_IO_errors": [],
+  "pod_supervisor_anomaly": false
+}

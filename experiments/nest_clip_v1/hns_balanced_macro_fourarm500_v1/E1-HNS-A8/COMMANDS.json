@@ -1,0 +1,113 @@
+[
+  {
+    "name": "train500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "recovery.hns_balanced_macro_fourarm",
+      "--arm",
+      "E1-HNS-A8",
+      "--worker",
+      "--config",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/experiments/nest_clip_v1/hns_balanced_macro_fourarm500_v1/E1-HNS-A8/config.json",
+      "--init-state",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500",
+      "--run-type",
+      "formal",
+      "--max-updates",
+      "500"
+    ],
+    "started_utc": "2026-10-08T20:51:52.353181+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/train500.log",
+    "ended_utc": "2026-10-08T21:11:19.636472+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "gradient-audit500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "recovery.hns_macro_gradient",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+      "--output",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-balanced-macro-fourarm/experiments/nest_clip_v1/hns_balanced_macro_fourarm500_v1/E1-HNS-A8/GRADIENT_AUDIT.json"
+    ],
+    "started_utc": "2026-10-08T21:11:34.406992+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/gradient-audit500.log",
+    "ended_utc": "2026-10-08T21:12:36.564463+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "export500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+      "--expect-updates",
+      "500"
+    ],
+    "started_utc": "2026-10-08T21:12:41.200633+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/export500.log",
+    "ended_utc": "2026-10-08T21:12:59.387938+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "verify500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "verify-export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+      "--bare",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/export-check.json",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V"
+    ],
+    "started_utc": "2026-10-08T21:12:59.399043+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/verify500.log",
+    "ended_utc": "2026-10-08T21:13:17.450851+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "five-eval500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.eval_five_parallel",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations/student_step500.pt",
+      "--training-checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/step500/step000500.pt",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/evaluations"
+    ],
+    "started_utc": "2026-10-08T21:13:17.473533+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-balanced-macro-fourarm500-v1/E1-HNS-A8/five-eval500.log",
+    "ended_utc": "2026-10-08T21:21:40.435699+00:00",
+    "returncode": 0
+  }
+]
