@@ -1,0 +1,256 @@
+{
+  "passed": true,
+  "references": {
+    "Anchor": {
+      "remote_ref": "origin/experiment/nested-detail-d3-balanced500",
+      "remote_commit": "457639de1b68d5214cea5a3b3a51aed3870ecf42",
+      "config": {
+        "arm": "A3",
+        "experiment_name": "ArmB-Summary0.2-4epoch",
+        "condition_mode": "dual_branch",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "full_native_mix": 0,
+        "sampling_mode": "nested_detail_d3",
+        "inclusion_hierarchy": "detail_chain",
+        "sampling_seed": 0,
+        "shuffle_seed": 0,
+        "world_size": 4,
+        "batch_size": 256,
+        "accumulation": 1,
+        "epochs": 4,
+        "seed": 0,
+        "workers": 8,
+        "checkpoint_encoders": true,
+        "checkpoint_pair_blocks": false,
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "score_chunk": 64,
+        "checkpoint_interval": 1217,
+        "save_initial_checkpoint": false,
+        "monitor_resources": true,
+        "feasibility_abort_seconds": 15,
+        "four_epoch_followup": true,
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1,
+        "view_weights": [
+          1.35,
+          1.35,
+          0.3
+        ],
+        "sparsity_scale": 1,
+        "inclusion_max": 1,
+        "hparam_search": true,
+        "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+        "base_model": "ViT-B/16",
+        "resource_policy": "local_reproduction500"
+      },
+      "result_sha256": "087691e5b2aba3690aea97b9e38534e6952045f7d09458fed088b62939fe00f6",
+      "scores_percent": {
+        "Score5_R1": 71.06359980217773,
+        "J_long3": 74.9546663369629,
+        "J_long": 84.02500134706497,
+        "Short4_R1": 65.227,
+        "Score5": 71.06359980217773,
+        "Short4": 65.227
+      },
+      "checkpoint_sha256": "24792ba9e6e3c34f733820f489cb3a8953278246ae58f2f688652894be871e4b"
+    },
+    "W20": {
+      "remote_ref": "origin/experiment/nested-d3-local-search500-v1",
+      "remote_commit": "dadb51ec83079141cf639ef8b20ee1955a684edc",
+      "config": {
+        "arm": "A3",
+        "experiment_name": "ArmB-Summary0.2-4epoch",
+        "condition_mode": "dual_branch",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "full_native_mix": 0,
+        "sampling_mode": "nested_detail_d3",
+        "inclusion_hierarchy": "detail_chain",
+        "sampling_seed": 0,
+        "shuffle_seed": 0,
+        "world_size": 4,
+        "batch_size": 256,
+        "accumulation": 1,
+        "epochs": 4,
+        "seed": 0,
+        "workers": 8,
+        "checkpoint_encoders": true,
+        "checkpoint_pair_blocks": false,
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "score_chunk": 64,
+        "checkpoint_interval": 1217,
+        "save_initial_checkpoint": false,
+        "monitor_resources": true,
+        "feasibility_abort_seconds": 15,
+        "four_epoch_followup": true,
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1,
+        "view_weights": [
+          1.4,
+          1.4,
+          0.2
+        ],
+        "sparsity_scale": 1,
+        "inclusion_max": 1,
+        "hparam_search": true,
+        "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+        "base_model": "ViT-B/16",
+        "resource_policy": "local_reproduction500"
+      },
+      "result_sha256": "01912fe0099d6cb33a9521757bd644f74132a90bbeadc9e85eb53a4fe0f5fab0",
+      "scores_percent": {
+        "Score5_R1": 71.08834659939134,
+        "J_long3": 74.95791099898555,
+        "J_long": 84.02000251531601,
+        "Short4_R1": 65.28399999999999,
+        "Score5": 71.08834659939134,
+        "Short4": 65.28399999999999
+      },
+      "checkpoint_sha256": "812eb4e84f863ef9e332055de25c0927047f0bdd0e802bc91dad8cc5b2a0f3c7"
+    },
+    "KR234": {
+      "remote_ref": "origin/experiment/nested-d3-local-search500-v1",
+      "remote_commit": "dadb51ec83079141cf639ef8b20ee1955a684edc",
+      "config": {
+        "arm": "A3",
+        "experiment_name": "ArmB-Summary0.2-4epoch",
+        "condition_mode": "dual_branch",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "full_native_mix": 0,
+        "sampling_mode": "nested_detail_kr234",
+        "inclusion_hierarchy": "detail_chain",
+        "sampling_seed": 0,
+        "shuffle_seed": 0,
+        "world_size": 4,
+        "batch_size": 256,
+        "accumulation": 1,
+        "epochs": 4,
+        "seed": 0,
+        "workers": 8,
+        "checkpoint_encoders": true,
+        "checkpoint_pair_blocks": false,
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "score_chunk": 64,
+        "checkpoint_interval": 1217,
+        "save_initial_checkpoint": false,
+        "monitor_resources": true,
+        "feasibility_abort_seconds": 15,
+        "four_epoch_followup": true,
+        "fusion_lr": 0.0002,
+        "visual_mask_lr_scale": 1,
+        "view_weights": [
+          1.35,
+          1.35,
+          0.3
+        ],
+        "sparsity_scale": 1,
+        "inclusion_max": 1,
+        "hparam_search": true,
+        "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+        "base_model": "ViT-B/16",
+        "resource_policy": "local_reproduction500"
+      },
+      "result_sha256": "583e6ab4ee5e631f8818e6ad519f891e213cc3398ccb9f81050e9ee5fd120bbb",
+      "scores_percent": {
+        "Score5_R1": 71.10790090368924,
+        "J_long3": 75.04650150614873,
+        "J_long": 84.12000219345093,
+        "Short4_R1": 65.2,
+        "Score5": 71.10790090368924,
+        "Short4": 65.2
+      },
+      "checkpoint_sha256": "a13ae36ce0d12ffc8b5d973bc045b31f3f5e9d717ec7edec7e0c97e053cafb2e"
+    }
+  },
+  "common_step0": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+    "resume": null
+  },
+  "sole_method_config_changes": {
+    "view_weights": [
+      1.4,
+      1.4,
+      0.2
+    ],
+    "sampling_mode": "nested_detail_kr234"
+  },
+  "current_production_sources": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+    "train/train_nested_semantic_mask.py": "1c15e6787f9f08f317bf98322e0d39dbf61d54d36b0b05b3ed4a93348fb90cf7",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "model/balanced_hparam_search.py": "b500febecdf8eff6d7a90f4020c6808a70a04ccebc63ecddd0d6565d28808d8e",
+    "model/hard_nested_sparsity.py": "3f63db56c683faf7102793fa1f3a6f62430a20eaa0a67c094380afd4397f696f"
+  },
+  "KR234_production_sources": {
+    "model/balanced_hparam_search.py": "59dc817a510d835c2cda68b711f30afbe054867d5be4937768c352b036111fa4",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "train/nested_semantic_data.py": "d414dbb3ceec2c4ce26d94607f72e6c4b4ed5658bbcd74110b4812589b21d370",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "train/train_nested_semantic_mask.py": "87981185079a368ede1cf11e6a1bfda846698075cb47f84a5e54dfd373eafb5a"
+  },
+  "frozen_source_SHA256": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "recovery/s02_full_local_data.py": "a72391bf164118c36fd87e72d939a386ed533d6bf30be1e52926f81b9f51211f",
+    "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+    "experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py": "c6b794725694ae078dd1db7ae9d75b2af236071b2d416585d0a2eb68f1a6132f",
+    "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+  },
+  "optimizer_scheduler_rng_checkpoint_functions_AST_exact": {
+    "build_optimizer": "3b8f6750280e84574ab03bfd864bb9d975a5e001087b658e9694fc8a5ab429a9",
+    "learning_rates": "03a864c39e45a00d41b26bccdfc4d961213472680824d689543c10c0b9248550",
+    "optimizer_learning_rates": "27e53872f8d443a751b2c6927990b2250cfee528ef46627363451fd3a5f0cc97",
+    "seed_all": "e036e96f4643a548b1cd9e3826a5d38839048cb84745a79fab919dbdc467c3c3",
+    "training_horizon": "0763d4728bfb92548c44d4b635588fc150e0426ada78d3de65e68d72c6934eca",
+    "consumed_batch": "b0195b740e05fb4186ac8e97ee60f9af1e8098c65415cb5b91d5fbe60921ba91",
+    "save_checkpoint": "fcd1c336b2fa3e163dcc215d359d0c484a7710e507c88479cb342bbb0468ae55"
+  },
+  "source_migration": {
+    "model/balanced_hparam_search.py": {
+      "previous": "59dc817a510d835c2cda68b711f30afbe054867d5be4937768c352b036111fa4",
+      "current": "b500febecdf8eff6d7a90f4020c6808a70a04ccebc63ecddd0d6565d28808d8e"
+    },
+    "model/hard_nested_sparsity.py": {
+      "previous": null,
+      "current": "3f63db56c683faf7102793fa1f3a6f62430a20eaa0a67c094380afd4397f696f"
+    },
+    "train/nested_semantic_data.py": {
+      "previous": "d414dbb3ceec2c4ce26d94607f72e6c4b4ed5658bbcd74110b4812589b21d370",
+      "current": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba"
+    },
+    "train/train_nested_semantic_mask.py": {
+      "previous": "87981185079a368ede1cf11e6a1bfda846698075cb47f84a5e54dfd373eafb5a",
+      "current": "1c15e6787f9f08f317bf98322e0d39dbf61d54d36b0b05b3ed4a93348fb90cf7"
+    }
+  },
+  "export_source": {
+    "old": "326938dd5877cd67ecb39f3a58a5b52f8caaaab4a1b85044a669f1eec5a3ae3a",
+    "current": "d713089c849c6420bed14271d88c54f27f79c866293c4d6644821f90b5104dd3",
+    "reason": "Added constructor routing for inactive HNS; actual strict bare embedding equality required at500"
+  },
+  "no_new_production_source_edits": true,
+  "HNS": false,
+  "checked_utc": "2026-10-08T02:09:26.947968+00:00"
+}

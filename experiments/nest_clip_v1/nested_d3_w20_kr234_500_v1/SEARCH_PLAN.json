@@ -1,0 +1,44 @@
+{
+  "arm": "W20-KR234",
+  "authorized_method_changes": [
+    "W20 alignment",
+    "KR234 granularity"
+  ],
+  "view_weights": [
+    1.4,
+    1.4,
+    0.2
+  ],
+  "sampling": "Exact fetched historical KR234",
+  "sparsity": [
+    1,
+    2,
+    2
+  ],
+  "inclusion": "Original detached-child soft inclusion, ramp200/max1",
+  "HNS": false,
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "resume": null,
+  "stop_updates": 500,
+  "horizon": 4868,
+  "classification": "Raw Score5; STRONG if >KR234 and J_long3 decline<=.20pp; POSITIVE if newrelated500best withlongtradeoff; MIXED ifindependentlong/shortadvantage; otherwiseNEGATIVE",
+  "full_candidacy": "raw Score5 strictly > historicalKR234; candidateonly, never automaticfull",
+  "local_image_root": "/root/said_s02_stage500/ShareGPT4V",
+  "NFS_fallback": false,
+  "automatic_full": false,
+  "additional_arms": false,
+  "single_seed_limit": true,
+  "baseline_results": "Fetched Github JSON; no chat-only metric inputs",
+  "worker_entry": "recovery.w20_kr234_500",
+  "matched_preflight": "1000 actual frozen samples: IDs,pool,K,indices,text,tokens exactKR234",
+  "formal_gate": "First5 checked before6; full512000 exactKR234 stream and W20sharedstream/LR",
+  "resource_policy": ">3s warning; actualIO/CUDA/OOM/DDP/NaN/Inf/oom_kill/>60s/pod error hardstop",
+  "background_queue": [
+    "fresh common0 formal500",
+    "readonlygradient8globalbatches",
+    "strict native fiveeval",
+    "report",
+    "commit push fetch"
+  ],
+  "prepared_utc": "2026-10-08T02:09:47.885881+00:00"
+}

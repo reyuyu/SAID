@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "exit_code": 0,
+  "tests": 92,
+  "failed_count": 0,
+  "skipped": 0,
+  "command": ".venv/bin/python -m pytest -q tests/test_w20_kr234_500.py tests/test_nested_d3_local_search.py tests/test_nested_detail_d3_balanced.py tests/test_nested_resume.py recovery/test_local500_policy.py --junitxml=runtime/w20-kr234-cpu-tests.xml",
+  "junit_local_path": "/opt/data/private/lklk/SAID/runtime/w20-kr234-cpu-tests.xml",
+  "junit_sha256": "e09ce0dce217c772e314ea6a89686d8f142795560b4a339f6075ae53631e170d",
+  "junit_bytes": 14162,
+  "checks": [
+    "Exactly two authorized config changes; rejects HNS, inclusion, sparsity, worker, LR drift",
+    "Current non-HNS production vs fetched historical KR234 loss, all parameter gradients, AdamW update exact at completed0/99/199/499",
+    "Independent W20 loss and every-gradient reconstruction, original detached-child soft inclusion",
+    "Fetched KR234 text/token/RNG/fallback exact across pool boundaries and epochs",
+    "Raw Score5 classification and candidacy; no rounding or unrelated quality guard",
+    "Final report with real baseline schemas and explicitly synthetic fixture only, in temporary test directory",
+    "Fail-fast local runtime policy; original resume/sampler and D3 controls"
+  ],
+  "warning": "Inherited pkg_resources deprecation",
+  "raw_test_output_uploaded": false
+}
