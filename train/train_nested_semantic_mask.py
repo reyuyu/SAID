@@ -288,6 +288,28 @@ def parameter_agreement(module):
     return float(difference)
 
 
+def validate_nested_view_weights(cfg, run_type, max_updates, resume, image_root):
+    """Method admission only; explicitly allow the reviewed W20+KR234500 arm."""
+    mode = cfg['sampling_mode']
+    assert cfg.get('inclusion_hierarchy') == 'detail_chain'
+    allowed = (([1.,1.,1.], [1.35,1.35,.30], [1.4,1.4,.20], [1.375,1.375,.25],
+                [1.325,1.325,.35], [1.3,1.3,.40]) if mode=='nested_detail_d3'
+               else ([1.35,1.35,.30],) if mode in ('nested_detail_kr234','nested_detail_kr2m1')
+               else ([1.4,1.4,.2], [1.,1.,1.]))
+    if mode == 'nested_detail_kr234' and cfg['view_weights'] == [1.4,1.4,.2]:
+        canonical = Path(__file__).resolve().parents[1] / 'configs/nested_d3_w20_kr234_500.json'
+        expected = json.loads(canonical.read_text())
+        assert all(cfg.get(k) == v for k,v in expected.items()), 'W20+KR234 frozen config drift'
+        assert not cfg.get('hns_enabled',False), 'W20+KR234 forbids HNS'
+        assert cfg.get('view_sparsity_weights',[1.,2.,2.]) == [1.,2.,2.]
+        assert cfg.get('summary_t2i_weight',1.) == 1.
+        assert resume is None, 'W20+KR234 must be fresh common0'
+        assert (run_type,max_updates) in (('formal',500),('smoke',5)), 'Only reviewed W20+KR234 stop500'
+        assert Path(image_root).resolve() == Path('/root/said_s02_stage500/ShareGPT4V')
+        return
+    assert cfg['view_weights'] in allowed, 'Only reviewed Nested Detail weights are authorized'
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--config', required=True)
@@ -318,12 +340,7 @@ def main():
     cfg.setdefault('save_initial_checkpoint', True)
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'nested_detail_kr2m1', 'interior_random_k', 'summary_contiguous_detail')
     if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3','nested_detail_kr234','nested_detail_kr2m1'):
-        assert cfg.get('inclusion_hierarchy') == 'detail_chain'
-        allowed = (([1.,1.,1.], [1.35,1.35,.30], [1.4,1.4,.20], [1.375,1.375,.25],
-                    [1.325,1.325,.35], [1.3,1.3,.40]) if cfg['sampling_mode']=='nested_detail_d3'
-                   else ([1.35,1.35,.30],) if cfg['sampling_mode'] in ('nested_detail_kr234','nested_detail_kr2m1')
-                   else ([1.4,1.4,.2], [1.,1.,1.]))
-        assert cfg['view_weights'] in allowed, 'Only reviewed Nested Detail weights are authorized'
+        validate_nested_view_weights(cfg, args.run_type, args.max_updates, args.resume, args.image_root)
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.

@@ -159,7 +159,7 @@ ALLOWED.update('experiments/nest_clip_v1/nested_d3_hns_full_v1/'+name for name i
 ALLOWED.update(('recovery/w20_kr234_500.py','tests/test_w20_kr234_500.py','configs/nested_d3_w20_kr234_500.json'))
 ALLOWED.update('experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/'+name for name in (
     'config.json','CPU_TESTS.json','SEARCH_PLAN.json','BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json',
-    'CORRECTNESS.md','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json','TRAINING_DIAGNOSTICS.json',
+    'CORRECTNESS.md','PREUPDATE_LAUNCH_RECOVERY.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json','TRAINING_DIAGNOSTICS.json',
     'GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json','SAMPLING_AUDIT.json','RUNTIME_STATS.json',
     'EXPORT_AUDIT.json','VALIDATION.json','COMMANDS.json',
     *('evaluations/'+ds+'.json' for ds in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))))

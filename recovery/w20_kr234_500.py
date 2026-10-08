@@ -30,8 +30,9 @@ REMOTE_SEARCH = 'origin/experiment/nested-d3-local-search500-v1'
 REMOTE_ANCHOR = 'origin/experiment/nested-detail-d3-balanced500'
 ARMS = {ARM:dict(axis='authorized_alignment_plus_granularity',weights=[1.4,1.4,.2],r=2.,
     mode='nested_detail_kr234',strict_lowest_reference=True,experiment_dir=str(EXP))}
-STATIC = ('BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','CORRECTNESS.md')
+STATIC = ('BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','CORRECTNESS.md','PREUPDATE_LAUNCH_RECOVERY.json')
 CODE = {'recovery/w20_kr234_500.py','tests/test_w20_kr234_500.py',
+        'train/train_nested_semantic_mask.py',
         'recovery/check_stage500_publish.py','recovery/nested_d3_followup500.py',
         str(CANONICAL_CONFIG.relative_to(ROOT))}
 ORIGINAL_INVARIANTS = search.checkpoint_invariants
@@ -164,7 +165,8 @@ def isolation():
         source_migration={p:dict(previous=old.get(p),current=current[p]) for p in sorted(changed|{'model/hard_nested_sparsity.py'})},
         export_source=dict(old=kr['launch_provenance']['source_sha256']['tools/nest_clip.py'],current=sha(ROOT/'tools/nest_clip.py'),
             reason='Added constructor routing for inactive HNS; actual strict bare embedding equality required at500'),
-        no_new_production_source_edits=True,HNS=False,checked_utc=now())
+        production_edit='Trainer admission only: explicitly accept frozen W20+KR234 at fresh0->500. Objective/sampler/optimizer/scheduler unchanged.',
+        HNS=False,checked_utc=now())
 
 
 def matched_preflight():
@@ -288,6 +290,7 @@ def summarize():
     stats['additional_local_artifacts']=[dict(path=str(p),bytes=p.stat().st_size,sha256=sha(p),uploaded=False,
         time_range_utc=[read(EXP/'SEARCH_PLAN.json')['prepared_utc'],read(EXP/'SEARCH_PLAN.json')['prepared_utc']],
         time_scope='Prelaunch evidence, timestamp is preparation receipt') for p in (raw,pathproof)]
+    stats['preupdate_launch_recovery']=read(EXP/'PREUPDATE_LAUNCH_RECOVERY.json')
     dump(EXP/'RUNTIME_STATS.json',stats)
     assert not subprocess.check_output(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader'],text=True).strip()
     result['GPU_idle_after_evaluation']=True
@@ -390,11 +393,43 @@ def publish_setup():
         remote_HEAD_matches_local=True,push_success=True,checked_utc=now(),publication_check=review))
 
 
+def recover_preupdate_failure():
+    """Preserve failed admission evidence; never retry a trajectory with updates."""
+    configure();search.activate(ARM)
+    assert not subprocess.check_output(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader'],text=True).strip()
+    run=RUN_ROOT/ARM
+    assert not (run/'step500').exists() and not list(run.rglob('step*.pt'))
+    log=run/'train500.log';content=log.read_text()
+    assert 'Only reviewed Nested Detail weights are authorized' in content
+    assert '"step":' not in content and '"event": "ready"' not in content
+    archived=RUN_ROOT.with_name(RUN_ROOT.name+'.failed-preupdate')
+    assert not archived.exists()
+    old_identity=read(runner.IDENTITY)
+    try:os.kill(old_identity['pid'],0)
+    except ProcessLookupError:pass
+    else:raise RuntimeError('Failed supervisor still live')
+    artifacts=[dict(path=str(archived/p.relative_to(RUN_ROOT)),bytes=p.stat().st_size,sha256=sha(p),uploaded=False)
+               for p in RUN_ROOT.rglob('*') if p.is_file()]
+    RUN_ROOT.rename(archived)
+    search.PHASE.rename(search.PHASE.with_name(search.PHASE.name+'.failed-preupdate'))
+    runner.IDENTITY.rename(runner.IDENTITY.with_name(runner.IDENTITY.name+'.failed-preupdate'))
+    runner.MAIN_LOG.rename(runner.MAIN_LOG.with_name(runner.MAIN_LOG.name+'.failed-preupdate'))
+    dump(EXP/'PREUPDATE_LAUNCH_RECOVERY.json',dict(passed=True,optimizer_updates_executed=0,
+        failure='Existing trainer admission rejected KR234+W20 before RNG/model/DDP initialization',
+        correction='Add literal reviewed combination to config admission only; reject full/resume/HNS/NFS',
+        frozen_configuration_unchanged=True,no_checkpoint_created=True,parent_common0_SHA256=sha(STEP0),
+        recovery='Failed attempt moved to explicit .failed-preupdate directory; all evidence retained. One corrected fresh common0 formal500 run.',
+        old_identity=old_identity,local_raw_artifacts=artifacts,recorded_utc=now()))
+    dump(EXP/'BASELINE_PROVENANCE.json',isolation())
+
+
 def main():
     if '--preflight' in sys.argv:
         assert sys.argv[1:]==['--preflight'];prepare();return
     if '--publish-setup' in sys.argv:
         assert sys.argv[1:]==['--publish-setup'];publish_setup();return
+    if '--recover-preupdate' in sys.argv:
+        assert sys.argv[1:]==['--recover-preupdate'];recover_preupdate_failure();return
     configure();runner.main()
 
 

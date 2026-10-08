@@ -141,6 +141,7 @@ def test_complete_report_real_baseline_schemas_synthetic_fixture_only(tmp_path,m
     dump(exp/'MATCHED_PREFLIGHT.json',dict(passed=True,raw_evidence=dict(path=str(raw))))
     dump(exp/'SEARCH_PLAN.json',dict(prepared_utc='synthetic'))
     dump(exp/'BASELINE_PROVENANCE.json',dict(synthetic_fixture=True))
+    dump(exp/'PREUPDATE_LAUNCH_RECOVERY.json',dict(synthetic_fixture=True))
     dump(run/'commands.json',[])
     fixture=json.loads((exp/'RESULTS.json').read_text())
     sources={}
@@ -157,3 +158,25 @@ def test_complete_report_real_baseline_schemas_synthetic_fixture_only(tmp_path,m
     assert actual['GPU_idle_after_evaluation'] and not actual['automatic_full']
     assert len(list((exp/'evaluations').glob('*.json')))==5
     assert 'HNS is disabled' in (exp/'REPORT.md').read_text()
+
+
+@pytest.mark.parametrize('run_type,stop,resume,images,passed',[
+    ('formal',500,None,'/root/said_s02_stage500/ShareGPT4V',True),
+    ('smoke',5,None,'/root/said_s02_stage500/ShareGPT4V',True),
+    ('formal',4868,None,'/root/said_s02_stage500/ShareGPT4V',False),
+    ('formal',500,'another.pt','/root/said_s02_stage500/ShareGPT4V',False),
+    ('formal',500,None,'/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V',False)])
+def test_actual_native_trainer_admission_for_exact_authorized_combo(run_type,stop,resume,images,passed):
+    from train.train_nested_semantic_mask import validate_nested_view_weights
+    cfg=experiment.expected_config()
+    if passed:validate_nested_view_weights(cfg,run_type,stop,resume,images)
+    else:
+        with pytest.raises(AssertionError):validate_nested_view_weights(cfg,run_type,stop,resume,images)
+
+
+@pytest.mark.parametrize('key,value',[
+    ('inclusion_max',0),('hns_enabled',True),('view_sparsity_weights',[1,2,3]),('workers',4)])
+def test_native_combo_admission_rejects_undeclared_coefficient_or_structure(key,value):
+    from train.train_nested_semantic_mask import validate_nested_view_weights
+    cfg=dict(experiment.expected_config(),**{key:value})
+    with pytest.raises(AssertionError):validate_nested_view_weights(cfg,'formal',500,None,'/root/said_s02_stage500/ShareGPT4V')
