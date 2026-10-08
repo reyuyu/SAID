@@ -1,0 +1,498 @@
+{
+  "completed_steps": 500,
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6048,
+        "R@5": 0.8288,
+        "R@10": 0.8926
+      },
+      "T2I": {
+        "R@1": 0.41372,
+        "R@5": 0.67332,
+        "R@10": 0.76944
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9120000600814819,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.8920000195503235,
+        "R@5": 0.987000048160553,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.872,
+        "R@5": 0.973,
+        "R@10": 0.993
+      },
+      "T2I": {
+        "R@1": 0.718,
+        "R@5": 0.9154,
+        "R@10": 0.952
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7806,
+        "R@5": 0.9548,
+        "R@10": 0.981
+      },
+      "T2I": {
+        "R@1": 0.778,
+        "R@5": 0.953,
+        "R@10": 0.9792
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5693238621415417,
+        "R@5": 0.7588792423046566,
+        "R@10": 0.8176795580110497
+      },
+      "T2I": {
+        "R@1": 0.5668245198631939,
+        "R@5": 0.7595369639568534,
+        "R@10": 0.8187319126545646
+      }
+    }
+  },
+  "scores_percent": {
+    "Score5": 71.07268461636541,
+    "J_long3": 74.97914102727569,
+    "J_long": 84.06500199079514,
+    "Short4": 65.213
+  },
+  "checkpoint": {
+    "passed": true,
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-macro-fourarm500-v1/E2-S08/step500/step000500.pt",
+    "sha256": "fdf64f0c8a9f357b6afb5d1f14b6b5f9c390c5f2a17e33be511f9bb3770f66e5",
+    "bytes": 1884188666,
+    "completed_steps": 500,
+    "optimizer_counters": [
+      500
+    ],
+    "scheduler": {
+      "type": "native_manual_learning_rate_function",
+      "horizon": 4868,
+      "completed_steps": 500,
+      "last_update_index": 499,
+      "optimizer_lrs": {
+        "backbone": 9.899108530188312e-07,
+        "text_mask_and_shared_pool": 0.0009742970336195614,
+        "visual_mask": 0.0009742970336195614,
+        "fusion_adapter": 0.00019485940672391228
+      }
+    },
+    "scaler": {
+      "enabled": false,
+      "dtype": "bfloat16",
+      "state": null
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "cursor": {
+      "next_epoch": 0,
+      "next_batch": 500
+    },
+    "rng_ranks": 4,
+    "loader_generator_restorable": true,
+    "configuration": {
+      "arm": "A3",
+      "experiment_name": "ArmB-Summary0.2-4epoch",
+      "condition_mode": "dual_branch",
+      "fusion": "balanced_stack",
+      "visual": "patch",
+      "full_native_mix": 0,
+      "sampling_mode": "nested_detail_d3",
+      "inclusion_hierarchy": "detail_chain",
+      "sampling_seed": 0,
+      "shuffle_seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "accumulation": 1,
+      "epochs": 4,
+      "seed": 0,
+      "workers": 8,
+      "checkpoint_encoders": true,
+      "checkpoint_pair_blocks": false,
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "score_chunk": 64,
+      "checkpoint_interval": 1217,
+      "save_initial_checkpoint": false,
+      "monitor_resources": true,
+      "feasibility_abort_seconds": 15,
+      "four_epoch_followup": true,
+      "fusion_lr": 0.0002,
+      "visual_mask_lr_scale": 1.0,
+      "view_weights": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "sparsity_scale": 1.0,
+      "inclusion_max": 0.0,
+      "hparam_search": true,
+      "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+      "base_model": "ViT-B/16",
+      "resource_policy": "local_reproduction500",
+      "hns_enabled": true,
+      "lambda_align": 10.0,
+      "lambda_sparse": 0.8,
+      "lambda_hierarchy": 1.0,
+      "config": "/opt/data/private/lklk/said-e2-worktrees/hns-macro-fourarm/experiments/nest_clip_v1/hns_macro_loss_fourarm500_v1/E2-S08/config.json",
+      "init_state": "/opt/data/private/lklk/said-e2-worktrees/hns-macro-fourarm/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "index_dir": "/root/said_s02_stage500/data_index",
+      "image_root": "/root/said_s02_stage500/ShareGPT4V",
+      "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-macro-fourarm500-v1/E2-S08/step500",
+      "run_type": "formal",
+      "max_updates": 500,
+      "resume": null,
+      "legacy_b0": false,
+      "expected_parent_trainer_sha256": null,
+      "horizon": 4868,
+      "batches_per_epoch": 1217,
+      "loader_batches_this_epoch": 500,
+      "training_records": 1245901,
+      "sampler_num_samples": 311476,
+      "sampler_padding": 3,
+      "tail_batch": 180,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+      "data": {
+        "annotation": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+        "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+        "original_records": 1246901,
+        "training_records": 1245901,
+        "skip": 1000,
+        "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+        "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+      },
+      "code_sha256": {
+        "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+        "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+        "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+        "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+        "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+        "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+        "model/balanced_hparam_search.py": "57abab3d35025146d2d5dfcf426fb423386a8277b221409a70b3489bf5d83305",
+        "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+      },
+      "runtime_model": {
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "checkpoint_pair_blocks": false,
+        "checkpoint_encoders": true,
+        "encoder_checkpoint_active": true,
+        "condition_mode": "dual_branch",
+        "arm": "A3",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "search_hparams": {
+          "fusion_lr": 0.0002,
+          "visual_mask_lr_scale": 1.0,
+          "view_weights": [
+            1.35,
+            1.35,
+            0.3
+          ],
+          "sparsity_scale": 1.0,
+          "inclusion_max": 0.0,
+          "lambda_align": 10.0,
+          "lambda_sparse": 0.8,
+          "lambda_hierarchy": 1.0
+        },
+        "inclusion_hierarchy": "detail_chain",
+        "hns_enabled": true
+      },
+      "adapter_initialization": {
+        "module": "FusionBranch",
+        "state_sha256": "340976d102ce0ec24a6e4fb31fc274b303b7e9d141d0e6244a1de53a0425d5a7",
+        "parameters": {
+          "visual_blocks.0.attn.in_proj_weight": {
+            "shape": [
+              1536,
+              512
+            ],
+            "nonzero": 786432
+          },
+          "visual_blocks.0.attn.in_proj_bias": {
+            "shape": [
+              1536
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.attn.out_proj.weight": {
+            "shape": [
+              512,
+              512
+            ],
+            "nonzero": 262144
+          },
+          "visual_blocks.0.attn.out_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.ln_1.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_1.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.mlp.c_fc.weight": {
+            "shape": [
+              2048,
+              512
+            ],
+            "nonzero": 1048576
+          },
+          "visual_blocks.0.mlp.c_fc.bias": {
+            "shape": [
+              2048
+            ],
+            "nonzero": 2048
+          },
+          "visual_blocks.0.mlp.c_proj.weight": {
+            "shape": [
+              512,
+              2048
+            ],
+            "nonzero": 1048574
+          },
+          "visual_blocks.0.mlp.c_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_adapter.weight": {
+            "shape": [
+              512,
+              768
+            ],
+            "nonzero": 393216
+          },
+          "gate.weight": {
+            "shape": [
+              512,
+              1024
+            ],
+            "nonzero": 0
+          }
+        }
+      },
+      "git_head": "76a95c1a5a27276f73250338449b2142e31650fa",
+      "torch": "2.5.1+cu124",
+      "cuda": "12.4",
+      "nccl": [
+        2,
+        21,
+        5
+      ],
+      "environment": {},
+      "ranks": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 747984,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.729271300137043
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 747985,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7463719844818115
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 747986,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7411662340164185
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 747987,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7406651303172112
+        }
+      ],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      },
+      "parameter_counts": {
+        "total": 157058050,
+        "trainable": 156931074,
+        "added": 4069888,
+        "optimizer_groups": {
+          "backbone": 149708289,
+          "text_mask_and_shared_pool": 3152897,
+          "visual_mask": 3152384,
+          "fusion_adapter": 917504
+        }
+      },
+      "component_initialization": {
+        "clip": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+        "text_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_adapter": "3672e1e4b12390e7ae1dd76c065bab7a0faefc29062170ca94f253f7beb471ae",
+        "crossscore_query": null,
+        "crossscore_key": null,
+        "crossscore_readout": null,
+        "channel_gate": "e5b95cc7da27bc0230bb4b3fe03a38815057e87d75d19a533b3e9a7152ef0da3"
+      },
+      "start_updates": 0,
+      "updates_planned_this_run": 500
+    },
+    "uploaded": false
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "fdf64f0c8a9f357b6afb5d1f14b6b5f9c390c5f2a17e33be511f9bb3770f66e5",
+    "bare_sha256": "f1f8dadea922000c7f878578ddbbacceabb1e7ad3f1a659bcbfda1ed26574b30"
+  },
+  "bare": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-macro-fourarm500-v1/E2-S08/evaluations/student_step500.pt",
+    "sha256": "f1f8dadea922000c7f878578ddbbacceabb1e7ad3f1a659bcbfda1ed26574b30",
+    "uploaded": false
+  },
+  "checkpoint_unchanged": true,
+  "evaluation_wall_seconds": 489.5848535448313,
+  "arm": "E2-S08",
+  "macro_scales": {
+    "lambda_align": 10.0,
+    "lambda_sparse": 0.8,
+    "lambda_hierarchy": 1.0
+  },
+  "quality_delta_pp": {
+    "Score5": -0.12937173129786572,
+    "J_long3": -0.17295288549642862,
+    "J_long": -0.09499891519546111,
+    "Short4": -0.06400000000000716,
+    "Urban_I2T": -0.29999613761901855,
+    "Urban_T2I": -0.4999995231628418
+  },
+  "recall_delta_pp": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.060000000000004494,
+        "R@5": -0.0400000000000067,
+        "R@10": -0.08000000000000229
+      },
+      "T2I": {
+        "R@1": -0.17600000000000393,
+        "R@5": -0.08000000000000229,
+        "R@10": -0.043999999999999595
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": -0.29999613761901855,
+        "R@5": 0.09999871253967285,
+        "R@10": 0.0
+      },
+      "T2I": {
+        "R@1": -0.4999995231628418,
+        "R@5": -0.09999871253967285,
+        "R@10": 0.0
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.0,
+        "R@5": -0.5000000000000004,
+        "R@10": 0.0
+      },
+      "T2I": {
+        "R@1": -0.14000000000000679,
+        "R@5": 0.0,
+        "R@10": 0.05999999999999339
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.11999999999999789,
+        "R@5": 0.039999999999995595,
+        "R@10": 0.019999999999997797
+      },
+      "T2I": {
+        "R@1": 0.30000000000000027,
+        "R@5": 0.15999999999999348,
+        "R@10": 0.019999999999997797
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": -0.2762430939226457,
+        "R@5": -0.052617732175741505,
+        "R@10": -0.302551960010522
+      },
+      "T2I": {
+        "R@1": -0.3814785582741398,
+        "R@5": -0.14469876348329747,
+        "R@10": -0.302551960010522
+      }
+    }
+  },
+  "gradient_audit_matched_original_1024_cohort": true
+}
