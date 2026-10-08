@@ -25,6 +25,8 @@ EXP=ROOT/'experiments/nest_clip_v1/hns_macro_loss_fourarm500_v1'
 RUN=PROJECT/'runtime/SAID-nest-clip-v1/hns-macro-fourarm500-v1'
 ENTRY='recovery.hns_macro_fourarm'
 MACRO_KEYS=('lambda_align','lambda_sparse','lambda_hierarchy')
+GATES=('CPU_TESTS.json','DDP_EQUIVALENCE.json','REAL_BF16_EQUIVALENCE.json',
+       'DEFAULT_GRADIENT_AUDIT.json','FULL_REFERENCE_PROVENANCE.json')
 ARMS={'E1-A12':(12.,1.,1.),'E2-S08':(10.,.8,1.),'E3-H075':(10.,1.,.75),'E4-H125':(10.,1.,1.25)}
 CODE=('model/balanced_hparam_search.py','recovery/hns_macro_fourarm.py','recovery/hns_macro_equivalence.py',
       'recovery/hns_macro_gradient.py','tests/test_hns_macro.py','tests/test_hns_macro_runner.py',
@@ -209,6 +211,7 @@ def prepare():
         balanced_selection='Highest Score5 with J_long3/Short4/UrbanT2I deltas >= -0.2/-0.2/-0.3pp; baseline eligible',
         stop_after_all_four=True,automatic_1217_2434_3651_4868=False,automatic_combination=False,fifth_arm=False,second_seed=False))
     state('PREPARED')
+    verify_full_reference()
 
 
 def worker(arm,smoke):
@@ -271,7 +274,6 @@ def compare(result,baseline):
 
 def report_arm(arm,result,supervisor):
     from recovery.nested_d3_local_search_evidence import diagnostics
-    from recovery.hns_macro_gradient import cosine
     activate(arm);exp=EXP/arm;runtime=RUN/arm;steps=rows(runtime/'step500/steps.jsonl')
     assert len(steps)==500
     proof=matched_stream(steps,rows(BASE_RUN/'step500/steps.jsonl'),arm);assert proof['records']==512000
@@ -414,7 +416,7 @@ def run():
     with (RUN/'runner.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         assert read(EXP/'QUEUE_STATE.json')['status']=='PREPARED','No implicit retry'
-        for name in ('CPU_TESTS.json','DDP_EQUIVALENCE.json','REAL_BF16_EQUIVALENCE.json'):assert read(EXP/name)['passed']
+        for name in GATES:assert read(EXP/name)['passed']
         assert sha(STEP0)==STEP0_SHA
         completed=[];arm=None
         try:
@@ -470,7 +472,7 @@ def main():
     elif args.launch:
         assert read(EXP/'QUEUE_STATE.json')['status']=='PREPARED' and not (RUN/'DETACHED_LAUNCH.json').exists()
         assert read(RUN/'SETUP_GITHUB_RECEIPT.json')['commit']==git('rev-parse','HEAD')
-        for name in ('CPU_TESTS.json','DDP_EQUIVALENCE.json','REAL_BF16_EQUIVALENCE.json'):assert read(EXP/name)['passed']
+        for name in GATES:assert read(EXP/name)['passed']
         with (RUN/'runner.log').open('xb') as log:
             child=subprocess.Popen([str(PROJECT/'.venv/bin/python'),'-u','-m',ENTRY,'--run'],cwd=ROOT,
                 stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,

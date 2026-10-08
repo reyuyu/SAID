@@ -57,7 +57,8 @@ def main():
     indices={}
     for i,(name,p) in enumerate(named):indices.setdefault(group(name),[]).append(i)
     vectors={};components={};coeff={'raw_align':hp['lambda_align'],'raw_sparse':hp['lambda_sparse'],
-        'raw_hierarchy':hp['lambda_hierarchy']*graph['lambda_h'],'total_training':1.}
+        'raw_hierarchy':hp['lambda_hierarchy']*graph['lambda_h'],
+        'weighted_align':1.,'weighted_sparse':1.,'weighted_hierarchy':1.,'total_training':1.}
     for key,weight in coeff.items():
         gradients=torch.autograd.grad(graph[key],params,allow_unused=True,retain_graph=True)
         reduced=[]
@@ -65,23 +66,26 @@ def main():
             v=torch.zeros_like(param) if gradient is None else gradient.detach().float().clone()
             dist.all_reduce(v);v/=world;assert torch.isfinite(v).all();reduced.append(v.flatten())
         vectors[key]={g:torch.cat([reduced[i] for i in ii]) for g,ii in indices.items()}
-        components[key]=dict(coefficient=weight,group_norms={g:dict(raw=float(v.norm()),weighted=float(v.norm())*weight)
+        components[key]=dict(coefficient=weight,group_norms={g:dict(raw=float(v.norm()),linear_scaling_estimate=float(v.norm())*weight)
             for g,v in vectors[key].items()})
         del gradients,reduced
     conflicts={};additivity={}
     for g in indices:
         a,s,h=[vectors[k][g] for k in ('raw_align','raw_sparse','raw_hierarchy')]
-        weighted_a=a*coeff['raw_align'];weighted_s=s*coeff['raw_sparse'];weighted_h=h*coeff['raw_hierarchy']
+        weighted_a,weighted_s,weighted_h=[vectors[k][g] for k in ('weighted_align','weighted_sparse','weighted_hierarchy')]
         total=vectors['total_training'][g];summed=weighted_a+weighted_s+weighted_h
         error=float((total-summed).norm())/max(float(total.norm()),1e-12)
-        tolerance=.02 if g.startswith('native_') else 3e-4
+        tolerance=3e-4
         assert error<=tolerance,(g,error,tolerance)
         additivity[g]=dict(relative_L2_error=error,tolerance=tolerance,
-            precision_note='Native BF16 backward can round separately scaled gradients; mask/group arithmetic stays FP32')
+            precision_note='Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates')
         conflicts[g]=dict(cosine_hierarchy_sparsity=cosine(h,s),cosine_hierarchy_alignment=cosine(h,a),
             raw_alignment_norm=float(a.norm()),raw_sparsity_norm=float(s.norm()),raw_hierarchy_norm=float(h.norm()),
             weighted_alignment_norm=float(weighted_a.norm()),weighted_sparsity_norm=float(weighted_s.norm()),
             weighted_hierarchy_norm=float(weighted_h.norm()),total_norm=float(total.norm()))
+        for raw,weighted in [('raw_align','weighted_align'),('raw_sparse','weighted_sparse'),('raw_hierarchy','weighted_hierarchy')]:
+            components[raw]['group_norms'][g]['weighted']=float(vectors[weighted][g].norm())
+            components[raw]['group_norms'][g]['weighted_method']='autograd of actual weighted loss'
     for g in ('native_visual_backbone','native_text_backbone'):
         assert conflicts[g]['raw_sparsity_norm']==conflicts[g]['raw_hierarchy_norm']==0
     assert all(p.grad is None for p in model.parameters()) and sha(args.checkpoint)==digest

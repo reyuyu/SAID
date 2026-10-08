@@ -51,8 +51,9 @@ Gradient audit uses the original immutable step500 first frozen global1024
 batch,256/rank,all-reduce/4,no optimizer updates. It reports raw LA/LS/LH norms,
 actual weighted norms, hierarchy–sparsity/alignment cosines and total gradient
 per native visual/text, text mask/shared pool, visual mask and fusion/gate
-group. Native BF16 backward may round separately scaled gradients; additive
-relative-L2 tolerances are2% for native BF16 and0.03% for FP32 mask groups.
+group. Actual weighted-loss gradients are differentiated separately; raw-gradient
+linear scaling estimates are recorded separately because BF16 can round them.
+Additive relative-L2 tolerance is0.03% for all groups using actual weighted terms.
 Loss/equivalence gates themselves require exact default results.
 
 ## Execution and progress

@@ -42,7 +42,7 @@ def test_smoke_failure_blocks_formal_eval_and_next_arm():
     with tempfile.TemporaryDirectory() as tmp:
         run=Path(tmp)/'run';run.mkdir();exp=Path(tmp)/'exp';exp.mkdir()
         r.dump(exp/'QUEUE_STATE.json',dict(status='PREPARED'))
-        for name in ('CPU_TESTS.json','DDP_EQUIVALENCE.json','REAL_BF16_EQUIVALENCE.json'):r.dump(exp/name,dict(passed=True))
+        for name in r.GATES:r.dump(exp/name,dict(passed=True))
         r.dump(exp/'BASELINE_PROVENANCE.json',dict(production_sources={}))
         def activate(arm,smoke=False):
             r.local.RUN=run/(arm+'.smoke5' if smoke else arm)
