@@ -11,6 +11,7 @@ GPU0 COCO; GPU1 DOCCI; GPU2 Long-DCI; GPU3 Flickr then Urban. Evaluation batch64
 | 1217 | 72.869675 | 77.012792 | 85.925003 | 66.655000 |
 | 2434 | 73.575684 | 77.894807 | 86.735002 | 67.097000 |
 | 3651 | 73.706809 | 78.066015 | 86.880002 | 67.168000 |
+| 4868 | 73.660579 | 78.024965 | 86.825004 | 67.114000 |
 
 ## Step3651
 
@@ -25,6 +26,20 @@ GPU0 COCO; GPU1 DOCCI; GPU2 Long-DCI; GPU3 Flickr then Urban. Evaluation batch64
 D3 Balanced deltas(pp): `{"Score5": -0.12337242271175342, "J_long3": -0.13962070451958652, "J_long": -0.04500064373016244, "Short4": -0.09899999999998954}`.
 
 HNS-v1 deltas(pp): `{"Score5": -0.06760844168513813, "J_long3": -0.12201406947522742, "J_long": -0.16000084638596945, "Short4": 0.014000000000010004}`.
+
+## Step4868
+
+| Dataset | I2T R1/R5/R10 | T2I R1/R5/R10 |
+|---|---|---|
+| COCO | 61.680000 / 83.580000 / 89.800000 | 42.996000 / 68.580000 / 78.140000 |
+| Urban-1k | 93.900007 / 99.200004 / 99.600005 | 92.500007 / 99.100006 / 99.400002 |
+| Flickr30k-test1k | 89.900000 / 98.200000 / 99.100000 | 73.880000 / 91.960000 / 95.880000 |
+| DOCCI | 80.220000 / 96.380000 / 98.600000 | 80.680000 / 96.100000 / 98.300000 |
+| Long-DCI | 60.036832 / 78.189950 / 83.977901 | 60.812944 / 78.597737 / 83.543804 |
+
+D3 Balanced deltas(pp): `{"Score5": -0.1204854865633962, "J_long3": -0.14480914427230118, "J_long": -0.13499850988388573, "Short4": -0.08400000000000318}`.
+
+HNS-v1 deltas(pp): `{"Score5": 0.0224949105330694, "J_long3": 0.010158184221808142, "J_long": -0.08999818801881077, "Short4": 0.04099999999999682}`.
 
 All30 recall deltas: RESULTS.json. Resource statistics: RUNTIME_STATS.json. Full stream gates: VALIDATION.json.
 Checkpoints/bare/raw logs remain in persistent canonical runtime and are never uploaded. /root is disposable cache; NFS originals retained.

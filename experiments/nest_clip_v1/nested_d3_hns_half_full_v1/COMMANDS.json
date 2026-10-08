@@ -94,5 +94,101 @@
     "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/five-eval3651.log",
     "ended_utc": "2026-10-08T13:54:07.104749+00:00",
     "returncode": 0
+  },
+  {
+    "name": "train4868",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nnodes=1",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "--",
+      "recovery.hns_half_full",
+      "--worker",
+      "--candidate",
+      "A",
+      "--config",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-half-full/experiments/nest_clip_v1/nested_d3_hns_half_full_v1/config.json",
+      "--init-state",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step4868",
+      "--run-type",
+      "formal",
+      "--max-updates",
+      "4868",
+      "--resume",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step3651/step003651.pt"
+    ],
+    "started_utc": "2026-10-08T13:55:10.098694+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/train4868.log",
+    "ended_utc": "2026-10-08T14:41:08.359236+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "export4868",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step4868/step004868.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step4868/student_step4868.pt",
+      "--expect-updates",
+      "4868"
+    ],
+    "started_utc": "2026-10-08T14:42:07.133256+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/export4868.log",
+    "ended_utc": "2026-10-08T14:42:27.258772+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "verify4868",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "verify-export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step4868/step004868.pt",
+      "--bare",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step4868/student_step4868.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step4868/export-check.json",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V"
+    ],
+    "started_utc": "2026-10-08T14:42:27.280193+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/verify4868.log",
+    "ended_utc": "2026-10-08T14:42:45.379568+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "five-eval4868",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.eval_five_parallel",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step4868/student_step4868.pt",
+      "--training-checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/step4868/step004868.pt",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/evaluations/step4868"
+    ],
+    "started_utc": "2026-10-08T14:42:46.237968+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half_full_v1/five-eval4868.log",
+    "ended_utc": "2026-10-08T14:51:03.181732+00:00",
+    "returncode": 0
   }
 ]
