@@ -26,7 +26,7 @@ SMOKE=RUN_ROOT.parent/(RUN_ROOT.name+'.smoke5')
 SMOKE_PHASE=search.LOCAL/(RUN_ROOT.name+'.smoke5-phases')
 BRANCH='experiment/nested-d3-hns-sg500-v1'
 ENTRY='recovery.hns_sg500'
-ARMS={'HNS-SG':dict(axis='hns_beta',beta=[2.,2.],weights=[1.35,1.35,.30],r=2.,
+ARMS={'HNS-SG':dict(axis='hns_sg',beta=[2.,2.],weights=[1.35,1.35,.30],r=2.,
     mode='nested_detail_d3',experiment_dir=str(EXP))}
 CODE={'model/hard_nested_sparsity.py','model/balanced_hparam_search.py',
     'train/train_nested_semantic_mask.py','tools/nest_clip.py','recovery/nested_detail_gradients.py',
@@ -34,7 +34,8 @@ CODE={'model/hard_nested_sparsity.py','model/balanced_hparam_search.py',
     'tests/test_hns_sg500.py','configs/nested_d3_hns_sg500.json','recovery/check_stage500_publish.py'}
 STATIC=('BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','DDP_CORRECTNESS.json','CORRECTNESS.md')
 REPORTS=runner.REPORT_NAMES+STATIC+('CPU_TESTS.json','SEARCH_PLAN.json','GRADIENT_AUDIT.json',
-    'SMOKE_EVIDENCE.json','SMOKE_VERIFIER_RECOVERY.json','DECISION.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json')
+    'SMOKE_EVIDENCE.json','SMOKE_VERIFIER_RECOVERY.json','FORMAL_GATE_RECOVERY.json',
+    'DECISION.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json')
 OriginalConfig=search.arm_config
 OriginalInvariants=search.checkpoint_invariants
 OriginalStream=search.matched_stream
@@ -70,10 +71,16 @@ def matched_stream(actual,reference,arm):
     proof=OriginalStream(actual,reference,arm)
     assert all(r['HNS_detach_child'] is True for r in actual)
     for r in actual:
+        assert r['inc_weight']==r['inclusion_loss']==0 and r['inclusion_enabled'] is False
+        assert r['HNS_enabled'] is True and [r['HNS_beta_DF'],r['HNS_beta_3D']]==[2.,2.]
+        assert r['lambda_h']==min(1.,(r['step']-1)/200.)
+        surcharge=r['lambda_h']*(2*r['V_DF_hard']+2*r['V_3D_hard'])/3
+        assert abs(r['HNS_surcharge']-surcharge)<2e-6
+        assert abs(r['HNS_regularizer']-(r['HNS_original_sparse']+surcharge))<2e-6
         expected=(10/3)*sum(w*(r[p+'_i2t']+r[p+'_t2i']) for w,p in zip([1.35,1.35,.3],['F','O','E']))
         assert abs(r['HNS_align']-expected)<2e-5
         assert abs(r['loss']-(r['HNS_align']+r['HNS_original_sparse']+r['HNS_surcharge']))<2e-5
-    proof.update(all512000_HNS_SG_flag_verified=True,old_soft_inclusion_disabled=True,
+    proof.update(all_actual_records_HNS_SG_flag_verified=True,old_soft_inclusion_disabled=True,
         HNS_beta=[2.,2.],HNS_ramp_updates=200,alignment_and_total_literal_formula_verified=True)
     return proof
 
