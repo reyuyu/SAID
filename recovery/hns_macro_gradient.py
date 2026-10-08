@@ -31,7 +31,7 @@ def main():
     cfg=p['config'];hp=macro_hparams(cfg)
     clip,_=longclip.load_from_clip('ViT-B/16',device='cpu',args=argparse.Namespace())
     clip.load_state_dict(p['model'],strict=True)
-    model=BalancedSearch(clip.float(),arm=cfg['arm'],search_hparams=hparams(cfg),hns_enabled=True,
+    model=BalancedSearch(clip.float(),arm=cfg['arm'],search_hparams=hparams(dict(cfg,**hp)),hns_enabled=cfg.get('hns_enabled',False),
         inclusion_hierarchy='detail_chain',fusion=cfg['fusion'],visual=cfg['visual'],
         condition_mode=cfg['condition_mode'],checkpoint_encoders=cfg['checkpoint_encoders'],
         image_chunk=cfg['image_chunk'],text_chunk=cfg['text_chunk'],shuffle_seed=cfg['shuffle_seed'],
@@ -59,6 +59,9 @@ def main():
     vectors={};components={};coeff={'raw_align':hp['lambda_align'],'raw_sparse':hp['lambda_sparse'],
         'raw_hierarchy':hp['lambda_hierarchy']*graph['lambda_h'],
         'weighted_align':1.,'weighted_sparse':1.,'weighted_hierarchy':1.,'total_training':1.}
+    for name,w in zip(('F','Dall','D3'),cfg['view_weights']):
+        coeff['raw_view_'+name]=hp['lambda_align']*w/sum(cfg['view_weights'])
+        coeff['weighted_view_'+name]=1.
     for key,weight in coeff.items():
         gradients=torch.autograd.grad(graph[key],params,allow_unused=True,retain_graph=True)
         reduced=[]
@@ -88,17 +91,26 @@ def main():
             components[raw]['group_norms'][g]['weighted_method']='autograd of actual weighted loss'
     for g in ('native_visual_backbone','native_text_backbone'):
         assert conflicts[g]['raw_sparsity_norm']==conflicts[g]['raw_hierarchy_norm']==0
+    views={g:{name:dict(raw_norm=float(vectors['raw_view_'+name][g].norm()),
+        weighted_norm=float(vectors['weighted_view_'+name][g].norm())) for name in ('F','Dall','D3')} for g in indices}
+    for g in indices:
+        a,d,k=[vectors['weighted_view_'+v][g] for v in ('F','Dall','D3')]
+        views[g].update(weighted_D3_Dall_ratio=None if not float(d.norm()) else float(k.norm()/d.norm()),
+            cosine_F_Dall=cosine(a,d),cosine_Dall_D3=cosine(d,k),cosine_F_D3=cosine(a,k))
     assert all(p.grad is None for p in model.parameters()) and sha(args.checkpoint)==digest
     if rank==0:
         assert state_digest(model.state_dict())==before
         dump(args.output,dict(passed=True,protocol='Original immutable step500 first seed0 epoch0 global1024 batch;256/rank; mean all-reduced gradients; no optimizer step',
             sample_ids_sha256=ids_sha,records=1024,completed=499,ramp=graph['lambda_h'],macro_scales=hp,
-            components=components,group_diagnostics=conflicts,gradient_additivity=additivity,
+            components=components,group_diagnostics=conflicts,gradient_additivity=additivity,view_gradients=views,
             checkpoint=dict(path=args.checkpoint,sha256=digest,unchanged=True,uploaded=False),
             no_parameter_updates=True,state_digest_before=before,state_digest_after=before,
             local_only=True,NFS_fallback=False,telemetry={k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()
-                if k.startswith(('HNS_','macro_')) or k in ('V_DF_hard','V_3D_hard','lambda_h')},
-            inherited_hidden_detach='Regularizers have zero native-backbone gradient; no mask-to-mask stop-gradient',
+                if k.startswith(('HNS_','macro_')) or k in ('V_DF_hard','V_3D_hard','lambda_h',
+                    'inc','inc_weight','inclusion_loss','F_Dall_mask_iou','Dall_Ds_mask_iou','Dall_F_hard_violation','Ds_Dall_hard_violation')},
+            hierarchy_method='HNS' if cfg.get('hns_enabled',False) else 'Balanced',
+            inherited_hidden_detach='Regularizers have zero native-backbone gradient; '+
+                ('no mask-to-mask stop-gradient' if cfg.get('hns_enabled',False) else 'soft detached-child inclusion'),
             started_utc=started,ended_utc=now()))
     dist.barrier();dist.destroy_process_group()
 

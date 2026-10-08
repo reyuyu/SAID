@@ -1,0 +1,71 @@
+{
+  "order": [
+    "E1-HNS-A8",
+    "E2-Balanced-A8",
+    "E3-Balanced-S12",
+    "E4-Balanced-H125"
+  ],
+  "arms": {
+    "E1-HNS-A8": {
+      "method": "HNS",
+      "lambda_align": 8.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 1.0
+    },
+    "E2-Balanced-A8": {
+      "method": "Balanced",
+      "lambda_align": 8.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 1.0
+    },
+    "E3-Balanced-S12": {
+      "method": "Balanced",
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.2,
+      "lambda_hierarchy": 1.0
+    },
+    "E4-Balanced-H125": {
+      "method": "Balanced",
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 1.25
+    }
+  },
+  "fresh_common0": true,
+  "resume": null,
+  "independent_smoke5_and_formal500": true,
+  "max_updates": 500,
+  "horizon": 4868,
+  "view_weights": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity_weights": [
+    1,
+    2,
+    2
+  ],
+  "fixed_K": 3,
+  "ramp": "min(1,completed_before_update/200)",
+  "HNS": "Hard-ST ReLU child-parent; beta2/2; no-SG; old soft inclusion0",
+  "Balanced": "Soft detached-child detail-chain inclusion; no HNS; inclusion_max1 scaled once",
+  "local_only": true,
+  "NFS_fallback": false,
+  "world": 4,
+  "batch_per_rank": 256,
+  "workers": 8,
+  "seed": 0,
+  "GPU_mapping": {
+    "coco": 0,
+    "docci": 1,
+    "long_dci": 2,
+    "flickr": 3,
+    "urban": 3
+  },
+  "stop_after_four": true,
+  "automatic_full": false,
+  "fifth_arm": false,
+  "automatic_combination": false,
+  "second_seed": false
+}

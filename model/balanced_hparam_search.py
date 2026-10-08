@@ -67,7 +67,14 @@ class BalancedSearch(NestedFusionMask):
         assert self.fusion=='balanced_stack' and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
         self.macro_hparams = macro_hparams(search_hparams or {})
-        assert hns_enabled or self.macro_hparams==MACRO_DEFAULTS, 'Macros apply only to HNS'
+        self.macro_enabled = any(key in (search_hparams or {}) for key in MACRO_DEFAULTS)
+        if self.macro_enabled and not hns_enabled:
+            # Replace only outer coefficients of the reviewed Balanced method.
+            # Refuse a second sparsity/inclusion scale at this opt-in interface.
+            assert inclusion_hierarchy == 'detail_chain'
+            assert self.search_hparams['sparsity_scale'] == 1.
+            assert self.search_hparams['inclusion_max'] == 1.
+            assert self.search_hparams['view_weights'] == [1.35,1.35,.30]
         self.summary_t2i_weight = float((search_hparams or {}).get("summary_t2i_weight", 1.))
         assert 0 < self.summary_t2i_weight <= 1.
         assert inclusion_hierarchy in ('siblings', 'detail_chain')
@@ -214,7 +221,27 @@ class BalancedSearch(NestedFusionMask):
                         weighted_align=wa,weighted_sparse=ws,weighted_hierarchy=wh,
                         weighted_regularizer=ws+wh)
             if inclusion_enabled:
-                loss=loss+weight*world_rank()[0]/valid_count*inc_sum
+                if self.macro_enabled:
+                    # Preserve legacy multiplication order and default addition.
+                    hierarchy=weight*world_rank()[0]/valid_count*inc_sum
+                    wa,ws,wh=macro_terms(align,sparse,hierarchy,self.macro_hparams)
+                    loss=(wa+ws)+wh
+                    world=world_rank()[0]
+                    raw_h=world/valid_count*inc_sum
+                    values=global_sum(torch.stack((align.detach()/10,sparse.detach(),raw_h.detach(),
+                        wa.detach(),ws.detach(),wh.detach())))/world
+                    logs.update(macro_raw_align=values[0],macro_raw_sparse=values[1],
+                        macro_raw_hierarchy=values[2],macro_weighted_align=values[3],
+                        macro_weighted_sparse=values[4],macro_weighted_hierarchy=values[5],
+                        macro_lambda_align=self.macro_hparams['lambda_align'],
+                        macro_lambda_sparse=self.macro_hparams['lambda_sparse'],
+                        macro_lambda_hierarchy=self.macro_hparams['lambda_hierarchy'])
+                    if getattr(self,'capture_hns_graph',False):
+                        self.hns_graph=dict(raw_align=align/10,raw_sparse=sparse,raw_hierarchy=raw_h,
+                            weighted_align=wa,weighted_sparse=ws,weighted_hierarchy=wh,
+                            total_training=loss,weighted_regularizer=ws+wh,lambda_h=weight)
+                else:
+                    loss=loss+weight*world_rank()[0]/valid_count*inc_sum
             violation=.5*((mo.detach()>mf.detach()).float().mean(-1)+(me.detach()>mf.detach()).float().mean(-1))
             iou=(mo.detach()*me.detach()).sum(-1)/((mo.detach()+me.detach())>0).sum(-1).clamp_min(1)
             extra=global_sum(torch.stack((inc_sum.detach(),violation[valid].sum(),iou[valid].sum())))/valid_count
@@ -232,14 +259,22 @@ class BalancedSearch(NestedFusionMask):
                 logs.update(F_Dall_mask_iou=chain[0],Dall_Ds_mask_iou=extra[2],
                     Dall_F_hard_violation=chain[1],Ds_Dall_hard_violation=chain[2],
                     hard_inclusion_violation=.5*(chain[1]+chain[2]))
+            if getattr(self,'capture_hns_graph',False) and (self.hns_enabled or self.macro_enabled):
+                self.hns_graph.update(raw_view_F=af,raw_view_Dall=ao,raw_view_D3=ae)
+                for name,value,w in zip(('F','Dall','D3'),(af,ao,ae),hp['view_weights']):
+                    term=10/sum(hp['view_weights'])*w*value
+                    if self.macro_hparams['lambda_align']!=10.:
+                        term=(self.macro_hparams['lambda_align']/10)*term
+                    self.hns_graph['weighted_view_'+name]=term
         else:
             loss=10*af+hp['sparsity_scale']*sf
-            if self.hns_enabled:
+            if self.hns_enabled or self.macro_enabled:
                 wa,ws,wh=macro_terms(10*af,sf,af*0,self.macro_hparams)
                 loss=wa+ws
-                logs.update(HNS_enabled=True,lambda_h=hierarchy_weight(completed),
-                    HNS_align=global_sum(10*af)/world_rank()[0],HNS_original_sparse=global_sum(sf)/world_rank()[0],
-                    HNS_surcharge=0.,HNS_regularizer=global_sum(sf)/world_rank()[0],V_DF_hard=0.,V_3D_hard=0.)
+                if self.hns_enabled:
+                    logs.update(HNS_enabled=True,lambda_h=hierarchy_weight(completed),
+                        HNS_align=global_sum(10*af)/world_rank()[0],HNS_original_sparse=global_sum(sf)/world_rank()[0],
+                        HNS_surcharge=0.,HNS_regularizer=global_sum(sf)/world_rank()[0],V_DF_hard=0.,V_3D_hard=0.)
                 logs.update(macro_raw_align=global_sum(af)/world_rank()[0],
                     macro_raw_sparse=global_sum(sf)/world_rank()[0],macro_raw_hierarchy=0.,
                     macro_weighted_align=global_sum(wa)/world_rank()[0],
