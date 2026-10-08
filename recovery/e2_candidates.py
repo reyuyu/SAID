@@ -45,6 +45,16 @@ SPEC = {
 CODE = ('recovery/e2_candidates.py', 'tests/test_e2_candidates.py',
         'tools/eval_five_parallel.py', 'tests/test_eval_five_parallel.py')
 QUEUE_RUN = PROJECT/'runtime/SAID-nest-clip-v1/e2-final-candidates-v1'
+LIMIT = 2434
+INITIAL_A_START = 1217
+ENTRY = 'recovery.e2_candidates'
+PUBLICATION_TITLE = 'strict E2 validation'
+
+
+def parent_for_segment(candidate, start):
+    if candidate == 'A' and start == INITIAL_A_START:
+        return PARENT
+    return paths(candidate)[1]/f'step{start}'/f'step{start:06d}.pt'
 
 
 def read(path): return json.loads(Path(path).read_text())
@@ -217,11 +227,11 @@ def prepare(candidate):
 def set_state(candidate,status,**extra):
     exp,run=paths(candidate)
     dump(exp/'STATE.json',dict(status=status,candidate=candidate,pid=os.getpid(),updated_utc=now(),
-        stop_updates=2434,automatic_continuation=False,**extra))
+        stop_updates=LIMIT,automatic_continuation=False,**extra))
 
 
 def baseline_rows(candidate):
-    return rows(PROJECT/'runtime/SAID-nest-clip-v1'/SPEC[candidate]['source_run']/'steps.jsonl')[:2434]
+    return rows(PROJECT/'runtime/SAID-nest-clip-v1'/SPEC[candidate]['source_run']/'steps.jsonl')[:LIMIT]
 
 
 def verify_stream(candidate, actual, start):
@@ -269,11 +279,14 @@ def worker(candidate):
     exp,run=paths(candidate)
     output=Path(sys.argv[sys.argv.index('--output-dir')+1]);stop=int(sys.argv[sys.argv.index('--max-updates')+1])
     resume=Path(sys.argv[sys.argv.index('--resume')+1]) if '--resume' in sys.argv else None
-    start=1217 if candidate=='A' else (0 if resume is None else int(read(run/'active-segment.json')['start']))
+    start=int(read(run/'active-segment.json')['start'])
     phase=Path(os.environ['SAID_S02_PHASE_LOCAL'])
     supervisor=int(os.environ['SAID_FULL_SUPERVISOR_PID']);require_live_supervisor(supervisor)
     cfg=read(exp/'config.json');assert_frozen(candidate,cfg);assert (start,stop) in SPEC[candidate]['segments']
-    if candidate=='A': assert resume==PARENT and sha(resume)==PARENT_SHA
+    if candidate=='A':
+        assert resume==parent_for_segment(candidate,start)
+        if start==INITIAL_A_START: assert sha(resume)==PARENT_SHA
+        else: assert sha(resume)==read(exp/f'step{start}_RESULTS.json')['checkpoint']['sha256']
     elif start==0: assert resume is None
     else: assert resume==run/f'step{start}'/f'step{start:06d}.pt'
     install_schedule(candidate);gate.RUN=run
@@ -316,7 +329,7 @@ def worker(candidate):
         return value
 
     def rates(module,completed,horizon):
-        require_live_supervisor(supervisor);assert horizon==4868 and start<=completed<stop<=2434
+        require_live_supervisor(supervisor);assert horizon==4868 and start<=completed<stop<=LIMIT
         if completed==start and not context['checked']:
             previous=context['previous']
             if resume:
@@ -407,10 +420,10 @@ def worker(candidate):
 def training_command(candidate,start,stop):
     exp,run=paths(candidate)
     cmd=[str(PROJECT/'.venv/bin/torchrun'),'--standalone','--nnodes=1','--nproc-per-node=4','--max-restarts=0',
-        '-m','--','recovery.e2_candidates','--worker','--candidate',candidate,
+        '-m','--',ENTRY,'--worker','--candidate',candidate,
         '--config',str(exp/'config.json'),'--init-state',str(STEP0),'--index-dir',str(INDEX),
         '--image-root',str(IMAGES),'--output-dir',str(run/f'step{stop}'),'--run-type','formal','--max-updates',str(stop)]
-    parent=PARENT if candidate=='A' else run/f'step{start}'/f'step{start:06d}.pt'
+    parent=parent_for_segment(candidate,start)
     if start:cmd.extend(['--resume',str(parent)])
     return cmd
 
@@ -616,7 +629,7 @@ def publish(candidate,setup=False):
         try:checker.ALLOWED=set(relative);check=checker.inspect()
         finally:os.chdir(previous)
         assert check['passed'];subprocess.run(['git','diff','--cached','--check'],cwd=ROOT,check=True)
-        subprocess.run(['git','commit','-m',('Prepare ' if setup else 'Report ')+SPEC[candidate]['name']+' strict E2 validation'],cwd=ROOT,check=True)
+        subprocess.run(['git','commit','-m',('Prepare ' if setup else 'Report ')+SPEC[candidate]['name']+' '+PUBLICATION_TITLE],cwd=ROOT,check=True)
     head=git('rev-parse','HEAD')
     subprocess.run(['git','push','origin','HEAD:refs/heads/'+branch],cwd=ROOT,check=True,timeout=120)
     subprocess.run(['git','fetch','origin','refs/heads/'+branch+':refs/remotes/origin/'+branch],cwd=ROOT,check=True,timeout=120)

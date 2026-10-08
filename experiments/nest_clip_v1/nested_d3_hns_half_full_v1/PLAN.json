@@ -1,0 +1,64 @@
+{
+  "segments": [
+    [
+      2434,
+      3651
+    ],
+    [
+      3651,
+      4868
+    ]
+  ],
+  "order": [
+    "restore2434",
+    "train2435..3651",
+    "strict export/evaluate/report/sync3651",
+    "restore3651",
+    "train3652..4868",
+    "strict export/evaluate/report/sync4868",
+    "STOP"
+  ],
+  "stop": 4868,
+  "next_update": 2435,
+  "horizon": 4868,
+  "parent": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested_d3_hns_half2434_v1/step2434/step002434.pt",
+  "parent_sha256": "1bc0e6f088f3976c79db9cb3d729967d57f9228f4098772b91f66e00696b1ca8",
+  "alignment": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity": [
+    1,
+    2,
+    2
+  ],
+  "K": 3,
+  "hierarchy_weight": 0.5,
+  "hns_beta": [
+    2,
+    2
+  ],
+  "detach_child": false,
+  "soft_inclusion": 0,
+  "evaluation_steps": [
+    3651,
+    4868
+  ],
+  "pause_training_for_evaluation": true,
+  "batch64_evaluation": true,
+  "GPU_mapping": {
+    "coco": 0,
+    "docci": 1,
+    "long_dci": 2,
+    "flickr": 3,
+    "urban": 3
+  },
+  "production_math_unchanged": true,
+  "scores_do_not_change_plan": true,
+  "technical_failure_blocks_continuation": true,
+  "third_experiment": false,
+  "NFS_copy": false,
+  "full_audit": false,
+  "cache": "/root disposable overlay; original NFS images retained"
+}

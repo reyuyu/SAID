@@ -26,7 +26,10 @@ def test_mapping_and_frozen_original_commands(tmp_path):
         assert a[a.index('--batch-size')+1]=='64'
         assert a[a.index('--device')+1]=='cuda:0'
         b[b.index('--device')+1]='cuda:0'
-        assert a==b
+        # Isolated worktrees link the same canonical venv; executable spelling
+        # may differ while all evaluator arguments must remain identical.
+        assert Path(a[0]).resolve()==Path(b[0]).resolve()
+        assert a[1:]==b[1:]
         assert '-m' in a and 'torchrun' not in a and '--nproc-per-node' not in a
     old=json.loads((ev.ROOT/'experiments/nest_clip_v1/nested_d3_hns_sg500_v1/COMMANDS.json').read_text())
     for job in serial.values():
@@ -38,7 +41,8 @@ def test_mapping_and_frozen_original_commands(tmp_path):
         a=list(job.command);b=list(candidates[0])
         for flag in ('--checkpoint','--output','--output-dir'):
             if flag in a:b[b.index(flag)+1]=a[a.index(flag)+1]
-        assert a==b
+        assert Path(a[0]).resolve()==Path(b[0]).resolve()
+        assert a[1:]==b[1:]
 
 
 @pytest.mark.parametrize('gpus',[(0,1,2),(0,1,2,2),(-1,0,1,2)])
