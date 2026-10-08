@@ -34,7 +34,7 @@ CODE={'model/hard_nested_sparsity.py','model/balanced_hparam_search.py',
     'tests/test_hns_sg500.py','configs/nested_d3_hns_sg500.json','recovery/check_stage500_publish.py'}
 STATIC=('BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','DDP_CORRECTNESS.json','CORRECTNESS.md')
 REPORTS=runner.REPORT_NAMES+STATIC+('CPU_TESTS.json','SEARCH_PLAN.json','GRADIENT_AUDIT.json',
-    'SMOKE_EVIDENCE.json','DECISION.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json')
+    'SMOKE_EVIDENCE.json','SMOKE_VERIFIER_RECOVERY.json','DECISION.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json')
 OriginalConfig=search.arm_config
 OriginalInvariants=search.checkpoint_invariants
 OriginalStream=search.matched_stream
@@ -138,22 +138,55 @@ def matched_preflight():
     preflight.main()
 
 
+def smoke_proof():
+    import torch
+    path=SMOKE/'step500';accept=read(path/'acceptance.json')
+    assert accept['passed'] and all(r['completed_updates']==r['updates_this_run']==5 and
+        r['max_parameter_difference_from_rank0']==0 for r in accept['ranks'])
+    proof=matched_stream(rows(path/'steps.jsonl'),rows(BASE_RUN/'step500/steps.jsonl')[:5],'HNS-SG')
+    checkpoint=path/'step000005.pt';payload=torch.load(checkpoint,map_location='cpu',weights_only=False)
+    cfg=payload['config'];search.frozen_config(cfg,'HNS-SG')
+    assert cfg['resume'] is None and cfg['start_updates']==0 and cfg['init_sha256']==STEP0_SHA
+    assert cfg['run_type']=='smoke' and cfg['max_updates']==5 and payload['completed_steps']==5
+    assert payload['scheduler_horizon']==4868 and payload['next_epoch']==0 and payload['next_batch']==5
+    assert {int(s['step']) for s in payload['optimizer']['state'].values()}=={5}
+    reference=torch.load(BASE_RUN/'step500/step000005.pt',map_location='cpu',weights_only=False)
+    assert payload['optimizer']['param_groups']==reference['optimizer']['param_groups']
+    for key in ('component_initialization','data','parameter_counts','optimizer_groups'):
+        if key in reference['config']:assert cfg[key]==reference['config'][key],key
+    assert len(payload['rng_per_rank'])==4
+    assert all(torch.isfinite(v).all() for st in (payload['model'],payload['adapter']) for v in st.values())
+    assert all(torch.isfinite(v).all() for st in payload['optimizer']['state'].values() for v in st.values())
+    from train.train_nested_semantic_mask import code_manifest
+    assert cfg['code_sha256']==code_manifest(), 'Completed smoke production source changed'
+    dump(EXP/'SMOKE_EVIDENCE.json',dict(passed=True,fresh_common0=True,resume=None,
+        formal_must_restart_common0=True,stream_proof=proof,acceptance=accept,horizon=4868,
+        checkpoint=dict(path=str(checkpoint),sha256=sha(checkpoint),bytes=checkpoint.stat().st_size,uploaded=False),
+        completed_smoke_reverified_after_control_only_arm_name_fix=True,reviewed_utc=now()))
+
+
 class Supervisor(OriginalSupervisor):
     def run(self):
         assert read(EXP/'MATCHED_PREFLIGHT.json')['passed']
         assert read(EXP/'DDP_CORRECTNESS.json')['passed'] and read(EXP/'DDP_CORRECTNESS.json')['detach_child']
-        assert not SMOKE.exists() and not SMOKE_PHASE.exists()
-        SMOKE.mkdir();SMOKE_PHASE.mkdir()
         formal_run,formal_phase=local.RUN,local.PHASE
-        local.RUN,local.PHASE=SMOKE,SMOKE_PHASE
-        dump(SMOKE/'launch-provenance.json',dict(common0_SHA256=STEP0_SHA,resume=None,stop_updates=5,
-            source_sha256={p:sha(ROOT/p) for p in search.source_paths()},source_base_commit=BASE_SHA))
-        try:
-            self.execute('smoke5',old.torchrun(ENTRY,'--smoke-worker','--config',search.CONFIG,'--init-state',STEP0,
-                '--index-dir',local.INDEX,'--image-root',local.IMAGES,'--output-dir',SMOKE/'step500',
-                '--run-type','smoke','--max-updates',5),training=True)
-            old.smoke_proof()
-        finally:local.RUN,local.PHASE=formal_run,formal_phase
+        if SMOKE.exists():
+            recovery=read(EXP/'SMOKE_VERIFIER_RECOVERY.json')
+            assert recovery['formal_updates']==0 and recovery['production_sources_unchanged']
+            assert not search.RUN.exists() and read(EXP/'SMOKE_EVIDENCE.json')['passed']
+            smoke_proof()
+        else:
+            assert not SMOKE_PHASE.exists()
+            SMOKE.mkdir();SMOKE_PHASE.mkdir()
+            local.RUN,local.PHASE=SMOKE,SMOKE_PHASE
+            dump(SMOKE/'launch-provenance.json',dict(common0_SHA256=STEP0_SHA,resume=None,stop_updates=5,
+                source_sha256={p:sha(ROOT/p) for p in search.source_paths()},source_base_commit=BASE_SHA))
+            try:
+                self.execute('smoke5',old.torchrun(ENTRY,'--smoke-worker','--config',search.CONFIG,'--init-state',STEP0,
+                    '--index-dir',local.INDEX,'--image-root',local.IMAGES,'--output-dir',SMOKE/'step500',
+                    '--run-type','smoke','--max-updates',5),training=True)
+                smoke_proof()
+            finally:local.RUN,local.PHASE=formal_run,formal_phase
         assert read(EXP/'SMOKE_EVIDENCE.json')['passed']
         runner.state('FORMAL500_RUNNING','HNS-SG',smoke_passed=True,fresh_common0=True)
         super().run()

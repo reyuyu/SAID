@@ -171,7 +171,7 @@ ALLOWED.update(SG_ROOT+n for n in ('config.json','REPORT.md','SEARCH_SUMMARY.md'
     'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json',
     'BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','DDP_CORRECTNESS.json','CORRECTNESS.md',
     'CPU_TESTS.json','SEARCH_PLAN.json','GRADIENT_AUDIT.json','SMOKE_EVIDENCE.json','DECISION.json',
-    'HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json'))
+    'HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json','SMOKE_VERIFIER_RECOVERY.json'))
 ALLOWED.update(SG_ROOT+'evaluations/'+n+'.json' for n in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))
 
 PATTERNS = [
