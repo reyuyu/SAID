@@ -177,6 +177,14 @@ ALLOWED.update(SG_ROOT+n for n in ('config.json','REPORT.md','SEARCH_SUMMARY.md'
     'POSTRUN_SOURCE_FIX.json'))
 ALLOWED.update(SG_ROOT+'evaluations/'+n+'.json' for n in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))
 
+HALF_ROOT='experiments/nest_clip_v1/nested_d3_hns_half1217_v1/'
+ALLOWED.update(('recovery/hns_half1217.py','tests/test_hns_half1217.py'))
+ALLOWED.update(HALF_ROOT+n for n in ('config.json','PLAN.json','RESUME_PROVENANCE.json','BASELINE_PROVENANCE.json',
+    'CPU_TESTS.json','REPORT.md','RESULTS.json','comparison1217.json','RESUME_GATE.json','TRAINING_DIAGNOSTICS.json',
+    'MASK_HIERARCHY_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json','COMMANDS.json'))
+ALLOWED.update(HALF_ROOT+'evaluations/'+arm+'/'+ds+'.json' for arm in ('HNS-Half','HNS-v1','D3_Balanced')
+    for ds in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))
+
 PATTERNS = [
     re.compile(rb'-----BEGIN (?:OPENSSH|RSA|EC|DSA) PRIVATE KEY-----'),
     re.compile(rb'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b'),

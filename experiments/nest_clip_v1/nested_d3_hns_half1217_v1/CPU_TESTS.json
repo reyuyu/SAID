@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "command": "OMP_NUM_THREADS=2 .venv/bin/python -m pytest -q tests/test_hns_half1217.py tests/test_hns_full.py tests/test_hns_final_two500.py::test_default_beta_fetched_HNS_v1_all_gradients_exact",
+  "passed_count": 32,
+  "seconds": 7.14,
+  "real_parent_payload_resume_admission_completed_steps": 500,
+  "verified": ["update500/501/1217 boundary", "production forward violation exact", "hierarchy gradient halved", "alignment/sparsity gradients exact", "default fetched HNS-v1 loss/all gradients exact", "pinned resume admission", "stop1217/local-only torchrun command"]
+}
