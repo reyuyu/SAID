@@ -34,8 +34,8 @@ CODE={'model/hard_nested_sparsity.py','model/balanced_hparam_search.py',
     'tests/test_hns_sg500.py','configs/nested_d3_hns_sg500.json','recovery/check_stage500_publish.py'}
 STATIC=('BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','DDP_CORRECTNESS.json','CORRECTNESS.md')
 REPORTS=runner.REPORT_NAMES+STATIC+('CPU_TESTS.json','SEARCH_PLAN.json','GRADIENT_AUDIT.json',
-    'SMOKE_EVIDENCE.json','SMOKE_VERIFIER_RECOVERY.json','FORMAL_GATE_RECOVERY.json',
-    'DECISION.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json')
+    'SMOKE_EVIDENCE.json','DECISION.json','HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json')
+OPTIONAL_REPORTS=('SMOKE_VERIFIER_RECOVERY.json','FORMAL_GATE_RECOVERY.json','POST500_RECOVERY.json')
 OriginalConfig=search.arm_config
 OriginalInvariants=search.checkpoint_invariants
 OriginalStream=search.matched_stream
@@ -43,6 +43,13 @@ OriginalSupervisor=search.Supervisor
 
 
 def read(p):return json.loads(p.read_text())
+
+
+def audit_command(run,experiment):
+    # torchrun's own argparse otherwise interprets module --run as --run-path.
+    return [str(ROOT/'.venv/bin/torchrun'),'--standalone','--nnodes=1','--nproc-per-node=4',
+        '--max-restarts=0','-m','--','recovery.hns_sg_gradient_audit',
+        '--run',str(run),'--experiment',str(experiment)]
 
 
 def git_blob(commit,path):
@@ -197,8 +204,7 @@ class Supervisor(OriginalSupervisor):
         assert read(EXP/'SMOKE_EVIDENCE.json')['passed']
         runner.state('FORMAL500_RUNNING','HNS-SG',smoke_passed=True,fresh_common0=True)
         super().run()
-        self.execute('HNS-SG-matched-gradient-audit500',old.torchrun('recovery.hns_sg_gradient_audit',
-            '--run',search.RUN,'--experiment',EXP))
+        self.execute('HNS-SG-matched-gradient-audit500',audit_command(search.RUN,EXP))
         dump(search.RUN/'supervisor-result.json',dict(result=self.result,error=self.error,acceptance=self.acceptance,
             commands=self.commands,started_utc=self.started,ended_utc=now()))
 
@@ -297,7 +303,8 @@ def summarize():
 
 
 def publication_paths():
-    return [EXP/n for n in (*REPORTS,'SEARCH_SUMMARY.md')]+list((EXP/'evaluations').glob('*.json'))
+    return [EXP/n for n in (*REPORTS,'SEARCH_SUMMARY.md')]+[
+        EXP/n for n in OPTIONAL_REPORTS if (EXP/n).is_file()]+list((EXP/'evaluations').glob('*.json'))
 
 
 def main():

@@ -165,14 +165,16 @@ ALLOWED.update('experiments/nest_clip_v1/nested_d3_w20_kr234_500_v1/'+name for n
     *('evaluations/'+ds+'.json' for ds in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))))
 SG_ROOT='experiments/nest_clip_v1/nested_d3_hns_sg500_v1/'
 ALLOWED.update(('recovery/hns_sg500.py','recovery/hns_sg_gradient_audit.py',
-    'tests/test_hns_sg500.py','configs/nested_d3_hns_sg500.json','recovery/hns_ddp_correctness.py'))
+    'tests/test_hns_sg500.py','configs/nested_d3_hns_sg500.json','recovery/hns_ddp_correctness.py',
+    'recovery/hns_sg500_finish.py'))
 ALLOWED.update(SG_ROOT+n for n in ('config.json','REPORT.md','SEARCH_SUMMARY.md','RESULTS.json',
     'TRAINING_DIAGNOSTICS.json','GRADIENT_SPOTCHECK.json','MASK_HIERARCHY_AUDIT.json',
     'SAMPLING_AUDIT.json','RUNTIME_STATS.json','EXPORT_AUDIT.json','VALIDATION.json',
     'BASELINE_PROVENANCE.json','MATCHED_PREFLIGHT.json','DDP_CORRECTNESS.json','CORRECTNESS.md',
     'CPU_TESTS.json','SEARCH_PLAN.json','GRADIENT_AUDIT.json','SMOKE_EVIDENCE.json','DECISION.json',
     'HNS_FORMAL_ACCEPTANCE.json','FORMAL_PROVENANCE.json','COMMANDS.json',
-    'SMOKE_VERIFIER_RECOVERY.json','FORMAL_GATE_RECOVERY.json'))
+    'SMOKE_VERIFIER_RECOVERY.json','FORMAL_GATE_RECOVERY.json','POST500_RECOVERY.json',
+    'POSTRUN_SOURCE_FIX.json'))
 ALLOWED.update(SG_ROOT+'evaluations/'+n+'.json' for n in ('COCO','Urban-1k','Flickr30k-test1k','DOCCI','Long-DCI'))
 
 PATTERNS = [

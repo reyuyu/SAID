@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "training_and_evaluation_already_completed": true,
+  "no_training_or_audit_repeated": true,
+  "scope": "Postrun control-only fixes: torchrun delimiter; recovery artifacts optional on clean run; permanent exact publication allowlist. Production training math/data/model/optimizer unchanged.",
+  "training_source_unchanged": {
+    "model/balanced_hparam_search.py": true,
+    "model/hard_nested_sparsity.py": true,
+    "train/train_nested_semantic_mask.py": true
+  },
+  "source_migration": {
+    "recovery/hns_sg500.py": {
+      "launched_sha256": "41826330374801057ec01f7d03cc7cd652c88665b2df5018ded73cc9d88a9512",
+      "final_sha256": "34ad1ac85b1376432d039b523c2a610bd5d52bfd56b28dde6eb64174dcd6d488"
+    },
+    "recovery/check_stage500_publish.py": {
+      "launched_sha256": "479312568fa78c6d6612057ae6570df11beb7423571c6f249cf505d5ca490492",
+      "final_sha256": "e102faeec563219d1ea04a027aaa004ffd2ef8f7d3f4e93ae8f8d409bc5dd60d"
+    },
+    "tests/test_hns_sg500.py": {
+      "launched_sha256": "bf2ae7208cc687dd8a5d79c68edae4611ca0204855ca726fbd51a99f9fc6d32e",
+      "final_sha256": "b41f8b770f07a417b7f267286176e5b4506157bed4e3ad5125fdb9e55d23e6fe"
+    }
+  },
+  "postrun_CPU_tests": {
+    "passed": true,
+    "tests": 77,
+    "failed_count": 0,
+    "command": ".venv/bin/python -m pytest -q tests/test_hns_sg500.py tests/test_nested_d3_hns500.py tests/test_hns_final_two500.py tests/test_nested_resume.py recovery/test_local500_policy.py --junitxml=runtime/hns-sg500-postrun-cpu-tests.xml",
+    "junit_local_path": "/opt/data/private/lklk/SAID/runtime/hns-sg500-postrun-cpu-tests.xml",
+    "junit_sha256": "1c94fac7efe0ad1bb2cfca25ba0fcd16f42da2464e8b4519452f9593de5cf556",
+    "junit_bytes": 9847
+  },
+  "reviewed_utc": "2026-10-08T04:38:40.462258+00:00"
+}

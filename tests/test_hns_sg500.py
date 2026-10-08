@@ -192,3 +192,15 @@ def test_final_report_with_real_schemas_only_in_temporary_fixture(tmp_path,monke
     assert len(list((exp/'evaluations').glob('*.json')))==5
     assert 'ReLU(child.detach()-parent)' in (exp/'REPORT.md').read_text()
     assert actual['decision']['automatic_full'] is False
+
+
+def test_torchrun_module_argument_delimiter_and_optional_recovery_artifacts(tmp_path,monkeypatch):
+    from torch.distributed.run import get_args_parser
+    command=sg.audit_command('/tmp/sg-run','/tmp/sg-exp')
+    args=get_args_parser().parse_args(command[1:])
+    assert args.module and args.training_script=='recovery.hns_sg_gradient_audit'
+    assert args.training_script_args==['--run','/tmp/sg-run','--experiment','/tmp/sg-exp']
+    monkeypatch.setattr(sg,'EXP',tmp_path)
+    assert not any(p.name in sg.OPTIONAL_REPORTS for p in sg.publication_paths())
+    (tmp_path/'POST500_RECOVERY.json').write_text('{}')
+    assert tmp_path/'POST500_RECOVERY.json' in sg.publication_paths()

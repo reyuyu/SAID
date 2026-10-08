@@ -1,5 +1,7 @@
 # HNS-SG: hard hierarchy with detached child at500
 
+The final reproduction entry includes the torchrun module delimiter fix and treats recovery-only artifacts as optional for clean runs. These postrun control changes and77 passing CPU regression tests are recorded in POSTRUN_SOURCE_FIX.json; all production training sources and measured checkpoints remain unchanged from the accepted launch.
+
 Classification: `NEGATIVE`.
 Fresh common0 independent smoke5, then fresh common0 formal500; exactly500 updates, horizon4868, local-only.
 Sole mathematical change: ReLU(child.detach()-parent) on the actual Hard-ST positive masks. Original alignment1.35/1.35/.30 and sparse1/2/2 unchanged; beta2/2, ramp200; old soft inclusion0.
