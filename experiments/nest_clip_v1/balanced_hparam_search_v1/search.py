@@ -158,17 +158,9 @@ class Search:
             self.command(prefix+'-verify',[PYTHON,'-m','tools.nest_clip','verify-export','--checkpoint',str(checkpoint),
                                          '--bare',str(bare),'--output',str(root/'export-check.json'),
                                          '--index-dir','/root/lk_projects/SAID-nest-clip-v1/data_index','--image-root',str(ASSETS/'training/ShareGPT4V')],gpu=False)
-            for name,path in [('coco',ASSETS/'evaluation/coco/val2017'),('urban',ASSETS/'evaluation/Urban1k/Urban1k')]:
-                self.command(prefix+'-'+name,[PYTHON,'-m','tools.eval_nest_native','--checkpoint',str(bare),
-                                             '--dataset',name,'--root',str(path),'--device','cuda:0','--batch-size','64',
-                                             '--output',str(root/f'{name}_native.json')])
-            bench=ASSETS/'retrieval_benchmarks'
-            for name,manifest,images in [('flickr_test1k','flickr30k_test1k.jsonl','flickr30k/images'),
-                                         ('docci','docci_test.jsonl','docci/images'),
-                                         ('long_dci','long_dci_reconstructed.jsonl','dci/images')]:
-                self.command(prefix+'-'+name,[PYTHON,'-m','experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real',
-                                             '--checkpoint',str(bare),'--device','cuda:0','--batch-size','64','--output-dir',str(root/name),
-                                             f'{name}:{bench/"manifests"/manifest}:{bench/images}'])
+            self.command(prefix+'-five-parallel',[PYTHON,'-m','tools.eval_five_parallel',
+                         '--checkpoint',str(bare),'--training-checkpoint',str(checkpoint),
+                         '--output-dir',str(root),'--assets-root',str(ASSETS)])
         m,raw,sources=native_metrics(root)
         check=load(root/'export-check.json');assert check['optimizer_steps']==[stop]
         score=scores(m)

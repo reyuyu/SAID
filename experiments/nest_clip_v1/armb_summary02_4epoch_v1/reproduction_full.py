@@ -151,16 +151,9 @@ class Supervisor(native_pipeline.Supervisor):
         self.execute(f"verify{step}", [PYTHON, "-m", "tools.nest_clip", "verify-export", "--checkpoint", str(checkpoint),
                                     "--bare", str(bare), "--output", str(self.train / "export-check.json"),
                                     "--index-dir", str(RUNTIME / "data_index"), "--image-root", str(ASSETS / "training/ShareGPT4V")])
-        for name, folder in (("coco", ASSETS / "evaluation/coco/val2017"), ("urban", ASSETS / "evaluation/Urban1k/Urban1k")):
-            self.execute(f"eval{step}-{name}", [PYTHON, "-m", "tools.eval_nest_native", "--checkpoint", str(bare),
-                         "--dataset", name, "--root", str(folder), "--device", "cuda:0", "--batch-size", "64",
-                         "--output", str(self.train / (name + "_native.json"))])
-        bench = ASSETS / "retrieval_benchmarks"
-        for name, manifest, folder in (("flickr_test1k", "flickr30k_test1k.jsonl", "flickr30k"),
-                                      ("docci", "docci_test.jsonl", "docci"), ("long_dci", "long_dci_reconstructed.jsonl", "dci")):
-            self.execute(f"eval{step}-{name}", [PYTHON, "-m", "experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real",
-                         "--checkpoint", str(bare), "--device", "cuda:0", "--batch-size", "64", "--output-dir", str(self.train / name),
-                         f"{name}:{bench / 'manifests' / manifest}:{bench / folder / 'images'}"])
+        self.execute(f"eval{step}-five-parallel", [PYTHON, "-m", "tools.eval_five_parallel",
+                     "--checkpoint", str(bare), "--training-checkpoint", str(checkpoint),
+                     "--output-dir", str(self.train), "--assets-root", str(ASSETS)])
         require(checkpoint_sha == sha(checkpoint), "Evaluation modified the resumable training checkpoint")
         from experiments.nest_clip_v1.balanced_hparam_search_v1.search import native_metrics, scores
         metrics, raw, sources = native_metrics(self.train)

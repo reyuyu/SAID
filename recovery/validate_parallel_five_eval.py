@@ -136,8 +136,44 @@ def run():
             raise
 
 
+def record_integration():
+    comparison=read(EXP/'COMPARISON.json')
+    assert comparison['passed'] and comparison['metrics_exact'] and comparison['scores_exact']
+    receipt=read(EXP/'PARALLEL_RUN.json')
+    assert receipt['scheduler_source_sha256']==ev.sha(ROOT/'tools/eval_five_parallel.py')
+    evidence=dict(validation_passed_before_integration=True,
+        validation_completed_utc=receipt['ended_utc'],integrated_utc=ev.utc(),
+        shared_single_model_controllers=[
+            'experiments/nest_clip_v1/armb_summary02_4epoch_v1/reproduction_full.py',
+            'experiments/nest_clip_v1/balanced_hparam_search_v1/search.py'],
+        training_changed=False,export_changed=False,verify_export_changed=False,
+        evaluator_mathematics_changed=False,aggregate_formulas_changed=False,
+        specialized_three_model_HNS_Half_controller_changed=False)
+    save('INTEGRATION.json',evidence)
+    with (EXP/'REPORT.md').open('a') as report:
+        report.write('\nDefault integration: numerical gate passed before replacing the two shared single-model controller evaluation loops. Export, verify-export, training, evaluator sources and existing aggregates are unchanged. CPU AST regression tests compare all other controller code with the pre-task commit. Specialized three-model HNS-Half scheduling remains unchanged.\n')
+    state('VALIDATED_AND_DEFAULT_INTEGRATED',numerical_comparison_passed=True,github_sync_pending=True)
+
+
+def record_tests(junit):
+    import xml.etree.ElementTree as ET
+    suite=ET.parse(junit).getroot()
+    cases=list(suite.iter('testcase'))
+    failed=[c.get('name') for c in cases if c.find('failure') is not None or c.find('error') is not None]
+    skipped=[c.get('name') for c in cases if c.find('skipped') is not None]
+    assert cases and not failed and not skipped
+    save('CPU_TESTS.json',dict(passed=True,tests=len(cases),failures=failed,skipped=skipped,
+        junit_path=str(junit),junit_sha256=ev.sha(junit),recorded_utc=ev.utc(),
+        command=[sys.executable,'-m','pytest','-q','tests/test_eval_five_parallel.py',
+                 'tests/test_parallel_eval_integration.py','--junitxml='+str(junit)]))
+
+
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--detach',action='store_true');args=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--detach',action='store_true')
+    p.add_argument('--record-integration',action='store_true');p.add_argument('--record-tests',type=Path)
+    args=p.parse_args()
+    if args.record_integration:record_integration();return
+    if args.record_tests:record_tests(args.record_tests);return
     if not args.detach:run();return
     RUN.mkdir(parents=True,exist_ok=True)
     assert not (RUN/'runner.json').exists()

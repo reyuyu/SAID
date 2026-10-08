@@ -10,6 +10,12 @@ import pytest
 from tools import eval_five_parallel as ev
 
 
+@pytest.fixture(autouse=True)
+def cpu_only_gpu_locks(monkeypatch):
+    # Mock schedulers never reserve actual GPUs or contend with live validation.
+    monkeypatch.setattr(ev.fcntl,'flock',lambda *args:None)
+
+
 def test_mapping_and_frozen_original_commands(tmp_path):
     assert ev.gpu_mapping()==dict(coco=0,docci=1,long_dci=2,flickr=3,urban=3)
     assert ev.gpu_mapping((3,2,1,0))['urban']==0
@@ -126,3 +132,30 @@ def test_visibility_ambiguity_and_training_gpu_busy_rejected(monkeypatch):
         return '0, GPU-zero\n1, GPU-one\n2, GPU-two\n3, GPU-three\n' if '--query-gpu=index,uuid' in command else 'GPU-one, 12345\n'
     monkeypatch.setattr(ev.subprocess,'check_output',output)
     with pytest.raises(RuntimeError,match='occupied'):ev.require_gpu_idle({0,1,2,3})
+
+
+def test_subprocess_creation_error_is_reported(tmp_path):
+    out=tmp_path/'out';jobs=ev.build_jobs('/tmp/student.pt',out)
+    fake=FakeProcesses(jobs)
+    def popen(command,**kwargs):
+        if list(jobs['docci'].command)==command:raise OSError('mock launch failed')
+        return fake(command,**kwargs)
+    scheduler=ev.Scheduler(jobs,out,popen=popen)
+    assert scheduler.run({},preflight=lambda g:None)==1
+    receipt=json.loads((out/'EVAL_PARALLEL_RUN.json').read_text())
+    assert receipt['jobs']['docci']['status']=='FAILED'
+    assert 'mock launch failed' in receipt['jobs']['docci']['error']
+    assert receipt['jobs']['long_dci']['status']=='COMPLETED'
+
+
+@pytest.mark.parametrize('payload',['{invalid','{}','[]'])
+def test_invalid_json_rejected(tmp_path,payload):
+    jobs=ev.build_jobs('/tmp/student.pt',tmp_path)
+    jobs['coco'].output.write_text(payload)
+    with pytest.raises((RuntimeError,json.JSONDecodeError)):ev.check_output(jobs['coco'])
+
+
+def test_extended_summary_missing_rejected(tmp_path):
+    job=ev.build_jobs('/tmp/student.pt',tmp_path)['docci']
+    job.output.parent.mkdir();job.output.write_text('{"metrics": 1}')
+    with pytest.raises(RuntimeError,match='extended_summary'):ev.check_output(job)
