@@ -1,0 +1,198 @@
+{
+  "passed": true,
+  "exact_all12_recalls_reproduced": true,
+  "models": {
+    "E2": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.9390000700950623,
+        "R5": 0.9910000562667847,
+        "R10": 0.9960000514984131
+      },
+      "text2image": {
+        "R1": 0.9290000200271606,
+        "R5": 0.9910000562667847,
+        "R10": 0.9940000176429749
+      },
+      "checkpoint_sha256": null,
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ]
+    },
+    "S12": {
+      "protocol": "urban1k-native-cls-v1",
+      "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_representation": "legacy_cls",
+      "global_pool": "n/a",
+      "similarity": "normalized features, plain inner product, full 1000-item pool",
+      "positive": "diagonal",
+      "image2text": {
+        "R1": 0.9390000700950623,
+        "R5": 0.9920000433921814,
+        "R10": 0.9960000514984131
+      },
+      "text2image": {
+        "R1": 0.9260000586509705,
+        "R5": 0.9920000433921814,
+        "R10": 0.9940000176429749
+      },
+      "checkpoint_sha256": null,
+      "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+      "upstream_metrics_reproduced": [
+        "T2I R@1",
+        "I2T R@1"
+      ],
+      "added_here": [
+        "R@5",
+        "R@10"
+      ]
+    }
+  },
+  "directions": {
+    "I2T": {
+      "summary": {
+        "n_queries": 1000,
+        "counts": {
+          "both_correct": 937,
+          "E2_only_correct": 2,
+          "S12_only_correct": 2,
+          "both_wrong": 59
+        },
+        "E2_correct": 939,
+        "S12_correct": 939,
+        "net_correct": 0,
+        "R1_delta_pp": 0.0,
+        "mcnemar_exact_two_sided_p": 1.0,
+        "paired_query_bootstrap_95_percentile_CI_pp": [
+          -0.4,
+          0.4
+        ],
+        "bootstrap_replicates": 50000,
+        "bootstrap_seed": 0,
+        "uncertainty_scope": "iid paired queries on this fixed test set; not training-seed uncertainty",
+        "significance_threshold": 0.05,
+        "multiplicity": "Two directions; Bonferroni threshold .025 also reported",
+        "significant_unadjusted": false,
+        "significant_two_direction_bonferroni": false
+      },
+      "descriptive_disagreements": {
+        "E2_only_correct": {
+          "query_IDs": [
+            "29",
+            "292"
+          ],
+          "n": 2,
+          "mean_words": 100.5
+        },
+        "S12_only_correct": {
+          "query_IDs": [
+            "165",
+            "233"
+          ],
+          "n": 2,
+          "mean_words": 120.0
+        }
+      },
+      "queries_file": "URBAN_4868_I2T_QUERIES.json",
+      "queries_file_sha256": "6bf752903abe12d8da856de529d15842ef29554affd8f45d1818792d39a0607b",
+      "query_count": 1000
+    },
+    "T2I": {
+      "summary": {
+        "n_queries": 1000,
+        "counts": {
+          "both_correct": 923,
+          "E2_only_correct": 6,
+          "S12_only_correct": 3,
+          "both_wrong": 68
+        },
+        "E2_correct": 929,
+        "S12_correct": 926,
+        "net_correct": 3,
+        "R1_delta_pp": 0.3,
+        "mcnemar_exact_two_sided_p": 0.5078125,
+        "paired_query_bootstrap_95_percentile_CI_pp": [
+          -0.3,
+          0.9
+        ],
+        "bootstrap_replicates": 50000,
+        "bootstrap_seed": 0,
+        "uncertainty_scope": "iid paired queries on this fixed test set; not training-seed uncertainty",
+        "significance_threshold": 0.05,
+        "multiplicity": "Two directions; Bonferroni threshold .025 also reported",
+        "significant_unadjusted": false,
+        "significant_two_direction_bonferroni": false
+      },
+      "descriptive_disagreements": {
+        "E2_only_correct": {
+          "query_IDs": [
+            "137",
+            "182",
+            "500",
+            "583",
+            "686",
+            "798"
+          ],
+          "n": 6,
+          "mean_words": 104.33333333333333
+        },
+        "S12_only_correct": {
+          "query_IDs": [
+            "587",
+            "725",
+            "727"
+          ],
+          "n": 3,
+          "mean_words": 107.66666666666667
+        }
+      },
+      "queries_file": "URBAN_4868_T2I_QUERIES.json",
+      "queries_file_sha256": "07cbac0dd3bb6f029972d6db6ec5da44323460e447f74129850ace17d9184f8e",
+      "query_count": 1000
+    }
+  },
+  "checkpoint_identities": {
+    "E2_checkpoint": "cc4fb207598a321d491dcafc164756710c38648c7ccf7df178b5d8c35a11d02e",
+    "E2_bare": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "S12_bare": "53a58fb14eb671d40d1f89572c6ce5a8cf6eec7dbd2ea1361759a2adfa193c94"
+  },
+  "evaluator_source_sha256": {
+    "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+    "tools/urban1k_retrieval.py": "7de7bcb2ff15319c16024535348740931e84ddb32306dc98bce8095f255977e2",
+    "eval/retrieval/coco_retrieval.py": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086",
+    "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319",
+    "tools/eval_urban1k_cls.py": "42cc728f587b3b2bd83bde8d205900f7aa8ff4387491a3c3a0f95ffbac0475c7",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad"
+  },
+  "dataset": {
+    "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+    "n_pairs": 1000,
+    "revision": null,
+    "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c"
+  },
+  "device": "cuda:3",
+  "precision": "float32, no autocast",
+  "protocol": "Original evaluate_urban1k, original _recall; read-only observer of similarity tensors",
+  "ranking": "Original independent torch.topk(k) for k=1,5,10; full topk(1000) GT rank with tie bounds",
+  "margin": "normalized GT similarity minus highest non-GT similarity (comparable within each model)",
+  "mathematical_evaluator_changes": false,
+  "raw_caption_text_uploaded": false,
+  "mechanism_claim": "Only descriptive length statistics; no causal entity/relation specialization claim"
+}

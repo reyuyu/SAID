@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "start_commit": "5df0090f79629b2328a42116947d5af92a9c475a",
+  "branch": "experiment/hns-s12-uniform-full4868-v1",
+  "audit_command": ".venv/bin/python -u -m recovery.e2_uniform_posthoc_audit",
+  "reproduction_command": ".venv/bin/python -m recovery.e2_uniform_posthoc_audit --output-dir /path/to/fresh/audit",
+  "source_sha256": {
+    "recovery/e2_uniform_posthoc_audit.py": "6998346ac2e057d6fe3f3d9d3250e6d5b738b9a9b55c311cead54d1dce2687b3",
+    "tests/test_e2_uniform_posthoc_audit.py": "76ec9cf595ee7b0968c1be5e48ea80623295a7d2fbdef97db235df5c9b9dfba2"
+  },
+  "tests_passed": 14,
+  "final_test_summary": "14 passed in 3.77s",
+  "all_2000_query_rows_reconciled_with_original_recall_counts": true,
+  "protected_artifacts_rehashed_after_packaging": true,
+  "initial1217_checkpoint_full_identity": "INITIAL_1217_CHECKPOINT_IDENTITY.json",
+  "query_artifact_packaging": "Two compact per-direction JSONs; original expanded audit retained server-local. No inference values changed.",
+  "no_new_training": true,
+  "GPU_idle_after_audit": true,
+  "required_failed_items": [],
+  "required_unverified_items": [],
+  "scientific_unverified": [
+    "Training-seed robustness",
+    "Causal semantic specialization",
+    "New raw per-example training token reconstruction (actual run summaries instead)"
+  ]
+}

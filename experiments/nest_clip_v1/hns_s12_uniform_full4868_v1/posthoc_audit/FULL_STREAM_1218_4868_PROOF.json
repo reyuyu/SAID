@@ -1,0 +1,747 @@
+{
+  "passed": true,
+  "segments": [
+    {
+      "passed": true,
+      "first_update": 1218,
+      "last_update": 2434,
+      "updates": 1217,
+      "epoch": 1,
+      "batch_cursors": [
+        0,
+        1216
+      ],
+      "four_rank_sample_positions": 1245904,
+      "tail_batch_per_rank": 180,
+      "actual_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step2434/training/steps.jsonl",
+      "actual_log_sha256": "88ae0a4dc4773a8c13640cb314e199107f8846be3fe30b4dbb726a781c8365f3",
+      "independent_reference_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/training/steps.jsonl",
+      "reference_log_sha256": "7222e69f5d25da5149f9a3e4a2609f307c57738242ede5741449b70803ec0b1e",
+      "full_stage_invariant_sha256": {
+        "E2": "3a9fb89eac2bf42fed46f71596b755a43377927aebc27ee87c0321073719775d",
+        "S12": "3a9fb89eac2bf42fed46f71596b755a43377927aebc27ee87c0321073719775d"
+      },
+      "all_samples_text_tokens_K_indices_summaries_exact_to_actual_S12_log": true,
+      "sample_ID_and_indices_deterministic_reconstruction": "PASS, all positions; private RNG, no images decoded",
+      "raw_caption_token_reconstruction": "Not required: actual independent S12 log summaries compared for every step/rank",
+      "LR_independent_original4868_scheduler": "PASS",
+      "no_missing_or_duplicate_optimizer_updates": true,
+      "model_gradients_outputs_random_image_pixels_compared": false,
+      "shared_summary_limit": "Cryptographic summaries attest to text/token identity; per-example raw text/token arrays were not stored in logs",
+      "checkpoint_identity": {
+        "passed": true,
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step2434/training/step002434.pt",
+        "sha256": "cbcb0e0546bb6955c2aba655a7312bf30b769b3711e82adc459a44227b0e13c1",
+        "size_bytes": 1884190906,
+        "completed_steps": 2434,
+        "scheduler_horizon": 4868,
+        "scheduler": {
+          "type": "native_manual_learning_rate_function",
+          "horizon": 4868,
+          "completed_steps": 2434,
+          "last_update_index": 2433,
+          "optimizer_lrs": {
+            "backbone": 5.339606438466789e-07,
+            "text_mask_and_shared_pool": 0.0005003226779411997,
+            "visual_mask": 0.0005003226779411997,
+            "fusion_adapter": 0.00010006453558823993
+          }
+        },
+        "data_cursor": {
+          "next_epoch": 2,
+          "next_batch": 0
+        },
+        "sampler": {
+          "type": "DistributedSampler",
+          "seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "batches_per_epoch": 1217
+        },
+        "optimizer_steps": [
+          2434
+        ],
+        "optimizer_groups": [
+          {
+            "name": "backbone",
+            "lr": 5.339606438466789e-07,
+            "weight_decay": 0.01,
+            "parameter_count": 302
+          },
+          {
+            "name": "text_mask_and_shared_pool",
+            "lr": 0.0005003226779411997,
+            "weight_decay": 0.0,
+            "parameter_count": 14
+          },
+          {
+            "name": "visual_mask",
+            "lr": 0.0005003226779411997,
+            "weight_decay": 0.0,
+            "parameter_count": 12
+          },
+          {
+            "name": "fusion_adapter",
+            "lr": 0.00010006453558823993,
+            "weight_decay": 0.0,
+            "parameter_count": 2
+          }
+        ],
+        "rng_per_rank": [
+          {
+            "rank": 0,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "afcd2ff7a153fbc48cd2ffcb3a4fa1ebc72e1ade2e67035d35b80316bd1e65b7"
+          },
+          {
+            "rank": 1,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "afcd2ff7a153fbc48cd2ffcb3a4fa1ebc72e1ade2e67035d35b80316bd1e65b7"
+          },
+          {
+            "rank": 2,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "afcd2ff7a153fbc48cd2ffcb3a4fa1ebc72e1ade2e67035d35b80316bd1e65b7"
+          },
+          {
+            "rank": 3,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "afcd2ff7a153fbc48cd2ffcb3a4fa1ebc72e1ade2e67035d35b80316bd1e65b7"
+          }
+        ],
+        "sources": {
+          "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+          "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+          "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+          "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+          "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+          "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+          "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+          "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+        },
+        "git_head": "a10da8aca5c4b0007b7a120aeb4d855435c9793d",
+        "uploaded": false
+      },
+      "restore_audit": {
+        "passed": true,
+        "next_update": 1218,
+        "ranks": [
+          {
+            "rank": 0,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 1,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              1217
+            ]
+          },
+          {
+            "rank": 1,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 1,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              1217
+            ]
+          },
+          {
+            "rank": 2,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 1,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              1217
+            ]
+          },
+          {
+            "rank": 3,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 1,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              1217
+            ]
+          }
+        ]
+      },
+      "rank_timing": {
+        "0": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "a565b016909f438d7fb143f54e12338d4da485ab9860ca4c7eee51c53b0261ab"
+        },
+        "1": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "37a23d68f53b221a4973c27113f21aedc4a7d9b8ea4895cefa8c0b1213f6b07b"
+        },
+        "2": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "4383858773009667d60c5878e22c84b97bff54505721fdb04cd31a1a4d054b1f"
+        },
+        "3": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "8277883ca2eda5f5a8a8f0a1a0e1ec8d7c655b25fa1335c6554d3aa903f99585"
+        }
+      },
+      "resume_parent_sha256": "d276813e12b1b6da9a1f0247d9bbe13c6471276b45e852e06b149b9ad3cb5ead",
+      "optimizer_end_counter": 2434,
+      "complete_state_preserved": true
+    },
+    {
+      "passed": true,
+      "first_update": 2435,
+      "last_update": 3651,
+      "updates": 1217,
+      "epoch": 2,
+      "batch_cursors": [
+        0,
+        1216
+      ],
+      "four_rank_sample_positions": 1245904,
+      "tail_batch_per_rank": 180,
+      "actual_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/steps.jsonl",
+      "actual_log_sha256": "09a1a21b59dbd4e1ee2619ade787fcafc965a659b76a7caeb8e9ac8cadf8dc38",
+      "independent_reference_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-full4868-v1/step3651/training/steps.jsonl",
+      "reference_log_sha256": "70c633a90fb29af53658d72c3f8f6c0f5a8273b57da545620c6c9dd9c41d0629",
+      "full_stage_invariant_sha256": {
+        "E2": "4e3ad9a264b20fb5152ea6bcc5ed3bbfbb7a396d47850ccce2fc2cadcdfd68d4",
+        "S12": "4e3ad9a264b20fb5152ea6bcc5ed3bbfbb7a396d47850ccce2fc2cadcdfd68d4"
+      },
+      "all_samples_text_tokens_K_indices_summaries_exact_to_actual_S12_log": true,
+      "sample_ID_and_indices_deterministic_reconstruction": "PASS, all positions; private RNG, no images decoded",
+      "raw_caption_token_reconstruction": "Not required: actual independent S12 log summaries compared for every step/rank",
+      "LR_independent_original4868_scheduler": "PASS",
+      "no_missing_or_duplicate_optimizer_updates": true,
+      "model_gradients_outputs_random_image_pixels_compared": false,
+      "shared_summary_limit": "Cryptographic summaries attest to text/token identity; per-example raw text/token arrays were not stored in logs",
+      "checkpoint_identity": {
+        "passed": true,
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "sha256": "4e74f7e44128756f8398e26c97bc7c8f905aa8e0898baced56a266e5ed1b2156",
+        "size_bytes": 1884190970,
+        "completed_steps": 3651,
+        "scheduler_horizon": 4868,
+        "scheduler": {
+          "type": "native_manual_learning_rate_function",
+          "horizon": 4868,
+          "completed_steps": 3651,
+          "last_update_index": 3650,
+          "optimizer_lrs": {
+            "backbone": 1.587875889226633e-07,
+            "text_mask_and_shared_pool": 0.00014667485079179854,
+            "visual_mask": 0.00014667485079179854,
+            "fusion_adapter": 2.933497015835971e-05
+          }
+        },
+        "data_cursor": {
+          "next_epoch": 3,
+          "next_batch": 0
+        },
+        "sampler": {
+          "type": "DistributedSampler",
+          "seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "batches_per_epoch": 1217
+        },
+        "optimizer_steps": [
+          3651
+        ],
+        "optimizer_groups": [
+          {
+            "name": "backbone",
+            "lr": 1.587875889226633e-07,
+            "weight_decay": 0.01,
+            "parameter_count": 302
+          },
+          {
+            "name": "text_mask_and_shared_pool",
+            "lr": 0.00014667485079179854,
+            "weight_decay": 0.0,
+            "parameter_count": 14
+          },
+          {
+            "name": "visual_mask",
+            "lr": 0.00014667485079179854,
+            "weight_decay": 0.0,
+            "parameter_count": 12
+          },
+          {
+            "name": "fusion_adapter",
+            "lr": 2.933497015835971e-05,
+            "weight_decay": 0.0,
+            "parameter_count": 2
+          }
+        ],
+        "rng_per_rank": [
+          {
+            "rank": 0,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 1,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 2,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 3,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          }
+        ],
+        "sources": {
+          "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+          "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+          "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+          "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+          "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+          "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+          "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+          "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+        },
+        "git_head": "889f60346f760a1495f0bb4a47f7e2491b0f2123",
+        "uploaded": false
+      },
+      "restore_audit": {
+        "passed": true,
+        "next_update": 2435,
+        "ranks": [
+          {
+            "rank": 0,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 2,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              2434
+            ]
+          },
+          {
+            "rank": 1,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 2,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              2434
+            ]
+          },
+          {
+            "rank": 2,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 2,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              2434
+            ]
+          },
+          {
+            "rank": 3,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 2,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              2434
+            ]
+          }
+        ]
+      },
+      "rank_timing": {
+        "0": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "e3ebfd1ce69835ced886f29cec04a269828ac0a36f677edceddd6908dd81861f"
+        },
+        "1": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "8d4f862868df877d491bc934ab51b44b08dca0f7939b4a3ee39daf269f3f2a7f"
+        },
+        "2": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "ce58307283bac2cc8251444ab057d9df46dd59cfebb3e09efc016ced4d66047c"
+        },
+        "3": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "36f0d66a0c984ed3bf6f00f676b9355cc38c3c65e0dbccfd47109f092f8f9a5a"
+        }
+      },
+      "resume_parent_sha256": "cbcb0e0546bb6955c2aba655a7312bf30b769b3711e82adc459a44227b0e13c1",
+      "optimizer_end_counter": 3651,
+      "complete_state_preserved": true
+    },
+    {
+      "passed": true,
+      "first_update": 3652,
+      "last_update": 4868,
+      "updates": 1217,
+      "epoch": 3,
+      "batch_cursors": [
+        0,
+        1216
+      ],
+      "four_rank_sample_positions": 1245904,
+      "tail_batch_per_rank": 180,
+      "actual_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/training/steps.jsonl",
+      "actual_log_sha256": "5788b206f45eff1436e9718f76022e0783fae38741007db4c8be68b7790cd53d",
+      "independent_reference_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-full4868-v1/step4868/training/steps.jsonl",
+      "reference_log_sha256": "6e4462e0d65b7b3e0698cd007151f2f9d6f5a0394f9ce7daea68ed347d0ed4ba",
+      "full_stage_invariant_sha256": {
+        "E2": "fcd23c42ed769e0593ddbf65edf925962a09101201d9f40aca8c356fb633cefd",
+        "S12": "fcd23c42ed769e0593ddbf65edf925962a09101201d9f40aca8c356fb633cefd"
+      },
+      "all_samples_text_tokens_K_indices_summaries_exact_to_actual_S12_log": true,
+      "sample_ID_and_indices_deterministic_reconstruction": "PASS, all positions; private RNG, no images decoded",
+      "raw_caption_token_reconstruction": "Not required: actual independent S12 log summaries compared for every step/rank",
+      "LR_independent_original4868_scheduler": "PASS",
+      "no_missing_or_duplicate_optimizer_updates": true,
+      "model_gradients_outputs_random_image_pixels_compared": false,
+      "shared_summary_limit": "Cryptographic summaries attest to text/token identity; per-example raw text/token arrays were not stored in logs",
+      "checkpoint_identity": {
+        "passed": true,
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/training/step004868.pt",
+        "sha256": "cc4fb207598a321d491dcafc164756710c38648c7ccf7df178b5d8c35a11d02e",
+        "size_bytes": 1884190970,
+        "completed_steps": 4868,
+        "scheduler_horizon": 4868,
+        "scheduler": {
+          "type": "native_manual_learning_rate_function",
+          "horizon": 4868,
+          "completed_steps": 4868,
+          "last_update_index": 4867,
+          "optimizer_lrs": {
+            "backbone": 1.1323431126086802e-13,
+            "text_mask_and_shared_pool": 1.041210646035573e-10,
+            "visual_mask": 1.041210646035573e-10,
+            "fusion_adapter": 2.082421292071146e-11
+          }
+        },
+        "data_cursor": {
+          "next_epoch": 4,
+          "next_batch": 0
+        },
+        "sampler": {
+          "type": "DistributedSampler",
+          "seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "batches_per_epoch": 1217
+        },
+        "optimizer_steps": [
+          4868
+        ],
+        "optimizer_groups": [
+          {
+            "name": "backbone",
+            "lr": 1.1323431126086802e-13,
+            "weight_decay": 0.01,
+            "parameter_count": 302
+          },
+          {
+            "name": "text_mask_and_shared_pool",
+            "lr": 1.041210646035573e-10,
+            "weight_decay": 0.0,
+            "parameter_count": 14
+          },
+          {
+            "name": "visual_mask",
+            "lr": 1.041210646035573e-10,
+            "weight_decay": 0.0,
+            "parameter_count": 12
+          },
+          {
+            "name": "fusion_adapter",
+            "lr": 2.082421292071146e-11,
+            "weight_decay": 0.0,
+            "parameter_count": 2
+          }
+        ],
+        "rng_per_rank": [
+          {
+            "rank": 0,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+          },
+          {
+            "rank": 1,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+          },
+          {
+            "rank": 2,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+          },
+          {
+            "rank": 3,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+          }
+        ],
+        "sources": {
+          "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+          "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+          "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+          "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+          "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+          "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+          "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+          "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+        },
+        "git_head": "844613a2461f46da54dee2742ea21ed47b3fded7",
+        "uploaded": false
+      },
+      "restore_audit": {
+        "passed": true,
+        "next_update": 3652,
+        "ranks": [
+          {
+            "rank": 0,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 3,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              3651
+            ]
+          },
+          {
+            "rank": 1,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 3,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              3651
+            ]
+          },
+          {
+            "rank": 2,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 3,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              3651
+            ]
+          },
+          {
+            "rank": 3,
+            "model_adapter_optimizer_exact": true,
+            "RNG_exact": true,
+            "loader_generator_exact": true,
+            "parameter_difference": 0.0,
+            "data_cursor": {
+              "next_epoch": 3,
+              "next_batch": 0
+            },
+            "optimizer_counters": [
+              3651
+            ]
+          }
+        ]
+      },
+      "rank_timing": {
+        "0": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "709c2360d5104d72367aedf1a1128ee1e363450e348cb4bf8a2fda2b0f7c01fa"
+        },
+        "1": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "50d3ed75af985966672c5b2ff3ba459ef8dcee9d0365db93ee80885b5fab19ff"
+        },
+        "2": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "d321838b6aa9ad5655dfdae8e491b40f00533cf1e94fb8e43d9e0b768431bdb4"
+        },
+        "3": {
+          "status": "PASS",
+          "rows": 1217,
+          "sha256": "a5f33e4563dda24d681e6792169d66571010d9a4ec014d44743c2510dc3427c7"
+        }
+      },
+      "resume_parent_sha256": "4e74f7e44128756f8398e26c97bc7c8f905aa8e0898baced56a266e5ed1b2156",
+      "optimizer_end_counter": 4868,
+      "complete_state_preserved": true
+    }
+  ],
+  "total_optimizer_updates": 3651,
+  "total_four_rank_sample_positions": 3737712,
+  "no_training_or_parameter_update_performed": true,
+  "comparison_type": "Actual independent run logs, plus independent sampler/K/indices/LR replay",
+  "excluded_model_related_variables": [
+    "gradient values",
+    "outputs",
+    "parameters",
+    "random augmented pixels"
+  ]
+}
