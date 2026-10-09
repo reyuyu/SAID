@@ -1,0 +1,100 @@
+{
+  "order": [
+    "native resume500->1217",
+    "audit/export/verify/five-eval/report",
+    "STOP"
+  ],
+  "target": 1217,
+  "start_updates": 500,
+  "updates_this_run": 717,
+  "horizon": 4868,
+  "macro": [
+    10,
+    1.2,
+    1
+  ],
+  "view_weights": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "raw_sparsity_ratio": [
+    1,
+    1,
+    1
+  ],
+  "normalized_sparsity_weights": [
+    1.6666666666666667,
+    1.6666666666666667,
+    1.6666666666666667
+  ],
+  "effective_sparsity_coefficients": [
+    2,
+    2,
+    2
+  ],
+  "beta": [
+    2,
+    2
+  ],
+  "Hard_ST": true,
+  "no_SG": true,
+  "soft_inclusion": 0,
+  "K": 3,
+  "ramp200_unchanged": true,
+  "local_only": true,
+  "full_restore": true,
+  "resume_checkpoint_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+  "command": [
+    "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+    "--standalone",
+    "--nproc-per-node=4",
+    "--max-restarts=0",
+    "-m",
+    "recovery.hns_s12_uniform_e1_1217",
+    "--worker",
+    "--target",
+    "1217",
+    "--config",
+    "/opt/data/private/lklk/said-e2-worktrees/hns-s12-uniform-e1-1217-v1/experiments/nest_clip_v1/hns_s12_uniform_e1_1217_v1/config.json",
+    "--init-state",
+    "/opt/data/private/lklk/said-e2-worktrees/hns-s12-uniform-e1-1217-v1/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "--resume",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+    "--index-dir",
+    "/root/said_s02_stage500/data_index",
+    "--image-root",
+    "/root/said_s02_stage500/ShareGPT4V",
+    "--output-dir",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-e1-1217-v1/step1217/training",
+    "--run-type",
+    "formal",
+    "--max-updates",
+    "1217"
+  ],
+  "first_update": 501,
+  "last_update": 1217,
+  "replay_first500_batches_without_optimizer_updates": true,
+  "tail_batch_per_rank": 180,
+  "epoch0_suffix_sample_records": 733904,
+  "initial_cursor": {
+    "next_epoch": 0,
+    "next_batch": 500
+  },
+  "final_cursor": {
+    "next_epoch": 1,
+    "next_batch": 0
+  },
+  "evaluation_mapping": {
+    "coco": 0,
+    "docci": 1,
+    "long_dci": 2,
+    "flickr": 3,
+    "urban": 3
+  },
+  "automatic2434": false,
+  "automatic3651": false,
+  "automatic4868": false,
+  "E1_continuation": false,
+  "other_arms": false
+}
