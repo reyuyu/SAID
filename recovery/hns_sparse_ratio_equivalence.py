@@ -23,19 +23,13 @@ def audit(output):
         assert math.isclose(1.2*sparse,sum(1.2*c*x/3 for c,x in zip(weights,raw)),rel_tol=0.,abs_tol=1e-15)
     value={
         'passed':True,
-        'no_parameter_updates':True,
-        'default_hns_behavior_preserved':True,
-        'alignment_hierarchy_unchanged':True,
-        'alignment_gradient_unchanged':True,
-        'hierarchy_gradient_unchanged':True,
-        'ddp_valid_reduction_unchanged':True,
-        'hns_hard_st_no_sg_preserved':True,
+        'scope':'Scalar coefficient arithmetic only; no production forward/backward or DDP assertions',
         'coefficient_mass':5.0,
         'effective_lambda_sparse':1.2,
         'arms':{n:{'normalized_weights':w,'effective_coefficients':[1.2*x for x in w],
                    'raw_ratio_sum':sum(w),'sparse_formula':'1.2*sum(w_i*Omega_i)/3'} for n,w in ARMS.items()},
         'fixed_state_formula_check':True,
-        'note':'The trained-state gradient audit is recorded per arm after500 updates; this receipt covers fixed-state coefficient isolation.'
+        'note':'This arithmetic check is not a training-equivalence gate. Run hns_sparse_ratio_real_equivalence before training.'
     }
     Path(output).write_text(json.dumps(value,indent=2,sort_keys=True)+'\n')
     return value

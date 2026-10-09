@@ -1,44 +1,145 @@
 {
-  "alignment_gradient_unchanged": true,
+  "passed": true,
+  "no_parameter_updates": true,
+  "checkpoint_sha256": "cc0b27c871f717c8eb821b1e7a425a8e70ba82f771ee82f0061ca2e6652a172d",
+  "checkpoint_completed_steps": 500,
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "global_batch": 1024,
+  "batch_per_rank": 256,
+  "sample_ids_sha256": "416f198d48ed2416481a08ed2139b06ee73e51243724c088ce542afffdeefb27",
+  "coefficient_mass": 5.0,
+  "effective_lambda_sparse": 1.2,
+  "original_source_commit": "d3a33bfe35c171f593819d48f45d98b5a964d416",
+  "original_source_sha256": "15fba463fdff37a654cd6e8a04e720dc577414b0a5ade0f124885aaee3c8b089",
+  "original_vs_current_every_parameter_gradient_checks": {
+    "alignment": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    },
+    "hierarchy": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    },
+    "sparsity": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    },
+    "total": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    }
+  },
+  "identical_original_repeat_gradient_checks": {
+    "alignment": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    },
+    "hierarchy": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    },
+    "sparsity": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    },
+    "total": {
+      "parameters_checked": 330,
+      "max_abs_error": 0.0,
+      "exact": true
+    }
+  },
+  "audit_deterministic_algorithms": true,
+  "default_hns_behavior_preserved": true,
   "alignment_hierarchy_unchanged": true,
+  "alignment_hierarchy_gradient_unchanged": true,
+  "DDP_mean_gradient_measured": true,
+  "hns_kernel_source_unchanged": true,
   "arms": {
     "E1-AlignMatched": {
-      "effective_coefficients": [
-        2.6999999999999997,
-        2.6999999999999997,
-        0.6
-      ],
       "normalized_weights": [
         2.25,
         2.25,
         0.5
       ],
-      "raw_ratio_sum": 5.0,
-      "sparse_formula": "1.2*sum(w_i*Omega_i)/3"
+      "effective_coefficients": [
+        2.6999999999999997,
+        2.6999999999999997,
+        0.6
+      ],
+      "alignment_hierarchy_gradient_checks": {
+        "alignment": {
+          "parameters_checked": 330,
+          "max_abs_error": 0.0,
+          "exact": true
+        },
+        "hierarchy": {
+          "parameters_checked": 330,
+          "max_abs_error": 0.0,
+          "exact": true
+        }
+      },
+      "sparse_formula_gradient_check": {
+        "parameters_checked": 330,
+        "max_abs_error": 0.0,
+        "exact": true
+      },
+      "component_gradient_norms": {
+        "alignment": 118.13307126325024,
+        "hierarchy": 0.007704909921926323,
+        "sparsity": 0.6169400669974632,
+        "total": 118.13283673807219
+      },
+      "gradient_additivity_error": 2.2517884704539915e-07
     },
     "E2-Uniform": {
-      "effective_coefficients": [
-        2.0,
-        2.0,
-        2.0
-      ],
       "normalized_weights": [
         1.6666666666666667,
         1.6666666666666667,
         1.6666666666666667
       ],
-      "raw_ratio_sum": 5.0,
-      "sparse_formula": "1.2*sum(w_i*Omega_i)/3"
+      "effective_coefficients": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "alignment_hierarchy_gradient_checks": {
+        "alignment": {
+          "parameters_checked": 330,
+          "max_abs_error": 0.0,
+          "exact": true
+        },
+        "hierarchy": {
+          "parameters_checked": 330,
+          "max_abs_error": 0.0,
+          "exact": true
+        }
+      },
+      "sparse_formula_gradient_check": {
+        "parameters_checked": 330,
+        "max_abs_error": 0.0,
+        "exact": true
+      },
+      "component_gradient_norms": {
+        "alignment": 118.13307126325024,
+        "hierarchy": 0.007704909921926323,
+        "sparsity": 0.5899100863266943,
+        "total": 118.13281903767124
+      },
+      "gradient_additivity_error": 2.3394221674948716e-07
     }
   },
-  "coefficient_mass": 5.0,
-  "ddp_valid_reduction_unchanged": true,
-  "default_hns_behavior_preserved": true,
-  "effective_lambda_sparse": 1.2,
-  "fixed_state_formula_check": true,
-  "hierarchy_gradient_unchanged": true,
-  "hns_hard_st_no_sg_preserved": true,
-  "no_parameter_updates": true,
-  "note": "The trained-state gradient audit is recorded per arm after500 updates; this receipt covers fixed-state coefficient isolation.",
-  "passed": true
+  "state_digest_before": "444291d42faaa93d839834f8101b1f67c9d58df8be80f7192f370963b150d326",
+  "state_digest_after": "444291d42faaa93d839834f8101b1f67c9d58df8be80f7192f370963b150d326",
+  "precision": "Unchanged native BF16 autocast / FP32 masks",
+  "started_utc": "2026-10-09T09:22:01.188239+00:00",
+  "ended_utc": "2026-10-09T09:23:11.916197+00:00",
+  "local_only": true,
+  "NFS_fallback": false
 }

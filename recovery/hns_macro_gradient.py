@@ -35,6 +35,7 @@ def main():
     clip,_=longclip.load_from_clip('ViT-B/16',device='cpu',args=argparse.Namespace())
     clip.load_state_dict(p['model'],strict=True)
     model=BalancedSearch(clip.float(),arm=cfg['arm'],search_hparams=hparams(dict(cfg,**hp)),hns_enabled=cfg.get('hns_enabled',False),
+        view_sparsity_weights=cfg.get('view_sparsity_weights',[1.,2.,2.]),
         inclusion_hierarchy='detail_chain',fusion=cfg['fusion'],visual=cfg['visual'],
         condition_mode=cfg['condition_mode'],checkpoint_encoders=cfg['checkpoint_encoders'],
         image_chunk=cfg['image_chunk'],text_chunk=cfg['text_chunk'],shuffle_seed=cfg['shuffle_seed'],

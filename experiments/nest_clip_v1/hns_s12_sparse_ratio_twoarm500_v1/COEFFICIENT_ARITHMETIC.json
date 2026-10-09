@@ -1,0 +1,38 @@
+{
+  "arms": {
+    "E1-AlignMatched": {
+      "effective_coefficients": [
+        2.6999999999999997,
+        2.6999999999999997,
+        0.6
+      ],
+      "normalized_weights": [
+        2.25,
+        2.25,
+        0.5
+      ],
+      "raw_ratio_sum": 5.0,
+      "sparse_formula": "1.2*sum(w_i*Omega_i)/3"
+    },
+    "E2-Uniform": {
+      "effective_coefficients": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "normalized_weights": [
+        1.6666666666666667,
+        1.6666666666666667,
+        1.6666666666666667
+      ],
+      "raw_ratio_sum": 5.0,
+      "sparse_formula": "1.2*sum(w_i*Omega_i)/3"
+    }
+  },
+  "coefficient_mass": 5.0,
+  "effective_lambda_sparse": 1.2,
+  "fixed_state_formula_check": true,
+  "note": "This arithmetic check is not a training-equivalence gate. Run hns_sparse_ratio_real_equivalence before training.",
+  "passed": true,
+  "scope": "Scalar coefficient arithmetic only; no production forward/backward or DDP assertions"
+}

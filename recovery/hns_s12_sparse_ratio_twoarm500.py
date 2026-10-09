@@ -9,7 +9,7 @@ import signal
 import subprocess
 
 from recovery import hns_balanced_macro_fourarm as shared
-from recovery.s02_nfs500 import ROOT,STEP0,STEP0_SHA,dump,rows,sha,now
+from recovery.s02_nfs500 import ROOT,STEP0,STEP0_SHA,dump,rows,sha,now,distribution
 
 runner=shared.runner
 PROJECT=shared.PROJECT
@@ -28,7 +28,8 @@ REF=dict(branch='experiment/hns-static-strength-twoarm500-v1',
          exp=ROOT/'experiments/nest_clip_v1/hns_static_strength_twoarm500_v1/E1-HNS-S12',
          run=PROJECT/'runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12')
 CODE=shared.CODE+('recovery/hns_s12_sparse_ratio_twoarm500.py',
-                  'recovery/hns_sparse_ratio_equivalence.py','tests/test_hns_s12_sparse_ratio_twoarm500.py')
+                  'recovery/hns_sparse_ratio_equivalence.py','recovery/hns_sparse_ratio_real_equivalence.py',
+                  'tests/test_hns_s12_sparse_ratio_twoarm500.py')
 GATES=('CPU_TESTS.json','DDP_EQUIVALENCE.json','REAL_BF16_EQUIVALENCE.json','SPARSE_RATIO_EQUIVALENCE.json')
 ORIGINAL_WORKER=runner.worker
 ORIGINAL_REPORT=shared.report_arm
@@ -82,6 +83,11 @@ def checkpoint_invariants(current,reference):
                 'accumulation','seed','sampling_seed','shuffle_seed','workers','optimizer_groups'):
         if key in old: assert cfg[key]==old[key],key
     assert cfg['view_sparsity_weights']==ARMS[arm]['sparsity_weights']
+    new_runtime,old_runtime=copy.deepcopy(cfg['runtime_model']),copy.deepcopy(old['runtime_model'])
+    assert new_runtime.pop('view_sparsity_weights')==ARMS[arm]['sparsity_weights']
+    assert old_runtime.pop('view_sparsity_weights',[1.,2.,2.])==[1.,2.,2.]
+    assert new_runtime==old_runtime,'Only sparse allocation may change the runtime model'
+    assert cfg['code_sha256']==runner.read(EXP/'BASELINE_PROVENANCE.json')['production_sources']
     assert current['optimizer']['param_groups']==reference['optimizer']['param_groups']
     assert current['optimizer']['state'].keys()==reference['optimizer']['state'].keys()
     assert {int(s['step']) for s in current['optimizer']['state'].values()}=={5}
@@ -145,17 +151,34 @@ def prepare():
     assert ready['status']=='LOCAL_FULL_TRAINING_DATA_READY' and ready['verification']['passed']
     evaluator=runner.evaluator_proof()
     EXP.mkdir(parents=True);RUN.mkdir(parents=True)
-    # Run the fixed-state coefficient isolation before any GPU training and
-    # carry forward only the previously passed infrastructure receipts.
+    # Scalar arithmetic is supplemental; only measured forward/backward and
+    # current DDP receipts are accepted as the equivalence training gates.
     subprocess.run([str(PROJECT/'.venv/bin/python'),'-m','recovery.hns_sparse_ratio_equivalence',
-                    '--output',str(EXP/'SPARSE_RATIO_EQUIVALENCE.json')],cwd=ROOT,check=True)
-    for name in ('CPU_TESTS.json','DDP_EQUIVALENCE.json','REAL_BF16_EQUIVALENCE.json'):
-        source=EXP.parent.parent/'hns_static_strength_twoarm500_v1'/name
-        if not source.exists(): source=REF['exp'].parent/name
-        value=runner.read(source);assert value.get('passed') is True
-        dump(EXP/name,value)
+                    '--output',str(EXP/'COEFFICIENT_ARITHMETIC.json')],cwd=ROOT,check=True)
+    tests=[str(PROJECT/'.venv/bin/python'),'-m','pytest','-q',
+           'tests/test_hns_s12_sparse_ratio_twoarm500.py','tests/test_hns_macro.py']
+    with (RUN/'cpu-preflight.log').open('w') as log:
+        checked=subprocess.run(tests,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
+    assert checked.returncode==0,'Current CPU tests failed'
+    dump(EXP/'CPU_TESTS.json',dict(passed=True,command=tests,returncode=checked.returncode,
+        summary=(RUN/'cpu-preflight.log').read_text().splitlines()[0],checked_utc=now()))
+    measured=os.environ.get('SAID_SPARSE_RATIO_PREFLIGHT')
+    for name,args in [('DDP_EQUIVALENCE.json',['--ddp']),
+                      ('SPARSE_RATIO_EQUIVALENCE.json',['--checkpoint',str(checkpoint)])]:
+        if measured:
+            value=runner.read(Path(measured)/name)
+            assert value['passed'] and value['original_source_commit']=='d3a33bfe35c171f593819d48f45d98b5a964d416'
+            if name.startswith('SPARSE'):assert value['global_batch']==1024 and value['checkpoint_sha256']==sha(checkpoint)
+            dump(EXP/name,value)
+        else:
+            command=runner.torchrun('recovery.hns_sparse_ratio_real_equivalence',*args,'--output',EXP/name)
+            with (RUN/(name+'.log')).open('w') as log:
+                subprocess.run(command,cwd=ROOT,check=True,stdout=log,stderr=subprocess.STDOUT,
+                    env=dict(os.environ,CUBLAS_WORKSPACE_CONFIG=':4096:8'))
+        assert runner.read(EXP/name)['passed']
+    dump(EXP/'REAL_BF16_EQUIVALENCE.json',runner.read(EXP/'SPARSE_RATIO_EQUIVALENCE.json'))
     dump(EXP/'BASELINE_PROVENANCE.json',dict(passed=True,mother_commit=mother,production_sources=production,
-        production_source_changes=[],original_HNS_branch=REF['branch'],original_HNS_commit=runner.git('rev-parse',REF['branch']),
+        production_source_changes=changed,original_HNS_branch=REF['branch'],original_HNS_commit=runner.git('rev-parse',REF['branch']),
         original_raw_results=baseline,original_JSON_sha256=official,common0_sha256=STEP0_SHA,
         original_checkpoint=dict(path=str(checkpoint),sha256=baseline['checkpoint']['sha256'],uploaded=False),
         evaluator_sources=evaluator,local_only=True))
@@ -172,7 +195,7 @@ def prepare():
         fresh_common0=True,resume=None,independent_smoke5_formal500=True,max_updates=500,horizon=4868,
         view_weights=[1.35,1.35,.3],baseline_sparsity_weights=[1,2,2],lambda_sparse=1.2,beta=[2,2],no_SG=True,soft_inclusion=0,
         ramp='min(1,completed BEFORE update/200)',fixed_K=3,seed=0,world=4,batch_per_rank=256,workers=8,
-        local_only=True,NFS_fallback=False,coefficient_control='Same original HNS@500 parameters, same1024 inputs and one shared raw loss graph; no parameter updates',
+        local_only=True,NFS_fallback=False,coefficient_control='Pinned original S12@500 forward versus current default and actual E1/E2 forwards; same1024 real inputs; all trainable gradients; no updates; deterministic audit kernels only',
         severe_mask_stop='All three valid-population Hard-ST supports entirely empty OR entirely full for five consecutive updates; ordinary density/equality changes are diagnostics only',
         automatic_full=False,third_arm=False,combinations=False,additional_seed=False,coefficient_mass=5.,
         exact_stream_records=512000,training_data='/root/said_s02_stage500/ShareGPT4V'))
@@ -205,10 +228,16 @@ def worker(arm,smoke):
 
 
 def validate_controls():
+    original_kernel=subprocess.check_output(['git','show',
+        'd3a33bfe35c171f593819d48f45d98b5a964d416:model/hard_nested_sparsity.py'],cwd=ROOT)
+    assert hashlib.sha256(original_kernel).hexdigest()==sha(ROOT/'model/hard_nested_sparsity.py')
     proof=runner.read(EXP/'SPARSE_RATIO_EQUIVALENCE.json')
     assert proof['passed'] and proof['no_parameter_updates']
     assert proof['coefficient_mass']==5. and proof['effective_lambda_sparse']==1.2
     assert proof['default_hns_behavior_preserved'] and proof['alignment_hierarchy_unchanged']
+    assert proof['global_batch']==1024 and proof['state_digest_before']==proof['state_digest_after']
+    assert proof['DDP_mean_gradient_measured']
+    assert all(v['exact'] for v in proof['original_vs_current_every_parameter_gradient_checks'].values())
     assert set(proof['arms'])==set(ARMS)
     return proof
 
@@ -223,16 +252,25 @@ def report_arm(arm,result,supervisor):
     keys=[k for k in steps[0] if k.startswith(('HNS_','macro_')) or k in ('V_DF_hard','V_3D_hard','lambda_h','loss')]
     means={k:sum(float(r[k]) for r in steps[-50:])/50 for k in keys}
     diag['macro_and_HNS_last50']=means
+    diag['weighted_sparsity_contribution_percent']={v:100*means['HNS_sparse_weighted_'+v]/means['macro_weighted_sparse'] for v in ('F','Dall','D3')}
+    diag['hierarchy_contribution_percent_of_total']=100*means['macro_weighted_hierarchy']/means['loss']
     diag['macro_selected_steps']={str(r['step']):{k:r[k] for k in keys} for r in steps if r['step'] in (1,100,200,500)}
     masks.update(HNS_last50=means,no_mask_to_mask_SG=True,beta=[2,2],
                  sparsity_ratio=ARMS[arm]['ratio'],normalized_weights=ARMS[arm]['sparsity_weights'],
                  effective_coefficients=[1.2*x for x in ARMS[arm]['sparsity_weights']],
-                 mask_density_order=all(masks.get('keep_ratios',{}).get(a,0)>=masks.get('keep_ratios',{}).get(b,0)
-                                        for a,b in (('F','Dall'),('Dall','D3'))))
+                 keep_ratios_valid_population={v:means['HNS_'+v+'_keep'] for v in ('F','Dall','D3')},
+                 mask_density_order=means['HNS_F_keep']>=means['HNS_Dall_keep']>=means['HNS_D3_keep'])
+    old_masks=runner.read(REF['exp']/'MASK_HIERARCHY_AUDIT.json')
+    old_means=old_masks['macro_last50']
+    masks['delta_vs_HNS_S12']={k:means[k]-old_means[k] for k in
+        ('HNS_F_keep','HNS_Dall_keep','HNS_D3_keep','HNS_DF_IoU','HNS_3D_IoU',
+         'HNS_DF_hard_violation_ratio','HNS_3D_hard_violation_ratio',
+         'HNS_gap_F_D','HNS_gap_D_D3','HNS_triple_exact_equality_ratio')}
     base=runner.read(REF['exp']/'RESULTS.json')
     result.update(arm=arm,sparsity_ratio=ARMS[arm]['ratio'],normalized_weights=ARMS[arm]['sparsity_weights'],
                   effective_coefficients=[1.2*x for x in ARMS[arm]['sparsity_weights']],
                   **runner.compare(result,base))
+    result['quality_delta_pp']['Urban_Mean']=(result['quality_delta_pp']['Urban_I2T']+result['quality_delta_pp']['Urban_T2I'])/2
     gradient=runner.read(exp/'GRADIENT_AUDIT.json');assert gradient['passed']
     fixed=validate_controls();gradient['sparse_ratio_equivalence']=fixed
     gradient['state_vs_coefficient_warning']='Trained-state gradients are reported separately from fixed-state coefficient equivalence.'
@@ -240,8 +278,20 @@ def report_arm(arm,result,supervisor):
     dump(exp/'VALIDATION.json',dict(passed=True,stream=proof,first5=runner.read(runtime/'first-five-gate.json'),
         smoke=runner.read(exp/'SMOKE_EVIDENCE.json'),acceptance=runner.read(runtime/'step500/acceptance.json'),
         strict_export=result['strict_export'],gradient_audit_passed=True))
-    dump(exp/'RUNTIME_STATS.json',dict(commands=supervisor.commands,uploaded=False,
-        source='sequential fresh-common0 local-only training'))
+    cycles=rows(runtime/'step500/cycle_timing.jsonl');waits={}
+    for rank in range(4):
+        for row in rows(runner.local.PHASE/f'rank{rank}.jsonl'):waits[row['step']]=max(waits.get(row['step'],0),row['data_wait_s'])
+    systems=[r['system'] for r in rows(runtime/'resource-telemetry.jsonl')]
+    stats=dict(full_cycle_seconds=distribution([r['four_rank_max_seconds'] for r in cycles]),
+        data_wait_seconds=distribution(list(waits.values())),
+        GPU_peak_GiB={str(rank):max(h['peak_allocated_gib'] for r in steps for h in r['rank_health'] if h['rank']==rank) for rank in range(4)},
+        oom_kill=max(r['memory_events'].get('oom_kill',0) for r in systems),
+        commands=supervisor.commands,uploaded=False,source='sequential fresh-common0 local-only training')
+    for kind in ('io_PSI','memory_PSI'):stats[kind]={v:distribution([s[kind][v]['avg10'] for s in systems]) for v in ('some','full')}
+    text=(runtime/'train500.log').read_text();errors=[t for t in ('Image failure sample=','Input/output error','Missing local sample=','CUDA out of memory','Traceback','HARD_STOP') if t in text]
+    assert not errors and stats['oom_kill']==0;stats.update(true_IO_errors=errors)
+    dump(exp/'RUNTIME_STATS.json',stats);dump(exp/'EXPORT_VERIFICATION.json',result['strict_export'])
+    dump(exp/'COMMANDS.json',supervisor.commands)
     lines=[f'# {arm}: HNS-S12 sparse-ratio @500','',
         f'Fresh common0, smoke5 and formal500. Normalized ratio `{ARMS[arm]["ratio"]}`; weights `{ARMS[arm]["sparsity_weights"]}`; effective coefficients `{[1.2*x for x in ARMS[arm]["sparsity_weights"]]}`.',
         'HNS beta2/2, Hard-ST, no-SG, K3, lambda_align10, lambda_sparse1.2, lambda_hierarchy1, original ramp200.',
@@ -276,8 +326,16 @@ def combined():
             warning='Coefficient magnitude and learned-state gradient changes must not be conflated.'),
         Q6_future_candidate=choice)
     comparisons={n:runner.compare(results[n],results['HNS-S12']) for n in ARMS}
+    for value in comparisons.values():
+        d=value['quality_delta_pp'];d['Urban_Mean']=(d['Urban_I2T']+d['Urban_T2I'])/2
+    pair=runner.compare(results['E1-AlignMatched'],results['E2-Uniform'])
+    d=pair['quality_delta_pp'];d['Urban_Mean']=(d['Urban_I2T']+d['Urban_T2I'])/2
+    questions['urban_bidirectional']={n:dict(improves_both=all(comparisons[n]['quality_delta_pp'][k]>0 for k in ('Urban_I2T','Urban_T2I')),
+        delta={k:comparisons[n]['quality_delta_pp'][k] for k in ('Urban_I2T','Urban_T2I','Urban_Mean')},
+        short_long_tradeoff={k:comparisons[n]['quality_delta_pp'][k] for k in ('Score5','J_long3','J_long','Short4')}) for n in ARMS}
+    questions['alignment_matched_vs_uniform']=pair
     dump(EXP/'RESULTS.json',dict(status='TWO_ARMS_COMPLETED',all_two_completed500=True,models=results,qualities=q,
-        comparisons=comparisons,scientific_questions=questions,**choice,GPU_idle=True,extra_experiments=False))
+        comparisons=comparisons,E1_vs_E2=pair,scientific_questions=questions,**choice,GPU_idle=True,extra_experiments=False))
     dump(EXP/'SCIENTIFIC_DIAGNOSTICS.json',questions)
     lines=['# HNS-S12 sparse-ratio two-arm @500','',
         '| Model | Sparsity ratio | Score5 | J_long3 | J_long | Short4 | Urban I2T/T2I | Urban Mean |',
@@ -286,10 +344,12 @@ def combined():
         ratio='1:2:2' if n=='HNS-S12' else ARMS[n]['ratio']
         lines.append('| '+n+' | '+ratio+' | '+' | '.join(f'{v[k]:.6f}' for k in ('Score5','J_long3','J_long','Short4'))+
             f' | {v["Urban_I2T"]:.3f} / {v["Urban_T2I"]:.3f} | {(v["Urban_I2T"]+v["Urban_T2I"])/2:.3f} |')
-    lines+=['','| Arm | Delta Score5 | Delta J_long3 | Delta J_long | Delta Short4 | Delta Urban I2T/T2I |','|---|---:|---:|---:|---:|---|']
+    lines+=['','| Arm | Delta Score5 | Delta J_long3 | Delta J_long | Delta Short4 | Delta Urban I2T/T2I | Delta Urban Mean |','|---|---:|---:|---:|---:|---|---:|']
     for arm in ARMS:
         d=comparisons[arm]['quality_delta_pp'];lines.append('| '+arm+' | '+' | '.join(f'{d[k]:+.6f}' for k in ('Score5','J_long3','J_long','Short4'))+
-            f' | {d["Urban_I2T"]:+.3f} / {d["Urban_T2I"]:+.3f} |')
+            f' | {d["Urban_I2T"]:+.3f} / {d["Urban_T2I"]:+.3f} | {d["Urban_Mean"]:+.3f} |')
+    d=pair['quality_delta_pp'];lines.append('| E1 minus E2 | '+' | '.join(f'{d[k]:+.6f}' for k in ('Score5','J_long3','J_long','Short4'))+
+        f' | {d["Urban_I2T"]:+.3f} / {d["Urban_T2I"]:+.3f} | {d["Urban_Mean"]:+.3f} |')
     lines+=['','Selection: `'+json.dumps(choice)+'`.','',
         'Q1: Alignment-matched retrieval/structure: '+json.dumps(questions['Q1_alignment_matched'])+'.',
         'Q2: Uniform retrieval/structure: '+json.dumps(questions['Q2_uniform'])+'.',
@@ -297,6 +357,8 @@ def combined():
         'Q4: Short4/long deltas '+json.dumps(questions['Q4_short_long'])+'.',
         'Q5: Gradient norms/cosines and fixed-state coefficient controls are in SCIENTIFIC_DIAGNOSTICS.json and GRADIENT_AUDIT.json. Learned-state gradients are separate.',
         'Q6: '+choice['RECOMMENDED_NEXT_VALIDATION']+'. Single-seed improvement below0.05pp is a weak signal, not full/E3 evidence.',
+        'Urban both-directions/long tradeoffs: '+json.dumps(questions['urban_bidirectional'])+'.',
+        'Urban single-direction0.1pp is one correct query; small single-seed gains are not statistically established. Density or IoU improvements alone do not establish semantic alignment.',
         'All30 per-arm recalls and deltas are in RESULTS.json. Both arms fresh-common0, exactly500 updates, local-only. GPU idle.',
         'No third arm, H2/H8, coefficient combinations, epoch-switching, new seed, new loss or1217/2434/3651/4868 continuation.']
     for name in ('REPORT.md','SEARCH_SUMMARY.md'):(EXP/name).write_text('\n'.join(lines)+'\n')
@@ -314,7 +376,7 @@ def publish(setup=False):
         try:checker.ALLOWED=set(relative);assert checker.inspect()['passed']
         finally:os.chdir(previous)
         subprocess.run(['git','diff','--cached','--check'],cwd=ROOT,check=True)
-        subprocess.run(['git','commit','-m',('Prepare' if setup else 'Report')+' HNS static-strength two-arm500'],cwd=ROOT,check=True)
+        subprocess.run(['git','commit','-m',('Prepare' if setup else 'Report')+' HNS-S12 sparse-ratio two-arm500'],cwd=ROOT,check=True)
     head=runner.git('rev-parse','HEAD')
     subprocess.run(['git','push','origin','HEAD:refs/heads/'+BRANCH],cwd=ROOT,check=True,timeout=120)
     subprocess.run(['git','fetch','origin','refs/heads/'+BRANCH+':refs/remotes/origin/'+BRANCH],cwd=ROOT,check=True,timeout=120)

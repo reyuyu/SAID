@@ -71,7 +71,7 @@
   "workers": 8,
   "local_only": true,
   "NFS_fallback": false,
-  "coefficient_control": "Same original HNS@500 parameters, same1024 inputs and one shared raw loss graph; no parameter updates",
+  "coefficient_control": "Pinned original S12@500 forward versus current default and actual E1/E2 forwards; same1024 real inputs; all trainable gradients; no updates; deterministic audit kernels only",
   "severe_mask_stop": "All three valid-population Hard-ST supports entirely empty OR entirely full for five consecutive updates; ordinary density/equality changes are diagnostics only",
   "automatic_full": false,
   "third_arm": false,

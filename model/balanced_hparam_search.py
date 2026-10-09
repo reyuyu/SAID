@@ -235,6 +235,7 @@ class BalancedSearch(NestedFusionMask):
                         total_training=loss,masks=dict(F=mf,Dall=mo,D3=me),
                         probabilities=dict(F=pf,Dall=po,D3=pe),lambda_h=hns['lambda_h'])
                     self.hns_graph.update(raw_align=align/10,raw_sparse=sparse,
+                        raw_sparse_views=(sf,so,se),
                         raw_hierarchy=(2*hns['V_DF']+2*hns['V_3D'])/3,
                         weighted_align=wa,weighted_sparse=ws,weighted_hierarchy=wh,
                         weighted_regularizer=ws+wh)
