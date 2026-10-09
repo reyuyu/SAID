@@ -1,0 +1,113 @@
+[
+  {
+    "name": "train500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "recovery.hns_s12_sparse_ratio_twoarm500",
+      "--arm",
+      "E2-Uniform",
+      "--worker",
+      "--config",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-s12-sparse-ratio-twoarm500-v1/experiments/nest_clip_v1/hns_s12_sparse_ratio_twoarm500_v1/E2-Uniform/config.json",
+      "--init-state",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-s12-sparse-ratio-twoarm500-v1/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500",
+      "--run-type",
+      "formal",
+      "--max-updates",
+      "500"
+    ],
+    "started_utc": "2026-10-09T10:02:51.692069+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/train500.log",
+    "ended_utc": "2026-10-09T10:22:33.317354+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "gradient-audit500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+      "--standalone",
+      "--nproc-per-node=4",
+      "--max-restarts=0",
+      "-m",
+      "recovery.hns_macro_gradient",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+      "--output",
+      "/opt/data/private/lklk/said-e2-worktrees/hns-s12-sparse-ratio-twoarm500-v1/experiments/nest_clip_v1/hns_s12_sparse_ratio_twoarm500_v1/E2-Uniform/GRADIENT_AUDIT.json"
+    ],
+    "started_utc": "2026-10-09T10:22:48.630093+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/gradient-audit500.log",
+    "ended_utc": "2026-10-09T10:24:08.867165+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "export500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/evaluations/student_step500.pt",
+      "--expect-updates",
+      "500"
+    ],
+    "started_utc": "2026-10-09T10:24:13.722006+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/export500.log",
+    "ended_utc": "2026-10-09T10:24:36.867689+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "verify500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.nest_clip",
+      "verify-export",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+      "--bare",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/evaluations/student_step500.pt",
+      "--output",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/evaluations/export-check.json",
+      "--index-dir",
+      "/root/said_s02_stage500/data_index",
+      "--image-root",
+      "/root/said_s02_stage500/ShareGPT4V"
+    ],
+    "started_utc": "2026-10-09T10:24:36.881528+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/verify500.log",
+    "ended_utc": "2026-10-09T10:24:55.937875+00:00",
+    "returncode": 0
+  },
+  {
+    "name": "five-eval500",
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "tools.eval_five_parallel",
+      "--checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/evaluations/student_step500.pt",
+      "--training-checkpoint",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+      "--output-dir",
+      "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/evaluations"
+    ],
+    "started_utc": "2026-10-09T10:24:55.961302+00:00",
+    "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/five-eval500.log",
+    "ended_utc": "2026-10-09T10:33:11.890193+00:00",
+    "returncode": 0
+  }
+]
