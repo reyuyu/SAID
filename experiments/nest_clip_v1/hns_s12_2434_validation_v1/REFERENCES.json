@@ -1,0 +1,420 @@
+{
+  "branch": "origin/analysis/d3-hns-epoch-curve-eval-v1",
+  "commit": "88d5db6cd4f26e87a0f8b7098105551cb1f81141",
+  "models": {
+    "HNS_v1": {
+      "1217": {
+        "model": "HNS_v1",
+        "update": 1217,
+        "epoch": 1,
+        "metrics": {
+          "COCO": {
+            "I2T": {
+              "R@1": 0.618,
+              "R@5": 0.8386,
+              "R@10": 0.8958
+            },
+            "T2I": {
+              "R@1": 0.42476,
+              "R@5": 0.68136,
+              "R@10": 0.77704
+            }
+          },
+          "Urban-1k": {
+            "I2T": {
+              "R@1": 0.9340000152587891,
+              "R@5": 0.9890000224113464,
+              "R@10": 0.9970000386238098
+            },
+            "T2I": {
+              "R@1": 0.9150000214576721,
+              "R@5": 0.9860000610351562,
+              "R@10": 0.9950000643730164
+            }
+          },
+          "Flickr30k-test1k": {
+            "I2T": {
+              "R@1": 0.891,
+              "R@5": 0.981,
+              "R@10": 0.994
+            },
+            "T2I": {
+              "R@1": 0.7316,
+              "R@5": 0.92,
+              "R@10": 0.9566
+            }
+          },
+          "DOCCI": {
+            "I2T": {
+              "R@1": 0.7932,
+              "R@5": 0.9616,
+              "R@10": 0.9834
+            },
+            "T2I": {
+              "R@1": 0.796,
+              "R@5": 0.9572,
+              "R@10": 0.9818
+            }
+          },
+          "Long-DCI": {
+            "I2T": {
+              "R@1": 0.5845830044725072,
+              "R@5": 0.772954485661668,
+              "R@10": 0.8308339910549856
+            },
+            "T2I": {
+              "R@1": 0.595501183898974,
+              "R@5": 0.7769008155748487,
+              "R@10": 0.8312286240463036
+            }
+          }
+        },
+        "scores_percent": {
+          "Score5": 72.83644225087943,
+          "J_long3": 76.9714037514657,
+          "J_long": 85.95500091791153,
+          "Short4": 66.634
+        },
+        "export": {
+          "reused": true,
+          "source_evidence": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_half1217_v1/comparison1217.json",
+          "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-full-v1/step4868/step001217.pt",
+          "bare": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-half1217-v1/evaluations/HNS-v1/student_step1217.pt",
+          "bare_size_bytes": 612069633,
+          "strict_export": {
+            "passed": true,
+            "strict_load": true,
+            "optimizer_steps": [
+              1217
+            ],
+            "image_max_abs": 0.0,
+            "text_max_abs": 0.0,
+            "checkpoint_sha256": "a9e8c1e5daa0220c5df24dad015a47aa182886da3c01995000b3259c6bab6873",
+            "bare_sha256": "677f3cedb35e4de8b9ee9fb4f141eae468088616c03b0a6dd643490169ccc73c"
+          }
+        },
+        "checkpoint_sha256": "a9e8c1e5daa0220c5df24dad015a47aa182886da3c01995000b3259c6bab6873",
+        "bare_sha256": "677f3cedb35e4de8b9ee9fb4f141eae468088616c03b0a6dd643490169ccc73c",
+        "checkpoint_unchanged": true,
+        "evaluation_wall_seconds": 500.997263610363,
+        "gpu_mapping": {
+          "coco": 0,
+          "urban": 3,
+          "flickr": 3,
+          "docci": 1,
+          "long_dci": 2
+        },
+        "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step1217"
+      },
+      "2434": {
+        "model": "HNS_v1",
+        "update": 2434,
+        "epoch": 2,
+        "metrics": {
+          "COCO": {
+            "I2T": {
+              "R@1": 0.6206,
+              "R@5": 0.8374,
+              "R@10": 0.8974
+            },
+            "T2I": {
+              "R@1": 0.42792,
+              "R@5": 0.68592,
+              "R@10": 0.77948
+            }
+          },
+          "Urban-1k": {
+            "I2T": {
+              "R@1": 0.940000057220459,
+              "R@5": 0.9890000224113464,
+              "R@10": 0.9960000514984131
+            },
+            "T2I": {
+              "R@1": 0.9250000715255737,
+              "R@5": 0.9910000562667847,
+              "R@10": 0.9940000176429749
+            }
+          },
+          "Flickr30k-test1k": {
+            "I2T": {
+              "R@1": 0.892,
+              "R@5": 0.985,
+              "R@10": 0.992
+            },
+            "T2I": {
+              "R@1": 0.7376,
+              "R@5": 0.9214,
+              "R@10": 0.9566
+            }
+          },
+          "DOCCI": {
+            "I2T": {
+              "R@1": 0.7978,
+              "R@5": 0.964,
+              "R@10": 0.985
+            },
+            "T2I": {
+              "R@1": 0.8054,
+              "R@5": 0.9608,
+              "R@10": 0.9832
+            }
+          },
+          "Long-DCI": {
+            "I2T": {
+              "R@1": 0.5957642725598526,
+              "R@5": 0.778479347540121,
+              "R@10": 0.8359642199421204
+            },
+            "T2I": {
+              "R@1": 0.6054985530123652,
+              "R@5": 0.7863720073664825,
+              "R@10": 0.8357011312812418
+            }
+          }
+        },
+        "scores_percent": {
+          "Score5": 73.4758295431825,
+          "J_long3": 77.82438257197084,
+          "J_long": 86.70500321865082,
+          "Short4": 66.953
+        },
+        "export": {
+          "reused": false,
+          "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-full-v1/step4868/step002434.pt",
+          "bare": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step2434/student_step2434.pt",
+          "bare_size_bytes": 612069633,
+          "strict_export": {
+            "passed": true,
+            "strict_load": true,
+            "optimizer_steps": [
+              2434
+            ],
+            "image_max_abs": 0.0,
+            "text_max_abs": 0.0,
+            "checkpoint_sha256": "ec8a7d02bd3e20c88d8de73513ef2715e4e4a897720b98797e7c7296bc9385cf",
+            "bare_sha256": "2514b97bb6cb890033ef1f208c5f45b6cb86b30cc1fa70cb61baecfb8735b486"
+          }
+        },
+        "checkpoint_sha256": "ec8a7d02bd3e20c88d8de73513ef2715e4e4a897720b98797e7c7296bc9385cf",
+        "bare_sha256": "2514b97bb6cb890033ef1f208c5f45b6cb86b30cc1fa70cb61baecfb8735b486",
+        "checkpoint_unchanged": true,
+        "evaluation_wall_seconds": 488.65357732772827,
+        "gpu_mapping": {
+          "coco": 0,
+          "urban": 3,
+          "flickr": 3,
+          "docci": 1,
+          "long_dci": 2
+        },
+        "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step2434"
+      }
+    },
+    "D3_Balanced": {
+      "1217": {
+        "model": "D3_Balanced",
+        "update": 1217,
+        "epoch": 1,
+        "metrics": {
+          "COCO": {
+            "I2T": {
+              "R@1": 0.6202,
+              "R@5": 0.8364,
+              "R@10": 0.8966
+            },
+            "T2I": {
+              "R@1": 0.42496,
+              "R@5": 0.6818,
+              "R@10": 0.77824
+            }
+          },
+          "Urban-1k": {
+            "I2T": {
+              "R@1": 0.9360000491142273,
+              "R@5": 0.9890000224113464,
+              "R@10": 0.9970000386238098
+            },
+            "T2I": {
+              "R@1": 0.9190000295639038,
+              "R@5": 0.9890000224113464,
+              "R@10": 0.9950000643730164
+            }
+          },
+          "Flickr30k-test1k": {
+            "I2T": {
+              "R@1": 0.884,
+              "R@5": 0.982,
+              "R@10": 0.992
+            },
+            "T2I": {
+              "R@1": 0.732,
+              "R@5": 0.92,
+              "R@10": 0.9556
+            }
+          },
+          "DOCCI": {
+            "I2T": {
+              "R@1": 0.7916,
+              "R@5": 0.9602,
+              "R@10": 0.9828
+            },
+            "T2I": {
+              "R@1": 0.795,
+              "R@5": 0.9556,
+              "R@10": 0.9804
+            }
+          },
+          "Long-DCI": {
+            "I2T": {
+              "R@1": 0.583399105498553,
+              "R@5": 0.7720336753485925,
+              "R@10": 0.8279400157853196
+            },
+            "T2I": {
+              "R@1": 0.5951065509076559,
+              "R@5": 0.7770323599052881,
+              "R@10": 0.831360168376743
+            }
+          }
+        },
+        "scores_percent": {
+          "Score5": 72.8126573508434,
+          "J_long3": 77.00176225140567,
+          "J_long": 86.04000196695327,
+          "Short4": 66.529
+        },
+        "export": {
+          "reused": true,
+          "source_evidence": "/opt/data/private/lklk/SAID/experiments/nest_clip_v1/nested_d3_hns_half1217_v1/comparison1217.json",
+          "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step001217.pt",
+          "bare": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-half1217-v1/evaluations/D3_Balanced/student_step1217.pt",
+          "bare_size_bytes": 612069633,
+          "strict_export": {
+            "passed": true,
+            "strict_load": true,
+            "optimizer_steps": [
+              1217
+            ],
+            "image_max_abs": 0.0,
+            "text_max_abs": 0.0,
+            "checkpoint_sha256": "b5e59502d0c7dbec8687c6c4cff944b19e72d8cfed181f55732d0add0c31a789",
+            "bare_sha256": "c61dc4e567715afb79f11eac78c1deab6d21c9fe94aa09f471d1e69a743455bd"
+          }
+        },
+        "checkpoint_sha256": "b5e59502d0c7dbec8687c6c4cff944b19e72d8cfed181f55732d0add0c31a789",
+        "bare_sha256": "c61dc4e567715afb79f11eac78c1deab6d21c9fe94aa09f471d1e69a743455bd",
+        "checkpoint_unchanged": true,
+        "evaluation_wall_seconds": 489.9214479699731,
+        "gpu_mapping": {
+          "coco": 0,
+          "urban": 3,
+          "flickr": 3,
+          "docci": 1,
+          "long_dci": 2
+        },
+        "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/D3_Balanced/step1217"
+      },
+      "2434": {
+        "model": "D3_Balanced",
+        "update": 2434,
+        "epoch": 2,
+        "metrics": {
+          "COCO": {
+            "I2T": {
+              "R@1": 0.6174,
+              "R@5": 0.838,
+              "R@10": 0.8982
+            },
+            "T2I": {
+              "R@1": 0.42836,
+              "R@5": 0.68672,
+              "R@10": 0.78116
+            }
+          },
+          "Urban-1k": {
+            "I2T": {
+              "R@1": 0.9350000619888306,
+              "R@5": 0.9900000691413879,
+              "R@10": 0.9970000386238098
+            },
+            "T2I": {
+              "R@1": 0.9240000247955322,
+              "R@5": 0.9920000433921814,
+              "R@10": 0.9940000176429749
+            }
+          },
+          "Flickr30k-test1k": {
+            "I2T": {
+              "R@1": 0.898,
+              "R@5": 0.984,
+              "R@10": 0.991
+            },
+            "T2I": {
+              "R@1": 0.7392,
+              "R@5": 0.9214,
+              "R@10": 0.957
+            }
+          },
+          "DOCCI": {
+            "I2T": {
+              "R@1": 0.8008,
+              "R@5": 0.9632,
+              "R@10": 0.986
+            },
+            "T2I": {
+              "R@1": 0.8108,
+              "R@5": 0.9612,
+              "R@10": 0.984
+            }
+          },
+          "Long-DCI": {
+            "I2T": {
+              "R@1": 0.5986582478295186,
+              "R@5": 0.7782162588792423,
+              "R@10": 0.8376742962378322
+            },
+            "T2I": {
+              "R@1": 0.6076032622993949,
+              "R@5": 0.7870297290186793,
+              "R@10": 0.8370165745856354
+            }
+          }
+        },
+        "scores_percent": {
+          "Score5": 73.59821596913277,
+          "J_long3": 77.94769328188794,
+          "J_long": 86.76500216960908,
+          "Short4": 67.074
+        },
+        "export": {
+          "reused": false,
+          "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-detail-d3-balanced-full-20261006/step4868/step002434.pt",
+          "bare": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/D3_Balanced/step2434/student_step2434.pt",
+          "bare_size_bytes": 612069633,
+          "strict_export": {
+            "passed": true,
+            "strict_load": true,
+            "optimizer_steps": [
+              2434
+            ],
+            "image_max_abs": 0.0,
+            "text_max_abs": 0.0,
+            "checkpoint_sha256": "611400d80f1386ade88309ad951ebaab69aebf84d1a82fcc51624a81d5e39fcb",
+            "bare_sha256": "9b282f8966d98fe877b339086bf980d1194f6ef395a3e481ed83fdf621caec22"
+          }
+        },
+        "checkpoint_sha256": "611400d80f1386ade88309ad951ebaab69aebf84d1a82fcc51624a81d5e39fcb",
+        "bare_sha256": "9b282f8966d98fe877b339086bf980d1194f6ef395a3e481ed83fdf621caec22",
+        "checkpoint_unchanged": true,
+        "evaluation_wall_seconds": 488.92059448361397,
+        "gpu_mapping": {
+          "coco": 0,
+          "urban": 3,
+          "flickr": 3,
+          "docci": 1,
+          "long_dci": 2
+        },
+        "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/D3_Balanced/step2434"
+      }
+    }
+  }
+}

@@ -24,11 +24,13 @@ def cosine(a,b):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--checkpoint',required=True);parser.add_argument('--output',required=True)
     parser.add_argument('--coefficient-grid',action='store_true',help='Read-only default/S12/H4 on one immutable HNS loss graph')
+    parser.add_argument('--expect-updates',type=int,default=500,help='Audit this completed node without updates; default protocol remains500')
     args=parser.parse_args();started=now();seed_all(0);torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32=False
     rank,local,world,_=setup();assert world==4
     digest=sha(args.checkpoint);p=torch.load(args.checkpoint,map_location='cpu',weights_only=False)
-    assert p['completed_steps']==500 and p['scheduler_horizon']==4868
+    assert p['completed_steps']==args.expect_updates and p['scheduler_horizon']==4868
+    assert args.expect_updates in (500,1217,2434)
     cfg=p['config'];hp=macro_hparams(cfg)
     clip,_=longclip.load_from_clip('ViT-B/16',device='cpu',args=argparse.Namespace())
     clip.load_state_dict(p['model'],strict=True)
@@ -47,7 +49,7 @@ def main():
         generator=torch.Generator().manual_seed(0),timeout=60))[0]
     ids=[None]*world;dist.all_gather_object(ids,batch['sample_id'].tolist())
     ids_sha=hashlib.sha256(json.dumps(ids,separators=(',',':')).encode()).hexdigest()
-    _,logs=model(*[batch[k].cuda(local,non_blocking=True) for k in ('image','tokens_f','tokens_o','tokens_e','valid')],499)
+    _,logs=model(*[batch[k].cuda(local,non_blocking=True) for k in ('image','tokens_f','tokens_o','tokens_e','valid')],args.expect_updates-1)
     graph=model.hns_graph;named=[(n,p) for n,p in model.named_parameters() if p.requires_grad];params=[p for _,p in named]
     def group(name):
         if name.startswith('clip.visual.'):return 'native_visual_backbone'
@@ -134,8 +136,8 @@ def main():
     assert all(p.grad is None for p in model.parameters()) and sha(args.checkpoint)==digest
     if rank==0:
         assert state_digest(model.state_dict())==before
-        dump(args.output,dict(passed=True,protocol='Original immutable step500 first seed0 epoch0 global1024 batch;256/rank; mean all-reduced gradients; no optimizer step',
-            sample_ids_sha256=ids_sha,records=1024,completed=499,ramp=graph['lambda_h'],macro_scales=hp,
+        dump(args.output,dict(passed=True,protocol='Immutable completed node first seed0 epoch0 global1024 batch;256/rank; mean all-reduced gradients; no optimizer step',
+            sample_ids_sha256=ids_sha,records=1024,completed=args.expect_updates-1,checkpoint_completed_steps=args.expect_updates,ramp=graph['lambda_h'],macro_scales=hp,
             components=components,group_diagnostics=conflicts,gradient_additivity=additivity,view_gradients=views,
             fixed_state_coefficient_controls=controls,
             checkpoint=dict(path=args.checkpoint,sha256=digest,unchanged=True,uploaded=False),
