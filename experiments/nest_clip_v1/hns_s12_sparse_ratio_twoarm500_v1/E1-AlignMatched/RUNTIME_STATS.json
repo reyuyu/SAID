@@ -1,0 +1,171 @@
+{
+  "full_cycle_seconds": {
+    "count": 500,
+    "median": 2.119996190071106,
+    "p95": 2.3266510367393494,
+    "p99": 2.433696804046631,
+    "max": 42.44944381713867
+  },
+  "data_wait_seconds": {
+    "count": 500,
+    "median": 0.000675741583108902,
+    "p95": 0.0011494457721710205,
+    "p99": 0.0014550901204347596,
+    "max": 22.59684866666794
+  },
+  "GPU_peak_GiB": {
+    "0": 27.76039457321167,
+    "1": 27.76039457321167,
+    "2": 27.76039457321167,
+    "3": 27.76039457321167
+  },
+  "oom_kill": 0,
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_s12_sparse_ratio_twoarm500",
+        "--arm",
+        "E1-AlignMatched",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-sparse-ratio-twoarm500-v1/experiments/nest_clip_v1/hns_s12_sparse_ratio_twoarm500_v1/E1-AlignMatched/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-sparse-ratio-twoarm500-v1/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-09T09:30:27.827804+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/train500.log",
+      "ended_utc": "2026-10-09T09:50:13.216535+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-sparse-ratio-twoarm500-v1/experiments/nest_clip_v1/hns_s12_sparse_ratio_twoarm500_v1/E1-AlignMatched/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-09T09:50:28.536967+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/gradient-audit500.log",
+      "ended_utc": "2026-10-09T09:51:46.794287+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-09T09:51:51.581955+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/export500.log",
+      "ended_utc": "2026-10-09T09:52:09.700423+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-09T09:52:09.713165+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/verify500.log",
+      "ended_utc": "2026-10-09T09:52:27.761911+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/evaluations"
+      ],
+      "started_utc": "2026-10-09T09:52:27.786692+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E1-AlignMatched/five-eval500.log",
+      "ended_utc": "2026-10-09T10:00:45.734994+00:00",
+      "returncode": 0
+    }
+  ],
+  "uploaded": false,
+  "source": "sequential fresh-common0 local-only training",
+  "io_PSI": {
+    "some": {
+      "count": 361,
+      "median": 0.0,
+      "p95": 1.69,
+      "p99": 5.713999999999995,
+      "max": 6.22
+    },
+    "full": {
+      "count": 361,
+      "median": 0.0,
+      "p95": 1.66,
+      "p99": 5.713999999999995,
+      "max": 6.22
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 361,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.017999999999999544,
+      "max": 0.14
+    },
+    "full": {
+      "count": 361,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    }
+  },
+  "true_IO_errors": []
+}
