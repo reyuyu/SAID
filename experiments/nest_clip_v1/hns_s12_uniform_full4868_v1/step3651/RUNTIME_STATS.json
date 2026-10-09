@@ -1,0 +1,181 @@
+{
+  "full_cycle_seconds": {
+    "count": 1217,
+    "median": 2.1293396949768066,
+    "p95": 2.2751086235046385,
+    "p99": 2.340985059738159,
+    "max": 25.716447830200195
+  },
+  "data_wait_seconds": {
+    "count": 1217,
+    "median": 0.0007117167115211487,
+    "p95": 0.0009405642747879029,
+    "p99": 0.0012840157747268668,
+    "max": 20.571456722915173
+  },
+  "steps_gt3s": 2,
+  "steps_gt10s": 1,
+  "peak_cgroup_memory_bytes": 536870912000,
+  "peak_file_cache_bytes": 502488281088,
+  "oom_kill": 0,
+  "GPU_peak_GiB": {
+    "0": 27.758377075195312,
+    "1": 27.75838613510132,
+    "2": 27.75838613510132,
+    "3": 27.758222579956055
+  },
+  "commands": [
+    {
+      "name": "train",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_s12_uniform_full4868",
+        "--worker",
+        "--target",
+        "3651",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-uniform-full4868-v1/experiments/nest_clip_v1/hns_s12_uniform_full4868_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-uniform-full4868-v1/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--resume",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step2434/training/step002434.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "3651"
+      ],
+      "started_utc": "2026-10-09T14:33:31.390243+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/train.log",
+      "ended_utc": "2026-10-09T15:18:38.750839+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "--expect-updates",
+        "3651",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-uniform-full4868-v1/experiments/nest_clip_v1/hns_s12_uniform_full4868_v1/step3651/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-09T15:18:39.610317+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/gradient.log",
+      "ended_utc": "2026-10-09T15:19:58.875866+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations/student_step3651.pt",
+        "--expect-updates",
+        "3651"
+      ],
+      "started_utc": "2026-10-09T15:20:03.734827+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/export.log",
+      "ended_utc": "2026-10-09T15:20:29.891549+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations/student_step3651.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-09T15:20:29.915146+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/verify.log",
+      "ended_utc": "2026-10-09T15:20:49.989002+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations/student_step3651.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations"
+      ],
+      "started_utc": "2026-10-09T15:20:50.035853+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/five-eval.log",
+      "ended_utc": "2026-10-09T15:29:37.369891+00:00",
+      "returncode": 0
+    }
+  ],
+  "local_only": true,
+  "updates_this_segment": 1217,
+  "io_PSI": {
+    "some": {
+      "count": 672,
+      "median": 0.0,
+      "p95": 1.7189999999999985,
+      "p99": 3.031899999999996,
+      "max": 8.16
+    },
+    "full": {
+      "count": 672,
+      "median": 0.0,
+      "p95": 1.6589999999999985,
+      "p99": 3.0034999999999945,
+      "max": 8.04
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 672,
+      "median": 0.0,
+      "p95": 1.293499999999998,
+      "p99": 2.5428999999999995,
+      "max": 8.44
+    },
+    "full": {
+      "count": 672,
+      "median": 0.0,
+      "p95": 1.28,
+      "p99": 2.53,
+      "max": 8.04
+    }
+  },
+  "true_IO_errors": [],
+  "DDP_NCCL_passed": true,
+  "pod_supervisor_anomaly": false
+}

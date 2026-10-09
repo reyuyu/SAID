@@ -435,6 +435,441 @@
           }
         }
       }
+    },
+    "3651": {
+      "completed_steps": 3651,
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6176,
+            "R@5": 0.8364,
+            "R@10": 0.8986
+          },
+          "T2I": {
+            "R@1": 0.42936,
+            "R@5": 0.68736,
+            "R@10": 0.78184
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.9390000700950623,
+            "R@5": 0.9900000691413879,
+            "R@10": 0.9960000514984131
+          },
+          "T2I": {
+            "R@1": 0.9260000586509705,
+            "R@5": 0.9910000562667847,
+            "R@10": 0.9940000176429749
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.899,
+            "R@5": 0.984,
+            "R@10": 0.993
+          },
+          "T2I": {
+            "R@1": 0.7396,
+            "R@5": 0.9204,
+            "R@10": 0.9578
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.8034,
+            "R@5": 0.963,
+            "R@10": 0.9858
+          },
+          "T2I": {
+            "R@1": 0.8148,
+            "R@5": 0.9616,
+            "R@10": 0.984
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.6040515653775322,
+            "R@5": 0.7818995001315443,
+            "R@10": 0.8397790055248618
+          },
+          "T2I": {
+            "R@1": 0.6069455406471981,
+            "R@5": 0.7863720073664825,
+            "R@10": 0.835438042620363
+          }
+        }
+      },
+      "scores_percent": {
+        "Score5": 73.79757234770763,
+        "J_long3": 78.23662057951272,
+        "J_long": 87.08000321865082,
+        "Short4": 67.13900000000001
+      },
+      "checkpoint": {
+        "passed": true,
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "sha256": "4e74f7e44128756f8398e26c97bc7c8f905aa8e0898baced56a266e5ed1b2156",
+        "size_bytes": 1884190970,
+        "completed_steps": 3651,
+        "scheduler_horizon": 4868,
+        "scheduler": {
+          "type": "native_manual_learning_rate_function",
+          "horizon": 4868,
+          "completed_steps": 3651,
+          "last_update_index": 3650,
+          "optimizer_lrs": {
+            "backbone": 1.587875889226633e-07,
+            "text_mask_and_shared_pool": 0.00014667485079179854,
+            "visual_mask": 0.00014667485079179854,
+            "fusion_adapter": 2.933497015835971e-05
+          }
+        },
+        "data_cursor": {
+          "next_epoch": 3,
+          "next_batch": 0
+        },
+        "sampler": {
+          "type": "DistributedSampler",
+          "seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "batches_per_epoch": 1217
+        },
+        "optimizer_steps": [
+          3651
+        ],
+        "optimizer_groups": [
+          {
+            "name": "backbone",
+            "lr": 1.587875889226633e-07,
+            "weight_decay": 0.01,
+            "parameter_count": 302
+          },
+          {
+            "name": "text_mask_and_shared_pool",
+            "lr": 0.00014667485079179854,
+            "weight_decay": 0.0,
+            "parameter_count": 14
+          },
+          {
+            "name": "visual_mask",
+            "lr": 0.00014667485079179854,
+            "weight_decay": 0.0,
+            "parameter_count": 12
+          },
+          {
+            "name": "fusion_adapter",
+            "lr": 2.933497015835971e-05,
+            "weight_decay": 0.0,
+            "parameter_count": 2
+          }
+        ],
+        "rng_per_rank": [
+          {
+            "rank": 0,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 1,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 2,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 3,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          }
+        ],
+        "sources": {
+          "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+          "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+          "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+          "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+          "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+          "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+          "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+          "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+        },
+        "git_head": "889f60346f760a1495f0bb4a47f7e2491b0f2123",
+        "uploaded": false
+      },
+      "strict_export": {
+        "passed": true,
+        "strict_load": true,
+        "optimizer_steps": [
+          3651
+        ],
+        "image_max_abs": 0.0,
+        "text_max_abs": 0.0,
+        "checkpoint_sha256": "4e74f7e44128756f8398e26c97bc7c8f905aa8e0898baced56a266e5ed1b2156",
+        "bare_sha256": "4c43239d80130827afaa0a3905fccbc3b3e258cca6f089b6349611cdd746b0cf"
+      },
+      "bare": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations/student_step3651.pt",
+        "sha256": "4c43239d80130827afaa0a3905fccbc3b3e258cca6f089b6349611cdd746b0cf",
+        "uploaded": false
+      },
+      "evaluation_checkpoint_immutable": true,
+      "comparisons": {
+        "HNS_S12": {
+          "quality_delta_pp": {
+            "Score5": -0.046139671634335855,
+            "J_long3": 0.0017672139427560296,
+            "J_long": 0.07500020265578655,
+            "Short4": -0.117999999999995,
+            "Urban_I2T": 0.0,
+            "Urban_T2I": 0.40000081062316895
+          },
+          "recall_delta_pp": {
+            "COCO": {
+              "I2T": {
+                "R@1": -0.25999999999999357,
+                "R@5": -0.33999999999999586,
+                "R@10": 0.07999999999999119
+              },
+              "T2I": {
+                "R@1": -0.11199999999999544,
+                "R@5": 0.08399999999999519,
+                "R@10": 0.012000000000000899
+              }
+            },
+            "Urban-1k": {
+              "I2T": {
+                "R@1": 0.0,
+                "R@5": 0.0,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.40000081062316895,
+                "R@5": -0.09999871253967285,
+                "R@10": -0.10000467300415039
+              }
+            },
+            "Flickr30k-test1k": {
+              "I2T": {
+                "R@1": -0.10000000000000009,
+                "R@5": -0.10000000000000009,
+                "R@10": 0.10000000000000009
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": -0.039999999999995595,
+                "R@10": -0.11999999999999789
+              }
+            },
+            "DOCCI": {
+              "I2T": {
+                "R@1": -0.23999999999999577,
+                "R@5": -0.060000000000004494,
+                "R@10": -0.10000000000000009
+              },
+              "T2I": {
+                "R@1": 0.13999999999999568,
+                "R@5": -0.11999999999999789,
+                "R@10": -0.019999999999997797
+              }
+            },
+            "Long-DCI": {
+              "I2T": {
+                "R@1": -0.052617732175741505,
+                "R@5": -0.23677979479084232,
+                "R@10": -0.14469876348329747
+              },
+              "T2I": {
+                "R@1": -0.23677979479084232,
+                "R@5": -0.17100762957116267,
+                "R@10": 0.0
+              }
+            }
+          }
+        },
+        "HNS_v1": {
+          "quality_delta_pp": {
+            "Score5": 0.023154690536003386,
+            "J_long3": 0.04859115089334409,
+            "J_long": 0.040000643730152774,
+            "Short4": -0.014999999999986358,
+            "Urban_I2T": -0.1999974250793457,
+            "Urban_T2I": 0.0
+          },
+          "recall_delta_pp": {
+            "COCO": {
+              "I2T": {
+                "R@1": -0.13999999999999568,
+                "R@5": 0.10000000000000009,
+                "R@10": 0.17999999999999128
+              },
+              "T2I": {
+                "R@1": -0.10000000000000009,
+                "R@5": 0.08799999999999919,
+                "R@10": 0.07199999999999429
+              }
+            },
+            "Urban-1k": {
+              "I2T": {
+                "R@1": -0.1999974250793457,
+                "R@5": 0.0,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": 0.0,
+                "R@10": 0.09999871253967285
+              }
+            },
+            "Flickr30k-test1k": {
+              "I2T": {
+                "R@1": 0.20000000000000018,
+                "R@5": -0.10000000000000009,
+                "R@10": 0.10000000000000009
+              },
+              "T2I": {
+                "R@1": -0.019999999999997797,
+                "R@5": 0.019999999999997797,
+                "R@10": 0.0
+              }
+            },
+            "DOCCI": {
+              "I2T": {
+                "R@1": 0.039999999999995595,
+                "R@5": -0.18000000000000238,
+                "R@10": 0.060000000000004494
+              },
+              "T2I": {
+                "R@1": 0.31999999999999806,
+                "R@5": -0.13999999999999568,
+                "R@10": 0.039999999999995595
+              }
+            },
+            "Long-DCI": {
+              "I2T": {
+                "R@1": 0.03946329913180335,
+                "R@5": -0.1315443304393593,
+                "R@10": -0.21047092870297712
+              },
+              "T2I": {
+                "R@1": 0.09208103130754486,
+                "R@5": -0.013154433043938152,
+                "R@10": 0.03946329913180335
+              }
+            }
+          }
+        },
+        "D3_Balanced": {
+          "quality_delta_pp": {
+            "Score5": -0.0326092904906119,
+            "J_long3": 0.030984515848984984,
+            "J_long": 0.1550008463859598,
+            "Short4": -0.1279999999999859,
+            "Urban_I2T": 0.20000338554382324,
+            "Urban_T2I": 0.0
+          },
+          "recall_delta_pp": {
+            "COCO": {
+              "I2T": {
+                "R@1": -0.31999999999999806,
+                "R@5": -0.31999999999999806,
+                "R@10": 0.11999999999999789
+              },
+              "T2I": {
+                "R@1": -0.19199999999999773,
+                "R@5": 0.08399999999999519,
+                "R@10": -0.052000000000007596
+              }
+            },
+            "Urban-1k": {
+              "I2T": {
+                "R@1": 0.20000338554382324,
+                "R@5": -0.09999871253967285,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": 0.0,
+                "R@10": -0.20000338554382324
+              }
+            },
+            "Flickr30k-test1k": {
+              "I2T": {
+                "R@1": 0.0,
+                "R@5": 0.10000000000000009,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": -0.060000000000004494,
+                "R@10": -0.060000000000004494
+              }
+            },
+            "DOCCI": {
+              "I2T": {
+                "R@1": 0.21999999999999797,
+                "R@5": -0.08000000000000229,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.20000000000000018,
+                "R@5": 0.0,
+                "R@10": -0.0400000000000067
+              }
+            },
+            "Long-DCI": {
+              "I2T": {
+                "R@1": -0.1315443304393593,
+                "R@5": 0.15785319652722452,
+                "R@10": -0.14469876348329747
+              },
+              "T2I": {
+                "R@1": -0.302551960010522,
+                "R@5": -0.11838989739542116,
+                "R@10": -0.06577216521967966
+              }
+            }
+          }
+        }
+      }
     }
   },
   "learning_curve": {
@@ -1766,6 +2201,441 @@
                 "R@1": -0.4340962904498813,
                 "R@5": -0.23677979479084232,
                 "R@10": -0.3288608260983983
+              }
+            }
+          }
+        }
+      }
+    },
+    "3651": {
+      "completed_steps": 3651,
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6176,
+            "R@5": 0.8364,
+            "R@10": 0.8986
+          },
+          "T2I": {
+            "R@1": 0.42936,
+            "R@5": 0.68736,
+            "R@10": 0.78184
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.9390000700950623,
+            "R@5": 0.9900000691413879,
+            "R@10": 0.9960000514984131
+          },
+          "T2I": {
+            "R@1": 0.9260000586509705,
+            "R@5": 0.9910000562667847,
+            "R@10": 0.9940000176429749
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.899,
+            "R@5": 0.984,
+            "R@10": 0.993
+          },
+          "T2I": {
+            "R@1": 0.7396,
+            "R@5": 0.9204,
+            "R@10": 0.9578
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.8034,
+            "R@5": 0.963,
+            "R@10": 0.9858
+          },
+          "T2I": {
+            "R@1": 0.8148,
+            "R@5": 0.9616,
+            "R@10": 0.984
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.6040515653775322,
+            "R@5": 0.7818995001315443,
+            "R@10": 0.8397790055248618
+          },
+          "T2I": {
+            "R@1": 0.6069455406471981,
+            "R@5": 0.7863720073664825,
+            "R@10": 0.835438042620363
+          }
+        }
+      },
+      "scores_percent": {
+        "Score5": 73.79757234770763,
+        "J_long3": 78.23662057951272,
+        "J_long": 87.08000321865082,
+        "Short4": 67.13900000000001
+      },
+      "checkpoint": {
+        "passed": true,
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/training/step003651.pt",
+        "sha256": "4e74f7e44128756f8398e26c97bc7c8f905aa8e0898baced56a266e5ed1b2156",
+        "size_bytes": 1884190970,
+        "completed_steps": 3651,
+        "scheduler_horizon": 4868,
+        "scheduler": {
+          "type": "native_manual_learning_rate_function",
+          "horizon": 4868,
+          "completed_steps": 3651,
+          "last_update_index": 3650,
+          "optimizer_lrs": {
+            "backbone": 1.587875889226633e-07,
+            "text_mask_and_shared_pool": 0.00014667485079179854,
+            "visual_mask": 0.00014667485079179854,
+            "fusion_adapter": 2.933497015835971e-05
+          }
+        },
+        "data_cursor": {
+          "next_epoch": 3,
+          "next_batch": 0
+        },
+        "sampler": {
+          "type": "DistributedSampler",
+          "seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "batches_per_epoch": 1217
+        },
+        "optimizer_steps": [
+          3651
+        ],
+        "optimizer_groups": [
+          {
+            "name": "backbone",
+            "lr": 1.587875889226633e-07,
+            "weight_decay": 0.01,
+            "parameter_count": 302
+          },
+          {
+            "name": "text_mask_and_shared_pool",
+            "lr": 0.00014667485079179854,
+            "weight_decay": 0.0,
+            "parameter_count": 14
+          },
+          {
+            "name": "visual_mask",
+            "lr": 0.00014667485079179854,
+            "weight_decay": 0.0,
+            "parameter_count": 12
+          },
+          {
+            "name": "fusion_adapter",
+            "lr": 2.933497015835971e-05,
+            "weight_decay": 0.0,
+            "parameter_count": 2
+          }
+        ],
+        "rng_per_rank": [
+          {
+            "rank": 0,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 1,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 2,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          },
+          {
+            "rank": 3,
+            "keys": [
+              "cpu",
+              "cuda",
+              "loader_generator",
+              "numpy",
+              "python"
+            ],
+            "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+            "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+            "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+          }
+        ],
+        "sources": {
+          "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+          "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+          "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+          "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+          "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+          "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+          "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+          "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+        },
+        "git_head": "889f60346f760a1495f0bb4a47f7e2491b0f2123",
+        "uploaded": false
+      },
+      "strict_export": {
+        "passed": true,
+        "strict_load": true,
+        "optimizer_steps": [
+          3651
+        ],
+        "image_max_abs": 0.0,
+        "text_max_abs": 0.0,
+        "checkpoint_sha256": "4e74f7e44128756f8398e26c97bc7c8f905aa8e0898baced56a266e5ed1b2156",
+        "bare_sha256": "4c43239d80130827afaa0a3905fccbc3b3e258cca6f089b6349611cdd746b0cf"
+      },
+      "bare": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step3651/evaluations/student_step3651.pt",
+        "sha256": "4c43239d80130827afaa0a3905fccbc3b3e258cca6f089b6349611cdd746b0cf",
+        "uploaded": false
+      },
+      "evaluation_checkpoint_immutable": true,
+      "comparisons": {
+        "HNS_S12": {
+          "quality_delta_pp": {
+            "Score5": -0.046139671634335855,
+            "J_long3": 0.0017672139427560296,
+            "J_long": 0.07500020265578655,
+            "Short4": -0.117999999999995,
+            "Urban_I2T": 0.0,
+            "Urban_T2I": 0.40000081062316895
+          },
+          "recall_delta_pp": {
+            "COCO": {
+              "I2T": {
+                "R@1": -0.25999999999999357,
+                "R@5": -0.33999999999999586,
+                "R@10": 0.07999999999999119
+              },
+              "T2I": {
+                "R@1": -0.11199999999999544,
+                "R@5": 0.08399999999999519,
+                "R@10": 0.012000000000000899
+              }
+            },
+            "Urban-1k": {
+              "I2T": {
+                "R@1": 0.0,
+                "R@5": 0.0,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.40000081062316895,
+                "R@5": -0.09999871253967285,
+                "R@10": -0.10000467300415039
+              }
+            },
+            "Flickr30k-test1k": {
+              "I2T": {
+                "R@1": -0.10000000000000009,
+                "R@5": -0.10000000000000009,
+                "R@10": 0.10000000000000009
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": -0.039999999999995595,
+                "R@10": -0.11999999999999789
+              }
+            },
+            "DOCCI": {
+              "I2T": {
+                "R@1": -0.23999999999999577,
+                "R@5": -0.060000000000004494,
+                "R@10": -0.10000000000000009
+              },
+              "T2I": {
+                "R@1": 0.13999999999999568,
+                "R@5": -0.11999999999999789,
+                "R@10": -0.019999999999997797
+              }
+            },
+            "Long-DCI": {
+              "I2T": {
+                "R@1": -0.052617732175741505,
+                "R@5": -0.23677979479084232,
+                "R@10": -0.14469876348329747
+              },
+              "T2I": {
+                "R@1": -0.23677979479084232,
+                "R@5": -0.17100762957116267,
+                "R@10": 0.0
+              }
+            }
+          }
+        },
+        "HNS_v1": {
+          "quality_delta_pp": {
+            "Score5": 0.023154690536003386,
+            "J_long3": 0.04859115089334409,
+            "J_long": 0.040000643730152774,
+            "Short4": -0.014999999999986358,
+            "Urban_I2T": -0.1999974250793457,
+            "Urban_T2I": 0.0
+          },
+          "recall_delta_pp": {
+            "COCO": {
+              "I2T": {
+                "R@1": -0.13999999999999568,
+                "R@5": 0.10000000000000009,
+                "R@10": 0.17999999999999128
+              },
+              "T2I": {
+                "R@1": -0.10000000000000009,
+                "R@5": 0.08799999999999919,
+                "R@10": 0.07199999999999429
+              }
+            },
+            "Urban-1k": {
+              "I2T": {
+                "R@1": -0.1999974250793457,
+                "R@5": 0.0,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": 0.0,
+                "R@10": 0.09999871253967285
+              }
+            },
+            "Flickr30k-test1k": {
+              "I2T": {
+                "R@1": 0.20000000000000018,
+                "R@5": -0.10000000000000009,
+                "R@10": 0.10000000000000009
+              },
+              "T2I": {
+                "R@1": -0.019999999999997797,
+                "R@5": 0.019999999999997797,
+                "R@10": 0.0
+              }
+            },
+            "DOCCI": {
+              "I2T": {
+                "R@1": 0.039999999999995595,
+                "R@5": -0.18000000000000238,
+                "R@10": 0.060000000000004494
+              },
+              "T2I": {
+                "R@1": 0.31999999999999806,
+                "R@5": -0.13999999999999568,
+                "R@10": 0.039999999999995595
+              }
+            },
+            "Long-DCI": {
+              "I2T": {
+                "R@1": 0.03946329913180335,
+                "R@5": -0.1315443304393593,
+                "R@10": -0.21047092870297712
+              },
+              "T2I": {
+                "R@1": 0.09208103130754486,
+                "R@5": -0.013154433043938152,
+                "R@10": 0.03946329913180335
+              }
+            }
+          }
+        },
+        "D3_Balanced": {
+          "quality_delta_pp": {
+            "Score5": -0.0326092904906119,
+            "J_long3": 0.030984515848984984,
+            "J_long": 0.1550008463859598,
+            "Short4": -0.1279999999999859,
+            "Urban_I2T": 0.20000338554382324,
+            "Urban_T2I": 0.0
+          },
+          "recall_delta_pp": {
+            "COCO": {
+              "I2T": {
+                "R@1": -0.31999999999999806,
+                "R@5": -0.31999999999999806,
+                "R@10": 0.11999999999999789
+              },
+              "T2I": {
+                "R@1": -0.19199999999999773,
+                "R@5": 0.08399999999999519,
+                "R@10": -0.052000000000007596
+              }
+            },
+            "Urban-1k": {
+              "I2T": {
+                "R@1": 0.20000338554382324,
+                "R@5": -0.09999871253967285,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": 0.0,
+                "R@10": -0.20000338554382324
+              }
+            },
+            "Flickr30k-test1k": {
+              "I2T": {
+                "R@1": 0.0,
+                "R@5": 0.10000000000000009,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.0,
+                "R@5": -0.060000000000004494,
+                "R@10": -0.060000000000004494
+              }
+            },
+            "DOCCI": {
+              "I2T": {
+                "R@1": 0.21999999999999797,
+                "R@5": -0.08000000000000229,
+                "R@10": 0.0
+              },
+              "T2I": {
+                "R@1": 0.20000000000000018,
+                "R@5": 0.0,
+                "R@10": -0.0400000000000067
+              }
+            },
+            "Long-DCI": {
+              "I2T": {
+                "R@1": -0.1315443304393593,
+                "R@5": 0.15785319652722452,
+                "R@10": -0.14469876348329747
+              },
+              "T2I": {
+                "R@1": -0.302551960010522,
+                "R@5": -0.11838989739542116,
+                "R@10": -0.06577216521967966
               }
             }
           }
