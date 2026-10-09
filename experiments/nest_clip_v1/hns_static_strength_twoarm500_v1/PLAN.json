@@ -1,0 +1,53 @@
+{
+  "order": [
+    "E1-HNS-S12",
+    "E2-HNS-H4"
+  ],
+  "arms": {
+    "E1-HNS-S12": {
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.2,
+      "lambda_hierarchy": 1.0
+    },
+    "E2-HNS-H4": {
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.0,
+      "lambda_hierarchy": 4.0
+    }
+  },
+  "fresh_common0": true,
+  "resume": null,
+  "independent_smoke5_formal500": true,
+  "max_updates": 500,
+  "horizon": 4868,
+  "view_weights": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity_weights": [
+    1,
+    2,
+    2
+  ],
+  "beta": [
+    2,
+    2
+  ],
+  "no_SG": true,
+  "soft_inclusion": 0,
+  "ramp": "min(1,completed BEFORE update/200)",
+  "fixed_K": 3,
+  "seed": 0,
+  "world": 4,
+  "batch_per_rank": 256,
+  "workers": 8,
+  "local_only": true,
+  "NFS_fallback": false,
+  "coefficient_control": "Same original HNS@500 parameters, same1024 inputs and one shared raw loss graph; no parameter updates",
+  "severe_mask_stop": "All three valid-population Hard-ST supports entirely empty OR entirely full for five consecutive updates; ordinary density/equality changes are diagnostics only",
+  "automatic_full": false,
+  "third_arm": false,
+  "combinations": false,
+  "additional_seed": false
+}

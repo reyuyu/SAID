@@ -8,7 +8,7 @@ import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader,DistributedSampler
 from model import longclip
-from model.balanced_hparam_search import BalancedSearch,hparams,macro_hparams
+from model.balanced_hparam_search import BalancedSearch,hparams,macro_hparams,macro_terms,MACRO_DEFAULTS
 from recovery.s02_nfs500 import dump,sha,now
 from recovery.s02_local500 import INDEX,IMAGES
 from recovery.s02_full_local_data import FullLocalDataset
@@ -23,6 +23,7 @@ def cosine(a,b):
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--checkpoint',required=True);parser.add_argument('--output',required=True)
+    parser.add_argument('--coefficient-grid',action='store_true',help='Read-only default/S12/H4 on one immutable HNS loss graph')
     args=parser.parse_args();started=now();seed_all(0);torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32=False
     rank,local,world,_=setup();assert world==4
@@ -83,6 +84,8 @@ def main():
         additivity[g]=dict(relative_L2_error=error,tolerance=tolerance,
             precision_note='Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates')
         conflicts[g]=dict(cosine_hierarchy_sparsity=cosine(h,s),cosine_hierarchy_alignment=cosine(h,a),
+            cosine_alignment_sparsity=cosine(a,s),
+            weighted_cosine_hierarchy_sparsity=cosine(weighted_h,weighted_s),
             raw_alignment_norm=float(a.norm()),raw_sparsity_norm=float(s.norm()),raw_hierarchy_norm=float(h.norm()),
             weighted_alignment_norm=float(weighted_a.norm()),weighted_sparsity_norm=float(weighted_s.norm()),
             weighted_hierarchy_norm=float(weighted_h.norm()),total_norm=float(total.norm()))
@@ -97,12 +100,44 @@ def main():
         a,d,k=[vectors['weighted_view_'+v][g] for v in ('F','Dall','D3')]
         views[g].update(weighted_D3_Dall_ratio=None if not float(d.norm()) else float(k.norm()/d.norm()),
             cosine_F_Dall=cosine(a,d),cosine_Dall_D3=cosine(d,k),cosine_F_D3=cosine(a,k))
+    controls={}
+    if args.coefficient_grid:
+        assert cfg.get('hns_enabled',False) and hp==MACRO_DEFAULTS
+        assert graph['lambda_h']==1. and int(logs['HNS_mask_width'])==512
+        for arm,scales in {'E1-HNS-S12':(10.,1.2,1.),'E2-HNS-H4':(10.,1.,4.)}.items():
+            scale=dict(zip(('lambda_align','lambda_sparse','lambda_hierarchy'),scales))
+            wa,ws,wh=macro_terms(graph['alignment'],graph['original_sparsity'],graph['weighted_hierarchy'],scale)
+            current={};scalars={}
+            for key,value in dict(weighted_alignment=wa,weighted_sparsity=ws,weighted_hierarchy=wh,total=(wa+ws)+wh).items():
+                reduced=[]
+                gradients=torch.autograd.grad(value,params,allow_unused=True,retain_graph=True)
+                for param,gradient in zip(params,gradients):
+                    v=torch.zeros_like(param) if gradient is None else gradient.detach().float().clone()
+                    dist.all_reduce(v);v/=world;assert torch.isfinite(v).all();reduced.append(v.flatten())
+                current[key]={g:torch.cat([reduced[i] for i in ii]) for g,ii in indices.items()}
+                scalar=value.detach().clone();dist.all_reduce(scalar);scalars[key]=float(scalar/world)
+                del gradients,reduced
+            groups={}
+            for g in indices:
+                a,s,h,t=[current[k][g] for k in ('weighted_alignment','weighted_sparsity','weighted_hierarchy','total')]
+                error=float((t-a-s-h).norm())/max(float(t.norm()),1e-12);assert error<=3e-4,(arm,g,error)
+                groups[g]=dict(weighted_alignment_norm=float(a.norm()),weighted_sparsity_norm=float(s.norm()),
+                    weighted_hierarchy_norm=float(h.norm()),total_norm=float(t.norm()),
+                    weighted_cosine_hierarchy_sparsity=cosine(h,s),weighted_cosine_hierarchy_alignment=cosine(h,a),
+                    weighted_cosine_alignment_sparsity=cosine(a,s),relative_gradient_additivity_error=error,
+                    norm_delta_vs_fixed_default={k:float(current[c][g].norm())-conflicts[g][k] for k,c in
+                        [('weighted_alignment_norm','weighted_alignment'),('weighted_sparsity_norm','weighted_sparsity'),
+                         ('weighted_hierarchy_norm','weighted_hierarchy'),('total_norm','total')]})
+            controls[arm]=dict(macro_scales=scale,weighted_losses=scalars,group_diagnostics=groups,
+                same_raw_graph=True,same_parameters=True,same_inputs=True,autograd_actual_weighted_losses=True)
+            del current,wa,ws,wh
     assert all(p.grad is None for p in model.parameters()) and sha(args.checkpoint)==digest
     if rank==0:
         assert state_digest(model.state_dict())==before
         dump(args.output,dict(passed=True,protocol='Original immutable step500 first seed0 epoch0 global1024 batch;256/rank; mean all-reduced gradients; no optimizer step',
             sample_ids_sha256=ids_sha,records=1024,completed=499,ramp=graph['lambda_h'],macro_scales=hp,
             components=components,group_diagnostics=conflicts,gradient_additivity=additivity,view_gradients=views,
+            fixed_state_coefficient_controls=controls,
             checkpoint=dict(path=args.checkpoint,sha256=digest,unchanged=True,uploaded=False),
             no_parameter_updates=True,state_digest_before=before,state_digest_after=before,
             local_only=True,NFS_fallback=False,telemetry={k:float(v) if torch.is_tensor(v) else v for k,v in logs.items()
