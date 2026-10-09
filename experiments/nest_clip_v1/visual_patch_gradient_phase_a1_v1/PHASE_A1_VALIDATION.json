@@ -1,0 +1,630 @@
+{
+  "status": "COMPLETED",
+  "classification": "PROBE_IMPLEMENTATION_ISSUE",
+  "node": 500,
+  "global_batch": 16,
+  "per_rank_batch": 4,
+  "checkpoint": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+    "expected_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+    "observed_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+    "unchanged": true
+  },
+  "sampling": [
+    {
+      "rank": 0,
+      "sampling": {
+        "sample_ids": [
+          235696,
+          922516,
+          461053,
+          979752
+        ],
+        "n": [
+          7,
+          9,
+          7,
+          5
+        ],
+        "K": [
+          3,
+          3,
+          3,
+          3
+        ],
+        "valid_count": 4,
+        "k1_count": 0,
+        "K_histogram_by_n": {
+          "7": {
+            "3": 2
+          },
+          "9": {
+            "3": 1
+          },
+          "5": {
+            "3": 1
+          }
+        },
+        "prefix_segments": {
+          "1": 4
+        },
+        "remainder_segments": {
+          "3": 4
+        },
+        "prefix_token_lengths": {
+          "96": 1,
+          "142": 2,
+          "157": 1
+        },
+        "remainder_token_lengths": {
+          "43": 1,
+          "56": 1,
+          "69": 1,
+          "71": 1
+        },
+        "sample_id_sha256": "46d5f9f390107341646f54dfbdbef876108ab90469c9ef2df3718d439a6fa9ed",
+        "full_view_sha256": "025ceadac27ba97e7ba5947b111055aef8c1d32e44db21fc9f606f08f027c286",
+        "summary_view_sha256": "fa667d3923417911e97b8d8dfb2b3014f788d7d1759d70076b4dfef1562db9a7",
+        "local_views_sha256": "19ca10ce4ebb039428266dafa022e7cc0661e4a0d5d988665b700c94a2492174",
+        "split_sha256": "04c92601b7e680cde8d9663d699929cef47d2164983be2dc5c89ec44e31e97ce",
+        "fixed_first_reference_stream_sha256": "15fc6e7528cf051451359c240bfab0f47119053d2870e9e1996dba0e148cd9d0",
+        "nested_detail_statistics": {
+          "valid_samples": 4,
+          "Dall_sentence_count_histogram": {
+            "4": 1,
+            "6": 2,
+            "8": 1
+          },
+          "Ds_sentence_position_histogram": {
+            "2": 3,
+            "3": 1
+          },
+          "views": {
+            "F": {
+              "effective_token_sum": 632,
+              "content_token_sum": 624,
+              "effective_token_histogram": {
+                "120": 1,
+                "158": 1,
+                "163": 1,
+                "191": 1
+              }
+            },
+            "Dall": {
+              "effective_token_sum": 537,
+              "content_token_sum": 529,
+              "effective_token_histogram": {
+                "96": 1,
+                "142": 2,
+                "157": 1
+              }
+            },
+            "Ds": {
+              "effective_token_sum": 239,
+              "content_token_sum": 231,
+              "effective_token_histogram": {
+                "43": 1,
+                "56": 1,
+                "69": 1,
+                "71": 1
+              }
+            }
+          },
+          "coverage_ratio_sums": {
+            "Dall_F": 3.3837171044245475,
+            "Ds_F": 1.563979894119909,
+            "Ds_Dall": 1.8628443965094617
+          }
+        },
+        "nested_detail_exact": true,
+        "nested_d3_exact": true,
+        "nested_d3_statistics": {
+          "records": 4,
+          "valid_samples": 4,
+          "K_eff_histogram": {
+            "3": 4
+          },
+          "D3_sentence_count_histogram": {
+            "3": 4
+          },
+          "m_histogram": {
+            "4": 1,
+            "6": 2,
+            "8": 1
+          },
+          "degenerate_samples": 0,
+          "strict_subset_samples": 4,
+          "selected_sentence_position_histogram_1based": {
+            "2": 3,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 2,
+            "7": 3
+          }
+        },
+        "lowest_selected_sentence_indices_sha256": "971a25425988a92b574ab4099a6ce1eaffdee30dc0ca5efdf8ef38faac3e8296"
+      },
+      "input_tensor_sha256": {
+        "image": "2e687e2ed9c4cd55c25ac21ab0b56dcee8ffd5cede06516ba1e008a8ca0eea66",
+        "tokens_f": "ffe31032cb47eaae164c8cd49f5ba143ce8128ccc4bf81d57947c8af43b3fb8d",
+        "tokens_o": "3d71eeb2e7e8c84f601089348e130e8887725c7e00e3f52ef170dc7e23ba78f3",
+        "tokens_e": "7822aff2723a86eb6f8d6d8945f8d2466569fde4e8468caf9191602bc5b1955c",
+        "valid": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
+      }
+    },
+    {
+      "rank": 1,
+      "sampling": {
+        "sample_ids": [
+          341047,
+          299112,
+          357434,
+          685712
+        ],
+        "n": [
+          10,
+          13,
+          6,
+          11
+        ],
+        "K": [
+          3,
+          3,
+          3,
+          3
+        ],
+        "valid_count": 4,
+        "k1_count": 0,
+        "K_histogram_by_n": {
+          "10": {
+            "3": 1
+          },
+          "13": {
+            "3": 1
+          },
+          "6": {
+            "3": 1
+          },
+          "11": {
+            "3": 1
+          }
+        },
+        "prefix_segments": {
+          "1": 4
+        },
+        "remainder_segments": {
+          "3": 4
+        },
+        "prefix_token_lengths": {
+          "117": 1,
+          "190": 1,
+          "219": 1,
+          "233": 1
+        },
+        "remainder_token_lengths": {
+          "47": 1,
+          "56": 1,
+          "66": 1,
+          "68": 1
+        },
+        "sample_id_sha256": "7b728ffb493ceb83a6ec8c5924aee324cb4c4535cddb93967cb52b9ae70bb6f2",
+        "full_view_sha256": "69e9cd15849de81b7def98be1036f019e9407c822bea4d5b6cb5f8bd66c2e1b3",
+        "summary_view_sha256": "e8b87c36af2a642360caafd353aeae77879f727efbe99b93e7e72b62759931dc",
+        "local_views_sha256": "e1d109c9e3221696f73d18b47f733d7cb0ee9128edd666a5ff5ad73191e7c8f0",
+        "split_sha256": "f390eafc73364572e5218b1039f77255718d149328a64d7aae365ab0528e4ffb",
+        "fixed_first_reference_stream_sha256": "f784d08e36167e7a3d050b3dce6ad44882d3a66177730930f6431715a332e0ce",
+        "nested_detail_statistics": {
+          "valid_samples": 4,
+          "Dall_sentence_count_histogram": {
+            "5": 1,
+            "9": 1,
+            "10": 1,
+            "12": 1
+          },
+          "Ds_sentence_position_histogram": {
+            "3": 2,
+            "4": 1,
+            "6": 1
+          },
+          "views": {
+            "F": {
+              "effective_token_sum": 828,
+              "content_token_sum": 820,
+              "effective_token_histogram": {
+                "139": 1,
+                "210": 1,
+                "232": 1,
+                "247": 1
+              }
+            },
+            "Dall": {
+              "effective_token_sum": 759,
+              "content_token_sum": 751,
+              "effective_token_histogram": {
+                "117": 1,
+                "190": 1,
+                "219": 1,
+                "233": 1
+              }
+            },
+            "Ds": {
+              "effective_token_sum": 237,
+              "content_token_sum": 229,
+              "effective_token_histogram": {
+                "47": 1,
+                "56": 1,
+                "66": 1,
+                "68": 1
+              }
+            }
+          },
+          "coverage_ratio_sums": {
+            "Dall_F": 3.6295976159670227,
+            "Ds_F": 1.2055044696881756,
+            "Ds_Dall": 1.3554780810487892
+          }
+        },
+        "nested_detail_exact": true,
+        "nested_d3_exact": true,
+        "nested_d3_statistics": {
+          "records": 4,
+          "valid_samples": 4,
+          "K_eff_histogram": {
+            "3": 4
+          },
+          "D3_sentence_count_histogram": {
+            "3": 4
+          },
+          "m_histogram": {
+            "5": 1,
+            "9": 1,
+            "10": 1,
+            "12": 1
+          },
+          "degenerate_samples": 0,
+          "strict_subset_samples": 4,
+          "selected_sentence_position_histogram_1based": {
+            "3": 2,
+            "4": 2,
+            "6": 3,
+            "7": 1,
+            "8": 1,
+            "10": 2,
+            "12": 1
+          }
+        },
+        "lowest_selected_sentence_indices_sha256": "4652ada0b47c284692f95782899237ee96c31fa8adce09799a7153f356d1a6d9"
+      },
+      "input_tensor_sha256": {
+        "image": "715afc80993bedd3a5b355039ef527d985cae6a4a0f38b62e2cac6dc161012f4",
+        "tokens_f": "3da89a28de023ce8bf493a499e0153383f1c460fccc1dd97deb5e625c2e494d7",
+        "tokens_o": "555dbaad175c7777cda5bc9e9f1e4386ce3071dcebf1f84ca7b073e505b94a3a",
+        "tokens_e": "766be1e15b620cffcfc556abf7eaff96fb899a62dba47e575149f9f7ec5b0587",
+        "valid": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
+      }
+    },
+    {
+      "rank": 2,
+      "sampling": {
+        "sample_ids": [
+          270126,
+          425869,
+          309459,
+          876657
+        ],
+        "n": [
+          10,
+          7,
+          10,
+          9
+        ],
+        "K": [
+          3,
+          3,
+          3,
+          3
+        ],
+        "valid_count": 4,
+        "k1_count": 0,
+        "K_histogram_by_n": {
+          "10": {
+            "3": 2
+          },
+          "7": {
+            "3": 1
+          },
+          "9": {
+            "3": 1
+          }
+        },
+        "prefix_segments": {
+          "1": 4
+        },
+        "remainder_segments": {
+          "3": 4
+        },
+        "prefix_token_lengths": {
+          "143": 1,
+          "151": 1,
+          "192": 1,
+          "195": 1
+        },
+        "remainder_token_lengths": {
+          "57": 1,
+          "65": 1,
+          "66": 1,
+          "81": 1
+        },
+        "sample_id_sha256": "c6976491e79bfeab066bfefb42def9edff9cf68b85dabe09888c19bbb425b727",
+        "full_view_sha256": "6f474291a8d7e38535f7019451455ccc39a62f5e1304b5934763a2749040b3e9",
+        "summary_view_sha256": "762568f0c6736ce75c4e25eab22cff2c4f8ccf1bd4cf9f22171616a288ead275",
+        "local_views_sha256": "4ae285440c345e01fdd6f7feb48047059e3d32712bcc1618dad57e8ff8753210",
+        "split_sha256": "4311c23a7af24695ba63fddd907e97b6fcfa5b114f96f00926b0e2ed7d6a12a5",
+        "fixed_first_reference_stream_sha256": "3adad9daae35584f6512fd916cbb0251f51454b5d04c3432ece2ea865686aa32",
+        "nested_detail_statistics": {
+          "valid_samples": 4,
+          "Dall_sentence_count_histogram": {
+            "6": 1,
+            "8": 1,
+            "9": 2
+          },
+          "Ds_sentence_position_histogram": {
+            "4": 2,
+            "5": 1,
+            "6": 1
+          },
+          "views": {
+            "F": {
+              "effective_token_sum": 749,
+              "content_token_sum": 741,
+              "effective_token_histogram": {
+                "156": 1,
+                "184": 1,
+                "204": 1,
+                "205": 1
+              }
+            },
+            "Dall": {
+              "effective_token_sum": 681,
+              "content_token_sum": 673,
+              "effective_token_histogram": {
+                "143": 1,
+                "151": 1,
+                "192": 1,
+                "195": 1
+              }
+            },
+            "Ds": {
+              "effective_token_sum": 269,
+              "content_token_sum": 261,
+              "effective_token_histogram": {
+                "57": 1,
+                "65": 1,
+                "66": 1,
+                "81": 1
+              }
+            }
+          },
+          "coverage_ratio_sums": {
+            "Dall_F": 3.625598709927832,
+            "Ds_F": 1.4423369392642182,
+            "Ds_Dall": 1.5925963697067873
+          }
+        },
+        "nested_detail_exact": true,
+        "nested_d3_exact": true,
+        "nested_d3_statistics": {
+          "records": 4,
+          "valid_samples": 4,
+          "K_eff_histogram": {
+            "3": 4
+          },
+          "D3_sentence_count_histogram": {
+            "3": 4
+          },
+          "m_histogram": {
+            "6": 1,
+            "8": 1,
+            "9": 2
+          },
+          "degenerate_samples": 0,
+          "strict_subset_samples": 4,
+          "selected_sentence_position_histogram_1based": {
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 2,
+            "8": 1,
+            "9": 2,
+            "10": 1
+          }
+        },
+        "lowest_selected_sentence_indices_sha256": "09868b887beb84d5e7ad789d20031a8e6be8ec509a0b51a5907d14394ec69dae"
+      },
+      "input_tensor_sha256": {
+        "image": "abdb26935f92de29cf9db16b30ab5eea18a4b22472ef673d2455f781dd5a97e1",
+        "tokens_f": "9cdce2c98896f0c45b5aa4dd2354e5f4ee674d7c576ebdf6e2645cd4cefd3bd4",
+        "tokens_o": "310f1708f32a452aacb96c0ab10b73e9e660fc0ca63e8cd0408d7952ac6ac53e",
+        "tokens_e": "a09281ec7cbf4e5b138cca9b1631dbfa4c4cd5e20c3e459b2406a03b176cd67c",
+        "valid": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
+      }
+    },
+    {
+      "rank": 3,
+      "sampling": {
+        "sample_ids": [
+          107951,
+          588705,
+          174956,
+          460262
+        ],
+        "n": [
+          6,
+          9,
+          10,
+          9
+        ],
+        "K": [
+          3,
+          3,
+          3,
+          3
+        ],
+        "valid_count": 4,
+        "k1_count": 0,
+        "K_histogram_by_n": {
+          "6": {
+            "3": 1
+          },
+          "9": {
+            "3": 2
+          },
+          "10": {
+            "3": 1
+          }
+        },
+        "prefix_segments": {
+          "1": 4
+        },
+        "remainder_segments": {
+          "3": 4
+        },
+        "prefix_token_lengths": {
+          "115": 1,
+          "176": 1,
+          "194": 1,
+          "198": 1
+        },
+        "remainder_token_lengths": {
+          "57": 1,
+          "58": 1,
+          "65": 1,
+          "75": 1
+        },
+        "sample_id_sha256": "88482f445a8f05ca65789dfe7bd9a290e923f29128d66e3d85ba94e54795d2f9",
+        "full_view_sha256": "a6cd86b3712255e1ff478066501f2e8a6b9a8e24b02946b963deaea85ddada52",
+        "summary_view_sha256": "dbef04ad2aa8ac0578003b4e86367e9f0e256b2fb9985353085587c517b6fa79",
+        "local_views_sha256": "a0fc353e8ccab4ed0fad26655927ae57d0a46b9c7286ccfa3933f1ec266f453f",
+        "split_sha256": "742472202136d3e832d1bb7a41e2e73cf489ac1020936d99e79d6e45f79f3b89",
+        "fixed_first_reference_stream_sha256": "e43cc2888acd183d64329a3d6d38d5b5ef535d5ada72f7777d55f5658f05a42a",
+        "nested_detail_statistics": {
+          "valid_samples": 4,
+          "Dall_sentence_count_histogram": {
+            "5": 1,
+            "8": 2,
+            "9": 1
+          },
+          "Ds_sentence_position_histogram": {
+            "2": 2,
+            "3": 2
+          },
+          "views": {
+            "F": {
+              "effective_token_sum": 764,
+              "content_token_sum": 756,
+              "effective_token_histogram": {
+                "136": 1,
+                "189": 1,
+                "218": 1,
+                "221": 1
+              }
+            },
+            "Dall": {
+              "effective_token_sum": 683,
+              "content_token_sum": 675,
+              "effective_token_histogram": {
+                "115": 1,
+                "176": 1,
+                "194": 1,
+                "198": 1
+              }
+            },
+            "Ds": {
+              "effective_token_sum": 255,
+              "content_token_sum": 247,
+              "effective_token_histogram": {
+                "57": 1,
+                "58": 1,
+                "65": 1,
+                "75": 1
+              }
+            }
+          },
+          "coverage_ratio_sums": {
+            "Dall_F": 3.5576309233506724,
+            "Ds_F": 1.3370280948200175,
+            "Ds_Dall": 1.5122411548537633
+          }
+        },
+        "nested_detail_exact": true,
+        "nested_d3_exact": true,
+        "nested_d3_statistics": {
+          "records": 4,
+          "valid_samples": 4,
+          "K_eff_histogram": {
+            "3": 4
+          },
+          "D3_sentence_count_histogram": {
+            "3": 4
+          },
+          "m_histogram": {
+            "5": 1,
+            "8": 2,
+            "9": 1
+          },
+          "degenerate_samples": 0,
+          "strict_subset_samples": 4,
+          "selected_sentence_position_histogram_1based": {
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 1,
+            "8": 1,
+            "9": 2
+          }
+        },
+        "lowest_selected_sentence_indices_sha256": "702c3f94b66da2ab020211f4947bd30460b28a359cf0fcac617c708a75fe6855"
+      },
+      "input_tensor_sha256": {
+        "image": "d7e7e50d11a7a4022e5b5829fddce687231f133525908632e2203f4246340ea0",
+        "tokens_f": "26df35b1ad72c6b64a95d950765be208f73b1f9478dd99fdc9beea58001c1ac3",
+        "tokens_o": "fe24af2d9a3ad6a8d8410b17777d788fe3fe6898d1649db388ad5e216c531f08",
+        "tokens_e": "40184f718252634b283461a97aa248c19fa425d193d2680f3a2f31d5a7b35a1a",
+        "valid": "27ecd0a598e76f8a2fd264d427df0a119903e8eae384e478902541756f089dd1"
+      }
+    }
+  ],
+  "source_manifest": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+    "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+    "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+  },
+  "forward_equivalence": "PASS: exact A/B captured tensors in both precision paths",
+  "separate_gradient_acceptance": {
+    "BF16_A": true,
+    "BF16_B": false,
+    "FP32_A": true,
+    "FP32_B": false
+  },
+  "one_pass_control": "PASS: combined component scalar gradient equals total gradient in BF16 and FP32",
+  "no_training": true,
+  "no_optimizer_created": true,
+  "no_optimizer_step": true,
+  "no_checkpoint_saved": true,
+  "global1024_not_run": true,
+  "node1217_not_run": true,
+  "urban_not_run": true,
+  "gpu_cleanup": "verified after run",
+  "cpu_tests": "19 passed (Phase A and Phase A.1 CPU tests)",
+  "limitation": "The one-pass control diagnoses the separate-component audit method; it does not establish that a future production training run with Patch gradients improves retrieval."
+}

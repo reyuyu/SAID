@@ -1,0 +1,897 @@
+{
+  "status": "COMPLETED",
+  "classification": "PROBE_IMPLEMENTATION_ISSUE",
+  "node": 500,
+  "global_batch": 16,
+  "thresholds": {
+    "BF16_native_backbone": 0.01,
+    "FP32_diagnostic_reference": 0.0003
+  },
+  "checkpoint": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-sparse-ratio-twoarm500-v1/E2-Uniform/step500/step000500.pt",
+    "expected_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+    "observed_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+    "unchanged": true
+  },
+  "forward_A_B_exact_by_precision": {
+    "bf16": {
+      "CLIP_global_image_embedding": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "CLIP_text_embedding_D3": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "CLIP_text_embedding_Dall": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "CLIP_text_embedding_F": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "masks_D3": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "masks_Dall": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "masks_F": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "probabilities_D3": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "probabilities_Dall": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "probabilities_F": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_hierarchy": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_sparse": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_view_D3": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_view_Dall": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_view_F": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "total_training": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "weighted_align": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "weighted_hierarchy": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "weighted_sparse": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      }
+    },
+    "fp32": {
+      "CLIP_global_image_embedding": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "CLIP_text_embedding_D3": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "CLIP_text_embedding_Dall": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "CLIP_text_embedding_F": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "masks_D3": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "masks_Dall": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "masks_F": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "probabilities_D3": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "probabilities_Dall": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "probabilities_F": {
+        "shape": [
+          4,
+          512
+        ],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_hierarchy": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_sparse": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_view_D3": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_view_Dall": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "raw_view_F": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "total_training": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "weighted_align": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "weighted_hierarchy": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "weighted_sparse": {
+        "shape": [],
+        "dtype": "torch.float32",
+        "exact": true,
+        "max_absolute_difference": 0.0,
+        "max_relative_difference": 0.0
+      }
+    }
+  },
+  "precision_results": {
+    "bf16": {
+      "A": {
+        "native_backbone_separate_component_additivity": {
+          "total_gradient_norm": 86.21370763301377,
+          "component_gradient_norms": {
+            "weighted_align": 86.21370763301377,
+            "weighted_sparse": 0.0,
+            "weighted_hierarchy": 0.0
+          },
+          "additivity_absolute_L2_error": 0.0,
+          "additivity_relative_L2_error": 0.0,
+          "additivity_max_absolute_element": 0.0,
+          "tolerance": 0.01,
+          "pass": true
+        },
+        "native_backbone_one_pass_combined_control": {
+          "total_gradient_norm": 86.21370763301377,
+          "combined_vs_total_absolute_L2_error": 0.0,
+          "combined_vs_total_relative_L2_error": 0.0,
+          "combined_vs_total_max_absolute_element": 0.0
+        },
+        "graph_total_minus_component_sum": 0.0,
+        "worst_separate_layer_errors": [
+          [
+            5.399813572976575e-07,
+            "text_mask_shared_pool",
+            8.212879853056012e-07
+          ],
+          [
+            2.5223792999668847e-07,
+            "visual_adapter",
+            3.0257305581449503e-07
+          ],
+          [
+            2.141690535233291e-07,
+            "visual_mask",
+            2.1254357659957383e-07
+          ],
+          [
+            8.569595016747224e-08,
+            "fusion_gate",
+            8.192527781114923e-08
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_9",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_8",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_7",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_6",
+            0.0
+          ]
+        ],
+        "worst_one_pass_layer_errors": [
+          [
+            0.0,
+            "visual_transformer_layer_9",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_8",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_7",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_6",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_5",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_4",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_3",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_2",
+            0.0
+          ]
+        ],
+        "patch_input_gradient_norms": {
+          "weighted_align": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "weighted_sparse": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "weighted_hierarchy": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "total_training": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "state_unchanged": true,
+        "finite": true
+      },
+      "B": {
+        "native_backbone_separate_component_additivity": {
+          "total_gradient_norm": 89.25084760182447,
+          "component_gradient_norms": {
+            "weighted_align": 89.15499667799052,
+            "weighted_sparse": 2.3808249389723537,
+            "weighted_hierarchy": 0.010957494967975684
+          },
+          "additivity_absolute_L2_error": 1.3741476296510415,
+          "additivity_relative_L2_error": 0.015396465877629951,
+          "additivity_max_absolute_element": 0.06332004070281982,
+          "tolerance": 0.01,
+          "pass": false
+        },
+        "native_backbone_one_pass_combined_control": {
+          "total_gradient_norm": 89.25084760182447,
+          "combined_vs_total_absolute_L2_error": 0.0,
+          "combined_vs_total_relative_L2_error": 0.0,
+          "combined_vs_total_max_absolute_element": 0.0
+        },
+        "graph_total_minus_component_sum": 0.0,
+        "worst_separate_layer_errors": [
+          [
+            0.023291015517806605,
+            "visual_conv1",
+            1.2631907338740784
+          ],
+          [
+            0.01622253854627039,
+            "visual_ln_pre",
+            0.026776057302445647
+          ],
+          [
+            0.01344108379471428,
+            "visual_transformer_layer_0",
+            0.19618826685272903
+          ],
+          [
+            0.01186680142656205,
+            "visual_transformer_layer_1",
+            0.19929284503581626
+          ],
+          [
+            0.010799399095150746,
+            "visual_positional_embedding",
+            0.07817406229451963
+          ],
+          [
+            0.010786228350995155,
+            "visual_transformer_layer_2",
+            0.2025997010610759
+          ],
+          [
+            0.009789187742726253,
+            "visual_transformer_layer_3",
+            0.19730552009171476
+          ],
+          [
+            0.00808995300949985,
+            "visual_transformer_layer_4",
+            0.17852661759139785
+          ]
+        ],
+        "worst_one_pass_layer_errors": [
+          [
+            0.0,
+            "visual_transformer_layer_9",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_8",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_7",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_6",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_5",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_4",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_3",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_2",
+            0.0
+          ]
+        ],
+        "patch_input_gradient_norms": {
+          "weighted_align": [
+            0.00029616360552608967,
+            0.009833326563239098,
+            0.0577244833111763,
+            0.030252138152718544
+          ],
+          "weighted_sparse": [
+            0.005819258745759726,
+            0.005254818592220545,
+            0.0042731440626084805,
+            0.005329330451786518
+          ],
+          "weighted_hierarchy": [
+            2.6187037292402238e-05,
+            2.6924239136860706e-05,
+            3.766063309740275e-05,
+            1.918708767334465e-05
+          ],
+          "total_training": [
+            0.0057265907526016235,
+            0.011407311074435711,
+            0.05672002211213112,
+            0.030140116810798645
+          ]
+        },
+        "state_unchanged": true,
+        "finite": true
+      }
+    },
+    "fp32": {
+      "A": {
+        "native_backbone_separate_component_additivity": {
+          "total_gradient_norm": 86.76128538429242,
+          "component_gradient_norms": {
+            "weighted_align": 86.76128538429242,
+            "weighted_sparse": 0.0,
+            "weighted_hierarchy": 0.0
+          },
+          "additivity_absolute_L2_error": 0.0,
+          "additivity_relative_L2_error": 0.0,
+          "additivity_max_absolute_element": 0.0,
+          "tolerance": 0.0003,
+          "pass": true
+        },
+        "native_backbone_one_pass_combined_control": {
+          "total_gradient_norm": 86.76128538429242,
+          "combined_vs_total_absolute_L2_error": 0.0,
+          "combined_vs_total_relative_L2_error": 0.0,
+          "combined_vs_total_max_absolute_element": 0.0
+        },
+        "graph_total_minus_component_sum": 0.0,
+        "worst_separate_layer_errors": [
+          [
+            5.398138004449792e-07,
+            "text_mask_shared_pool",
+            8.217817327938806e-07
+          ],
+          [
+            2.4713783483523437e-07,
+            "visual_adapter",
+            2.952028992441886e-07
+          ],
+          [
+            2.0697678102694418e-07,
+            "visual_mask",
+            2.044522548793996e-07
+          ],
+          [
+            8.409652894873537e-08,
+            "fusion_gate",
+            7.846958357957275e-08
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_9",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_8",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_7",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_6",
+            0.0
+          ]
+        ],
+        "worst_one_pass_layer_errors": [
+          [
+            0.0,
+            "visual_transformer_layer_9",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_8",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_7",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_6",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_5",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_4",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_3",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_2",
+            0.0
+          ]
+        ],
+        "patch_input_gradient_norms": {
+          "weighted_align": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "weighted_sparse": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "weighted_hierarchy": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "total_training": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "state_unchanged": true,
+        "finite": true
+      },
+      "B": {
+        "native_backbone_separate_component_additivity": {
+          "total_gradient_norm": 90.2245010341392,
+          "component_gradient_norms": {
+            "weighted_align": 90.29478734929569,
+            "weighted_sparse": 2.381678223149466,
+            "weighted_hierarchy": 0.012634656708898642
+          },
+          "additivity_absolute_L2_error": 0.04069078766779505,
+          "additivity_relative_L2_error": 0.00045099487613013727,
+          "additivity_max_absolute_element": 0.0016317367553710938,
+          "tolerance": 0.0003,
+          "pass": false
+        },
+        "native_backbone_one_pass_combined_control": {
+          "total_gradient_norm": 90.2245010341392,
+          "combined_vs_total_absolute_L2_error": 0.0,
+          "combined_vs_total_relative_L2_error": 0.0,
+          "combined_vs_total_max_absolute_element": 0.0
+        },
+        "graph_total_minus_component_sum": 0.0,
+        "worst_separate_layer_errors": [
+          [
+            0.0007310990946608377,
+            "visual_conv1",
+            0.040690739476401144
+          ],
+          [
+            1.6993425383853474e-06,
+            "visual_ln_pre",
+            2.776130574638138e-06
+          ],
+          [
+            1.5403885336749128e-06,
+            "visual_transformer_layer_0",
+            2.2910163773834473e-05
+          ],
+          [
+            1.3556259555538285e-06,
+            "visual_transformer_layer_1",
+            2.32549285086148e-05
+          ],
+          [
+            1.2330436512922648e-06,
+            "visual_positional_embedding",
+            8.827156951932046e-06
+          ],
+          [
+            1.2045336082718908e-06,
+            "visual_transformer_layer_2",
+            2.2994014624322346e-05
+          ],
+          [
+            1.1010142476833686e-06,
+            "visual_transformer_layer_3",
+            2.2478333887545888e-05
+          ],
+          [
+            9.269896754772369e-07,
+            "visual_transformer_layer_4",
+            2.070152254473531e-05
+          ]
+        ],
+        "worst_one_pass_layer_errors": [
+          [
+            0.0,
+            "visual_transformer_layer_9",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_8",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_7",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_6",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_5",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_4",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_3",
+            0.0
+          ],
+          [
+            0.0,
+            "visual_transformer_layer_2",
+            0.0
+          ]
+        ],
+        "patch_input_gradient_norms": {
+          "weighted_align": [
+            0.00026956218061968684,
+            0.007882717996835709,
+            0.05688534677028656,
+            0.030519654974341393
+          ],
+          "weighted_sparse": [
+            0.005853707902133465,
+            0.005252930335700512,
+            0.0043029035441577435,
+            0.005340059287846088
+          ],
+          "weighted_hierarchy": [
+            2.5345880203531124e-05,
+            2.5699273464852013e-05,
+            3.8696562114637345e-05,
+            1.9316850739414804e-05
+          ],
+          "total_training": [
+            0.005769794806838036,
+            0.009715688414871693,
+            0.05591033771634102,
+            0.03036951832473278
+          ]
+        },
+        "state_unchanged": true,
+        "finite": true
+      }
+    }
+  },
+  "root_cause_evidence": [
+    "total_training - (weighted_align + weighted_sparse + weighted_hierarchy) is exactly zero in BF16 and FP32 for A and B",
+    "one-pass gradient of the component sum equals gradient(total_training) within zero measured error for every reported group/layer in BF16 and FP32",
+    "only the separate per-component autograd.grad sum fails for B; A remains exactly additive because regularizer paths are detached",
+    "B Patch input gradients are nonzero for alignment, sparsity, hierarchy and total; A Patch input gradients are zero",
+    "FP32 still fails the separate-backward 0.03% diagnostic threshold, so pure BF16 rounding is insufficient as the root cause"
+  ]
+}
