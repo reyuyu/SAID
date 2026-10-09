@@ -52,7 +52,7 @@ def configure(target):
 
 def state(status,**extra):
     dump(EXP/'STATE.json',dict(status=status,updated_utc=now(),runner_pid=os.getpid(),
-        targets=list(TARGETS),stop_updates=2434,automatic_full=False,other_arms=False,**extra))
+        targets=list(TARGETS),stop_updates=TARGETS[-1],automatic_full=False,other_arms=False,**extra))
 
 
 def frozen(cfg):
@@ -328,6 +328,12 @@ def report(target,supervisor,result):
     for kind in ('io_PSI','memory_PSI'):
         stats[kind]={scope:distribution([s[kind][scope]['avg10'] for s in systems]) for scope in ('some','full')}
     assert stats['oom_kill']==0
+    acceptance=common.read(runtime/'training/acceptance.json')
+    assert acceptance['passed'] and all(r['final_nccl_all_reduce']==10 and r['max_parameter_difference_from_rank0']==0 for r in acceptance['ranks'])
+    log=(runtime/'train.log').read_text(errors='replace')
+    io_errors=[message for message in ('Image failure sample=','Missing local sample=','Input/output error') if message in log]
+    assert not io_errors
+    stats.update(true_IO_errors=io_errors,DDP_NCCL_passed=True,pod_supervisor_anomaly=False)
     paths=[p for f in phase(target).glob('image-paths-*.jsonl') for p in rows(f)]
     assert paths and all(Path(p['actual_path']).is_relative_to(local.IMAGES) and not p['NFS_fallback'] for p in paths)
     for name,value in [('TRAINING_DIAGNOSTICS',diag),('MASK_HIERARCHY_AUDIT',masks),('RUNTIME_STATS',stats)]:dump(dest/(name+'.json'),value)
@@ -373,7 +379,7 @@ def publish(setup=False):
         try:checker.ALLOWED=set(allowed);assert checker.inspect()['passed']
         finally:os.chdir(previous)
         subprocess.run(['git','diff','--cached','--check'],cwd=ROOT,check=True)
-        subprocess.run(['git','commit','-m',('Prepare' if setup else 'Report')+' frozen HNS-S12 validation to2434'],cwd=ROOT,check=True)
+        subprocess.run(['git','commit','-m',('Prepare' if setup else 'Report')+f' frozen HNS-S12 validation to{TARGETS[-1]}'],cwd=ROOT,check=True)
     head=common.git('rev-parse','HEAD')
     subprocess.run(['git','push','origin','HEAD:refs/heads/'+BRANCH],cwd=ROOT,check=True,timeout=120)
     subprocess.run(['git','fetch','origin','refs/heads/'+BRANCH+':refs/remotes/origin/'+BRANCH],cwd=ROOT,check=True,timeout=120)
@@ -395,7 +401,7 @@ def run():
             for target in TARGETS:
                 require_gpu_idle({0,1,2,3});configure(target);phase(target).mkdir(exist_ok=False)
                 parent,start=predecessor(target);proof=identity(parent,start)
-                assert start!=500 or proof['sha256']==PARENT_SHA
+                assert target!=TARGETS[0] or proof['sha256']==PARENT_SHA
                 dump(segment(target)/'parent-identity.json',proof)
                 supervisor=local.Supervisor();state('TRAINING',target=target,parent_updates=start,completed_nodes=completed)
                 supervisor.execute('train',training_command(target),training=True)
@@ -405,15 +411,15 @@ def run():
                 supervisor.execute('gradient',common.torchrun('recovery.hns_macro_gradient','--checkpoint',segment(target)/f'training/step{target:06d}.pt',
                     '--expect-updates',target,'--output',EXP/f'step{target}/GRADIENT_AUDIT.json'))
                 result=evaluate(supervisor,target);report(target,supervisor,result);completed.append(target);combined(completed)
-                require_gpu_idle({0,1,2,3});state('NODE_COMPLETED' if target==1217 else 'COMPLETED_GPU_IDLE',target=target,completed_nodes=completed)
+                require_gpu_idle({0,1,2,3});state('NODE_COMPLETED' if target==TARGETS[0] else 'COMPLETED_GPU_IDLE',target=target,completed_nodes=completed)
                 publish()
-            dump(RUN/'completed.json',dict(status='COMPLETED_AND_SYNCED',nodes=completed,stop=2434,GPU_idle=True,finished_utc=now()))
+            dump(RUN/'completed.json',dict(status='COMPLETED_AND_SYNCED',nodes=completed,stop=TARGETS[-1],GPU_idle=True,finished_utc=now()))
         except BaseException as error:
             state('STOPPED_WITH_EVIDENCE',completed_nodes=completed,error=repr(error),automatic_retry=False);raise
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--target',type=int,choices=TARGETS,default=1217)
+    p=argparse.ArgumentParser();p.add_argument('--target',type=int,choices=TARGETS,default=TARGETS[0])
     for flag in ('prepare','worker','run','launch','publish-setup'):p.add_argument('--'+flag,action='store_true')
     args,remaining=p.parse_known_args()
     if args.worker:sys.argv=[sys.argv[0],*remaining];worker(args.target)

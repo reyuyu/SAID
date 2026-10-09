@@ -30,7 +30,7 @@ def main():
     rank,local,world,_=setup();assert world==4
     digest=sha(args.checkpoint);p=torch.load(args.checkpoint,map_location='cpu',weights_only=False)
     assert p['completed_steps']==args.expect_updates and p['scheduler_horizon']==4868
-    assert args.expect_updates in (500,1217,2434)
+    assert args.expect_updates in (500,1217,2434,3651,4868)
     cfg=p['config'];hp=macro_hparams(cfg)
     clip,_=longclip.load_from_clip('ViT-B/16',device='cpu',args=argparse.Namespace())
     clip.load_state_dict(p['model'],strict=True)
