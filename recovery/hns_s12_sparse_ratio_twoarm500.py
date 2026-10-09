@@ -62,12 +62,38 @@ def activate(arm,smoke=False):
                  for n,spec in ARMS.items()}
     search.RUN_ROOT=RUN;search.EXP=EXP;search.ANCHOR_EXP=REF['exp'];search.ANCHOR_RUN=REF['run']
     search.PHASE_PREFIX='hns-s12-sparse-ratio-twoarm500-v1-'
+    search.EDITED={'model/balanced_hparam_search.py'}
     search.arm_config=config;search.frozen_config=frozen;search.matched_stream=matched_stream
-    search.checkpoint_invariants=search.checkpoint_invariants
+    search.checkpoint_invariants=checkpoint_invariants
     search.activate(arm)
     if smoke:
         runner.local.RUN=RUN/(arm+'.smoke5')
         runner.local.PHASE=runner.local.IMAGES.parent/('hns-s12-sparse-ratio-twoarm500-v1-'+arm+'-smoke5')
+
+
+def checkpoint_invariants(current,reference):
+    """Common-step5 state must match; only sparse coefficients/config paths differ."""
+    import copy,torch
+    arm=runner.search.ARM;cfg=current['config'];old=reference['config'];frozen(cfg,arm)
+    assert current['completed_steps']==5 and current['scheduler_horizon']==4868
+    assert cfg['start_updates']==0 and cfg['resume'] is None and cfg['init_sha256']==STEP0_SHA
+    assert cfg['max_updates']==500 and cfg['run_type']=='formal'
+    for key in ('component_initialization','data','parameter_counts','horizon','batch_size','world_size',
+                'accumulation','seed','sampling_seed','shuffle_seed','workers','optimizer_groups'):
+        if key in old: assert cfg[key]==old[key],key
+    assert cfg['view_sparsity_weights']==ARMS[arm]['sparsity_weights']
+    assert current['optimizer']['param_groups']==reference['optimizer']['param_groups']
+    assert current['optimizer']['state'].keys()==reference['optimizer']['state'].keys()
+    assert {int(s['step']) for s in current['optimizer']['state'].values()}=={5}
+    pairs=[(current['model'],reference['model']),(current['adapter'],reference['adapter'])]
+    pairs.extend((v,reference['optimizer']['state'][k]) for k,v in current['optimizer']['state'].items())
+    for new,previous in pairs:
+        assert new.keys()==previous.keys()
+        for key,value in new.items():
+            assert value.shape==previous[key].shape and value.dtype==previous[key].dtype
+            torch.testing.assert_close(value,previous[key],atol=0,rtol=0)
+    return dict(passed=True,fresh_common0=True,initialization_exact=True,optimizer_groups_order_exact=True,
+                optimizer_steps=[5],sparsity_coefficients_exact=True,authorized_source='model/balanced_hparam_search.py')
 
 
 def matched_stream(actual,reference,arm):
