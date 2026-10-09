@@ -1,0 +1,178 @@
+{
+  "full_cycle_seconds": {
+    "count": 1217,
+    "median": 2.132638454437256,
+    "p95": 2.2886746883392335,
+    "p99": 2.3763283634185774,
+    "max": 26.422080993652344
+  },
+  "data_wait_seconds": {
+    "count": 1217,
+    "median": 0.0007010772824287415,
+    "p95": 0.0010192707180976873,
+    "p99": 0.0013653352856636046,
+    "max": 21.268355913460255
+  },
+  "steps_gt3s": 2,
+  "steps_gt10s": 1,
+  "peak_cgroup_memory_bytes": 536870912000,
+  "peak_file_cache_bytes": 501892730880,
+  "oom_kill": 0,
+  "GPU_peak_GiB": {
+    "0": 27.75837516784668,
+    "1": 27.75837516784668,
+    "2": 27.758211135864258,
+    "3": 27.758220672607422
+  },
+  "commands": [
+    {
+      "name": "train",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_s12_2434_validation",
+        "--worker",
+        "--target",
+        "2434",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-2434-validation/experiments/nest_clip_v1/hns_s12_2434_validation_v1/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-2434-validation/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--resume",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step1217/training/step001217.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/training",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "2434"
+      ],
+      "started_utc": "2026-10-09T03:54:27.561480+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/train.log",
+      "ended_utc": "2026-10-09T04:39:33.143588+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/training/step002434.pt",
+        "--expect-updates",
+        "2434",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-s12-2434-validation/experiments/nest_clip_v1/hns_s12_2434_validation_v1/step2434/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-09T04:39:33.809263+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/gradient.log",
+      "ended_utc": "2026-10-09T04:40:36.977153+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/training/step002434.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/evaluations/student_step2434.pt",
+        "--expect-updates",
+        "2434"
+      ],
+      "started_utc": "2026-10-09T04:40:41.727099+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/export.log",
+      "ended_utc": "2026-10-09T04:40:59.854957+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/training/step002434.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/evaluations/student_step2434.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-09T04:40:59.867361+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/verify.log",
+      "ended_utc": "2026-10-09T04:41:17.913549+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/evaluations/student_step2434.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/training/step002434.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/evaluations"
+      ],
+      "started_utc": "2026-10-09T04:41:17.941072+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-2434-validation-v1/step2434/five-eval.log",
+      "ended_utc": "2026-10-09T04:49:32.806483+00:00",
+      "returncode": 0
+    }
+  ],
+  "local_only": true,
+  "updates_this_segment": 1217,
+  "io_PSI": {
+    "some": {
+      "count": 660,
+      "median": 0.0,
+      "p95": 0.02,
+      "p99": 0.922499999999992,
+      "max": 1.88
+    },
+    "full": {
+      "count": 660,
+      "median": 0.0,
+      "p95": 0.02,
+      "p99": 0.8752999999999895,
+      "max": 1.88
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 660,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.12409999999999968,
+      "max": 1.49
+    },
+    "full": {
+      "count": 660,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.12,
+      "max": 1.34
+    }
+  }
+}
