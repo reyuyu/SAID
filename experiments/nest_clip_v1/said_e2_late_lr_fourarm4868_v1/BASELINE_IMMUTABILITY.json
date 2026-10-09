@@ -1,0 +1,149 @@
+{
+  "results_sha256": "acc62ac9188d14d4f54bd6d0dcc76de3cd1458a3358d95d024137a8296d928d6",
+  "baseline_checkpoint": {
+    "passed": true,
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/training/step004868.pt",
+    "sha256": "cc4fb207598a321d491dcafc164756710c38648c7ccf7df178b5d8c35a11d02e",
+    "size_bytes": 1884190970,
+    "completed_steps": 4868,
+    "scheduler_horizon": 4868,
+    "scheduler": {
+      "type": "native_manual_learning_rate_function",
+      "horizon": 4868,
+      "completed_steps": 4868,
+      "last_update_index": 4867,
+      "optimizer_lrs": {
+        "backbone": 1.1323431126086802e-13,
+        "text_mask_and_shared_pool": 1.041210646035573e-10,
+        "visual_mask": 1.041210646035573e-10,
+        "fusion_adapter": 2.082421292071146e-11
+      }
+    },
+    "data_cursor": {
+      "next_epoch": 4,
+      "next_batch": 0
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "optimizer_steps": [
+      4868
+    ],
+    "optimizer_groups": [
+      {
+        "name": "backbone",
+        "lr": 1.1323431126086802e-13,
+        "weight_decay": 0.01,
+        "parameter_count": 302
+      },
+      {
+        "name": "text_mask_and_shared_pool",
+        "lr": 1.041210646035573e-10,
+        "weight_decay": 0.0,
+        "parameter_count": 14
+      },
+      {
+        "name": "visual_mask",
+        "lr": 1.041210646035573e-10,
+        "weight_decay": 0.0,
+        "parameter_count": 12
+      },
+      {
+        "name": "fusion_adapter",
+        "lr": 2.082421292071146e-11,
+        "weight_decay": 0.0,
+        "parameter_count": 2
+      }
+    ],
+    "rng_per_rank": [
+      {
+        "rank": 0,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+      },
+      {
+        "rank": 1,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+      },
+      {
+        "rank": 2,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+      },
+      {
+        "rank": 3,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "42bff94b75a50eee252aefd27574074fc14f167d4ac7874088c2a17b99e44a0e"
+      }
+    ],
+    "sources": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+      "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+    },
+    "git_head": "844613a2461f46da54dee2742ea21ed47b3fded7",
+    "uploaded": false
+  },
+  "baseline_bare": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+    "sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "uploaded": false
+  },
+  "original_eval_files": {
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/EVAL_PARALLEL_RUN.json": "50b1ee6b641c00efbc2907673e033cf128a179d9d5e66db02e2fb624cb4e9969",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/export-check.json": "70d9626184d0f38d525838fc63ae3eedb7f45938a655940220ba21f5d15419e6",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/urban_native.json": "7bd7ddbe3c17856dfb0b757fd42db34c4d737eb9f783a53c135633f24adfd4c3",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/coco_native.json": "a9a67e8cedc17582b35920080d4d423ef64a4fa2bd6f4e9ac60e44493c11412d",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/long_dci/extended_summary.json": "5982a209640885f8056c84064c06cc95b2e3fccf3be1943499a9cc921934f418",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/long_dci/long_dci.json": "64116248b477941fdbed0f0d6ab10dd03563127bd66e554e7c84fcac5706cb26",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/flickr_test1k/flickr_test1k.json": "a504dc2fb751e984d6d95f840cf2fce94b7021fd2e889453ca3e1645374a0521",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/flickr_test1k/extended_summary.json": "a167b73d2c55ea11b40cbcf3c784a82153819238ca6780c9e42b4dd86effe87d",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/docci/docci.json": "95712d11fd737ebec3d3b45ef7219ba03499aeb02410bbfcc403e0a8081c010f",
+    "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/docci/extended_summary.json": "f224d960ccacf2c3f8a09db947e30ec62cdd0e1220c7664b1168495165abdb5a"
+  }
+}
