@@ -1,0 +1,385 @@
+{
+  "completed_steps": 1217,
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6194,
+        "R@5": 0.8352,
+        "R@10": 0.8962
+      },
+      "T2I": {
+        "R@1": 0.42496,
+        "R@5": 0.68208,
+        "R@10": 0.77652
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9300000667572021,
+        "R@5": 0.9890000224113464,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.9180000424385071,
+        "R@5": 0.9890000224113464,
+        "R@10": 0.9940000176429749
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.89,
+        "R@5": 0.982,
+        "R@10": 0.992
+      },
+      "T2I": {
+        "R@1": 0.7298,
+        "R@5": 0.9184,
+        "R@10": 0.9558
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7902,
+        "R@5": 0.9602,
+        "R@10": 0.9832
+      },
+      "T2I": {
+        "R@1": 0.796,
+        "R@5": 0.9574,
+        "R@10": 0.981
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5873454354117338,
+        "R@5": 0.771112865035517,
+        "R@10": 0.8270192054722442
+      },
+      "T2I": {
+        "R@1": 0.5937911076032623,
+        "R@5": 0.7780847145488029,
+        "R@10": 0.8312286240463036
+      }
+    }
+  },
+  "scores_percent": {
+    "Score5": 72.79496652210705,
+    "J_long3": 76.92227753684509,
+    "J_long": 85.85500272989273,
+    "Short4": 66.604
+  },
+  "checkpoint": {
+    "passed": true,
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-e1-1217-v1/step1217/training/step001217.pt",
+    "sha256": "d276813e12b1b6da9a1f0247d9bbe13c6471276b45e852e06b149b9ad3cb5ead",
+    "size_bytes": 1884190906,
+    "completed_steps": 1217,
+    "scheduler_horizon": 4868,
+    "scheduler": {
+      "type": "native_manual_learning_rate_function",
+      "horizon": 4868,
+      "completed_steps": 1217,
+      "last_update_index": 1216,
+      "optimizer_lrs": {
+        "backbone": 8.875969862965574e-07,
+        "text_mask_and_shared_pool": 0.0008537814847289245,
+        "visual_mask": 0.0008537814847289245,
+        "fusion_adapter": 0.0001707562969457849
+      }
+    },
+    "data_cursor": {
+      "next_epoch": 1,
+      "next_batch": 0
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "optimizer_steps": [
+      1217
+    ],
+    "optimizer_groups": [
+      {
+        "name": "backbone",
+        "lr": 8.875969862965574e-07,
+        "weight_decay": 0.01,
+        "parameter_count": 302
+      },
+      {
+        "name": "text_mask_and_shared_pool",
+        "lr": 0.0008537814847289245,
+        "weight_decay": 0.0,
+        "parameter_count": 14
+      },
+      {
+        "name": "visual_mask",
+        "lr": 0.0008537814847289245,
+        "weight_decay": 0.0,
+        "parameter_count": 12
+      },
+      {
+        "name": "fusion_adapter",
+        "lr": 0.0001707562969457849,
+        "weight_decay": 0.0,
+        "parameter_count": 2
+      }
+    ],
+    "rng_per_rank": [
+      {
+        "rank": 0,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "d8777a4985869572d985fd4884c3c75095ee35aa2923a3434e1c5fe181ae9736"
+      },
+      {
+        "rank": 1,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "d8777a4985869572d985fd4884c3c75095ee35aa2923a3434e1c5fe181ae9736"
+      },
+      {
+        "rank": 2,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "d8777a4985869572d985fd4884c3c75095ee35aa2923a3434e1c5fe181ae9736"
+      },
+      {
+        "rank": 3,
+        "keys": [
+          "cpu",
+          "cuda",
+          "loader_generator",
+          "numpy",
+          "python"
+        ],
+        "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+        "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+        "loader_generator_sha256": "d8777a4985869572d985fd4884c3c75095ee35aa2923a3434e1c5fe181ae9736"
+      }
+    ],
+    "sources": {
+      "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+      "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+      "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+      "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+      "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+      "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+      "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+      "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+    },
+    "git_head": "3b6d9c2cd8a51a7ee4ef7f28ed12f7189205cf6f",
+    "uploaded": false,
+    "start_updates": 500,
+    "updates_this_run": 717,
+    "parent_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+    "complete_epoch": true
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      1217
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "d276813e12b1b6da9a1f0247d9bbe13c6471276b45e852e06b149b9ad3cb5ead",
+    "bare_sha256": "4fa8562781bf76af968a8191de863dd297f8c1666f3a4691e16b7db25cc8f24f"
+  },
+  "bare": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-e1-1217-v1/step1217/evaluations/student_step1217.pt",
+    "sha256": "4fa8562781bf76af968a8191de863dd297f8c1666f3a4691e16b7db25cc8f24f",
+    "uploaded": false
+  },
+  "evaluation_checkpoint_immutable": true,
+  "comparisons": {
+    "HNS_S12": {
+      "quality_delta_pp": {
+        "Score5": -0.1113884191649106,
+        "J_long3": -0.0769806986081818,
+        "J_long": 0.09499988079072352,
+        "Short4": -0.1629999999999967,
+        "Urban_I2T": -0.1999974250793457,
+        "Urban_T2I": 0.6999969482421875,
+        "Urban_Mean": 0.2499997615814209
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.05999999999999339,
+            "R@5": -0.05999999999999339,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.052000000000002045,
+            "R@5": -0.08399999999999519,
+            "R@10": -0.18400000000000638
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": -0.1999974250793457,
+            "R@5": -0.10000467300415039,
+            "R@10": 0.09999871253967285
+          },
+          "T2I": {
+            "R@1": 0.6999969482421875,
+            "R@5": 0.1999974250793457,
+            "R@10": -0.20000338554382324
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": -0.5000000000000004,
+            "R@5": 0.0,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.16000000000000458,
+            "R@5": -0.21999999999999797,
+            "R@10": -0.0400000000000067
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": -0.039999999999995595,
+            "R@5": -0.019999999999997797,
+            "R@10": -0.0200000000000089
+          },
+          "T2I": {
+            "R@1": -0.07999999999999119,
+            "R@5": -0.05999999999999339,
+            "R@10": -0.08000000000000229
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.302551960010522,
+            "R@5": -0.28939752696658383,
+            "R@10": -0.49986845566956095
+          },
+          "T2I": {
+            "R@1": -0.5393317548013754,
+            "R@5": -0.21047092870297712,
+            "R@10": -0.052617732175741505
+          }
+        }
+      }
+    },
+    "E2_Uniform_500": {
+      "quality_delta_pp": {
+        "Score5": 1.480595532261134,
+        "J_long3": 1.8016592204352406,
+        "J_long": 1.6600000119209284,
+        "Short4": 0.9989999999999952,
+        "Urban_I2T": 1.8999993801116943,
+        "Urban_T2I": 1.8000006675720215,
+        "Urban_Mean": 1.850000023841858
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": 1.3599999999999945,
+            "R@5": 0.5800000000000027,
+            "R@10": 0.23999999999999577
+          },
+          "T2I": {
+            "R@1": 0.935999999999998,
+            "R@5": 0.9040000000000048,
+            "R@10": 0.6680000000000019
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 1.8999993801116943,
+            "R@5": 0.29999613761901855,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": 1.8000006675720215,
+            "R@5": 0.29999613761901855,
+            "R@10": -0.10000467300415039
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.9000000000000008,
+            "R@5": 0.6000000000000005,
+            "R@10": 0.20000000000000018
+          },
+          "T2I": {
+            "R@1": 0.8000000000000007,
+            "R@5": 0.28000000000000247,
+            "R@10": 0.33999999999999586
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 1.0000000000000009,
+            "R@5": 0.7000000000000006,
+            "R@10": 0.13999999999999568
+          },
+          "T2I": {
+            "R@1": 1.9400000000000084,
+            "R@5": 0.660000000000005,
+            "R@10": 0.35999999999999366
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 1.5785319652723007,
+            "R@5": 1.5259142330965592,
+            "R@10": 1.0260457774269982
+          },
+          "T2I": {
+            "R@1": 2.5914233096553496,
+            "R@5": 1.7758484609313285,
+            "R@10": 1.1970534069981609
+          }
+        }
+      }
+    }
+  },
+  "start_updates": 500,
+  "updates_this_run": 717,
+  "parent500_checkpoint_unchanged": true,
+  "parent500_sha256": "74271df5298525f924834b3c74fa228eceff623020291c775808f1994214cb9a",
+  "full_stream_and_LR_proof": {
+    "passed": true,
+    "updates": 717,
+    "first_update": 501,
+    "last_update": 1217,
+    "records": 733904,
+    "all_sample_ids_images_F_Dall_D3_tokens_K_indices_and_LR_match_original_epoch0_suffix": true,
+    "final_batch_per_rank": 180,
+    "optimizer_no_repeated_updates": true,
+    "reference": "Original HNS-S121217 data trajectory only; model/AdamW tensors intentionally not compared",
+    "parameter_equality_to_original_1_2_2_not_required": true
+  }
+}
