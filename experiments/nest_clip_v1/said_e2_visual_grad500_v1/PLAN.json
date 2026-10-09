@@ -1,0 +1,48 @@
+{
+  "arm": "E2-VisualGrad",
+  "order": [
+    "E2-VisualGrad"
+  ],
+  "fresh_common0": true,
+  "resume": null,
+  "max_updates": 500,
+  "horizon": 4868,
+  "world_size": 4,
+  "batch_per_rank": 256,
+  "global_batch": 1024,
+  "workers": 8,
+  "seed": 0,
+  "sampling_mode": "nested_detail_d3",
+  "K": 3,
+  "alignment": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity": [
+    1,
+    2,
+    2
+  ],
+  "view_sparsity_weights": [
+    1.6666666666666667,
+    1.6666666666666667,
+    1.6666666666666667
+  ],
+  "lambda_align": 10.0,
+  "lambda_sparse": 1.2,
+  "lambda_hierarchy": 1.0,
+  "hns_beta": [
+    2,
+    2
+  ],
+  "hard_st": true,
+  "no_SG": true,
+  "soft_inclusion": 0,
+  "ramp_steps": 200,
+  "only_production_change": "model/nested_fusion_mask.py",
+  "automatic_continuation": false,
+  "no_other_arms": true,
+  "no_other_seed": true,
+  "evaluation": "native five-set parallel"
+}

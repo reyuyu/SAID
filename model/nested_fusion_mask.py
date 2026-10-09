@@ -66,7 +66,7 @@ class FusionBranch(nn.Module):
         return torch.sigmoid(text_part + visual_part if paired else text_part[:, None] + visual_part[None])
 
     def encode_visual(self, hidden):
-        tokens = self.visual_adapter(hidden.detach().float())
+        tokens = self.visual_adapter(hidden.float())
         return self.visual_blocks(tokens.permute(1, 0, 2)).permute(1, 0, 2)
 
     def text_condition(self, tokens):
