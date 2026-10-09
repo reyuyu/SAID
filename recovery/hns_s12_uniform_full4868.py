@@ -104,8 +104,9 @@ def prepare():
     evaluator = protocol.common.evaluator_proof()
     e2cfg = protocol.common.read(BASE_EXP / 'config.json')
     frozen(e2cfg)
-    models = {'E2_Uniform_500': {'500': protocol.common.read(BASE_EXP / 'REFERENCES.json')['models']['E2_Uniform_500']['1217']},
-              'E2_Uniform_1217': {'1217': parent_result}}
+    own_curve = {'500': protocol.common.read(BASE_EXP / 'REFERENCES.json')['models']['E2_Uniform_500']['1217'],
+                 '1217': parent_result}
+    models = {}
     refs = []
     s12, receipt = load_git_json('origin/experiment/hns-s12-2434-validation-v1',
         'experiments/nest_clip_v1/hns_s12_2434_validation_v1/step2434/RESULTS.json')
@@ -133,8 +134,8 @@ def prepare():
         parent_commit=protocol.common.git('rev-parse', PARENT_BRANCH), parent_sha256=PARENT_SHA,
         production_source_changes=[], local_only=True, NFS_fallback=False,
         checkpoint_lineage='E2-Uniform@500 -> E2-Uniform@1217 -> this trajectory'))
-    dump(EXP / 'REFERENCES.json', dict(models=models, provenance=refs, matched_nodes_only=True,
-        E2_Uniform_1217_primary=parent_result))
+    dump(EXP / 'REFERENCES.json', dict(models=models, own_curve=own_curve, provenance=refs,
+        matched_nodes_only=True, E2_Uniform_1217_primary=parent_result))
     paths = protocol.local.path_proof()
     dump(RUN / 'local-path-proof-5000.json', paths)
     dump(EXP / 'LOCAL_ONLY_PROOF.json', dict(passed=paths['passed'], count=paths['count'],
@@ -172,11 +173,16 @@ def report(target, supervisor, result):
 
 
 def combined(completed):
-    refs = protocol.common.read(EXP/'REFERENCES.json')['models']
-    results = {str(n): protocol.common.read(EXP/f'step{n}/RESULTS.json') for n in completed}
-    curve = {'500': refs['E2_Uniform_500']['500'], '1217': refs['E2_Uniform_1217']['1217']}
-    curve.update({str(n): results[str(n)] for n in completed})
-    final = completed == list(TARGETS)
+    reference_doc = protocol.common.read(EXP/'REFERENCES.json')
+    refs = reference_doc['models']
+    existing = []
+    if (EXP/'step2434/RESULTS.json').exists():
+        existing = [2434]
+    results = {str(n): protocol.common.read(EXP/f'step{n}/RESULTS.json') for n in sorted(set(existing + list(completed)))}
+    own = reference_doc['own_curve']
+    curve = {'500': own['500'], '1217': own['1217']}
+    curve.update({str(n): results[str(n)] for n in sorted(set(existing + list(completed)))})
+    final = 4868 in completed
     dump(EXP/'RESULTS.json', dict(status='COMPLETED' if final else 'PARTIAL', nodes=results,
         learning_curve=curve, references=refs, frozen_macro=[10,1.2,1],
         sparsity_ratio=[1,1,1], stop_updates=4868, automatic_continuation=False))
@@ -184,7 +190,7 @@ def combined(completed):
         'Uniform sparsity [5/3,5/3,5/3], effective [2,2,2], fixed macro loss [10,1.2,1].', '',
         '| Step | Model | Score5 | J_long3 | J_long | Short4 | Urban I2T/T2I | Urban Mean |',
         '|---:|---|---:|---:|---:|---:|---|---:|']
-    for n in ('500','1217') + tuple(str(x) for x in completed):
+    for n in ('500','1217') + tuple(str(x) for x in sorted(set(existing + list(completed)))):
         item = curve[n]; q = protocol.common.quality(item)
         lines.append(f'| {n} | E2-Uniform | ' + ' | '.join(f'{q[k]:.6f}' for k in ('Score5','J_long3','J_long','Short4')) +
                      f' | {q["Urban_I2T"]:.3f} / {q["Urban_T2I"]:.3f} | {(q["Urban_I2T"]+q["Urban_T2I"])/2:.3f} |')
@@ -194,7 +200,7 @@ def combined(completed):
                     b = protocol.common.quality(refs[name][n])
                     lines.append(f'| {n} | {name} | ' + ' | '.join(f'{b[k]:.6f}' for k in ('Score5','J_long3','J_long','Short4')) +
                                  f' | {b["Urban_I2T"]:.3f} / {b["Urban_T2I"]:.3f} | {(b["Urban_I2T"]+b["Urban_T2I"])/2:.3f} |')
-    for n in completed:
+    for n in sorted(set(existing + list(completed))):
         node = results[str(n)]
         lines += ['', f'## Step {n}', '', '| Dataset | I2T R1/R5/R10 (%) | T2I R1/R5/R10 (%) |', '|---|---|---|']
         for ds, dirs in node['metrics'].items():
@@ -217,9 +223,27 @@ def configure_protocol():
     protocol.prepare = prepare; protocol.report = report; protocol.combined = combined
 
 
+def continue_existing():
+    """Continue from an already completed and evaluated2434 node.
+
+    The first node is never retrained; this mode is used only after the
+    report-only reference-table repair for the existing2434 checkpoint.
+    """
+    assert protocol.common.read(EXP/'STATE.json')['status'] == 'PREPARED'
+    protocol.TARGETS = (3651, 4868)
+    protocol.run()
+
+
 def main():
     configure_protocol()
-    protocol.main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--continue-existing', action='store_true')
+    args, _ = parser.parse_known_args()
+    if args.continue_existing:
+        continue_existing()
+    else:
+        protocol.main()
 
 
 if __name__ == '__main__':
