@@ -229,9 +229,45 @@ def continue_existing():
     The first node is never retrained; this mode is used only after the
     report-only reference-table repair for the existing2434 checkpoint.
     """
+    import fcntl
+    import signal
+    from tools.eval_five_parallel import require_gpu_idle
     assert protocol.common.read(EXP/'STATE.json')['status'] == 'PREPARED'
-    protocol.TARGETS = (3651, 4868)
-    protocol.run()
+    lock_path = RUN/'runner.lock'
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        completed = [2434]
+        for target in (3651, 4868):
+            require_gpu_idle({0, 1, 2, 3})
+            configure(target)
+            phase(target).mkdir(parents=True, exist_ok=True)
+            parent, start = predecessor(target)
+            proof = protocol.identity(parent, start)
+            dump(segment(target)/'parent-identity.json', proof)
+            supervisor = protocol.local.Supervisor()
+            protocol.state('TRAINING', target=target, parent_updates=start, completed_nodes=completed)
+            supervisor.execute('train', training_command(target), training=True)
+            acceptance = protocol.common.read(segment(target)/'training/acceptance.json')
+            assert acceptance['passed'] and all(
+                r['completed_updates'] == target and r['updates_this_run'] == target-start and
+                r['max_parameter_difference_from_rank0'] == 0 for r in acceptance['ranks'])
+            protocol.resume_gate(target)
+            require_gpu_idle({0, 1, 2, 3})
+            protocol.state('GRADIENT_AUDIT', target=target)
+            supervisor.execute('gradient', protocol.common.torchrun(
+                'recovery.hns_macro_gradient', '--checkpoint',
+                segment(target)/f'training/step{target:06d}.pt', '--expect-updates', target,
+                '--output', EXP/f'step{target}/GRADIENT_AUDIT.json'))
+            result = protocol.evaluate(supervisor, target)
+            report(target, supervisor, result)
+            completed.append(target)
+            combined(completed)
+            require_gpu_idle({0, 1, 2, 3})
+            protocol.state('NODE_COMPLETED' if target == 3651 else 'COMPLETED_GPU_IDLE',
+                           target=target, completed_nodes=completed)
+            protocol.publish()
+        dump(RUN/'completed.json', dict(status='COMPLETED_AND_SYNCED', nodes=completed,
+            stop=4868, GPU_idle=True, finished_utc=now()))
 
 
 def main():
