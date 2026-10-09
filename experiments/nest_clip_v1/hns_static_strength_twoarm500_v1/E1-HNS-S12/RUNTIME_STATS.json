@@ -1,0 +1,346 @@
+{
+  "full_cycle_seconds": {
+    "count": 500,
+    "median": 2.129835605621338,
+    "p95": 2.2749871373176576,
+    "p99": 2.3876980137825012,
+    "max": 26.824207305908203
+  },
+  "data_wait_seconds": {
+    "count": 500,
+    "median": 0.0007216222584247589,
+    "p95": 0.0009951487183570856,
+    "p99": 0.0014420891553163528,
+    "max": 22.00583127886057
+  },
+  "steps_gt3s": 2,
+  "steps_gt10s": 2,
+  "peak_cgroup_memory_bytes": 536659922944,
+  "peak_file_cache_bytes": 505137311744,
+  "oom_kill": 0,
+  "GPU_peak_GiB": {
+    "0": 27.760392665863037,
+    "1": 27.760392665863037,
+    "2": 27.760392665863037,
+    "3": 27.760392665863037
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_static_strength_twoarm",
+        "--arm",
+        "E1-HNS-S12",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-static-strength-twoarm/experiments/nest_clip_v1/hns_static_strength_twoarm500_v1/E1-HNS-S12/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-static-strength-twoarm/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-09T01:22:26.815246+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/train500.log",
+      "ended_utc": "2026-10-09T01:41:56.223724+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hns-static-strength-twoarm/experiments/nest_clip_v1/hns_static_strength_twoarm500_v1/E1-HNS-S12/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-09T01:42:11.497746+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/gradient-audit500.log",
+      "ended_utc": "2026-10-09T01:43:28.720043+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-09T01:43:33.691716+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/export500.log",
+      "ended_utc": "2026-10-09T01:43:56.851177+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-09T01:43:56.863930+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/verify500.log",
+      "ended_utc": "2026-10-09T01:44:14.914017+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations"
+      ],
+      "started_utc": "2026-10-09T01:44:14.941939+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/five-eval500.log",
+      "ended_utc": "2026-10-09T01:52:32.885970+00:00",
+      "returncode": 0
+    }
+  ],
+  "raw_assets": [
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/sampling-audit-1000.json",
+      "bytes": 11695280,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/launch-provenance.json",
+      "bytes": 1572,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/train500.log",
+      "bytes": 88965,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/gradient-audit500.log",
+      "bytes": 13284,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/export500.log",
+      "bytes": 611,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/verify500.log",
+      "bytes": 648,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/five-eval500.log",
+      "bytes": 2144,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/commands.json",
+      "bytes": 4737,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/resource-telemetry.jsonl",
+      "bytes": 789786,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/first-five-gate.json",
+      "bytes": 1028,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/config.json",
+      "bytes": 8768,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/steps.jsonl",
+      "bytes": 25678785,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/text_examples.json",
+      "bytes": 14827,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/cycle_timing.jsonl",
+      "bytes": 37650,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/step000005.pt",
+      "bytes": 1884188154,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/step000500.pt",
+      "bytes": 1884188730,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/checkpoint_timing.jsonl",
+      "bytes": 59,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/step500/acceptance.json",
+      "bytes": 1303,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/EVAL_PARALLEL_RUN.json",
+      "bytes": 13847,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/export-check.json",
+      "bytes": 302,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/student_step500.pt",
+      "bytes": 612069312,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/urban_native.json",
+      "bytes": 862,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/coco_native.json",
+      "bytes": 282,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/long_dci/long_dci.json",
+      "bytes": 619,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/long_dci/extended_summary.json",
+      "bytes": 683,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/flickr_test1k/flickr_test1k.json",
+      "bytes": 548,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/flickr_test1k/extended_summary.json",
+      "bytes": 617,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/logs/coco.log",
+      "bytes": 735,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/logs/docci.log",
+      "bytes": 822,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/logs/urban.log",
+      "bytes": 1232,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/logs/long_dci.log",
+      "bytes": 899,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/logs/flickr.log",
+      "bytes": 828,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/docci/docci.json",
+      "bytes": 542,
+      "uploaded": false
+    },
+    {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-static-strength-twoarm500-v1/E1-HNS-S12/evaluations/docci/extended_summary.json",
+      "bytes": 603,
+      "uploaded": false
+    }
+  ],
+  "io_PSI": {
+    "some": {
+      "count": 359,
+      "median": 0.0,
+      "p95": 1.4719999999999855,
+      "p99": 4.928400000000001,
+      "max": 7.32
+    },
+    "full": {
+      "count": 359,
+      "median": 0.0,
+      "p95": 1.4719999999999855,
+      "p99": 4.882600000000001,
+      "max": 7.32
+    }
+  },
+  "memory_PSI": {
+    "some": {
+      "count": 359,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "full": {
+      "count": 359,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    }
+  },
+  "true_IO_errors": [],
+  "pod_supervisor_anomaly": false
+}
