@@ -1,0 +1,83 @@
+{
+  "order": [
+    "E1-AlignMatched",
+    "E2-Uniform"
+  ],
+  "arms": {
+    "E1-AlignMatched": {
+      "ratio": "4.5:4.5:1",
+      "raw_ratio": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "normalized_weights": [
+        2.25,
+        2.25,
+        0.5
+      ],
+      "effective_coefficients": [
+        2.6999999999999997,
+        2.6999999999999997,
+        0.6
+      ]
+    },
+    "E2-Uniform": {
+      "ratio": "1:1:1",
+      "raw_ratio": [
+        1,
+        1,
+        1
+      ],
+      "normalized_weights": [
+        1.6666666666666667,
+        1.6666666666666667,
+        1.6666666666666667
+      ],
+      "effective_coefficients": [
+        2.0,
+        2.0,
+        2.0
+      ]
+    }
+  },
+  "fresh_common0": true,
+  "resume": null,
+  "independent_smoke5_formal500": true,
+  "max_updates": 500,
+  "horizon": 4868,
+  "view_weights": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "baseline_sparsity_weights": [
+    1,
+    2,
+    2
+  ],
+  "lambda_sparse": 1.2,
+  "beta": [
+    2,
+    2
+  ],
+  "no_SG": true,
+  "soft_inclusion": 0,
+  "ramp": "min(1,completed BEFORE update/200)",
+  "fixed_K": 3,
+  "seed": 0,
+  "world": 4,
+  "batch_per_rank": 256,
+  "workers": 8,
+  "local_only": true,
+  "NFS_fallback": false,
+  "coefficient_control": "Same original HNS@500 parameters, same1024 inputs and one shared raw loss graph; no parameter updates",
+  "severe_mask_stop": "All three valid-population Hard-ST supports entirely empty OR entirely full for five consecutive updates; ordinary density/equality changes are diagnostics only",
+  "automatic_full": false,
+  "third_arm": false,
+  "combinations": false,
+  "additional_seed": false,
+  "coefficient_mass": 5.0,
+  "exact_stream_records": 512000,
+  "training_data": "/root/said_s02_stage500/ShareGPT4V"
+}

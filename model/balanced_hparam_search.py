@@ -90,7 +90,14 @@ class BalancedSearch(NestedFusionMask):
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)
         assert (math.isclose(sum(self.view_sparsity_weights),5.,abs_tol=1e-12)
                 or self.view_sparsity_weights in ([.5,1.,1.5],[1.,2.,3.])), 'Unreviewed sparsity coefficients'
-        if self.hns_enabled:assert self.view_sparsity_weights == [1.,2.,2.]
+        if self.hns_enabled:
+            # The original HNS-S12 allocation remains the default.  These two
+            # additional allocations are explicitly authorized by the
+            # sparse-ratio500 ablation; both preserve coefficient mass 5.
+            allowed=((1.,2.,2.),(2.25,2.25,.5),(5./3.,5./3.,5./3.))
+            assert any(all(math.isclose(a,b,rel_tol=0.,abs_tol=1e-12)
+                           for a,b in zip(self.view_sparsity_weights, candidate))
+                       for candidate in allowed), 'Unreviewed HNS sparsity allocation'
 
     def optimizer_groups(self):
         text_ids = {id(p) for p in self.clip.mask_net.parameters() if p.requires_grad}
@@ -192,6 +199,17 @@ class BalancedSearch(NestedFusionMask):
                     macro_lambda_align=self.macro_hparams['lambda_align'],
                     macro_lambda_sparse=self.macro_hparams['lambda_sparse'],
                     macro_lambda_hierarchy=self.macro_hparams['lambda_hierarchy'])
+                # Per-view sparsity telemetry is read-only and uses the same
+                # global reduction as the scalar sparsity term.  It makes the
+                # ratio ablation auditable without changing the loss graph.
+                sparse_views=global_sum(torch.stack((sf.detach(),so.detach(),se.detach())))/world
+                cf,co,ce=self.view_sparsity_weights
+                logs.update(HNS_sparse_raw_F=sparse_views[0],HNS_sparse_raw_Dall=sparse_views[1],
+                    HNS_sparse_raw_D3=sparse_views[2],
+                    HNS_sparse_weighted_F=self.macro_hparams['lambda_sparse']*cf*sparse_views[0]/3,
+                    HNS_sparse_weighted_Dall=self.macro_hparams['lambda_sparse']*co*sparse_views[1]/3,
+                    HNS_sparse_weighted_D3=self.macro_hparams['lambda_sparse']*ce*sparse_views[2]/3,
+                    HNS_sparse_coeff_F=cf,HNS_sparse_coeff_Dall=co,HNS_sparse_coeff_D3=ce)
                 telemetry,width=hard_telemetry(mf,mo,me,valid)
                 totals=global_sum(torch.stack(list(telemetry.values())))
                 totals=dict(zip(telemetry,totals))
