@@ -1575,6 +1575,537 @@
         "lambda_sparse": 1.2
       },
       "native_LR_unchanged": true
+    },
+    "P3-Sparse110": {
+      "completed_steps": 500,
+      "metrics": {
+        "COCO": {
+          "I2T": {
+            "R@1": 0.6056,
+            "R@5": 0.829,
+            "R@10": 0.8938
+          },
+          "T2I": {
+            "R@1": 0.4154,
+            "R@5": 0.67244,
+            "R@10": 0.76884
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": 0.909000039100647,
+            "R@5": 0.9860000610351562,
+            "R@10": 0.9970000386238098
+          },
+          "T2I": {
+            "R@1": 0.8960000276565552,
+            "R@5": 0.987000048160553,
+            "R@10": 0.9950000643730164
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": 0.875,
+            "R@5": 0.976,
+            "R@10": 0.991
+          },
+          "T2I": {
+            "R@1": 0.7204,
+            "R@5": 0.9144,
+            "R@10": 0.9512
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": 0.7764,
+            "R@5": 0.9536,
+            "R@10": 0.9812
+          },
+          "T2I": {
+            "R@1": 0.778,
+            "R@5": 0.9508,
+            "R@10": 0.9776
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": 0.570902394106814,
+            "R@5": 0.7559852670349908,
+            "R@10": 0.8178111023414891
+          },
+          "T2I": {
+            "R@1": 0.5681399631675875,
+            "R@5": 0.7613785845830044,
+            "R@10": 0.8196527229676401
+          }
+        }
+      },
+      "scores_percent": {
+        "Score5": 71.14842424031605,
+        "J_long3": 74.97404040052672,
+        "J_long": 83.98500166893005,
+        "Short4": 65.41
+      },
+      "checkpoint": {
+        "passed": true,
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P3-Sparse110/step500/step000500.pt",
+        "sha256": "479d75b99853a0970a872c284edb2700f1d7e388df58655f992fb8e4b873a4b0",
+        "bytes": 1884189178,
+        "completed_steps": 500,
+        "optimizer_counters": [
+          500
+        ],
+        "scheduler": {
+          "type": "native_manual_learning_rate_function",
+          "horizon": 4868,
+          "completed_steps": 500,
+          "last_update_index": 499,
+          "optimizer_lrs": {
+            "backbone": 9.899108530188312e-07,
+            "text_mask_and_shared_pool": 0.0009742970336195614,
+            "visual_mask": 0.0009742970336195614,
+            "fusion_adapter": 0.00019485940672391228
+          }
+        },
+        "scaler": {
+          "enabled": false,
+          "dtype": "bfloat16",
+          "state": null
+        },
+        "sampler": {
+          "type": "DistributedSampler",
+          "seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "batches_per_epoch": 1217
+        },
+        "cursor": {
+          "next_epoch": 0,
+          "next_batch": 500
+        },
+        "rng_ranks": 4,
+        "loader_generator_restorable": true,
+        "configuration": {
+          "arm": "A3",
+          "experiment_name": "ArmB-Summary0.2-4epoch",
+          "condition_mode": "dual_branch",
+          "fusion": "balanced_stack",
+          "visual": "patch",
+          "full_native_mix": 0,
+          "sampling_mode": "nested_detail_d3",
+          "inclusion_hierarchy": "detail_chain",
+          "sampling_seed": 0,
+          "shuffle_seed": 0,
+          "world_size": 4,
+          "batch_size": 256,
+          "accumulation": 1,
+          "epochs": 4,
+          "seed": 0,
+          "workers": 8,
+          "checkpoint_encoders": true,
+          "checkpoint_pair_blocks": false,
+          "image_chunk": 128,
+          "text_chunk": 128,
+          "score_chunk": 64,
+          "checkpoint_interval": 1217,
+          "save_initial_checkpoint": false,
+          "monitor_resources": true,
+          "feasibility_abort_seconds": 15,
+          "four_epoch_followup": true,
+          "fusion_lr": 0.0002,
+          "visual_mask_lr_scale": 1.0,
+          "view_weights": [
+            1.35,
+            1.35,
+            0.3
+          ],
+          "sparsity_scale": 1.0,
+          "inclusion_max": 0.0,
+          "hparam_search": true,
+          "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+          "base_model": "ViT-B/16",
+          "resource_policy": "local_reproduction500",
+          "hns_enabled": true,
+          "lambda_align": 10.0,
+          "lambda_sparse": 1.1,
+          "lambda_hierarchy": 1.0,
+          "view_sparsity_weights": [
+            1.6666666666666667,
+            1.6666666666666667,
+            1.6666666666666667
+          ],
+          "contrastive_logit_scale": 100.0,
+          "config": "/opt/data/private/lklk/said-e2-worktrees/regular-hparam-fourarm500/experiments/nest_clip_v1/said_e2_regular_hparam_fourarm500_v1/P3-Sparse110/config.json",
+          "init_state": "/opt/data/private/lklk/said-e2-worktrees/regular-hparam-fourarm500/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+          "index_dir": "/root/said_s02_stage500/data_index",
+          "image_root": "/root/said_s02_stage500/ShareGPT4V",
+          "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P3-Sparse110/step500",
+          "run_type": "formal",
+          "max_updates": 500,
+          "resume": null,
+          "legacy_b0": false,
+          "expected_parent_trainer_sha256": null,
+          "horizon": 4868,
+          "batches_per_epoch": 1217,
+          "loader_batches_this_epoch": 500,
+          "training_records": 1245901,
+          "sampler_num_samples": 311476,
+          "sampler_padding": 3,
+          "tail_batch": 180,
+          "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+          "data": {
+            "annotation": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+            "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+            "original_records": 1246901,
+            "training_records": 1245901,
+            "skip": 1000,
+            "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+            "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+          },
+          "code_sha256": {
+            "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+            "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+            "model/nested_fusion_mask.py": "6044ff0b7a4d0827e67e07d03ece3cf240f1f746219d85b5c44c354308d0945d",
+            "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+            "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+            "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+            "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+            "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+            "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+            "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+            "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+          },
+          "runtime_model": {
+            "image_chunk": 128,
+            "text_chunk": 128,
+            "checkpoint_pair_blocks": false,
+            "checkpoint_encoders": true,
+            "encoder_checkpoint_active": true,
+            "condition_mode": "dual_branch",
+            "arm": "A3",
+            "fusion": "balanced_stack",
+            "visual": "patch",
+            "search_hparams": {
+              "fusion_lr": 0.0002,
+              "visual_mask_lr_scale": 1.0,
+              "view_weights": [
+                1.35,
+                1.35,
+                0.3
+              ],
+              "sparsity_scale": 1.0,
+              "inclusion_max": 0.0,
+              "lambda_align": 10.0,
+              "lambda_sparse": 1.1,
+              "lambda_hierarchy": 1.0
+            },
+            "inclusion_hierarchy": "detail_chain",
+            "view_sparsity_weights": [
+              1.6666666666666667,
+              1.6666666666666667,
+              1.6666666666666667
+            ],
+            "hns_enabled": true
+          },
+          "adapter_initialization": {
+            "module": "FusionBranch",
+            "state_sha256": "340976d102ce0ec24a6e4fb31fc274b303b7e9d141d0e6244a1de53a0425d5a7",
+            "parameters": {
+              "visual_blocks.0.attn.in_proj_weight": {
+                "shape": [
+                  1536,
+                  512
+                ],
+                "nonzero": 786432
+              },
+              "visual_blocks.0.attn.in_proj_bias": {
+                "shape": [
+                  1536
+                ],
+                "nonzero": 0
+              },
+              "visual_blocks.0.attn.out_proj.weight": {
+                "shape": [
+                  512,
+                  512
+                ],
+                "nonzero": 262144
+              },
+              "visual_blocks.0.attn.out_proj.bias": {
+                "shape": [
+                  512
+                ],
+                "nonzero": 0
+              },
+              "visual_blocks.0.ln_1.weight": {
+                "shape": [
+                  512
+                ],
+                "nonzero": 512
+              },
+              "visual_blocks.0.ln_1.bias": {
+                "shape": [
+                  512
+                ],
+                "nonzero": 0
+              },
+              "visual_blocks.0.mlp.c_fc.weight": {
+                "shape": [
+                  2048,
+                  512
+                ],
+                "nonzero": 1048576
+              },
+              "visual_blocks.0.mlp.c_fc.bias": {
+                "shape": [
+                  2048
+                ],
+                "nonzero": 2048
+              },
+              "visual_blocks.0.mlp.c_proj.weight": {
+                "shape": [
+                  512,
+                  2048
+                ],
+                "nonzero": 1048574
+              },
+              "visual_blocks.0.mlp.c_proj.bias": {
+                "shape": [
+                  512
+                ],
+                "nonzero": 512
+              },
+              "visual_blocks.0.ln_2.weight": {
+                "shape": [
+                  512
+                ],
+                "nonzero": 512
+              },
+              "visual_blocks.0.ln_2.bias": {
+                "shape": [
+                  512
+                ],
+                "nonzero": 0
+              },
+              "visual_adapter.weight": {
+                "shape": [
+                  512,
+                  768
+                ],
+                "nonzero": 393216
+              },
+              "gate.weight": {
+                "shape": [
+                  512,
+                  1024
+                ],
+                "nonzero": 0
+              }
+            }
+          },
+          "git_head": "36285beb975211588dc428663ec4a4337b16cf8c",
+          "torch": "2.5.1+cu124",
+          "cuda": "12.4",
+          "nccl": [
+            2,
+            21,
+            5
+          ],
+          "environment": {},
+          "ranks": [
+            {
+              "rank": 0,
+              "local_rank": 0,
+              "pid": 1097546,
+              "hostname": "interactive93293",
+              "gpu_name": "NVIDIA A100 80GB PCIe",
+              "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+              "total_memory": 84974239744,
+              "nccl_all_reduce": 10.0,
+              "nccl_seconds": 0.76493901014328
+            },
+            {
+              "rank": 1,
+              "local_rank": 1,
+              "pid": 1097547,
+              "hostname": "interactive93293",
+              "gpu_name": "NVIDIA A100 80GB PCIe",
+              "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+              "total_memory": 84974239744,
+              "nccl_all_reduce": 10.0,
+              "nccl_seconds": 0.7779666930437088
+            },
+            {
+              "rank": 2,
+              "local_rank": 2,
+              "pid": 1097548,
+              "hostname": "interactive93293",
+              "gpu_name": "NVIDIA A100 80GB PCIe",
+              "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+              "total_memory": 84974239744,
+              "nccl_all_reduce": 10.0,
+              "nccl_seconds": 0.825896792113781
+            },
+            {
+              "rank": 3,
+              "local_rank": 3,
+              "pid": 1097549,
+              "hostname": "interactive93293",
+              "gpu_name": "NVIDIA A100 80GB PCIe",
+              "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+              "total_memory": 84974239744,
+              "nccl_all_reduce": 10.0,
+              "nccl_seconds": 0.7785680666565895
+            }
+          ],
+          "gather_gradient_test": {
+            "expected": 10.0,
+            "actual": 10.0,
+            "passed": true
+          },
+          "parameter_counts": {
+            "total": 157058050,
+            "trainable": 156931074,
+            "added": 4069888,
+            "optimizer_groups": {
+              "backbone": 149708289,
+              "text_mask_and_shared_pool": 3152897,
+              "visual_mask": 3152384,
+              "fusion_adapter": 917504
+            }
+          },
+          "component_initialization": {
+            "clip": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+            "text_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+            "visual_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+            "visual_adapter": "3672e1e4b12390e7ae1dd76c065bab7a0faefc29062170ca94f253f7beb471ae",
+            "crossscore_query": null,
+            "crossscore_key": null,
+            "crossscore_readout": null,
+            "channel_gate": "e5b95cc7da27bc0230bb4b3fe03a38815057e87d75d19a533b3e9a7152ef0da3"
+          },
+          "start_updates": 0,
+          "updates_planned_this_run": 500,
+          "regular_hparam_experiment": {
+            "arm": "P3-Sparse110",
+            "contrastive_logit_scale": 100.0,
+            "lambda_sparse": 1.1,
+            "first_update": 1,
+            "last_update": 500,
+            "horizon": 4868,
+            "controller_sha256": "c25364ea2bbf30f011102a327b5b6908463f2d1a0e18850e1ce2047f2e9d454c",
+            "LR_override": false
+          }
+        },
+        "uploaded": false,
+        "regular_hparam_experiment": {
+          "arm": "P3-Sparse110",
+          "contrastive_logit_scale": 100.0,
+          "lambda_sparse": 1.1,
+          "first_update": 1,
+          "last_update": 500,
+          "horizon": 4868,
+          "controller_sha256": "c25364ea2bbf30f011102a327b5b6908463f2d1a0e18850e1ce2047f2e9d454c",
+          "LR_override": false
+        }
+      },
+      "strict_export": {
+        "passed": true,
+        "strict_load": true,
+        "optimizer_steps": [
+          500
+        ],
+        "image_max_abs": 0.0,
+        "text_max_abs": 0.0,
+        "checkpoint_sha256": "479d75b99853a0970a872c284edb2700f1d7e388df58655f992fb8e4b873a4b0",
+        "bare_sha256": "cae7f1dd97cf6c251a7bbbcc45476a538a7bb4348a695c4f71adea333bd18dfc"
+      },
+      "bare": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P3-Sparse110/evaluations/student_step500.pt",
+        "sha256": "cae7f1dd97cf6c251a7bbbcc45476a538a7bb4348a695c4f71adea333bd18dfc",
+        "uploaded": false
+      },
+      "checkpoint_unchanged": true,
+      "evaluation_wall_seconds": 498.94966661185026,
+      "arm": "P3-Sparse110",
+      "quality_delta_pp": {
+        "Score5": -0.16594674952986566,
+        "J_long3": -0.14657791588312818,
+        "J_long": -0.21000104904175032,
+        "Short4": -0.1950000000000074,
+        "Urban_I2T": -0.20000338554382324,
+        "Urban_T2I": -0.40000081062316895,
+        "Urban_Mean": -0.3000020980834961
+      },
+      "recall_delta_pp": {
+        "COCO": {
+          "I2T": {
+            "R@1": -0.019999999999997797,
+            "R@5": -0.0400000000000067,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.02000000000000335,
+            "R@5": -0.05999999999999339,
+            "R@10": -0.10000000000000009
+          }
+        },
+        "Urban-1k": {
+          "I2T": {
+            "R@1": -0.20000338554382324,
+            "R@5": 0.0,
+            "R@10": 0.0
+          },
+          "T2I": {
+            "R@1": -0.40000081062316895,
+            "R@5": 0.09999871253967285,
+            "R@10": 0.0
+          }
+        },
+        "Flickr30k-test1k": {
+          "I2T": {
+            "R@1": -0.6000000000000005,
+            "R@5": 0.0,
+            "R@10": 0.10000000000000009
+          },
+          "T2I": {
+            "R@1": -0.13999999999999568,
+            "R@5": -0.11999999999999789,
+            "R@10": -0.11999999999999789
+          }
+        },
+        "DOCCI": {
+          "I2T": {
+            "R@1": -0.38000000000000256,
+            "R@5": 0.039999999999995595,
+            "R@10": -0.060000000000004494
+          },
+          "T2I": {
+            "R@1": 0.14000000000000679,
+            "R@5": 0.0,
+            "R@10": 0.019999999999997797
+          }
+        },
+        "Long-DCI": {
+          "I2T": {
+            "R@1": -0.06577216521967966,
+            "R@5": 0.013154433043938152,
+            "R@10": 0.10523546435149411
+          },
+          "T2I": {
+            "R@1": 0.026308866087876304,
+            "R@5": 0.10523546435148301,
+            "R@10": 0.039463299131814455
+          }
+        }
+      },
+      "scientific_status": "EXPLORATORY_REPEATED_PUBLIC_BENCHMARKS",
+      "fresh_common0": true,
+      "declared_scalars": {
+        "contrastive_logit_scale": 100.0,
+        "lambda_sparse": 1.1
+      },
+      "native_LR_unchanged": true
     }
   },
   "qualities": {
@@ -1604,11 +2135,21 @@
       "Urban_I2T": 91.2000060081482,
       "Urban_T2I": 89.40000534057617,
       "Urban_Mean": 90.30000567436218
+    },
+    "P3-Sparse110": {
+      "Score5": 71.14842424031605,
+      "J_long3": 74.97404040052672,
+      "J_long": 83.98500166893005,
+      "Short4": 65.41,
+      "Urban_I2T": 90.9000039100647,
+      "Urban_T2I": 89.60000276565552,
+      "Urban_Mean": 90.25000333786011
     }
   },
   "completed_arms": [
     "P1-Temp95",
-    "P2-Temp105"
+    "P2-Temp105",
+    "P3-Sparse110"
   ],
   "all_four_completed": false,
   "scientific_status": "EXPLORATORY"
