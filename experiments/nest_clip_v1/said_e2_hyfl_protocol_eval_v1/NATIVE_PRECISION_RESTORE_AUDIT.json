@@ -1,0 +1,1363 @@
+{
+  "root_cause": "New controller incorrectly overrode native cuDNN FP32 backend default (True) with False.",
+  "production_sources_changed": false,
+  "weights_dtype_features_dtype": "FP32",
+  "autocast": false,
+  "native_profile_restored": {
+    "cuda_matmul_allow_tf32": false,
+    "cudnn_allow_tf32": true
+  },
+  "no_adjustment_of_loss_model_tokenizer_similarity_data": true,
+  "second_state": {
+    "plan_sha256": "f13488d1f7379186bf6f5b7b9c74e39d8001d465f1ae6db9649f1def91c8c558",
+    "status": "FAILED",
+    "jobs": {
+      "COCO": {
+        "name": "COCO",
+        "attempt": 1,
+        "gpu": 0,
+        "pid": 1296062,
+        "status": "FAILED",
+        "started_utc": "2026-10-10T18:01:03.124714+00:00",
+        "start_monotonic": 46062063.89540317,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/COCO",
+          "--device",
+          "cuda:0"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 1,
+        "ended_utc": "2026-10-10T18:02:33.262096+00:00",
+        "elapsed_seconds": 90.13739427924156,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/RESULT.json'"
+      },
+      "DCI": {
+        "name": "DCI",
+        "attempt": 1,
+        "gpu": 1,
+        "pid": 1296063,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T18:01:03.128960+00:00",
+        "start_monotonic": 46062063.89964701,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/DCI",
+          "--device",
+          "cuda:1"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T18:02:33.871942+00:00",
+        "elapsed_seconds": 90.74297923594713,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/RESULT.json'"
+      },
+      "Long-DCI": {
+        "name": "Long-DCI",
+        "attempt": 1,
+        "gpu": 2,
+        "pid": 1296064,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T18:01:03.131818+00:00",
+        "start_monotonic": 46062063.902491346,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/Long-DCI",
+          "--device",
+          "cuda:2"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T18:02:33.669061+00:00",
+        "elapsed_seconds": 90.53725846111774,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/RESULT.json'"
+      },
+      "DOCCI": {
+        "name": "DOCCI",
+        "attempt": 1,
+        "gpu": 3,
+        "pid": 1296065,
+        "status": "COMPLETED",
+        "started_utc": "2026-10-10T18:01:03.134292+00:00",
+        "start_monotonic": 46062063.90496564,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/DOCCI",
+          "--device",
+          "cuda:3"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 0,
+        "ended_utc": "2026-10-10T18:02:33.466777+00:00",
+        "elapsed_seconds": 90.332500487566,
+        "output_sha256": "2ef3e2d9eb132c5bef99f7d72e026bfe70397fb9f00de8c64a6ed1a1d25610f1"
+      },
+      "Flickr30k-Test1K": {
+        "status": "CANCELLED_BEFORE_START"
+      },
+      "Urban-1k": {
+        "status": "CANCELLED_BEFORE_START"
+      }
+    },
+    "started_utc": "2026-10-10T18:01:02.900662+00:00",
+    "attempts": [
+      {
+        "name": "COCO",
+        "attempt": 1,
+        "gpu": 0,
+        "pid": 1296062,
+        "status": "FAILED",
+        "started_utc": "2026-10-10T18:01:03.124714+00:00",
+        "start_monotonic": 46062063.89540317,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/COCO",
+          "--device",
+          "cuda:0"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 1,
+        "ended_utc": "2026-10-10T18:02:33.262096+00:00",
+        "elapsed_seconds": 90.13739427924156,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation_v2/COCO/attempt1/RESULT.json'"
+      },
+      {
+        "name": "DCI",
+        "attempt": 1,
+        "gpu": 1,
+        "pid": 1296063,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T18:01:03.128960+00:00",
+        "start_monotonic": 46062063.89964701,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/DCI",
+          "--device",
+          "cuda:1"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T18:02:33.871942+00:00",
+        "elapsed_seconds": 90.74297923594713,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation_v2/DCI/attempt1/RESULT.json'"
+      },
+      {
+        "name": "Long-DCI",
+        "attempt": 1,
+        "gpu": 2,
+        "pid": 1296064,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T18:01:03.131818+00:00",
+        "start_monotonic": 46062063.902491346,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/Long-DCI",
+          "--device",
+          "cuda:2"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T18:02:33.669061+00:00",
+        "elapsed_seconds": 90.53725846111774,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation_v2/Long-DCI/attempt1/RESULT.json'"
+      },
+      {
+        "name": "DOCCI",
+        "attempt": 1,
+        "gpu": 3,
+        "pid": 1296065,
+        "status": "COMPLETED",
+        "started_utc": "2026-10-10T18:01:03.134292+00:00",
+        "start_monotonic": 46062063.90496564,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/DOCCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation_v2/cache/DOCCI",
+          "--device",
+          "cuda:3"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 0,
+        "ended_utc": "2026-10-10T18:02:33.466777+00:00",
+        "elapsed_seconds": 90.332500487566,
+        "output_sha256": "2ef3e2d9eb132c5bef99f7d72e026bfe70397fb9f00de8c64a6ed1a1d25610f1"
+      }
+    ],
+    "blocked": {
+      "Flickr30k-Full": {
+        "status": "BLOCKED_PROTOCOL_DATA",
+        "annotation_source": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k.tar.gz",
+        "annotation_sha256": "fad17aa6894489708a31f67d6055a6935fc5d0e3bc632ff45f5bbba6924bf9ee",
+        "archive_sha256": "faba43eda297906bd43ca8101900b22ea982b62dd5665c182cf0d48011c99e70",
+        "n_annotation_images": 31783,
+        "n_annotation_captions": 158915,
+        "available_verified_filename_count": 1000,
+        "missing_images": 30783,
+        "caption_slots_0_through_4_validated": true,
+        "results_csv_available": false,
+        "image_acquisition_attempts": [
+          {
+            "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar",
+            "result": "HTTP404"
+          },
+          {
+            "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar.gz",
+            "result": "HTTP404"
+          },
+          {
+            "url": "https://huggingface.co/api/datasets/nlphuji/flickr30k/tree/main",
+            "result": "connection_timeout"
+          },
+          {
+            "url": "https://shannon.cs.illinois.edu/DenotationGraph/",
+            "result": "official page requires dataset access form"
+          }
+        ],
+        "note": "No full evaluation and no 1K substitution; official caption records are verified."
+      }
+    },
+    "preflight": {
+      "mem_available_bytes": 930693558272,
+      "disk_free_bytes": 643995897856,
+      "cpu_count": 144,
+      "gpu_listing": "0, GPU-6810482c-0a4f-2547-407d-7b11db16655d, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n1, GPU-a85d54c4-620e-6813-9176-ed449a61c7a4, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n2, GPU-251127fd-2cb2-c90d-6151-54360a5fcb82, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n3, GPU-cea2e93a-3a77-7373-2c22-cfc59c5094e8, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n",
+      "utc": "2026-10-10T18:01:03.120728+00:00"
+    },
+    "ended_utc": "2026-10-10T18:02:33.874285+00:00",
+    "wall_seconds": 90.75264494121075
+  },
+  "second_failure": {
+    "dataset": "COCO",
+    "protocol": "COCO2017-Val5K-first5",
+    "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+    "started_utc": "2026-10-10T18:01:05.517282+00:00",
+    "device": "cuda:0",
+    "physical_gpu": 0,
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "status": "FAILED",
+    "metrics": {
+      "I2T": {
+        "query_count": 5000,
+        "candidate_count": 25000,
+        "correct": {
+          "1": 3093,
+          "5": 4185,
+          "10": 4485
+        },
+        "recall_percent": {
+          "1": 61.86,
+          "5": 83.7,
+          "10": 89.7
+        },
+        "boundary_audit": {
+          "1": {
+            "exact_ties": 4,
+            "near_ties_le_1e-6": 6,
+            "minimum_margin": 0.0
+          },
+          "5": {
+            "exact_ties": 24,
+            "near_ties_le_1e-6": 28,
+            "minimum_margin": 0.0
+          },
+          "10": {
+            "exact_ties": 42,
+            "near_ties_le_1e-6": 44,
+            "minimum_margin": 0.0
+          }
+        }
+      },
+      "T2I": {
+        "query_count": 25000,
+        "candidate_count": 5000,
+        "correct": {
+          "1": 10748,
+          "5": 17189,
+          "10": 19538
+        },
+        "recall_percent": {
+          "1": 42.992,
+          "5": 68.756,
+          "10": 78.152
+        },
+        "boundary_audit": {
+          "1": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 1,
+            "minimum_margin": 7.152557373046875e-07
+          },
+          "5": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 9,
+            "minimum_margin": 2.980232238769531e-07
+          },
+          "10": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 10,
+            "minimum_margin": 1.1920928955078125e-07
+          }
+        }
+      }
+    },
+    "identity": {
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "manifest_sha256": "d95cf84ef7ae5088e9476c19678d254951b0f2dc088a1f6f4273306a55f4e9de",
+      "record_sha256": "db6a5a545bc8cc7fc8b8c36bd6d673051b30dc273b9542c3941fc773bb736e37",
+      "image_ids_paths_sha256": "d23aa3f18016b48ea1916a2fc5dd503728ec5bd6dfddf5c5a34149cdf2cddb1b",
+      "image_content_sha256": "68fa21e7eb9f925fd2c662f9b4a738e6ca73dae4d4d588b1a1562ce3da6c67e0",
+      "tokenizer": "model.longclip.tokenize(truncate=True)",
+      "context_length": 248,
+      "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "precision": "FP32; autocast off; TF32 off",
+      "torch": "2.5.1+cu124",
+      "normalization": "cpu_raw_for_legacy",
+      "encoder_sources": {
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+        "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+        "tools/eval_hyfl_native.py": "85e529b92872ea14fa72c81d3d38cabb3749c6aabbaef30a14e682e9acfb9467",
+        "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+      },
+      "image_batch": 64,
+      "text_batch": 64
+    },
+    "n_images": 5000,
+    "n_captions": 25000,
+    "image_batch": 64,
+    "text_batch": 64,
+    "query_chunk": 256,
+    "gallery_chunk": 4096,
+    "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+    "encoding_seconds": 62.497904881834984,
+    "legacy_regression": {
+      "actual_counts": {
+        "I2T": {
+          "1": 3092,
+          "5": 4184,
+          "10": 4485
+        },
+        "T2I": {
+          "1": 10748,
+          "5": 17189,
+          "10": 19538
+        }
+      },
+      "expected_counts": {
+        "I2T": {
+          "1": 3093,
+          "5": 4183,
+          "10": 4485
+        },
+        "T2I": {
+          "1": 10750,
+          "5": 17185,
+          "10": 19540
+        }
+      },
+      "all_counts_match": false,
+      "R1_pass": false,
+      "R5_R10_query_deltas": {
+        "I2T": {
+          "5": 1,
+          "10": 0
+        },
+        "T2I": {
+          "5": 4,
+          "10": -2
+        }
+      }
+    },
+    "returncode": 1,
+    "error": "legacy R1 correct-query counts differ; see receipt",
+    "traceback": "Traceback (most recent call last):\n  File \"/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/tools/eval_hyfl_native.py\", line 202, in run\n    raise ValueError('legacy R1 correct-query counts differ; see receipt')\nValueError: legacy R1 correct-query counts differ; see receipt\n",
+    "ended_utc": "2026-10-10T18:02:32.263725+00:00",
+    "elapsed_seconds": 86.74654407054186,
+    "cpu_peak_rss_bytes": 2703781888,
+    "peak_cuda_allocated": 1285120000,
+    "peak_cuda_reserved": 1956642816
+  },
+  "tf32_single_variable_proof": {
+    "batch_start": 2496,
+    "batch_size": 64,
+    "observed_query_index": 2516,
+    "only_variable": "torch.backends.cudnn.allow_tf32 (True versus False)",
+    "same_input_parameters_preprocessing_fp32_outputs": true,
+    "true_matches_frozen_legacy_max_abs": 0.0,
+    "false_matches_new_formal_max_abs": 0.0,
+    "true_false_embedding_max_abs": 0.00019987020641565323,
+    "query_embedding_max_abs": 4.629138857126236e-05,
+    "numerical_effect_supported": true,
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "production_code_modified": false
+  },
+  "new_native_gpu_test": {
+    "status": "PASS",
+    "tolerance": 5e-06,
+    "records": [
+      {
+        "gpu": 0,
+        "batch": 64,
+        "max_abs": 0.0,
+        "hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "pass": true
+      },
+      {
+        "gpu": 1,
+        "batch": 64,
+        "max_abs": 0.0,
+        "hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "pass": true
+      },
+      {
+        "gpu": 2,
+        "batch": 64,
+        "max_abs": 0.0,
+        "hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "pass": true
+      },
+      {
+        "gpu": 3,
+        "batch": 64,
+        "max_abs": 0.0,
+        "hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "pass": true
+      }
+    ],
+    "fixed_formal_batch": 64,
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "state_sha256_before": "952a143fde7a54bdce2cfa69cd0d4b86eea46e171c467d77589440247dbeb8c0",
+    "state_sha256_after": "952a143fde7a54bdce2cfa69cd0d4b86eea46e171c467d77589440247dbeb8c0",
+    "batch_optimization_3": "NOT_APPROVED; known cuDNN precision variation exceeds tolerance",
+    "older_failed_batch3_receipts_preserved": true,
+    "precision": "Original native FP32 model/features; cuda matmul TF32 False; cuDNN TF32 True; autocast off"
+  },
+  "different_batch_native_diagnostic": {
+    "status": "FAIL",
+    "tolerance": {
+      "embedding_max_abs": 5e-06,
+      "correct_query_count_difference": 0
+    },
+    "receipts": [
+      {
+        "gpu": 0,
+        "batch": 3,
+        "old_new_max_abs": 0.00045677274465560913,
+        "gpu0_baseline_max_abs": 0.00045677274465560913,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0796898603439331
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010526180267333984
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001087188720703125
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.01200932264328003
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00018417835235595703
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00021503865718841553
+              }
+            }
+          }
+        },
+        "pass": false
+      },
+      {
+        "gpu": 0,
+        "batch": 16,
+        "old_new_max_abs": 0.0,
+        "gpu0_baseline_max_abs": 0.0,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.07955887913703918
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010755360126495361
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001491159200668335
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.011940240859985352
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 6.237626075744629e-05
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00020713359117507935
+              }
+            }
+          }
+        },
+        "pass": true,
+        "elapsed_seconds": 1.1225222125649452,
+        "peak_cuda_allocated": 800571904,
+        "peak_cuda_reserved": 897581056
+      },
+      {
+        "gpu": 1,
+        "batch": 3,
+        "old_new_max_abs": 0.00045677274465560913,
+        "gpu0_baseline_max_abs": 0.00045677274465560913,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0796898603439331
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010526180267333984
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001087188720703125
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.01200932264328003
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00018417835235595703
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00021503865718841553
+              }
+            }
+          }
+        },
+        "pass": false
+      },
+      {
+        "gpu": 1,
+        "batch": 16,
+        "old_new_max_abs": 0.0,
+        "gpu0_baseline_max_abs": 0.0,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.07955887913703918
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010755360126495361
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001491159200668335
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.011940240859985352
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 6.237626075744629e-05
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00020713359117507935
+              }
+            }
+          }
+        },
+        "pass": true,
+        "elapsed_seconds": 0.9230273738503456,
+        "peak_cuda_allocated": 800571904,
+        "peak_cuda_reserved": 897581056
+      },
+      {
+        "gpu": 2,
+        "batch": 3,
+        "old_new_max_abs": 0.00045677274465560913,
+        "gpu0_baseline_max_abs": 0.00045677274465560913,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0796898603439331
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010526180267333984
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001087188720703125
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.01200932264328003
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00018417835235595703
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00021503865718841553
+              }
+            }
+          }
+        },
+        "pass": false
+      },
+      {
+        "gpu": 2,
+        "batch": 16,
+        "old_new_max_abs": 0.0,
+        "gpu0_baseline_max_abs": 0.0,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.07955887913703918
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010755360126495361
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001491159200668335
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.011940240859985352
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 6.237626075744629e-05
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00020713359117507935
+              }
+            }
+          }
+        },
+        "pass": true,
+        "elapsed_seconds": 0.7702323570847511,
+        "peak_cuda_allocated": 800571904,
+        "peak_cuda_reserved": 897581056
+      },
+      {
+        "gpu": 3,
+        "batch": 3,
+        "old_new_max_abs": 0.00045677274465560913,
+        "gpu0_baseline_max_abs": 0.00045677274465560913,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0796898603439331
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010526180267333984
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001087188720703125
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.01200932264328003
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00018417835235595703
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00021503865718841553
+              }
+            }
+          }
+        },
+        "pass": false
+      },
+      {
+        "gpu": 3,
+        "batch": 16,
+        "old_new_max_abs": 0.0,
+        "gpu0_baseline_max_abs": 0.0,
+        "per_query_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "legacy_topk_hit_differences": {
+          "I2T": {
+            "1": [],
+            "5": [],
+            "10": []
+          },
+          "T2I": {
+            "1": [],
+            "5": [],
+            "10": []
+          }
+        },
+        "metrics": {
+          "I2T": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.07955887913703918
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0010755360126495361
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.0001491159200668335
+              }
+            }
+          },
+          "T2I": {
+            "query_count": 16,
+            "candidate_count": 16,
+            "correct": {
+              "1": 16,
+              "5": 16,
+              "10": 16
+            },
+            "recall_percent": {
+              "1": 100.0,
+              "5": 100.0,
+              "10": 100.0
+            },
+            "boundary_audit": {
+              "1": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.011940240859985352
+              },
+              "5": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 6.237626075744629e-05
+              },
+              "10": {
+                "exact_ties": 0,
+                "near_ties_le_1e-6": 0,
+                "minimum_margin": 0.00020713359117507935
+              }
+            }
+          }
+        },
+        "pass": true,
+        "elapsed_seconds": 0.7614860087633133,
+        "peak_cuda_allocated": 800571904,
+        "peak_cuda_reserved": 897581056
+      }
+    ],
+    "state_before_sha256": "952a143fde7a54bdce2cfa69cd0d4b86eea46e171c467d77589440247dbeb8c0",
+    "state_after_sha256": "952a143fde7a54bdce2cfa69cd0d4b86eea46e171c467d77589440247dbeb8c0",
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "strict_load": "317 keys; zero missing/unexpected",
+    "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+    "context_length": 248,
+    "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb at 0x7f6cfa39add0>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+    "urban_raw_strip_tokens_equal": true
+  },
+  "batch3_optimization_approved": false,
+  "formal_batch_frozen": 64,
+  "before_source_sha256": "85e529b92872ea14fa72c81d3d38cabb3749c6aabbaef30a14e682e9acfb9467",
+  "after_source_sha256": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+  "exact_diff": "--- worker_v2.py\n+++ worker_native_v3.py\n@@ -74,7 +74,10 @@\n             'record_sha256': digest(rows), 'image_ids_paths_sha256': digest(images),\n             'image_content_sha256': job['image_content_sha256'],\n             'tokenizer': 'model.longclip.tokenize(truncate=True)', 'context_length': 248,\n-            'preprocess': preprocess_identity(pre), 'precision': 'FP32; autocast off; TF32 off',\n+            'preprocess': preprocess_identity(pre),\n+            'precision': 'FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False',\n+            'backend_flags': {'cudnn_allow_tf32': torch.backends.cudnn.allow_tf32,\n+                              'cuda_matmul_allow_tf32': torch.backends.cuda.matmul.allow_tf32},\n             'torch': torch.__version__, 'normalization': job.get('normalization', 'gpu'),\n             'encoder_sources': {p: sha(ROOT / p) for p in SOURCES},\n             'image_batch': job.get('image_batch', 64), 'text_batch': job.get('text_batch', 64)}\n@@ -160,7 +163,9 @@\n     try:\n         torch.set_num_threads(4)\n         torch.backends.cuda.matmul.allow_tf32 = False\n-        torch.backends.cudnn.allow_tf32 = False\n+        # Preserve the frozen evaluator's native FP32 backend profile. cuDNN's\n+        # original default permits TF32 convolution with FP32 weights/outputs.\n+        torch.backends.cudnn.allow_tf32 = True\n         torch.cuda.set_device(device); torch.cuda.reset_peak_memory_stats(device)\n         rows, images = rows_and_images(job['manifest'])\n         if sha(job['manifest']) != job['manifest_sha256']:\n",
+  "fresh_namespace": "/root/said_hyfl_protocol_eval_v1/evaluation_native_v3",
+  "older_outputs_and_caches_preserved": true,
+  "note": "Original-native FP32 includes cuDNN permitted TF32 convolution, not pure IEEE32 contractions everywhere."
+}

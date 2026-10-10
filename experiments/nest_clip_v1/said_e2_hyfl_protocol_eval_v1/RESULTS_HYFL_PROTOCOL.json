@@ -1,0 +1,957 @@
+{
+  "model": "SAID E2-Uniform@4868",
+  "base_commit": "6dcae270f8e754323512648e1e09ed903ab698fc",
+  "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+  "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+  "evaluation_status": "COMPLETED",
+  "protocol_completion": "PARTIAL_PROTOCOL_VERIFICATION",
+  "datasets": {
+    "DOCCI": {
+      "dataset": "DOCCI",
+      "protocol": "DOCCI-official-test-5000-cosine248",
+      "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+      "started_utc": "2026-10-10T18:09:20.379361+00:00",
+      "device": "cuda:3",
+      "physical_gpu": 3,
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "status": "COMPLETED",
+      "metrics": {
+        "I2T": {
+          "query_count": 5000,
+          "candidate_count": 5000,
+          "correct": {
+            "1": 4010,
+            "5": 4821,
+            "10": 4928
+          },
+          "recall_percent": {
+            "1": 80.2,
+            "5": 96.42,
+            "10": 98.56
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 1.0848045349121094e-05
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 2,
+              "minimum_margin": 2.9802322387695312e-08
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 1.2516975402832031e-06
+            }
+          }
+        },
+        "T2I": {
+          "query_count": 5000,
+          "candidate_count": 5000,
+          "correct": {
+            "1": 4061,
+            "5": 4809,
+            "10": 4921
+          },
+          "recall_percent": {
+            "1": 81.22,
+            "5": 96.18,
+            "10": 98.42
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 1.1056661605834961e-05
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 2.086162567138672e-07
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 5,
+              "minimum_margin": 2.9802322387695312e-08
+            }
+          }
+        }
+      },
+      "identity": {
+        "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+        "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+        "record_sha256": "a912725c21f7b003297cdb105ec8adb276d69f190f6638e3460b53c9dac1327f",
+        "image_ids_paths_sha256": "48a1cca73530bc4ec8b97b48f2e8de87f7e881144057d91e21fe1fdf6bf1126d",
+        "image_content_sha256": "b73e290ff51c694e3b7055c0d7e78b49f1665c41e55f7ec7f5fc6034e010a83b",
+        "tokenizer": "model.longclip.tokenize(truncate=True)",
+        "context_length": 248,
+        "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+        "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+        "backend_flags": {
+          "cudnn_allow_tf32": true,
+          "cuda_matmul_allow_tf32": false
+        },
+        "torch": "2.5.1+cu124",
+        "normalization": "gpu",
+        "encoder_sources": {
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+          "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+          "tools/eval_hyfl_native.py": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+          "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+        },
+        "image_batch": 64,
+        "text_batch": 64
+      },
+      "n_images": 5000,
+      "n_captions": 5000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+      "encoding_seconds": 85.76076966524124,
+      "legacy_regression": {
+        "actual_counts": {
+          "I2T": {
+            "1": 4010,
+            "5": 4821,
+            "10": 4928
+          },
+          "T2I": {
+            "1": 4061,
+            "5": 4809,
+            "10": 4921
+          }
+        },
+        "expected_counts": {
+          "I2T": {
+            "1": 4010,
+            "5": 4821,
+            "10": 4928
+          },
+          "T2I": {
+            "1": 4061,
+            "5": 4809,
+            "10": 4921
+          }
+        },
+        "all_counts_match": true,
+        "R1_pass": true,
+        "R5_R10_query_deltas": {
+          "I2T": {
+            "5": 0,
+            "10": 0
+          },
+          "T2I": {
+            "5": 0,
+            "10": 0
+          }
+        }
+      },
+      "returncode": 0,
+      "ended_utc": "2026-10-10T18:10:47.409153+00:00",
+      "elapsed_seconds": 87.02994928508997,
+      "cpu_peak_rss_bytes": 2063695872,
+      "peak_cuda_allocated": 1285088256,
+      "peak_cuda_reserved": 1956642816
+    },
+    "DCI": {
+      "dataset": "DCI",
+      "protocol": "SAID-DCI-short-plus-extra-7805-NOT-HyFL-verified",
+      "protocol_status": "DCI_PROTOCOL_UNVERIFIED",
+      "started_utc": "2026-10-10T18:09:20.425556+00:00",
+      "device": "cuda:1",
+      "physical_gpu": 1,
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "status": "COMPLETED",
+      "metrics": {
+        "I2T": {
+          "query_count": 7805,
+          "candidate_count": 7805,
+          "correct": {
+            "1": 5390,
+            "5": 6741,
+            "10": 7111
+          },
+          "recall_percent": {
+            "1": 69.05829596412556,
+            "5": 86.3677130044843,
+            "10": 91.10826393337604
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 1.996755599975586e-06
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 2,
+              "minimum_margin": 3.2782554626464844e-07
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 6.854534149169922e-07
+            }
+          }
+        },
+        "T2I": {
+          "query_count": 7805,
+          "candidate_count": 7805,
+          "correct": {
+            "1": 5408,
+            "5": 6738,
+            "10": 7086
+          },
+          "recall_percent": {
+            "1": 69.28891736066623,
+            "5": 86.32927610506086,
+            "10": 90.78795643818066
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 1.4007091522216797e-06
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 9.5367431640625e-07
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 3,
+              "minimum_margin": 7.450580596923828e-08
+            }
+          }
+        }
+      },
+      "identity": {
+        "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+        "manifest_sha256": "b98c254f956e88dde9b3611df4db68c9a37cb4ee7d0eca488e1be342e759273a",
+        "record_sha256": "2538f760514683886051941575ba72c7d989206ba8a58eeb881b8ecb1a088ccf",
+        "image_ids_paths_sha256": "e7b37556446435c381ee15124c9ad33b445d7d0979d0272f2bbfc34f574e27fc",
+        "image_content_sha256": "7337bcd6fef40516a15a15500f6e080627beb3aaeb50cd6e0bee045354c2e048",
+        "tokenizer": "model.longclip.tokenize(truncate=True)",
+        "context_length": 248,
+        "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+        "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+        "backend_flags": {
+          "cudnn_allow_tf32": true,
+          "cuda_matmul_allow_tf32": false
+        },
+        "torch": "2.5.1+cu124",
+        "normalization": "gpu",
+        "encoder_sources": {
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+          "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+          "tools/eval_hyfl_native.py": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+          "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+        },
+        "image_batch": 64,
+        "text_batch": 64
+      },
+      "n_images": 7805,
+      "n_captions": 7805,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+      "encoding_seconds": 140.04780815541744,
+      "returncode": 0,
+      "ended_utc": "2026-10-10T18:11:41.687769+00:00",
+      "elapsed_seconds": 141.2623213082552,
+      "cpu_peak_rss_bytes": 2249551872,
+      "peak_cuda_allocated": 1285140992,
+      "peak_cuda_reserved": 1956642816
+    },
+    "Long-DCI": {
+      "dataset": "Long-DCI",
+      "protocol": "TULIP-constructor-reconstruction-7602",
+      "protocol_status": "PROTOCOL_UNVERIFIED",
+      "started_utc": "2026-10-10T18:09:20.417567+00:00",
+      "device": "cuda:2",
+      "physical_gpu": 2,
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "status": "COMPLETED",
+      "metrics": {
+        "I2T": {
+          "query_count": 7602,
+          "candidate_count": 7602,
+          "correct": {
+            "1": 4582,
+            "5": 5944,
+            "10": 6380
+          },
+          "recall_percent": {
+            "1": 60.27361220731387,
+            "5": 78.18995001315443,
+            "10": 83.92528282031044
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 5.602836608886719e-06
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 4,
+              "minimum_margin": 5.960464477539063e-08
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 3,
+              "minimum_margin": 1.043081283569336e-07
+            }
+          }
+        },
+        "T2I": {
+          "query_count": 7602,
+          "candidate_count": 7602,
+          "correct": {
+            "1": 4612,
+            "5": 5983,
+            "10": 6363
+          },
+          "recall_percent": {
+            "1": 60.668245198631936,
+            "5": 78.70297290186792,
+            "10": 83.70165745856353
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 5.662441253662109e-07
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 4.470348358154297e-07
+            },
+            "10": {
+              "exact_ties": 1,
+              "near_ties_le_1e-6": 5,
+              "minimum_margin": 0.0
+            }
+          }
+        }
+      },
+      "identity": {
+        "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+        "manifest_sha256": "23625d3c09068697547163b7c51491368dab34987539d097614c7b95868b5ecd",
+        "record_sha256": "c56596750ffe94f22467a0171ddd4dd7993e7c24f3cab67bebfbec04d1b6ac6c",
+        "image_ids_paths_sha256": "137149f0c22bc35691b5773b82a6a6fef44ab08965dd6bc2d032d8a753c659db",
+        "image_content_sha256": "f606455f65c8a4e32a062e95c738b0f68d58a25ec648c6102006d60053daa253",
+        "tokenizer": "model.longclip.tokenize(truncate=True)",
+        "context_length": 248,
+        "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+        "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+        "backend_flags": {
+          "cudnn_allow_tf32": true,
+          "cuda_matmul_allow_tf32": false
+        },
+        "torch": "2.5.1+cu124",
+        "normalization": "gpu",
+        "encoder_sources": {
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+          "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+          "tools/eval_hyfl_native.py": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+          "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+        },
+        "image_batch": 64,
+        "text_batch": 64
+      },
+      "n_images": 7602,
+      "n_captions": 7602,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+      "encoding_seconds": 136.87400136888027,
+      "legacy_regression": {
+        "actual_counts": {
+          "I2T": {
+            "1": 4582,
+            "5": 5944,
+            "10": 6380
+          },
+          "T2I": {
+            "1": 4612,
+            "5": 5983,
+            "10": 6363
+          }
+        },
+        "expected_counts": {
+          "I2T": {
+            "1": 4582,
+            "5": 5944,
+            "10": 6380
+          },
+          "T2I": {
+            "1": 4612,
+            "5": 5983,
+            "10": 6363
+          }
+        },
+        "all_counts_match": true,
+        "R1_pass": true,
+        "R5_R10_query_deltas": {
+          "I2T": {
+            "5": 0,
+            "10": 0
+          },
+          "T2I": {
+            "5": 0,
+            "10": 0
+          }
+        }
+      },
+      "returncode": 0,
+      "ended_utc": "2026-10-10T18:11:38.874098+00:00",
+      "elapsed_seconds": 138.4566410034895,
+      "cpu_peak_rss_bytes": 2521473024,
+      "peak_cuda_allocated": 1285129728,
+      "peak_cuda_reserved": 1956642816
+    },
+    "Urban-1k": {
+      "dataset": "Urban-1k",
+      "protocol": "Urban-full1k-firstline-cosine248",
+      "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+      "started_utc": "2026-10-10T18:10:52.106911+00:00",
+      "device": "cuda:3",
+      "physical_gpu": 3,
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "status": "COMPLETED",
+      "metrics": {
+        "I2T": {
+          "query_count": 1000,
+          "candidate_count": 1000,
+          "correct": {
+            "1": 939,
+            "5": 991,
+            "10": 996
+          },
+          "recall_percent": {
+            "1": 93.9,
+            "5": 99.1,
+            "10": 99.6
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 0.00013148784637451172
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 5.364418029785156e-06
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 2.9802322387695312e-08
+            }
+          }
+        },
+        "T2I": {
+          "query_count": 1000,
+          "candidate_count": 1000,
+          "correct": {
+            "1": 929,
+            "5": 991,
+            "10": 994
+          },
+          "recall_percent": {
+            "1": 92.9,
+            "5": 99.1,
+            "10": 99.4
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 7.581710815429688e-05
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 4.202127456665039e-06
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 4.172325134277344e-07
+            }
+          }
+        }
+      },
+      "identity": {
+        "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+        "manifest_sha256": "4db9e6d9852d5a986cb557a3da9d87a2a4c302da39a7ece386d2244e1bd1c7cd",
+        "record_sha256": "b1dabf97d9ab0ff13b65cfffb65d24449bd5e592fbb259d46ba55fd992b5e39f",
+        "image_ids_paths_sha256": "efc6bbdd157829c4a4bfe264b04830e676000b60cbf3e4f0132564aec6bc29a6",
+        "image_content_sha256": "74bde72bf8e2297aec914ab481b62d876bea0d9b93aa139a7a0bb0aa09f29d3a",
+        "tokenizer": "model.longclip.tokenize(truncate=True)",
+        "context_length": 248,
+        "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+        "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+        "backend_flags": {
+          "cudnn_allow_tf32": true,
+          "cuda_matmul_allow_tf32": false
+        },
+        "torch": "2.5.1+cu124",
+        "normalization": "gpu",
+        "encoder_sources": {
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+          "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+          "tools/eval_hyfl_native.py": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+          "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+        },
+        "image_batch": 64,
+        "text_batch": 64
+      },
+      "n_images": 1000,
+      "n_captions": 1000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+      "encoding_seconds": 16.702085696160793,
+      "legacy_regression": {
+        "actual_counts": {
+          "I2T": {
+            "1": 939,
+            "5": 991,
+            "10": 996
+          },
+          "T2I": {
+            "1": 929,
+            "5": 991,
+            "10": 994
+          }
+        },
+        "expected_counts": {
+          "I2T": {
+            "1": 939,
+            "5": 991,
+            "10": 996
+          },
+          "T2I": {
+            "1": 929,
+            "5": 991,
+            "10": 994
+          }
+        },
+        "all_counts_match": true,
+        "R1_pass": true,
+        "R5_R10_query_deltas": {
+          "I2T": {
+            "5": 0,
+            "10": 0
+          },
+          "T2I": {
+            "5": 0,
+            "10": 0
+          }
+        }
+      },
+      "returncode": 0,
+      "ended_utc": "2026-10-10T18:11:09.740431+00:00",
+      "elapsed_seconds": 17.633645094931126,
+      "cpu_peak_rss_bytes": 2155757568,
+      "peak_cuda_allocated": 1285120000,
+      "peak_cuda_reserved": 1956642816
+    },
+    "COCO": {
+      "dataset": "COCO",
+      "protocol": "COCO2017-Val5K-first5",
+      "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+      "started_utc": "2026-10-10T18:09:20.401192+00:00",
+      "device": "cuda:0",
+      "physical_gpu": 0,
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "status": "COMPLETED",
+      "metrics": {
+        "I2T": {
+          "query_count": 5000,
+          "candidate_count": 25000,
+          "correct": {
+            "1": 3093,
+            "5": 4183,
+            "10": 4485
+          },
+          "recall_percent": {
+            "1": 61.86,
+            "5": 83.66,
+            "10": 89.7
+          }
+        },
+        "T2I": {
+          "query_count": 25000,
+          "candidate_count": 5000,
+          "correct": {
+            "1": 10750,
+            "5": 17185,
+            "10": 19540
+          },
+          "recall_percent": {
+            "1": 43.0,
+            "5": 68.74,
+            "10": 78.16
+          }
+        }
+      },
+      "identity": {
+        "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+        "manifest_sha256": "d95cf84ef7ae5088e9476c19678d254951b0f2dc088a1f6f4273306a55f4e9de",
+        "record_sha256": "db6a5a545bc8cc7fc8b8c36bd6d673051b30dc273b9542c3941fc773bb736e37",
+        "image_ids_paths_sha256": "d23aa3f18016b48ea1916a2fc5dd503728ec5bd6dfddf5c5a34149cdf2cddb1b",
+        "image_content_sha256": "68fa21e7eb9f925fd2c662f9b4a738e6ca73dae4d4d588b1a1562ce3da6c67e0",
+        "tokenizer": "model.longclip.tokenize(truncate=True)",
+        "context_length": 248,
+        "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+        "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+        "backend_flags": {
+          "cudnn_allow_tf32": true,
+          "cuda_matmul_allow_tf32": false
+        },
+        "torch": "2.5.1+cu124",
+        "normalization": "cpu_raw_for_legacy",
+        "encoder_sources": {
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+          "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+          "tools/eval_hyfl_native.py": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+          "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+        },
+        "image_batch": 64,
+        "text_batch": 64
+      },
+      "n_images": 5000,
+      "n_captions": 25000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+      "encoding_seconds": 61.831220634281635,
+      "legacy_regression": {
+        "actual_counts": {
+          "I2T": {
+            "1": 3093,
+            "5": 4183,
+            "10": 4485
+          },
+          "T2I": {
+            "1": 10750,
+            "5": 17185,
+            "10": 19540
+          }
+        },
+        "expected_counts": {
+          "I2T": {
+            "1": 3093,
+            "5": 4183,
+            "10": 4485
+          },
+          "T2I": {
+            "1": 10750,
+            "5": 17185,
+            "10": 19540
+          }
+        },
+        "all_counts_match": true,
+        "R1_pass": true,
+        "R5_R10_query_deltas": {
+          "I2T": {
+            "5": 0,
+            "10": 0
+          },
+          "T2I": {
+            "5": 0,
+            "10": 0
+          }
+        }
+      },
+      "returncode": 0,
+      "ended_utc": "2026-10-10T18:10:47.175683+00:00",
+      "elapsed_seconds": 86.77460937201977,
+      "cpu_peak_rss_bytes": 2621538304,
+      "peak_cuda_allocated": 1285120000,
+      "peak_cuda_reserved": 1956642816,
+      "streaming_gpu_diagnostic_metrics": {
+        "I2T": {
+          "query_count": 5000,
+          "candidate_count": 25000,
+          "correct": {
+            "1": 3092,
+            "5": 4183,
+            "10": 4485
+          },
+          "recall_percent": {
+            "1": 61.84,
+            "5": 83.66,
+            "10": 89.7
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 5,
+              "near_ties_le_1e-6": 5,
+              "minimum_margin": 0.0
+            },
+            "5": {
+              "exact_ties": 23,
+              "near_ties_le_1e-6": 29,
+              "minimum_margin": 0.0
+            },
+            "10": {
+              "exact_ties": 40,
+              "near_ties_le_1e-6": 46,
+              "minimum_margin": 0.0
+            }
+          }
+        },
+        "T2I": {
+          "query_count": 25000,
+          "candidate_count": 5000,
+          "correct": {
+            "1": 10750,
+            "5": 17185,
+            "10": 19540
+          },
+          "recall_percent": {
+            "1": 43.0,
+            "5": 68.74,
+            "10": 78.16
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 3.5762786865234375e-07
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 10,
+              "minimum_margin": 2.086162567138672e-07
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 15,
+              "minimum_margin": 2.9802322387695312e-08
+            }
+          }
+        }
+      },
+      "ranking_protocol": "original native COCO CPU FP32 query chunk512, full gallery, per-row1D argsort",
+      "canonical_reproof_sha256": "f69c4be02638f169f07b7c2c8d8832b5db8f172e59241bbc6aea079139e60821"
+    },
+    "Flickr30k-Full": {
+      "status": "BLOCKED_PROTOCOL_DATA",
+      "annotation_source": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k.tar.gz",
+      "annotation_sha256": "fad17aa6894489708a31f67d6055a6935fc5d0e3bc632ff45f5bbba6924bf9ee",
+      "archive_sha256": "faba43eda297906bd43ca8101900b22ea982b62dd5665c182cf0d48011c99e70",
+      "n_annotation_images": 31783,
+      "n_annotation_captions": 158915,
+      "available_verified_filename_count": 1000,
+      "missing_images": 30783,
+      "caption_slots_0_through_4_validated": true,
+      "results_csv_available": false,
+      "image_acquisition_attempts": [
+        {
+          "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar",
+          "result": "HTTP404"
+        },
+        {
+          "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar.gz",
+          "result": "HTTP404"
+        },
+        {
+          "url": "https://huggingface.co/api/datasets/nlphuji/flickr30k/tree/main",
+          "result": "connection_timeout"
+        },
+        {
+          "url": "https://shannon.cs.illinois.edu/DenotationGraph/",
+          "result": "official page requires dataset access form"
+        }
+      ],
+      "note": "No full evaluation and no 1K substitution; official caption records are verified."
+    }
+  },
+  "legacy_only": {
+    "Flickr30k-Test1K": {
+      "dataset": "Flickr30k-Test1K",
+      "protocol": "SAID-existing-Flickr-test1k-5captions",
+      "protocol_status": "LEGACY_ONLY",
+      "started_utc": "2026-10-10T18:10:52.110257+00:00",
+      "device": "cuda:0",
+      "physical_gpu": 0,
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "status": "COMPLETED",
+      "metrics": {
+        "I2T": {
+          "query_count": 1000,
+          "candidate_count": 5000,
+          "correct": {
+            "1": 901,
+            "5": 985,
+            "10": 993
+          },
+          "recall_percent": {
+            "1": 90.1,
+            "5": 98.5,
+            "10": 99.3
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 1.0132789611816406e-05
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 3.984570503234863e-05
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 1,
+              "minimum_margin": 6.258487701416016e-07
+            }
+          }
+        },
+        "T2I": {
+          "query_count": 5000,
+          "candidate_count": 1000,
+          "correct": {
+            "1": 3700,
+            "5": 4604,
+            "10": 4791
+          },
+          "recall_percent": {
+            "1": 74.0,
+            "5": 92.08,
+            "10": 95.82
+          },
+          "boundary_audit": {
+            "1": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 6.139278411865234e-06
+            },
+            "5": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 0,
+              "minimum_margin": 3.4570693969726562e-06
+            },
+            "10": {
+              "exact_ties": 0,
+              "near_ties_le_1e-6": 2,
+              "minimum_margin": 8.046627044677734e-07
+            }
+          }
+        }
+      },
+      "identity": {
+        "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+        "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+        "record_sha256": "358260dca8a2303cbb804f35ab575fb9def3231ab8b5bcb6a0506758641ad2e3",
+        "image_ids_paths_sha256": "8ec246cb26b6924c59553cea170ff1f6c3e3a96eb0d890435c51020b94dee02a",
+        "image_content_sha256": "add03606237706768b34a6bac50f765734aea9deeb37eb7ad5c9d1f70f19585f",
+        "tokenizer": "model.longclip.tokenize(truncate=True)",
+        "context_length": 248,
+        "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+        "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+        "backend_flags": {
+          "cudnn_allow_tf32": true,
+          "cuda_matmul_allow_tf32": false
+        },
+        "torch": "2.5.1+cu124",
+        "normalization": "gpu",
+        "encoder_sources": {
+          "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+          "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+          "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+          "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+          "tools/eval_hyfl_native.py": "12e9517f121cff28cfbdd639325dce19356c6fcb8689de4ffbcf5006b41b1dbf",
+          "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+        },
+        "image_batch": 64,
+        "text_batch": 64
+      },
+      "n_images": 1000,
+      "n_captions": 5000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+      "encoding_seconds": 21.891195200383663,
+      "legacy_regression": {
+        "actual_counts": {
+          "I2T": {
+            "1": 901,
+            "5": 985,
+            "10": 993
+          },
+          "T2I": {
+            "1": 3700,
+            "5": 4604,
+            "10": 4791
+          }
+        },
+        "expected_counts": {
+          "I2T": {
+            "1": 901,
+            "5": 985,
+            "10": 993
+          },
+          "T2I": {
+            "1": 3700,
+            "5": 4604,
+            "10": 4791
+          }
+        },
+        "all_counts_match": true,
+        "R1_pass": true,
+        "R5_R10_query_deltas": {
+          "I2T": {
+            "5": 0,
+            "10": 0
+          },
+          "T2I": {
+            "5": 0,
+            "10": 0
+          }
+        }
+      },
+      "returncode": 0,
+      "ended_utc": "2026-10-10T18:11:15.010303+00:00",
+      "elapsed_seconds": 22.900230780243874,
+      "cpu_peak_rss_bytes": 2432335872,
+      "peak_cuda_allocated": 1285088256,
+      "peak_cuda_reserved": 1956642816
+    }
+  },
+  "missing_metrics_are_not_zero": true,
+  "scientific_status": "EXPLORATORY_REPEATED_PUBLIC_BENCHMARKS"
+}

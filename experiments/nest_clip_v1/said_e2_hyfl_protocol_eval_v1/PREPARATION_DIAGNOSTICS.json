@@ -1,0 +1,29 @@
+{
+  "preparation_attempts": [
+    {
+      "log": "/root/said_hyfl_protocol_eval_v1/data_audit.log",
+      "failure": "DOCCI individual symlink path rejected by root guard",
+      "resolution": "Use the same images in their canonical archive directory; no images changed."
+    },
+    {
+      "log": "/root/said_hyfl_protocol_eval_v1/data_audit_v2.log",
+      "failure": "DCI expected SHA copied from historical script typo",
+      "resolution": "Verified official DCI download.py checksum and existing frozen recovery/status; corrected new audit constant only."
+    },
+    {
+      "log": "/root/said_hyfl_protocol_eval_v1/data_audit_v3.log",
+      "status": "PASS"
+    }
+  ],
+  "formal_worker_attempts": {
+    "COCO": 1,
+    "DCI": 1,
+    "Long-DCI": 1,
+    "DOCCI": 1,
+    "Flickr30k-Test1K": 1,
+    "Urban-1k": 1
+  },
+  "evaluation_recovery_audit": "EVALUATION_RECOVERY_AUDIT.json",
+  "historical_results_preserved": true,
+  "production_code_preserved": true
+}

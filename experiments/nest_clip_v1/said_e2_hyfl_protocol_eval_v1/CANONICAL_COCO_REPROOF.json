@@ -1,0 +1,185 @@
+{
+  "status": "PASS",
+  "feature_source": "/root/said_hyfl_protocol_eval_v1/evaluation_native_v3/COCO/attempt1/RESULT.json",
+  "feature_source_sha256": "e838f6aa30d461e9a0e5d209b01dfe1cdeb01c49733f4e1c9d6e6a27b425c83a",
+  "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+  "manifest_sha256": "d95cf84ef7ae5088e9476c19678d254951b0f2dc088a1f6f4273306a55f4e9de",
+  "protocol": "original native COCO CPU FP32 query chunk512, full gallery, per-row1D argsort",
+  "why_primary": "User3.4/5.3 retain previously verified native COCO mathematics/numerical protocol. Not best-score selection.",
+  "model_inference_repeated": false,
+  "historical_scores_copied": false,
+  "all_six_canonical_counts_equal_history": true,
+  "metrics": {
+    "I2T": {
+      "query_count": 5000,
+      "candidate_count": 25000,
+      "correct": {
+        "1": 3093,
+        "5": 4183,
+        "10": 4485
+      },
+      "recall_percent": {
+        "1": 61.86,
+        "5": 83.66,
+        "10": 89.7
+      }
+    },
+    "T2I": {
+      "query_count": 25000,
+      "candidate_count": 5000,
+      "correct": {
+        "1": 10750,
+        "5": 17185,
+        "10": 19540
+      },
+      "recall_percent": {
+        "1": 43.0,
+        "5": 68.74,
+        "10": 78.16
+      }
+    }
+  },
+  "streaming_gpu_diagnostic_metrics": {
+    "I2T": {
+      "query_count": 5000,
+      "candidate_count": 25000,
+      "correct": {
+        "1": 3092,
+        "5": 4183,
+        "10": 4485
+      },
+      "recall_percent": {
+        "1": 61.84,
+        "5": 83.66,
+        "10": 89.7
+      },
+      "boundary_audit": {
+        "1": {
+          "exact_ties": 5,
+          "near_ties_le_1e-6": 5,
+          "minimum_margin": 0.0
+        },
+        "5": {
+          "exact_ties": 23,
+          "near_ties_le_1e-6": 29,
+          "minimum_margin": 0.0
+        },
+        "10": {
+          "exact_ties": 40,
+          "near_ties_le_1e-6": 46,
+          "minimum_margin": 0.0
+        }
+      }
+    },
+    "T2I": {
+      "query_count": 25000,
+      "candidate_count": 5000,
+      "correct": {
+        "1": 10750,
+        "5": 17185,
+        "10": 19540
+      },
+      "recall_percent": {
+        "1": 43.0,
+        "5": 68.74,
+        "10": 78.16
+      },
+      "boundary_audit": {
+        "1": {
+          "exact_ties": 0,
+          "near_ties_le_1e-6": 1,
+          "minimum_margin": 3.5762786865234375e-07
+        },
+        "5": {
+          "exact_ties": 0,
+          "near_ties_le_1e-6": 10,
+          "minimum_margin": 2.086162567138672e-07
+        },
+        "10": {
+          "exact_ties": 0,
+          "near_ties_le_1e-6": 15,
+          "minimum_margin": 2.9802322387695312e-08
+        }
+      }
+    }
+  },
+  "query_differences": {
+    "I2T": {
+      "1": [
+        {
+          "query_index": 3934,
+          "query_id": "456303",
+          "canonical_hit": true,
+          "streaming_gpu_hit": false,
+          "positive_indices": [
+            19670,
+            19671,
+            19672,
+            19673,
+            19674
+          ],
+          "canonical_top11": [
+            19673,
+            17607,
+            21233,
+            18351,
+            9473,
+            17336,
+            17264,
+            18353,
+            19671,
+            12935,
+            18178
+          ],
+          "canonical_scores": [
+            0.3371334671974182,
+            0.3371334671974182,
+            0.3371334671974182,
+            0.3371334671974182,
+            0.33624202013015747,
+            0.3359465003013611,
+            0.3335641622543335,
+            0.3313402533531189,
+            0.3308945894241333,
+            0.3293907046318054,
+            0.32847845554351807
+          ],
+          "gpu_top11": [
+            17607,
+            18351,
+            19673,
+            21233,
+            9473,
+            17336,
+            17264,
+            18353,
+            19671,
+            12935,
+            18178
+          ],
+          "gpu_scores": [
+            0.33713358640670776,
+            0.33713358640670776,
+            0.33713358640670776,
+            0.33713358640670776,
+            0.33624202013015747,
+            0.33594638109207153,
+            0.33356425166130066,
+            0.33134031295776367,
+            0.3308945894241333,
+            0.3293907046318054,
+            0.3284783959388733
+          ]
+        }
+      ],
+      "5": [],
+      "10": []
+    },
+    "T2I": {
+      "1": [],
+      "5": [],
+      "10": []
+    }
+  },
+  "canonical_evaluator_sha256": "fc6a428a56897416c9e3e1d3c8b6725a7981c93c085e47558edcfe608a7cd086"
+}

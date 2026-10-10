@@ -1,0 +1,258 @@
+{
+  "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+  "jobs": [
+    {
+      "name": "DOCCI",
+      "manifest": "/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/docci_test.jsonl",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "image_root": "/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/docci/image_archive/images",
+      "image_content_sha256": "b73e290ff51c694e3b7055c0d7e78b49f1665c41e55f7ec7f5fc6034e010a83b",
+      "n_images": 5000,
+      "n_captions": 5000,
+      "protocol": "DOCCI-official-test-5000-cosine248",
+      "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+      "source": {
+        "url": "https://storage.googleapis.com/docci/data/docci_descriptions.jsonlines",
+        "annotation_sha256": "c9df4819963883af35ddd2cf257949892fd8c6d88b33a012094352df60719800",
+        "original_count": 14847,
+        "exact_description_filename_match": true,
+        "hyfl_annotation_bytes_available": false
+      },
+      "normalization": "gpu",
+      "estimated_seconds": 400.0,
+      "work_units": 10000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "workers": 4,
+      "legacy_expected": {
+        "I2T": {
+          "1": 4010,
+          "5": 4821,
+          "10": 4928
+        },
+        "T2I": {
+          "1": 4061,
+          "5": 4809,
+          "10": 4921
+        }
+      }
+    },
+    {
+      "name": "COCO",
+      "manifest": "/root/said_hyfl_protocol_eval_v1/data/COCO.jsonl",
+      "manifest_sha256": "d95cf84ef7ae5088e9476c19678d254951b0f2dc088a1f6f4273306a55f4e9de",
+      "image_root": "/opt/data/private/lklk/SAID/local_assets/evaluation/coco/val2017",
+      "image_content_sha256": "68fa21e7eb9f925fd2c662f9b4a738e6ca73dae4d4d588b1a1562ce3da6c67e0",
+      "n_images": 5000,
+      "n_captions": 25000,
+      "protocol": "COCO2017-Val5K-first5",
+      "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+      "source": {
+        "annotation_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9",
+        "original_captions": 25014,
+        "selected_captions": 25000,
+        "excluded_extra_annotations": 14
+      },
+      "normalization": "cpu_raw_for_legacy",
+      "estimated_seconds": 1200.0,
+      "work_units": 30000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "workers": 4,
+      "legacy_expected": {
+        "I2T": {
+          "1": 3093,
+          "5": 4183,
+          "10": 4485
+        },
+        "T2I": {
+          "1": 10750,
+          "5": 17185,
+          "10": 19540
+        }
+      }
+    },
+    {
+      "name": "Urban-1k",
+      "manifest": "/root/said_hyfl_protocol_eval_v1/data/Urban-1k.jsonl",
+      "manifest_sha256": "4db9e6d9852d5a986cb557a3da9d87a2a4c302da39a7ece386d2244e1bd1c7cd",
+      "image_root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+      "image_content_sha256": "74bde72bf8e2297aec914ab481b62d876bea0d9b93aa139a7a0bb0aa09f29d3a",
+      "n_images": 1000,
+      "n_captions": 1000,
+      "protocol": "Urban-full1k-firstline-cosine248",
+      "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+      "source": {
+        "root": "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/local_assets/evaluation/Urban1k/Urban1k",
+        "n_pairs": 1000,
+        "revision": null,
+        "pair_caption_sha256": "3b0b2a3b743ed6011fccc72f8a9777bec35b44cadf2483f707fc5ef317da996c"
+      },
+      "normalization": "gpu",
+      "estimated_seconds": 80.0,
+      "work_units": 2000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "workers": 4,
+      "legacy_expected": {
+        "I2T": {
+          "1": 939,
+          "5": 991,
+          "10": 996
+        },
+        "T2I": {
+          "1": 929,
+          "5": 991,
+          "10": 994
+        }
+      }
+    },
+    {
+      "name": "Flickr30k-Test1K",
+      "manifest": "/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/manifests/flickr30k_test1k.jsonl",
+      "manifest_sha256": "113dbc616ca66db9400107ed4b97b56d33adae3c18608225902d97ee943600dc",
+      "image_root": "/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/flickr30k/archive/images_flickr_1k_test",
+      "image_content_sha256": "add03606237706768b34a6bac50f765734aea9deeb37eb7ad5c9d1f70f19585f",
+      "n_images": 1000,
+      "n_captions": 5000,
+      "protocol": "SAID-existing-Flickr-test1k-5captions",
+      "protocol_status": "LEGACY_ONLY",
+      "source": {
+        "caption_csv_sha256": "a427bd870759196b9af09ba9cbd3f0a49c6e6a50c7eafcd9001fdd9f81219105",
+        "note": "Existing test1K; not independently relabeled Karpathy without split-ID proof."
+      },
+      "normalization": "gpu",
+      "estimated_seconds": 240.0,
+      "work_units": 6000,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "workers": 4,
+      "legacy_expected": {
+        "I2T": {
+          "1": 901,
+          "5": 985,
+          "10": 993
+        },
+        "T2I": {
+          "1": 3700,
+          "5": 4604,
+          "10": 4791
+        }
+      }
+    },
+    {
+      "name": "Long-DCI",
+      "manifest": "/root/said_hyfl_protocol_eval_v1/data/Long-DCI.jsonl",
+      "manifest_sha256": "23625d3c09068697547163b7c51491368dab34987539d097614c7b95868b5ecd",
+      "image_root": "/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/image_archives",
+      "image_content_sha256": "f606455f65c8a4e32a062e95c738b0f68d58a25ec648c6102006d60053daa253",
+      "n_images": 7602,
+      "n_captions": 7602,
+      "protocol": "TULIP-constructor-reconstruction-7602",
+      "protocol_status": "PROTOCOL_UNVERIFIED",
+      "source": {
+        "archive_sha256": "d865c244150168d3f25daaad0bf5b70b2123cf3e83ca7b0e207d5b26943c5fc7",
+        "raw_count": 7805,
+        "nonempty_count": 7602,
+        "excluded_empty_extra_caption": 203,
+        "official_csv_available": false,
+        "constructor_match": true,
+        "old_raw_string_differences": 3025,
+        "old_manifest_sha256": "8890a2be15e2b64c142f9a1e39224d34b6ce92fc17ffb6099e14942cc8161c4b",
+        "limitation": "Official dci_long.csv unavailable: no CSV row-by-row equivalence claim."
+      },
+      "normalization": "gpu",
+      "estimated_seconds": 608.16,
+      "work_units": 15204,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "workers": 4,
+      "legacy_expected": {
+        "I2T": {
+          "1": 4582,
+          "5": 5944,
+          "10": 6380
+        },
+        "T2I": {
+          "1": 4612,
+          "5": 5983,
+          "10": 6363
+        }
+      }
+    },
+    {
+      "name": "DCI",
+      "manifest": "/root/said_hyfl_protocol_eval_v1/data/DCI.jsonl",
+      "manifest_sha256": "b98c254f956e88dde9b3611df4db68c9a37cb4ee7d0eca488e1be342e759273a",
+      "image_root": "/opt/data/private/lklk/SAID/local_assets/retrieval_benchmarks/dci/image_archives",
+      "image_content_sha256": "7337bcd6fef40516a15a15500f6e080627beb3aaeb50cd6e0bee045354c2e048",
+      "n_images": 7805,
+      "n_captions": 7805,
+      "protocol": "SAID-DCI-short-plus-extra-7805-NOT-HyFL-verified",
+      "protocol_status": "DCI_PROTOCOL_UNVERIFIED",
+      "source": {
+        "archive_sha256": "d865c244150168d3f25daaad0bf5b70b2123cf3e83ca7b0e207d5b26943c5fc7",
+        "DCI_test_json_available": false,
+        "caption_definition": "short_caption + space + extra_caption; strip",
+        "limitation": "No evidence this matches HyFL caption construction/subset."
+      },
+      "normalization": "gpu",
+      "estimated_seconds": 624.4,
+      "work_units": 15610,
+      "image_batch": 64,
+      "text_batch": 64,
+      "query_chunk": 256,
+      "gallery_chunk": 4096,
+      "workers": 4
+    }
+  ],
+  "blocked": {
+    "Flickr30k-Full": {
+      "status": "BLOCKED_PROTOCOL_DATA",
+      "annotation_source": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k.tar.gz",
+      "annotation_sha256": "fad17aa6894489708a31f67d6055a6935fc5d0e3bc632ff45f5bbba6924bf9ee",
+      "archive_sha256": "faba43eda297906bd43ca8101900b22ea982b62dd5665c182cf0d48011c99e70",
+      "n_annotation_images": 31783,
+      "n_annotation_captions": 158915,
+      "available_verified_filename_count": 1000,
+      "missing_images": 30783,
+      "caption_slots_0_through_4_validated": true,
+      "results_csv_available": false,
+      "image_acquisition_attempts": [
+        {
+          "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar",
+          "result": "HTTP404"
+        },
+        {
+          "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar.gz",
+          "result": "HTTP404"
+        },
+        {
+          "url": "https://huggingface.co/api/datasets/nlphuji/flickr30k/tree/main",
+          "result": "connection_timeout"
+        },
+        {
+          "url": "https://shannon.cs.illinois.edu/DenotationGraph/",
+          "result": "official page requires dataset access form"
+        }
+      ],
+      "note": "No full evaluation and no 1K substitution; official caption records are verified."
+    }
+  },
+  "frozen_prerequisites": {
+    "gpu_receipt_sha256": "e2b02693cf0ce0ed2dea80a5594cd3e607f9d82c7239f08d9e0e228059ee2895",
+    "cpu_log_sha256": "a446aeb7043ffd3b374fb1ed47e8f780b61d776937eddf83e2f0a5f4117add4b",
+    "model_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "data_provenance_sha256": "bc1b2790381a1c402ff4207264207db11b96d301e1f1d547b8b1ae5679935ca3"
+  }
+}

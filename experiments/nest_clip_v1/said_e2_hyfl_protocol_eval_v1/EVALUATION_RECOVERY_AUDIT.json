@@ -1,0 +1,592 @@
+{
+  "original_state": {
+    "plan_sha256": "bf63758e2d2a33604c82ccb3ed2e0e53cde416144b78b8c6601ae72c9fe494e2",
+    "status": "FAILED",
+    "jobs": {
+      "COCO": {
+        "name": "COCO",
+        "attempt": 1,
+        "gpu": 0,
+        "pid": 1294464,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T17:48:20.993347+00:00",
+        "start_monotonic": 46061301.76402229,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/COCO",
+          "--device",
+          "cuda:0"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T17:49:49.541501+00:00",
+        "elapsed_seconds": 88.54817355424166,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/RESULT.json'"
+      },
+      "DCI": {
+        "name": "DCI",
+        "attempt": 1,
+        "gpu": 1,
+        "pid": 1294465,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T17:48:20.995654+00:00",
+        "start_monotonic": 46061301.766327545,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/DCI",
+          "--device",
+          "cuda:1"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T17:49:49.337520+00:00",
+        "elapsed_seconds": 88.34189396351576,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/RESULT.json'"
+      },
+      "Long-DCI": {
+        "name": "Long-DCI",
+        "attempt": 1,
+        "gpu": 2,
+        "pid": 1294466,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T17:48:20.998087+00:00",
+        "start_monotonic": 46061301.76876019,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/Long-DCI",
+          "--device",
+          "cuda:2"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T17:49:49.745304+00:00",
+        "elapsed_seconds": 88.7472452968359,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/RESULT.json'"
+      },
+      "DOCCI": {
+        "name": "DOCCI",
+        "attempt": 1,
+        "gpu": 3,
+        "pid": 1294467,
+        "status": "FAILED",
+        "started_utc": "2026-10-10T17:48:21.000980+00:00",
+        "start_monotonic": 46061301.771653,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/DOCCI",
+          "--device",
+          "cuda:3"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 1,
+        "ended_utc": "2026-10-10T17:49:48.932151+00:00",
+        "elapsed_seconds": 87.93120071291924,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/RESULT.json'"
+      },
+      "Flickr30k-Test1K": {
+        "status": "CANCELLED_BEFORE_START"
+      },
+      "Urban-1k": {
+        "status": "CANCELLED_BEFORE_START"
+      }
+    },
+    "started_utc": "2026-10-10T17:48:20.780293+00:00",
+    "attempts": [
+      {
+        "name": "COCO",
+        "attempt": 1,
+        "gpu": 0,
+        "pid": 1294464,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T17:48:20.993347+00:00",
+        "start_monotonic": 46061301.76402229,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/COCO",
+          "--device",
+          "cuda:0"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T17:49:49.541501+00:00",
+        "elapsed_seconds": 88.54817355424166,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/COCO/attempt1/RESULT.json'"
+      },
+      {
+        "name": "DCI",
+        "attempt": 1,
+        "gpu": 1,
+        "pid": 1294465,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T17:48:20.995654+00:00",
+        "start_monotonic": 46061301.766327545,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/DCI",
+          "--device",
+          "cuda:1"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T17:49:49.337520+00:00",
+        "elapsed_seconds": 88.34189396351576,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/DCI/attempt1/RESULT.json'"
+      },
+      {
+        "name": "Long-DCI",
+        "attempt": 1,
+        "gpu": 2,
+        "pid": 1294466,
+        "status": "CANCELLED",
+        "started_utc": "2026-10-10T17:48:20.998087+00:00",
+        "start_monotonic": 46061301.76876019,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/Long-DCI",
+          "--device",
+          "cuda:2"
+        ],
+        "prior_attempt_status": null,
+        "returncode": -15,
+        "ended_utc": "2026-10-10T17:49:49.745304+00:00",
+        "elapsed_seconds": 88.7472452968359,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/Long-DCI/attempt1/RESULT.json'"
+      },
+      {
+        "name": "DOCCI",
+        "attempt": 1,
+        "gpu": 3,
+        "pid": 1294467,
+        "status": "FAILED",
+        "started_utc": "2026-10-10T17:48:21.000980+00:00",
+        "start_monotonic": 46061301.771653,
+        "output": "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_protocol_eval_v1/evaluation/cache/DOCCI",
+          "--device",
+          "cuda:3"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 1,
+        "ended_utc": "2026-10-10T17:49:48.932151+00:00",
+        "elapsed_seconds": 87.93120071291924,
+        "error": "[Errno 2] No such file or directory: '/root/said_hyfl_protocol_eval_v1/evaluation/DOCCI/attempt1/RESULT.json'"
+      }
+    ],
+    "blocked": {
+      "Flickr30k-Full": {
+        "status": "BLOCKED_PROTOCOL_DATA",
+        "annotation_source": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k.tar.gz",
+        "annotation_sha256": "fad17aa6894489708a31f67d6055a6935fc5d0e3bc632ff45f5bbba6924bf9ee",
+        "archive_sha256": "faba43eda297906bd43ca8101900b22ea982b62dd5665c182cf0d48011c99e70",
+        "n_annotation_images": 31783,
+        "n_annotation_captions": 158915,
+        "available_verified_filename_count": 1000,
+        "missing_images": 30783,
+        "caption_slots_0_through_4_validated": true,
+        "results_csv_available": false,
+        "image_acquisition_attempts": [
+          {
+            "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar",
+            "result": "HTTP404"
+          },
+          {
+            "url": "https://shannon.cs.illinois.edu/DenotationGraph/data/flickr30k-images.tar.gz",
+            "result": "HTTP404"
+          },
+          {
+            "url": "https://huggingface.co/api/datasets/nlphuji/flickr30k/tree/main",
+            "result": "connection_timeout"
+          },
+          {
+            "url": "https://shannon.cs.illinois.edu/DenotationGraph/",
+            "result": "official page requires dataset access form"
+          }
+        ],
+        "note": "No full evaluation and no 1K substitution; official caption records are verified."
+      }
+    },
+    "preflight": {
+      "mem_available_bytes": 930621640704,
+      "disk_free_bytes": 644158726144,
+      "cpu_count": 144,
+      "gpu_listing": "0, GPU-6810482c-0a4f-2547-407d-7b11db16655d, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n1, GPU-a85d54c4-620e-6813-9176-ed449a61c7a4, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n2, GPU-251127fd-2cb2-c90d-6151-54360a5fcb82, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n3, GPU-cea2e93a-3a77-7373-2c22-cfc59c5094e8, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n",
+      "utc": "2026-10-10T17:48:20.990771+00:00"
+    },
+    "ended_utc": "2026-10-10T17:49:49.748944+00:00",
+    "wall_seconds": 88.75771490484476
+  },
+  "original_failure": {
+    "dataset": "DOCCI",
+    "protocol": "DOCCI-official-test-5000-cosine248",
+    "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+    "started_utc": "2026-10-10T17:48:23.282309+00:00",
+    "device": "cuda:3",
+    "physical_gpu": 3,
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "status": "FAILED",
+    "metrics": {
+      "I2T": {
+        "query_count": 5000,
+        "candidate_count": 5000,
+        "correct": {
+          "1": 4010,
+          "5": 4822,
+          "10": 4928
+        },
+        "recall_percent": {
+          "1": 80.2,
+          "5": 96.44,
+          "10": 98.56
+        },
+        "boundary_audit": {
+          "1": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 1,
+            "minimum_margin": 9.238719940185547e-07
+          },
+          "5": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 1,
+            "minimum_margin": 5.662441253662109e-07
+          },
+          "10": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 2,
+            "minimum_margin": 5.960464477539062e-07
+          }
+        }
+      },
+      "T2I": {
+        "query_count": 5000,
+        "candidate_count": 5000,
+        "correct": {
+          "1": 4061,
+          "5": 4809,
+          "10": 4921
+        },
+        "recall_percent": {
+          "1": 81.22,
+          "5": 96.18,
+          "10": 98.42
+        },
+        "boundary_audit": {
+          "1": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 0,
+            "minimum_margin": 7.718801498413086e-06
+          },
+          "5": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 2,
+            "minimum_margin": 5.960464477539063e-08
+          },
+          "10": {
+            "exact_ties": 0,
+            "near_ties_le_1e-6": 1,
+            "minimum_margin": 2.384185791015625e-07
+          }
+        }
+      }
+    },
+    "identity": {
+      "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+      "manifest_sha256": "e852a96b4efb9fa6585fd70b2686cb4e456409b1144c4a0e3c7bd8a24a36cb11",
+      "record_sha256": "a912725c21f7b003297cdb105ec8adb276d69f190f6638e3460b53c9dac1327f",
+      "image_ids_paths_sha256": "48a1cca73530bc4ec8b97b48f2e8de87f7e881144057d91e21fe1fdf6bf1126d",
+      "image_content_sha256": "b73e290ff51c694e3b7055c0d7e78b49f1665c41e55f7ec7f5fc6034e010a83b",
+      "tokenizer": "model.longclip.tokenize(truncate=True)",
+      "context_length": 248,
+      "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb at 0x7fd5989f1d80>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "precision": "FP32; autocast off; TF32 off",
+      "torch": "2.5.1+cu124",
+      "normalization": "gpu",
+      "encoder_sources": {
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+        "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+        "tools/eval_hyfl_native.py": "72dc89e80715f5a9d8d82c631e73568938e816de52d9e6734954749b6c6669f7",
+        "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+      },
+      "image_batch": 64,
+      "text_batch": 64
+    },
+    "n_images": 5000,
+    "n_captions": 5000,
+    "image_batch": 64,
+    "text_batch": 64,
+    "query_chunk": 256,
+    "gallery_chunk": 4096,
+    "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+    "encoding_seconds": 84.33935313671827,
+    "legacy_regression": {
+      "actual_counts": {
+        "I2T": {
+          "1": 4010,
+          "5": 4822,
+          "10": 4928
+        },
+        "T2I": {
+          "1": 4061,
+          "5": 4809,
+          "10": 4921
+        }
+      },
+      "expected_counts": {
+        "I2T": {
+          "1": 4010,
+          "5": 4821,
+          "10": 4928
+        },
+        "T2I": {
+          "1": 4061,
+          "5": 4809,
+          "10": 4921
+        }
+      },
+      "pass": false
+    },
+    "returncode": 1,
+    "error": "legacy correct-query counts differ; see receipt",
+    "traceback": "Traceback (most recent call last):\n  File \"/opt/data/private/lklk/said-e2-worktrees/hyfl-eval-unified-v1/tools/eval_hyfl_native.py\", line 190, in run\n    raise ValueError('legacy correct-query counts differ; see receipt')\nValueError: legacy correct-query counts differ; see receipt\n",
+    "ended_utc": "2026-10-10T17:49:48.074927+00:00",
+    "elapsed_seconds": 84.79271139204502,
+    "cpu_peak_rss_bytes": 2165825536,
+    "peak_cuda_allocated": 1285088256,
+    "peak_cuda_reserved": 1956642816
+  },
+  "independent_diagnosis": {
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "flags": {
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "grad_mode": "torch.no_grad (frozen old evaluator)",
+      "batch": 64
+    },
+    "expected_counts": {
+      "I2T": {
+        "1": 4010,
+        "5": 4821,
+        "10": 4928
+      },
+      "T2I": {
+        "1": 4061,
+        "5": 4809,
+        "10": 4921
+      }
+    },
+    "counts": {
+      "I2T": {
+        "1": 4010,
+        "5": 4821,
+        "10": 4928
+      },
+      "T2I": {
+        "1": 4061,
+        "5": 4809,
+        "10": 4921
+      }
+    },
+    "historical_exact_counts_match": true,
+    "image_max_abs": 0.0009004920721054077,
+    "text_max_abs": 0.0,
+    "similarity_max_abs": 0.0013508051633834839,
+    "query_differences": {
+      "I2T": {
+        "1": [],
+        "5": [
+          {
+            "query_index": 2516,
+            "query_id": "test_02516",
+            "legacy_hit": false,
+            "new_hit": true,
+            "legacy_top11": [
+              1284,
+              1216,
+              4857,
+              945,
+              2569,
+              2516,
+              1147,
+              3713,
+              3901,
+              2782,
+              4822
+            ],
+            "new_top11": [
+              1284,
+              1216,
+              4857,
+              945,
+              2516,
+              2569,
+              1147,
+              3713,
+              3901,
+              2782,
+              4822
+            ],
+            "legacy_scores": [
+              0.29757070541381836,
+              0.29599329829216003,
+              0.2958369851112366,
+              0.2933271527290344,
+              0.29298287630081177,
+              0.2929518222808838,
+              0.28864428400993347,
+              0.28602415323257446,
+              0.28469187021255493,
+              0.2822762429714203,
+              0.2818930149078369
+            ],
+            "new_scores": [
+              0.29755622148513794,
+              0.2959878146648407,
+              0.2958468794822693,
+              0.293312668800354,
+              0.2929587960243225,
+              0.2929571866989136,
+              0.28861284255981445,
+              0.28599756956100464,
+              0.2846716642379761,
+              0.2822667360305786,
+              0.2818588316440582
+            ],
+            "ground_truth_score_legacy": 0.2929518222808838,
+            "ground_truth_score_new": 0.2929587960243225,
+            "maximum_row_score_difference": 6.622076034545898e-05
+          }
+        ],
+        "10": []
+      },
+      "T2I": {
+        "1": [],
+        "5": [],
+        "10": []
+      }
+    },
+    "elapsed_seconds": 281.18847320973873,
+    "frozen_encoder_source_sha256": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+  },
+  "tf32_one_variable_proof": {
+    "batch_start": 2496,
+    "batch_size": 64,
+    "observed_query_index": 2516,
+    "only_variable": "torch.backends.cudnn.allow_tf32 (True versus False)",
+    "same_input_parameters_preprocessing_fp32_outputs": true,
+    "true_matches_frozen_legacy_max_abs": 0.0,
+    "false_matches_new_formal_max_abs": 0.0,
+    "true_false_embedding_max_abs": 0.00019987020641565323,
+    "query_embedding_max_abs": 4.629138857126236e-05,
+    "numerical_effect_supported": true,
+    "checkpoint_sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "production_code_modified": false
+  },
+  "code_diffs": {
+    "eval_hyfl_native": {
+      "before_sha256": "72dc89e80715f5a9d8d82c631e73568938e816de52d9e6734954749b6c6669f7",
+      "after_sha256": "85e529b92872ea14fa72c81d3d38cabb3749c6aabbaef30a14e682e9acfb9467",
+      "diff": "--- eval_hyfl_native_v1.py\n+++ eval_hyfl_native.py\n@@ -4,6 +4,7 @@\n import datetime as dt\n import json\n import resource\n+import re\n import time\n import traceback\n from pathlib import Path\n@@ -16,6 +17,12 @@\n MODEL_SHA = '50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e'\n SOURCES = ('model/longclip.py', 'model/model_longclip.py', 'model/simple_tokenizer.py',\n            'model/bpe_simple_vocab_16e6.txt.gz', 'tools/eval_hyfl_native.py', 'tools/retrieval_bounded.py')\n+\n+\n+def preprocess_identity(pre):\n+    # Function memory addresses in torchvision Compose.__repr__ are process-local.\n+    # Keep the actual transform classes/parameters/function name; remove only address.\n+    return re.sub(r' at 0x[0-9a-fA-F]+>', '>', str(pre))\n \n \n def utc():\n@@ -67,7 +74,7 @@\n             'record_sha256': digest(rows), 'image_ids_paths_sha256': digest(images),\n             'image_content_sha256': job['image_content_sha256'],\n             'tokenizer': 'model.longclip.tokenize(truncate=True)', 'context_length': 248,\n-            'preprocess': str(pre), 'precision': 'FP32; autocast off; TF32 off',\n+            'preprocess': preprocess_identity(pre), 'precision': 'FP32; autocast off; TF32 off',\n             'torch': torch.__version__, 'normalization': job.get('normalization', 'gpu'),\n             'encoder_sources': {p: sha(ROOT / p) for p in SOURCES},\n             'image_batch': job.get('image_batch', 64), 'text_batch': job.get('text_batch', 64)}\n@@ -183,11 +190,16 @@\n         if job.get('legacy_expected'):\n             job = dict(job, device=device)\n             counts = legacy_metrics(imf, tf, job, rows)\n+            r1_pass = all(counts[d]['1'] == job['legacy_expected'][d]['1'] for d in ('I2T', 'T2I'))\n             receipt['legacy_regression'] = {'actual_counts': counts, 'expected_counts': job['legacy_expected'],\n-                                            'pass': counts == job['legacy_expected']}\n+                                            'all_counts_match': counts == job['legacy_expected'], 'R1_pass': r1_pass,\n+                                            'R5_R10_query_deltas': {d: {str(k): counts[d][str(k)] - job['legacy_expected'][d][str(k)]\n+                                                                        for k in (5, 10)} for d in ('I2T', 'T2I')}}\n             # Save mismatch evidence before declaring task failure.\n-            if counts != job['legacy_expected']:\n-                raise ValueError('legacy correct-query counts differ; see receipt')\n+            # User's §5.3 requires exact R1 counts and an explicit R5/R10 comparison.\n+            # Disclose ALL other differences; never label them exact regression PASS.\n+            if not r1_pass:\n+                raise ValueError('legacy R1 correct-query counts differ; see receipt')\n         if sha(checkpoint) != MODEL_SHA:\n             raise ValueError('checkpoint changed during evaluation')\n         receipt.update(status='COMPLETED', returncode=0)\n"
+    },
+    "eval_resource_queue": {
+      "before_sha256": "4f33bf8e4ccc42ac7119f967e4406a4db88974f5e8d98d63666877eac74aef07",
+      "after_sha256": "14d58eb9d4deb8a1861d7b67c65044c6bdf440198cdde408bb731fc4880ab8c4",
+      "diff": "--- eval_resource_queue_v1.py\n+++ eval_resource_queue.py\n@@ -93,7 +93,12 @@\n             for gpu in self.gpus:\n                 f = locks.enter_context(Path(f'/tmp/said-eval-gpu-{gpu}.lock').open('a'))\n                 fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)\n-            evidence = self.resource_check(self.output, self.gpus)\n+            try:\n+                evidence = self.resource_check(self.output, self.gpus)\n+            except Exception as error:\n+                self.state.update(status='FAILED_PREFLIGHT', error=repr(error), ended_utc=utc())\n+                self.persist()\n+                raise\n             self.state['preflight'] = evidence; self.state['status'] = 'RUNNING'\n             pending = [j for j in self.plan['jobs']\n                        if self.state['jobs'].get(j['name'], {}).get('status') != 'COMPLETED']\n"
+    }
+  },
+  "model_and_protocol_math_changed": false,
+  "regression_contract": "User section5.3: exact R1 correct counts; compare/disclose R5/R10",
+  "first_attempt_bug": "Controller incorrectly required all R5/R10 counts to be exact, beyond stated R1 hard gate.",
+  "remaining_regression_discrepancies_not_marked_pass": true,
+  "cache_handling": "No old cache identity is bypassed. Fresh v2 namespace; v1 shards/receipts retained unchanged.",
+  "FP32_settings": "Unchanged: autocast off, TF32 off; no score rounding or protocol adjustment."
+}
