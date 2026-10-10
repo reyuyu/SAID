@@ -1,0 +1,38 @@
+{
+  "order": [
+    "P1-Temp95",
+    "P2-Temp105",
+    "P3-Sparse110",
+    "P4-Sparse130"
+  ],
+  "arms": {
+    "P1-Temp95": {
+      "contrastive_logit_scale": 95.0,
+      "lambda_sparse": 1.2
+    },
+    "P2-Temp105": {
+      "contrastive_logit_scale": 105.0,
+      "lambda_sparse": 1.2
+    },
+    "P3-Sparse110": {
+      "contrastive_logit_scale": 100.0,
+      "lambda_sparse": 1.1
+    },
+    "P4-Sparse130": {
+      "contrastive_logit_scale": 100.0,
+      "lambda_sparse": 1.3
+    }
+  },
+  "fresh_common0": true,
+  "independent_smoke5_then_formal500": true,
+  "horizon": 4868,
+  "stop": 500,
+  "world": 4,
+  "batch_per_rank": 256,
+  "samples_per_arm": 512000,
+  "original_native_LR": true,
+  "symmetric_CE": true,
+  "fifth_arm": false,
+  "automatic_continuation": false,
+  "parameters_frozen_before_test_results": true
+}

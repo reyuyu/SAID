@@ -112,7 +112,7 @@ def score_block(module, z, text, visual, condition, active, collect_diagnostics)
     logits = pair_logits(module, visual, condition)
     probability = logits.sigmoid()
     mask = hard_st(probability)
-    scores = 100 * (F.normalize(z[None].float() * mask, dim=-1, eps=1e-6) *
+    scores = getattr(module, 'contrastive_logit_scale', 100.) * (F.normalize(z[None].float() * mask, dim=-1, eps=1e-6) *
                     F.normalize(text.float(), dim=-1, eps=1e-6)[:, None]).sum(-1)
     with torch.no_grad():
         selected = probability >= .5
@@ -247,7 +247,8 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
 class NestedFusionMask(nn.Module):
     def __init__(self, clip, arm='A3', checkpoint_encoders=True, image_chunk=128,
                  text_chunk=128, condition_mode='dual_branch', shuffle_seed=0,
-                 checkpoint_pair_blocks=False, fusion='stack_pool', visual='cls', text_tokens=248):
+                 checkpoint_pair_blocks=False, fusion='stack_pool', visual='cls', text_tokens=248,
+                 contrastive_logit_scale=100.):
         super().__init__()
         assert arm == 'A3' and condition_mode == 'dual_branch'
         assert fusion in ('stack_pool', 'crossscore_flat', 'balanced_stack', 'cosine_crossscore') and visual in ('cls', 'patch')
@@ -255,6 +256,8 @@ class NestedFusionMask(nn.Module):
         assert fusion != 'cosine_crossscore' or visual == 'cls'
         self.clip, self.arm, self.condition_mode = clip, arm, condition_mode
         self.fusion, self.visual = fusion, visual
+        self.contrastive_logit_scale = float(contrastive_logit_scale)
+        assert math.isfinite(self.contrastive_logit_scale) and self.contrastive_logit_scale > 0
         self.image_chunk, self.text_chunk = int(image_chunk), int(text_chunk)
         self.checkpoint_pair_blocks = bool(checkpoint_pair_blocks)
         self.checkpoint_encoders = bool(checkpoint_encoders)
