@@ -1,5 +1,7 @@
 # E2-Hierarchy090: complete-state continuation500 to4868
 
+Final scientific decision: retain E2-Uniform; this candidate does not improve the aggregate long metrics or Urban Mean. See [FINAL_REVIEW.md](FINAL_REVIEW.md) for the readable engineering acceptance, complete Recall differences, mask/gradient interpretation and limitations. A post-evaluation GitHub push timeout is preserved separately in PUBLISH_TIMEOUT_EVIDENCE.json; no training retry was performed for publication.
+
 One frozen arm; lambda_hierarchy=0.9.4368 new updates from the original complete500 checkpoint. Native horizon4868, ramp200, AdamW moments, RNG and data cursor restored. No intermediate public evaluation or test-based checkpoint selection.
 
 | Model | Score5 | J_long3 | J_long | Short4 | Urban I2T/T2I | Urban Mean |
