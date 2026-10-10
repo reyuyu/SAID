@@ -104,11 +104,47 @@ Component gradient norms/cosines: `{"native_text_backbone": {"cosine_hierarchy_s
 
 ## Predeclared research questions
 
-Q1: View reallocation results and all directional tradeoffs are given in A1/A2 recall/delta tables; no directional CE reweighting was introduced.
-Q2: Macro-only alignment results are A3/A4; ΔScore5={'A3-Align95': -0.10833041452232806, 'A4-Align105': -0.18511696921862608}.
-Q3: Arms jointly improving Score5 and J_long3: [].
-Q4: Arms improving both Urban directions: []. Every opposing-direction change and regression is retained.
-Q5: These single-seed500 results can only nominate exploratory validation candidates. They cannot establish full4-Epoch benefits; any continuation requires a new user decision. No continuation was launched.
+Q1: Increasing Dall's share (A1) improves DOCCI R1 by +0.080/+0.400pp and Long-DCI R1 by +0.197316/+0.342015pp (I2T/T2I), while Flickr R1 drops -0.700/-0.120pp and Urban T2I drops -0.300pp. Increasing F's share (A2) leaves Urban I2T unchanged and raises T2I +0.200pp, but lowers Flickr R1 -0.400/-0.280pp and Long-DCI I2T R1 -0.223625pp. View reallocation produces dataset and directional tradeoffs; it does not yield a broad improvement.
+
+Q2: Neither macro-only alignment perturbation improves Score5: A3 is -0.108330pp and A4 is -0.185117pp. A4 raises Urban I2T +0.200pp while lowering T2I -0.200pp, leaving their mean unchanged. Its largest R1 regressions are Flickr I2T (-1.000pp), Long-DCI I2T (-0.381479pp), and DOCCI I2T (-0.360pp).
+
+Q3: No arm jointly improves Score5 and J_long3. A1 improves J_long3 +0.119888pp and J_long +0.044999pp, while Score5 is effectively flat (-0.004067pp) and Short4 is lower (-0.190pp). These differences describe an exploratory tradeoff, not a reliable overall win.
+
+Q4: No arm improves both Urban directions. A2 has the highest observed Urban Mean (90.650 versus baseline90.550), entirely from a net gain of two T2I queries. A3 lowers both directions. A4 exchanges a net gain of two I2T queries for a net loss of two T2I queries. Net counts do not identify the number of improved and regressed individual queries; no paired-query significance claim is made here.
+
+Q5: The current evidence does not justify prioritizing any arm for full4-Epoch validation as an overall improvement. A1 could motivate a separately authorized study of the long/short tradeoff, and A2 could motivate replication of its small Urban T2I change, but both have counterevidence in the table. No continuation was launched. Single-seed500 results on repeatedly observed public tests cannot establish a robust benefit or unbiased model selection.
+
+## Mechanism interpretation
+
+Last50-step means below are percentages. Hard violations use the original mask-coordinate denominator; they are not percentages of queries with any violation.
+
+| Model | Keep F | Keep Dall | Keep D3 | Dall→F violation | D3→Dall violation |
+|---|---:|---:|---:|---:|---:|
+| E2-Uniform | 76.430 | 76.814 | 73.323 | 3.244 | 4.507 |
+| A1-View-DallPlus | 76.623 | 76.956 | 73.767 | 3.146 | 4.673 |
+| A2-View-FPlus | 76.440 | 76.704 | 73.464 | 3.802 | 4.562 |
+| A3-Align95 | 75.643 | 76.379 | 72.936 | 3.771 | 4.483 |
+| A4-Align105 | 77.393 | 77.646 | 75.074 | 3.016 | 4.737 |
+
+The baseline and all arms have mean F<Dall and Dall>D3, so the requested F≥Dall≥D3 density ordering is not maintained. This is a structural observation rather than an engineering failure. Lowering alignment's macro coefficient reduces all three keep ratios; raising it increases all three. Neither change improves Score5. A4 lowers Dall→F violation and raises D3→Dall violation, so even the structural effects are mixed. No accepted run has nonfinite gradients or a complete mask collapse. Lower density or higher IoU alone does not demonstrate better evidence selection.
+
+At the matched terminal diagnostic batch, the actual weighted visual-backbone view-gradient norms are:
+
+| Model | F | Dall | D3 |
+|---|---:|---:|---:|
+| E2-Uniform | 58.0134 | 53.9148 | 28.5760 |
+| A1-View-DallPlus | 42.5323 | 52.0557 | 24.7740 |
+| A2-View-FPlus | 42.1765 | 48.4039 | 23.9511 |
+| A3-Align95 | 37.5999 | 46.3359 | 24.9718 |
+| A4-Align105 | 51.5283 | 52.8527 | 26.5617 |
+
+These terminal gradients reflect both declared coefficients and the different learned states. For example, A2's higher F coefficient does not produce a higher terminal F gradient norm than baseline. The fixed-state pretraining equivalence controls isolate the coefficient change; these terminal measurements do not independently identify its causal mechanism. D3 still supplies approximately48.5–49.0% of the actual weighted alignment loss in last50 means, despite its small nominal view weight.
+
+Visual-mask hierarchy/sparsity gradient cosines remain negative: baseline -0.8992, A1 -0.8622, A2 -0.8999, A3 -0.8380, A4 -0.9412. This conflict persists, but its magnitude alone does not explain retrieval changes. Original conditional detach remains present: native-backbone sparsity and hierarchy gradient norms are zero in the diagnostic receipts, while mask/fusion groups receive those regularizer gradients.
+
+## Final artifact verification
+
+After the queue exited, an independent read-only review verified all120 candidate Recall entries, all four validation and no-update gradient receipts, and recomputed SHA256 for all four complete checkpoints and four bare students. All eight hashes matched the recorded results. Protected baseline artifacts matched the preparation manifest. The CPU suite reports81 passed; each arm also passed its independent smoke5. All formal streams match the original E2 for512000 positions and native LR, with the same stream and LR digests across arms. Four GPUs have no compute processes, and the supervisor exited. Only report interpretation was added after the queue; no further GPU computation or training was launched.
 
 All values are percentages and differences percentage points. Below0.05pp single-seed gains are weak signals; Urban0.1pp is one query.
 Independent retrieval validation is NOT_ESTABLISHED. The public five tests have been repeatedly observed; these are exploratory results, not unbiased SOTA or independent generalization.
