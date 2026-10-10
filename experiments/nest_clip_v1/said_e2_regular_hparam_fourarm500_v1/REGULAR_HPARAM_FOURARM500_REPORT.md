@@ -106,3 +106,53 @@ No independent retrieval validation protocol established. Public benchmarks, esp
 Original baseline checkpoints/results stay immutable. Default100 source-versus-legacy forward/loss and gradients were checked on a real BF16 four-rank batch; only score_block CE logits are temperature-scaled. Masks/sigmoid/ST and both directional definitions remain unchanged.
 Each full stage verifies512000 sample positions, all IDs/text/tokens/K/indices, unchanged native LR, four-rank agreement and complete restorable checkpoint/export.
 Hard stop500 for each of four arms. No fifth arm, combined scalar,1217/4868 continuation, rerank or ensemble.
+
+## Interpretation of all four completed arms
+
+Original E2-Uniform remains highest on both Score5 (71.314371) and Urban Mean (90.550). No arm improves Score5, Urban Mean, or both Urban directions together. P1 is the closest Score5 result, but its -0.012722pp difference is small single-seed evidence, not a demonstrated equivalence or improvement. Its +0.036129pp J_long3 gain is a weak signal below0.05pp; J_long and Short4 still decrease. There is no performance-based reason from this experiment to replace the baseline or automatically extend an arm to4 Epoch.
+
+Urban net correct-query count differences versus E2 are: P1 I2T+2/T2I-4, P2+1/-6, P3-2/-4, P4+0/-8. These are differences in aggregate correct counts, not a paired-query analysis of which queries changed. The two temperature arms trade a small I2T increase for a larger T2I decrease. P3 decreases both directions; P4 preserves I2T but has the largest T2I decline. None meets the bidirectional Urban objective.
+
+### Temperature, CE and gradient measurements
+
+The following are means over formal updates451–500. CE is the actual weighted alignment contribution, including the unchanged view weights and macro scale10. Gradient norms refer to the four native optimizer parameter groups after normal training aggregation. These are trained-state observations, not pure temperature derivatives at identical parameters; the separate fixed-common0 precheck supplies the single-variable isolation evidence.
+
+| Model | Weighted alignment CE | Backbone gradient norm | Text mask/shared pool norm | Visual mask norm | Fusion adapter norm |
+|---|---:|---:|---:|---:|---:|
+| E2-Uniform | 2.900277 | 120.529443 | 1.527456 | 0.948052 | 2.188343 |
+| P1-Temp95 | 2.844440 | 113.021710 | 1.257638 | 0.794000 | 1.591730 |
+| P2-Temp105 | 2.975034 | 123.148120 | 1.768462 | 0.987732 | 1.924555 |
+| P3-Sparse110 | 2.870214 | 114.127929 | 1.448213 | 0.873715 | 1.912058 |
+| P4-Sparse130 | 2.906040 | 117.690589 | 1.438622 | 0.890223 | 1.792959 |
+
+Scale95 has lower terminal CE and backbone gradient norm; scale105 has higher values. Neither improves overall retrieval. P1 gains COCO, DOCCI and Long-DCI R@1 in both directions, but loses Flickr R@1 in both directions and Urban T2I. P2 loses COCO and Flickr in both directions, DOCCI I2T and Long-DCI I2T; the small Urban I2T, DOCCI T2I and Long-DCI T2I gains do not compensate. Lower training CE or a larger gradient norm alone is insufficient evidence of better native representations.
+
+### Sparsity, mask structure and gradient conflict
+
+Internal weights stay exactly[5/3,5/3,5/3]. P3's effective numerator coefficients are[11/6,11/6,11/6], and P4's are[13/6,13/6,13/6], with the same outer divisor3. Macro lambda_sparse is applied once. Unlike the earlier ratio-only study, this experiment intentionally changes total nominal sparsity strength.
+
+All mask and violation entries below are percentages averaged over the last50 updates. Hard violation denominators and IoU calculations retain the native HNS definitions.
+
+| Model | F keep | Dall keep | D3 keep | Dall→F violation | D3→Dall violation | DF IoU | 3D IoU |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| E2-Uniform | 76.431 | 76.814 | 73.323 | 3.244 | 4.507 | 0.922099 | 0.846227 |
+| P1-Temp95 | 75.724 | 76.880 | 72.420 | 4.806 | 4.695 | 0.893431 | 0.830560 |
+| P2-Temp105 | 77.574 | 77.751 | 74.621 | 3.094 | 4.537 | 0.924450 | 0.851787 |
+| P3-Sparse110 | 77.519 | 78.045 | 74.585 | 3.992 | 4.328 | 0.907377 | 0.853316 |
+| P4-Sparse130 | 75.176 | 75.636 | 72.386 | 3.727 | 4.966 | 0.909931 | 0.836859 |
+
+Lowering lambda_sparse to1.1 increases all three keep ratios by1.089/1.231/1.261pp; raising it to1.3 decreases them by1.255/1.177/0.937pp. The density response follows the intended strength change, but there is no matching retrieval improvement. P3 increases DF violations and decreases3D violations; P4 increases both. Dall remains denser than F in the terminal average for every model, including original E2, so F≥Dall≥D3 is not established and its failure cannot be attributed solely to a new arm.
+
+The read-only terminal gradient probe retains negative hierarchy–sparsity cosine in the visual mask group: P1 -0.618557, P2 -0.843898, P3 -0.846868, P4 -0.872377. The original visual/text condition detach is preserved; native backbone sparsity and hierarchy component gradients remain zero in these receipts. These component measurements describe one fixed probe batch at different trained states. They do not establish that conflict causes a particular retrieval regression, or that a lower conflict magnitude improves semantics.
+
+P4 improves Long-DCI I2T/T2I R@1 by0.249934/0.236780pp but loses Urban T2I by0.800pp, Flickr I2T/T2I by0.400/0.140pp and DOCCI I2T by0.160pp. This tradeoff leaves Score5 lower by0.086929pp. P3 has no overall or Urban gain. All negative directions and R@5/10 differences are included in the per-arm tables above and the full result JSONs.
+
+### Engineering acceptance and scientific limits
+
+All52 CPU tests passed. The real four-rank BF16/global1024 precheck passed: default100 forward/loss/score outputs reproduce legacy behavior exactly; full parameter gradient comparisons use the fixed relativeL2≤1e-6 and absolute≤1e-5 numerical tolerances, not a claim of bitwise BF16 backward identity. Each independent smoke5 passed, and each formal run restarted common0. Every formal run completed500 updates/512000 sample positions with matching IDs, text/tokens, K, detail indices and native LR across the whole stage. All four final parameter differences from rank0 are0; all formal step gradients are finite, and no OOM, DDP failure or safety-rule mask collapse was observed. Peak allocated training memory is27.760395GiB per rank.
+
+Complete optimizer/scheduler/RNG/sampler/data-cursor receipts, strict bare export evidence, source fingerprints and checkpoint/bare SHA256 are retained for every arm. FINAL_REVIEW.json confirms unchanged protected baseline artifacts and approved production sources throughout execution, exact stopping points and no extra experiments. The only production extension relative to E2 is the default-preserving contrastive_logit_scale interface in model/nested_fusion_mask.py; “unchanged production sources” in the final receipt means unchanged from this approved pre-training manifest, not that this extension was absent.
+
+The queue reused publication plumbing whose intermediate commit subjects say “early LR three-arm500”; this naming is inherited metadata. The actual branch, frozen plan, four scalar configurations, checkpoint experiment metadata, full-stage native-LR proofs and complete four-arm results identify the conventional hyperparameter experiment correctly. No LR multiplier experiment was performed here.
+
+There is still no trusted independent retrieval validation protocol. Public tests have been repeatedly examined, and the prior held-out candidate screen found a duplicate training caption while semantic/perceptual overlap remained unverified. These single-seed500 results cannot establish unbiased SOTA, statistical significance, full4-Epoch performance or a causal mechanism. Preserve the original E2 baseline; any subsequent validation requires a separate user decision. No continuation or additional search was launched.
