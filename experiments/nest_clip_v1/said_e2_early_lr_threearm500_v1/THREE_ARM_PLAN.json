@@ -1,0 +1,44 @@
+{
+  "order": [
+    "C1-Fusion085",
+    "C2-Fusion115",
+    "C3-MaskBalance"
+  ],
+  "multipliers": {
+    "C1-Fusion085": {
+      "backbone": 1.0,
+      "text_mask_and_shared_pool": 1.0,
+      "visual_mask": 1.0,
+      "fusion_adapter": 0.85
+    },
+    "C2-Fusion115": {
+      "backbone": 1.0,
+      "text_mask_and_shared_pool": 1.0,
+      "visual_mask": 1.0,
+      "fusion_adapter": 1.15
+    },
+    "C3-MaskBalance": {
+      "backbone": 1.0,
+      "text_mask_and_shared_pool": 1.15,
+      "visual_mask": 0.85,
+      "fusion_adapter": 1.0
+    }
+  },
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "resume": null,
+  "independent_smoke5_then_fresh_formal500": true,
+  "stop_updates": 500,
+  "horizon": 4868,
+  "world": 4,
+  "batch_per_rank": 256,
+  "samples_per_arm": 512000,
+  "evaluation_mapping": {
+    "COCO": 0,
+    "DOCCI": 1,
+    "Long_DCI": 2,
+    "Flickr_then_Urban": 3
+  },
+  "model_loss_optimizer_data_evaluation_math_unchanged": true,
+  "fourth_arm": false,
+  "automatic_continuation": false
+}
