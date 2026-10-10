@@ -1,0 +1,553 @@
+{
+  "completed_steps": 500,
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6062,
+        "R@5": 0.8298,
+        "R@10": 0.8934
+      },
+      "T2I": {
+        "R@1": 0.41624,
+        "R@5": 0.67432,
+        "R@10": 0.7704
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9070000648498535,
+        "R@5": 0.9860000610351562,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.8970000147819519,
+        "R@5": 0.9860000610351562,
+        "R@10": 0.9950000643730164
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.876,
+        "R@5": 0.977,
+        "R@10": 0.993
+      },
+      "T2I": {
+        "R@1": 0.7212,
+        "R@5": 0.914,
+        "R@10": 0.9516
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.7812,
+        "R@5": 0.9554,
+        "R@10": 0.9812
+      },
+      "T2I": {
+        "R@1": 0.7782,
+        "R@5": 0.9536,
+        "R@10": 0.9786
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.572744014732965,
+        "R@5": 0.757169166008945,
+        "R@10": 0.8191265456458826
+      },
+      "T2I": {
+        "R@1": 0.5703762167850566,
+        "R@5": 0.7609839515916864,
+        "R@10": 0.8197842672980794
+      }
+    }
+  },
+  "scores_percent": {
+    "Score5": 71.26160311149827,
+    "J_long3": 75.10867185249711,
+    "J_long": 84.08500199079513,
+    "Short4": 65.491
+  },
+  "checkpoint": {
+    "passed": true,
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C1-Fusion085/step500/step000500.pt",
+    "sha256": "1f46ebd89d0a160eea70886a37dcb8b715b0ff09d392a57deff0dc457ff8af5f",
+    "bytes": 1884189178,
+    "completed_steps": 500,
+    "optimizer_counters": [
+      500
+    ],
+    "scheduler": {
+      "type": "native_manual_learning_rate_function",
+      "horizon": 4868,
+      "completed_steps": 500,
+      "last_update_index": 499,
+      "optimizer_lrs": {
+        "backbone": 9.899108530188312e-07,
+        "text_mask_and_shared_pool": 0.0009742970336195614,
+        "visual_mask": 0.0009742970336195614,
+        "fusion_adapter": 0.00016563049571532542
+      },
+      "lr_override": {
+        "arm": "C1-Fusion085",
+        "first_update": 1,
+        "last_update": 500,
+        "scheduler_horizon": 4868,
+        "multipliers": {
+          "backbone": 1.0,
+          "text_mask_and_shared_pool": 1.0,
+          "visual_mask": 1.0,
+          "fusion_adapter": 0.85
+        },
+        "applied_after_native_function": true,
+        "controller_sha256": "a2a8d0fabaa064b11b158892137dacc516094739fc157474d953b00f4b27c190"
+      }
+    },
+    "scaler": {
+      "enabled": false,
+      "dtype": "bfloat16",
+      "state": null
+    },
+    "sampler": {
+      "type": "DistributedSampler",
+      "seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "batches_per_epoch": 1217
+    },
+    "cursor": {
+      "next_epoch": 0,
+      "next_batch": 500
+    },
+    "rng_ranks": 4,
+    "loader_generator_restorable": true,
+    "configuration": {
+      "arm": "A3",
+      "experiment_name": "ArmB-Summary0.2-4epoch",
+      "condition_mode": "dual_branch",
+      "fusion": "balanced_stack",
+      "visual": "patch",
+      "full_native_mix": 0,
+      "sampling_mode": "nested_detail_d3",
+      "inclusion_hierarchy": "detail_chain",
+      "sampling_seed": 0,
+      "shuffle_seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "accumulation": 1,
+      "epochs": 4,
+      "seed": 0,
+      "workers": 8,
+      "checkpoint_encoders": true,
+      "checkpoint_pair_blocks": false,
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "score_chunk": 64,
+      "checkpoint_interval": 1217,
+      "save_initial_checkpoint": false,
+      "monitor_resources": true,
+      "feasibility_abort_seconds": 15,
+      "four_epoch_followup": true,
+      "fusion_lr": 0.0002,
+      "visual_mask_lr_scale": 1.0,
+      "view_weights": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "sparsity_scale": 1.0,
+      "inclusion_max": 0.0,
+      "hparam_search": true,
+      "trial_id": "4682e620bb623e8afad6f6c6d4a431b2db793141d1db03d3515fd6bd654c9972",
+      "base_model": "ViT-B/16",
+      "resource_policy": "local_reproduction500",
+      "hns_enabled": true,
+      "lambda_align": 10.0,
+      "lambda_sparse": 1.2,
+      "lambda_hierarchy": 1.0,
+      "view_sparsity_weights": [
+        1.6666666666666667,
+        1.6666666666666667,
+        1.6666666666666667
+      ],
+      "config": "/opt/data/private/lklk/said-e2-worktrees/early-lr-threearm500/experiments/nest_clip_v1/said_e2_early_lr_threearm500_v1/C1-Fusion085/config.json",
+      "init_state": "/opt/data/private/lklk/said-e2-worktrees/early-lr-threearm500/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "index_dir": "/root/said_s02_stage500/data_index",
+      "image_root": "/root/said_s02_stage500/ShareGPT4V",
+      "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C1-Fusion085/step500",
+      "run_type": "formal",
+      "max_updates": 500,
+      "resume": null,
+      "legacy_b0": false,
+      "expected_parent_trainer_sha256": null,
+      "horizon": 4868,
+      "batches_per_epoch": 1217,
+      "loader_batches_this_epoch": 500,
+      "training_records": 1245901,
+      "sampler_num_samples": 311476,
+      "sampler_padding": 3,
+      "tail_batch": 180,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+      "data": {
+        "annotation": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+        "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+        "original_records": 1246901,
+        "training_records": 1245901,
+        "skip": 1000,
+        "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+        "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+      },
+      "code_sha256": {
+        "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+        "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+        "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+        "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+        "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+        "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+        "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+        "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+      },
+      "runtime_model": {
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "checkpoint_pair_blocks": false,
+        "checkpoint_encoders": true,
+        "encoder_checkpoint_active": true,
+        "condition_mode": "dual_branch",
+        "arm": "A3",
+        "fusion": "balanced_stack",
+        "visual": "patch",
+        "search_hparams": {
+          "fusion_lr": 0.0002,
+          "visual_mask_lr_scale": 1.0,
+          "view_weights": [
+            1.35,
+            1.35,
+            0.3
+          ],
+          "sparsity_scale": 1.0,
+          "inclusion_max": 0.0,
+          "lambda_align": 10.0,
+          "lambda_sparse": 1.2,
+          "lambda_hierarchy": 1.0
+        },
+        "inclusion_hierarchy": "detail_chain",
+        "view_sparsity_weights": [
+          1.6666666666666667,
+          1.6666666666666667,
+          1.6666666666666667
+        ],
+        "hns_enabled": true
+      },
+      "adapter_initialization": {
+        "module": "FusionBranch",
+        "state_sha256": "340976d102ce0ec24a6e4fb31fc274b303b7e9d141d0e6244a1de53a0425d5a7",
+        "parameters": {
+          "visual_blocks.0.attn.in_proj_weight": {
+            "shape": [
+              1536,
+              512
+            ],
+            "nonzero": 786432
+          },
+          "visual_blocks.0.attn.in_proj_bias": {
+            "shape": [
+              1536
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.attn.out_proj.weight": {
+            "shape": [
+              512,
+              512
+            ],
+            "nonzero": 262144
+          },
+          "visual_blocks.0.attn.out_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.ln_1.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_1.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_blocks.0.mlp.c_fc.weight": {
+            "shape": [
+              2048,
+              512
+            ],
+            "nonzero": 1048576
+          },
+          "visual_blocks.0.mlp.c_fc.bias": {
+            "shape": [
+              2048
+            ],
+            "nonzero": 2048
+          },
+          "visual_blocks.0.mlp.c_proj.weight": {
+            "shape": [
+              512,
+              2048
+            ],
+            "nonzero": 1048574
+          },
+          "visual_blocks.0.mlp.c_proj.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.weight": {
+            "shape": [
+              512
+            ],
+            "nonzero": 512
+          },
+          "visual_blocks.0.ln_2.bias": {
+            "shape": [
+              512
+            ],
+            "nonzero": 0
+          },
+          "visual_adapter.weight": {
+            "shape": [
+              512,
+              768
+            ],
+            "nonzero": 393216
+          },
+          "gate.weight": {
+            "shape": [
+              512,
+              1024
+            ],
+            "nonzero": 0
+          }
+        }
+      },
+      "git_head": "224a08a5463b19aef8dd0952ecb40b983df224cd",
+      "torch": "2.5.1+cu124",
+      "cuda": "12.4",
+      "nccl": [
+        2,
+        21,
+        5
+      ],
+      "environment": {},
+      "ranks": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 1040825,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7068824023008347
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 1040826,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7070895582437515
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 1040827,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7172309011220932
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 1040828,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.706660620868206
+        }
+      ],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      },
+      "parameter_counts": {
+        "total": 157058050,
+        "trainable": 156931074,
+        "added": 4069888,
+        "optimizer_groups": {
+          "backbone": 149708289,
+          "text_mask_and_shared_pool": 3152897,
+          "visual_mask": 3152384,
+          "fusion_adapter": 917504
+        }
+      },
+      "component_initialization": {
+        "clip": "caf61198def1b78654d6b70ef16db9a3475ea81b3a16ab8a799989f574de2faf",
+        "text_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_blocks": "60f933eb3d08a143fb5437bb2ca19d63066dc3bd276e9bbfb92be831036f7531",
+        "visual_adapter": "3672e1e4b12390e7ae1dd76c065bab7a0faefc29062170ca94f253f7beb471ae",
+        "crossscore_query": null,
+        "crossscore_key": null,
+        "crossscore_readout": null,
+        "channel_gate": "e5b95cc7da27bc0230bb4b3fe03a38815057e87d75d19a533b3e9a7152ef0da3"
+      },
+      "start_updates": 0,
+      "updates_planned_this_run": 500,
+      "early_lr_override": {
+        "arm": "C1-Fusion085",
+        "first_update": 1,
+        "last_update": 500,
+        "scheduler_horizon": 4868,
+        "multipliers": {
+          "backbone": 1.0,
+          "text_mask_and_shared_pool": 1.0,
+          "visual_mask": 1.0,
+          "fusion_adapter": 0.85
+        },
+        "applied_after_native_function": true,
+        "controller_sha256": "a2a8d0fabaa064b11b158892137dacc516094739fc157474d953b00f4b27c190"
+      }
+    },
+    "uploaded": false,
+    "lr_override": {
+      "arm": "C1-Fusion085",
+      "first_update": 1,
+      "last_update": 500,
+      "scheduler_horizon": 4868,
+      "multipliers": {
+        "backbone": 1.0,
+        "text_mask_and_shared_pool": 1.0,
+        "visual_mask": 1.0,
+        "fusion_adapter": 0.85
+      },
+      "applied_after_native_function": true,
+      "controller_sha256": "a2a8d0fabaa064b11b158892137dacc516094739fc157474d953b00f4b27c190"
+    }
+  },
+  "strict_export": {
+    "passed": true,
+    "strict_load": true,
+    "optimizer_steps": [
+      500
+    ],
+    "image_max_abs": 0.0,
+    "text_max_abs": 0.0,
+    "checkpoint_sha256": "1f46ebd89d0a160eea70886a37dcb8b715b0ff09d392a57deff0dc457ff8af5f",
+    "bare_sha256": "48ec5c4ba37187a6d13220fb7008b7df352a80b9a2b36e3012b21e815954e33c"
+  },
+  "bare": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C1-Fusion085/evaluations/student_step500.pt",
+    "sha256": "48ec5c4ba37187a6d13220fb7008b7df352a80b9a2b36e3012b21e815954e33c",
+    "uploaded": false
+  },
+  "checkpoint_unchanged": true,
+  "evaluation_wall_seconds": 493.8854086250067,
+  "arm": "C1-Fusion085",
+  "lr_multipliers": {
+    "backbone": 1.0,
+    "text_mask_and_shared_pool": 1.0,
+    "visual_mask": 1.0,
+    "fusion_adapter": 0.85
+  },
+  "quality_delta_pp": {
+    "Score5": -0.05276787834763752,
+    "J_long3": -0.011946463912735794,
+    "J_long": -0.11000072717666853,
+    "Short4": -0.11400000000000432,
+    "Urban_I2T": -0.40000081062316895,
+    "Urban_T2I": -0.3000020980834961,
+    "Urban_Mean": -0.3500014543533325
+  },
+  "recall_delta_pp": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.039999999999995595,
+        "R@5": 0.039999999999995595,
+        "R@10": -0.0400000000000067
+      },
+      "T2I": {
+        "R@1": 0.06399999999999739,
+        "R@5": 0.1280000000000059,
+        "R@10": 0.056000000000000494
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": -0.40000081062316895,
+        "R@5": 0.0,
+        "R@10": 0.0
+      },
+      "T2I": {
+        "R@1": -0.3000020980834961,
+        "R@5": 0.0,
+        "R@10": 0.0
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": -0.5000000000000004,
+        "R@5": 0.10000000000000009,
+        "R@10": 0.30000000000000027
+      },
+      "T2I": {
+        "R@1": -0.060000000000004494,
+        "R@5": -0.15999999999999348,
+        "R@10": -0.08000000000000229
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.10000000000000009,
+        "R@5": 0.21999999999999797,
+        "R@10": -0.060000000000004494
+      },
+      "T2I": {
+        "R@1": 0.16000000000000458,
+        "R@5": 0.28000000000000247,
+        "R@10": 0.11999999999999789
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.11838989739542116,
+        "R@5": 0.1315443304393593,
+        "R@10": 0.23677979479084232
+      },
+      "T2I": {
+        "R@1": 0.24993422783478048,
+        "R@5": 0.06577216521967966,
+        "R@10": 0.052617732175741505
+      }
+    }
+  },
+  "scientific_status": "EXPLORATORY_REPEATED_PUBLIC_BENCHMARKS",
+  "fresh_common0": true
+}
