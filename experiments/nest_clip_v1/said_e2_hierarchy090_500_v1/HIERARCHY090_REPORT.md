@@ -33,3 +33,35 @@ Checkpoint SHA256: `1e71b433b4dd49977be701fc269f9852e023443560b23c2d88d80e111773
 All30 recalls and deltas, complete restore-state identity, strict export, source manifest, full stream/LR, last50 curves and resource receipts are adjacent JSON files. Four-rank parameter difference is zero at acceptance. Checkpoints and original E2 artifacts remain immutable.
 Exploratory single-seed500 result on repeatedly observed public benchmarks. Independent validation is NOT_ESTABLISHED. Urban0.1pp represents one net correct query; no paired significance or unbiased SOTA claim. Density or a gradient cosine alone is not evidence of semantic benefit.
 No other arm, optimizer parameter change, inference mask/rerank/ensemble/TTA or continuation beyond500 was launched.
+
+## Interpretation of the measured tradeoffs
+
+There is no observed overall win: Score5 changes -0.008792pp, which is a very small single-seed difference. Urban I2T loses one net correct query and T2I gains one; the count-based mean remains90.550%. The raw JSON's -0.000002980232pp mean difference comes from float32 Recall representation, not a change in the sum of correct queries. Net counts do not determine how many individual queries improved or regressed, so no paired significance claim is made.
+
+Long/short retrieval changes are mixed. DOCCI T2I R1 increases +0.380pp and Long-DCI T2I R1 increases +0.171008pp; Long-DCI I2T R1 decreases -0.078927pp. Flickr R1 falls -0.400/-0.280pp (I2T/T2I). J_long3 (+0.075346pp) and J_long (+0.089999pp) therefore improve while Short4 falls -0.135pp. COCO R1 rises slightly in both directions (+0.100/+0.040pp). These repeatedly observed benchmark differences are exploratory.
+
+The following last50 means use the same HNS valid-pair population for the three masks. Violations are fractions of mask coordinates, not fractions of queries with any violation.
+
+| Diagnostic | E2-Uniform | E2-Hierarchy090 | Difference |
+|---|---:|---:|---:|
+| F keep (%) | 76.430604 | 76.401764 | -0.028840pp |
+| Dall keep (%) | 76.813733 | 77.109088 | +0.295355pp |
+| D3 keep (%) | 73.323300 | 74.103163 | +0.779863pp |
+| Dall→F hard violation (%) | 3.243791 | 4.040258 | +0.796468pp |
+| D3→Dall hard violation (%) | 4.506570 | 4.575578 | +0.069008pp |
+| Dall/F IoU | 0.922099 | 0.907071 | -0.015028 |
+| D3/Dall IoU | 0.846227 | 0.851208 | +0.004980 |
+| Raw hierarchy loss | 0.051669073 | 0.057438913 | +0.005769840 |
+| Actual weighted hierarchy loss | 0.051669074 | 0.051695021 | +0.000025946 |
+
+Dall→F violation increases approximately24.6% relative to its baseline mean, whereas the D3→Dall increase is much smaller (approximately1.5%). This is measured structural weakening, especially on the first edge, without a statistical significance claim. F<Dall and Dall>D3 in both models; the prescribed density ordering is not maintained, but there is no accepted numerical failure or complete mask collapse. D3's greater density and its increased IoU do not independently show better semantic evidence selection.
+
+Reducing the nominal coefficient by10% does not imply that the learned model's final hierarchy penalty is10% lower: the raw violations grow, leaving the actual last50 weighted hierarchy loss nearly unchanged. This differs from the fixed-common0 mathematical control, where the same raw graph gives exactly the configured0.9 coefficient. The training loss means likewise come from different learned states and cannot be interpreted as a pure coefficient control.
+
+On the matched terminal probe, visual-mask hierarchy/sparsity cosine changes from baseline -0.899187 to -0.828765; conflict remains. Actual visual-mask alignment/sparsity/hierarchy gradient norms are0.881775/0.293403/0.000857. The hierarchy gradient is small relative to alignment (about0.097% by norm), so a negative cosine alone does not establish a large optimization effect. Hierarchy/sparsity cosines in text-mask and fusion groups are respectively +0.266150 and -0.183566. Native text/visual backbones retain zero sparsity and hierarchy gradients through the original conditional detach paths. All group-level norms and cosines are recorded in the diagnostic JSON; their changes also reflect different trained parameters, not only the scalar coefficient.
+
+There is no compelling evidence here to prioritize this arm for full4-Epoch validation as an overall improvement: Urban Mean is unchanged, Score5 has no gain, and inclusion worsens. The small long-text gains could motivate a separately authorized tradeoff study, but this experiment cannot establish full-training benefit or robustness. No continuation or second arm was executed.
+
+## Final independent artifact check
+
+After the supervisor exited, a read-only review found all30 candidate Recall entries and all validation receipts complete. Both the complete checkpoint and bare-student SHA256 were recomputed and matched their recorded values. Original E2 protected artifacts and the production source manifest remained unchanged. All four ranks completed500 updates with zero parameter difference from rank0. Optimizer counters are500; scheduler horizon is4868; sampler state, four-rank RNG/DataLoader generator states and cursor(next_epoch=0,next_batch=500) are retained. All512000 sample positions and every native LR match the original E2 stream. The CPU suite reports60 passed, and the independent smoke5 and real BF16 mathematical precheck passed. No GPU compute processes or experiment supervisor remain. Subsequent changes were confined to this report interpretation.
