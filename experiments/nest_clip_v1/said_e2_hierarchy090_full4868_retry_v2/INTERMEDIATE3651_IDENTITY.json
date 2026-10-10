@@ -1,0 +1,132 @@
+{
+  "passed": true,
+  "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training/step003651.pt",
+  "sha256": "8d5745b642f7dd956318d164e94354dfffdcbbb189264d1417bf7c39dc3f01ed",
+  "size_bytes": 1884191226,
+  "completed_steps": 3651,
+  "scheduler_horizon": 4868,
+  "scheduler": {
+    "type": "native_manual_learning_rate_function",
+    "horizon": 4868,
+    "completed_steps": 3651,
+    "last_update_index": 3650,
+    "optimizer_lrs": {
+      "backbone": 1.587875889226633e-07,
+      "text_mask_and_shared_pool": 0.00014667485079179854,
+      "visual_mask": 0.00014667485079179854,
+      "fusion_adapter": 2.933497015835971e-05
+    }
+  },
+  "data_cursor": {
+    "next_epoch": 3,
+    "next_batch": 0
+  },
+  "sampler": {
+    "type": "DistributedSampler",
+    "seed": 0,
+    "world_size": 4,
+    "batch_size": 256,
+    "batches_per_epoch": 1217
+  },
+  "optimizer_steps": [
+    3651
+  ],
+  "optimizer_groups": [
+    {
+      "name": "backbone",
+      "lr": 1.587875889226633e-07,
+      "weight_decay": 0.01,
+      "parameter_count": 302
+    },
+    {
+      "name": "text_mask_and_shared_pool",
+      "lr": 0.00014667485079179854,
+      "weight_decay": 0.0,
+      "parameter_count": 14
+    },
+    {
+      "name": "visual_mask",
+      "lr": 0.00014667485079179854,
+      "weight_decay": 0.0,
+      "parameter_count": 12
+    },
+    {
+      "name": "fusion_adapter",
+      "lr": 2.933497015835971e-05,
+      "weight_decay": 0.0,
+      "parameter_count": 2
+    }
+  ],
+  "rng_per_rank": [
+    {
+      "rank": 0,
+      "keys": [
+        "cpu",
+        "cuda",
+        "loader_generator",
+        "numpy",
+        "python"
+      ],
+      "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+    },
+    {
+      "rank": 1,
+      "keys": [
+        "cpu",
+        "cuda",
+        "loader_generator",
+        "numpy",
+        "python"
+      ],
+      "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+    },
+    {
+      "rank": 2,
+      "keys": [
+        "cpu",
+        "cuda",
+        "loader_generator",
+        "numpy",
+        "python"
+      ],
+      "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+    },
+    {
+      "rank": 3,
+      "keys": [
+        "cpu",
+        "cuda",
+        "loader_generator",
+        "numpy",
+        "python"
+      ],
+      "cpu_sha256": "fa02a021834bcfa50315838e9faf07f661d937dfd0687253b903cccc9991cdb0",
+      "cuda_sha256": "374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb",
+      "loader_generator_sha256": "56bb0f54870f445542705ddd5bbf4d748a1f27c6ab0ad34dc838e455cecc950e"
+    }
+  ],
+  "sources": {
+    "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+    "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+    "model/nested_fusion_mask.py": "0cdd4ad2eb7c1ce31d428db7c44e850e00db15f2106a18b546c24e857c483864",
+    "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+    "train/train_nested_semantic_mask.py": "8022770d836347810db8620044bff68e9f3adbc481cb26281805926264e30f42",
+    "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+    "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+    "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+    "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+    "model/balanced_hparam_search.py": "a8b0541b120fb234b5d25e2b6a33667e40141039f7fabc11e90dab00383482cd",
+    "model/hard_nested_sparsity.py": "16dc8eaa82010abdd806e2ee287d30d79334ecbd82b0107bb2e74ba1f4b46f1e"
+  },
+  "git_head": "c791f5c8af4bee80d25ffa7f08e8ebf7f2bbe985",
+  "uploaded": false,
+  "full_model_adapter_AdamW_RNG_loader_sampler_present": true,
+  "lambda_hierarchy": 0.9,
+  "initialization_not_reset": true
+}

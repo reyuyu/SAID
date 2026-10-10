@@ -1,0 +1,136 @@
+{
+  "full_cycle_seconds": {
+    "count": 4368,
+    "median": 2.12729549407959,
+    "p95": 2.5799436211585998,
+    "p99": 2.8913973116874687,
+    "max": 33.18619918823242
+  },
+  "GPU_peak_GiB": {
+    "0": 27.758386611938477,
+    "1": 27.758386611938477,
+    "2": 27.758222579956055,
+    "3": 27.758222579956055
+  },
+  "oom_kill": 0,
+  "commands": [
+    {
+      "name": "train",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.said_e2_hierarchy090_retry_v2",
+        "--worker",
+        "--target",
+        "4868",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hierarchy090-full4868-retry-v2/experiments/nest_clip_v1/said_e2_hierarchy090_full4868_retry_v2/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hierarchy090-full4868-retry-v2/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--resume",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500/step000500.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "4868"
+      ],
+      "started_utc": "2026-10-10T13:54:47.087350+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/train.log",
+      "ended_utc": "2026-10-10T16:51:22.723772+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training/step004868.pt",
+        "--expect-updates",
+        "4868",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hierarchy090-full4868-retry-v2/experiments/nest_clip_v1/said_e2_hierarchy090_full4868_retry_v2/step4868/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-10T16:51:23.765007+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/gradient.log",
+      "ended_utc": "2026-10-10T16:52:52.068134+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training/step004868.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/evaluations/student_step4868.pt",
+        "--expect-updates",
+        "4868"
+      ],
+      "started_utc": "2026-10-10T16:52:58.691124+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/export.log",
+      "ended_utc": "2026-10-10T16:53:16.810488+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training/step004868.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/evaluations/student_step4868.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-10T16:53:16.824893+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/verify.log",
+      "ended_utc": "2026-10-10T16:53:35.874568+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/evaluations/student_step4868.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training/step004868.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/evaluations"
+      ],
+      "started_utc": "2026-10-10T16:53:35.899523+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/five-eval.log",
+      "ended_utc": "2026-10-10T17:01:55.849352+00:00",
+      "returncode": 0
+    }
+  ],
+  "local_only": true,
+  "DDP_NCCL_passed": true,
+  "updates_this_run": 4368
+}

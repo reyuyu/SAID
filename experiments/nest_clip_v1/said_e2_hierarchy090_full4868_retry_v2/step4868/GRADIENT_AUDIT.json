@@ -1,0 +1,633 @@
+{
+  "passed": true,
+  "protocol": "Immutable completed node first seed0 epoch0 global1024 batch;256/rank; mean all-reduced gradients; no optimizer step",
+  "sample_ids_sha256": "416f198d48ed2416481a08ed2139b06ee73e51243724c088ce542afffdeefb27",
+  "records": 1024,
+  "completed": 4867,
+  "checkpoint_completed_steps": 4868,
+  "ramp": 1.0,
+  "macro_scales": {
+    "lambda_align": 10.0,
+    "lambda_sparse": 1.2,
+    "lambda_hierarchy": 0.9
+  },
+  "components": {
+    "raw_align": {
+      "coefficient": 10.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 4.272817611694336,
+          "linear_scaling_estimate": 42.72817611694336,
+          "weighted": 42.731773376464844,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "native_visual_backbone": {
+          "raw": 6.742592811584473,
+          "linear_scaling_estimate": 67.42592811584473,
+          "weighted": 67.3309326171875,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.06963422149419785,
+          "linear_scaling_estimate": 0.6963422149419785,
+          "weighted": 0.6963421702384949,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "visual_mask": {
+          "raw": 0.041398294270038605,
+          "linear_scaling_estimate": 0.41398294270038605,
+          "weighted": 0.41398289799690247,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.07985183596611023,
+          "linear_scaling_estimate": 0.7985183596611023,
+          "weighted": 0.7985183596611023,
+          "weighted_method": "autograd of actual weighted loss"
+        }
+      }
+    },
+    "raw_sparse": {
+      "coefficient": 1.2,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0,
+          "weighted": 0.0,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "native_visual_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0,
+          "weighted": 0.0,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.1802987903356552,
+          "linear_scaling_estimate": 0.21635854840278626,
+          "weighted": 0.21635855734348297,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "visual_mask": {
+          "raw": 0.10251804441213608,
+          "linear_scaling_estimate": 0.12302165329456329,
+          "weighted": 0.12302164733409882,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.17605546116828918,
+          "linear_scaling_estimate": 0.21126655340194703,
+          "weighted": 0.21126654744148254,
+          "weighted_method": "autograd of actual weighted loss"
+        }
+      }
+    },
+    "raw_hierarchy": {
+      "coefficient": 0.9,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0,
+          "weighted": 0.0,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "native_visual_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0,
+          "weighted": 0.0,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.011759527958929539,
+          "linear_scaling_estimate": 0.010583575163036586,
+          "weighted": 0.010583577677607536,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "visual_mask": {
+          "raw": 0.0010484993690624833,
+          "linear_scaling_estimate": 0.000943649432156235,
+          "weighted": 0.0009436494437977672,
+          "weighted_method": "autograd of actual weighted loss"
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.0035817138850688934,
+          "linear_scaling_estimate": 0.003223542496562004,
+          "weighted": 0.0032235425896942616,
+          "weighted_method": "autograd of actual weighted loss"
+        }
+      }
+    },
+    "weighted_align": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 42.731773376464844,
+          "linear_scaling_estimate": 42.731773376464844
+        },
+        "native_visual_backbone": {
+          "raw": 67.3309326171875,
+          "linear_scaling_estimate": 67.3309326171875
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.6963421702384949,
+          "linear_scaling_estimate": 0.6963421702384949
+        },
+        "visual_mask": {
+          "raw": 0.41398289799690247,
+          "linear_scaling_estimate": 0.41398289799690247
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.7985183596611023,
+          "linear_scaling_estimate": 0.7985183596611023
+        }
+      }
+    },
+    "weighted_sparse": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0
+        },
+        "native_visual_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.21635855734348297,
+          "linear_scaling_estimate": 0.21635855734348297
+        },
+        "visual_mask": {
+          "raw": 0.12302164733409882,
+          "linear_scaling_estimate": 0.12302164733409882
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.21126654744148254,
+          "linear_scaling_estimate": 0.21126654744148254
+        }
+      }
+    },
+    "weighted_hierarchy": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0
+        },
+        "native_visual_backbone": {
+          "raw": 0.0,
+          "linear_scaling_estimate": 0.0
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.010583577677607536,
+          "linear_scaling_estimate": 0.010583577677607536
+        },
+        "visual_mask": {
+          "raw": 0.0009436494437977672,
+          "linear_scaling_estimate": 0.0009436494437977672
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.0032235425896942616,
+          "linear_scaling_estimate": 0.0032235425896942616
+        }
+      }
+    },
+    "total_training": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 42.731773376464844,
+          "linear_scaling_estimate": 42.731773376464844
+        },
+        "native_visual_backbone": {
+          "raw": 67.3309326171875,
+          "linear_scaling_estimate": 67.3309326171875
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.7056671977043152,
+          "linear_scaling_estimate": 0.7056671977043152
+        },
+        "visual_mask": {
+          "raw": 0.4100416898727417,
+          "linear_scaling_estimate": 0.4100416898727417
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.7920284867286682,
+          "linear_scaling_estimate": 0.7920284867286682
+        }
+      }
+    },
+    "raw_view_F": {
+      "coefficient": 4.5,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 4.358301162719727,
+          "linear_scaling_estimate": 19.61235523223877
+        },
+        "native_visual_backbone": {
+          "raw": 7.703792095184326,
+          "linear_scaling_estimate": 34.66706442832947
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.07387226819992065,
+          "linear_scaling_estimate": 0.33242520689964294
+        },
+        "visual_mask": {
+          "raw": 0.04341805353760719,
+          "linear_scaling_estimate": 0.19538124091923237
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.09216249734163284,
+          "linear_scaling_estimate": 0.4147312380373478
+        }
+      }
+    },
+    "weighted_view_F": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 19.60826301574707,
+          "linear_scaling_estimate": 19.60826301574707
+        },
+        "native_visual_backbone": {
+          "raw": 34.4903564453125,
+          "linear_scaling_estimate": 34.4903564453125
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.33242523670196533,
+          "linear_scaling_estimate": 0.33242523670196533
+        },
+        "visual_mask": {
+          "raw": 0.1953812539577484,
+          "linear_scaling_estimate": 0.1953812539577484
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.4147312641143799,
+          "linear_scaling_estimate": 0.4147312641143799
+        }
+      }
+    },
+    "raw_view_Dall": {
+      "coefficient": 4.5,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 5.879965305328369,
+          "linear_scaling_estimate": 26.45984387397766
+        },
+        "native_visual_backbone": {
+          "raw": 8.390177726745605,
+          "linear_scaling_estimate": 37.755799770355225
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.1091860756278038,
+          "linear_scaling_estimate": 0.4913373403251171
+        },
+        "visual_mask": {
+          "raw": 0.061733659356832504,
+          "linear_scaling_estimate": 0.27780146710574627
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.1222403421998024,
+          "linear_scaling_estimate": 0.5500815398991108
+        }
+      }
+    },
+    "weighted_view_Dall": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 26.4621524810791,
+          "linear_scaling_estimate": 26.4621524810791
+        },
+        "native_visual_backbone": {
+          "raw": 37.686580657958984,
+          "linear_scaling_estimate": 37.686580657958984
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.4913373589515686,
+          "linear_scaling_estimate": 0.4913373589515686
+        },
+        "visual_mask": {
+          "raw": 0.2778014540672302,
+          "linear_scaling_estimate": 0.2778014540672302
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.5500815510749817,
+          "linear_scaling_estimate": 0.5500815510749817
+        }
+      }
+    },
+    "raw_view_D3": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 13.879866600036621,
+          "linear_scaling_estimate": 13.879866600036621
+        },
+        "native_visual_backbone": {
+          "raw": 19.09617042541504,
+          "linear_scaling_estimate": 19.09617042541504
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.24100786447525024,
+          "linear_scaling_estimate": 0.24100786447525024
+        },
+        "visual_mask": {
+          "raw": 0.12803411483764648,
+          "linear_scaling_estimate": 0.12803411483764648
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.2657068073749542,
+          "linear_scaling_estimate": 0.2657068073749542
+        }
+      }
+    },
+    "weighted_view_D3": {
+      "coefficient": 1.0,
+      "group_norms": {
+        "native_text_backbone": {
+          "raw": 13.879866600036621,
+          "linear_scaling_estimate": 13.879866600036621
+        },
+        "native_visual_backbone": {
+          "raw": 19.09617042541504,
+          "linear_scaling_estimate": 19.09617042541504
+        },
+        "text_mask_shared_pool": {
+          "raw": 0.24100786447525024,
+          "linear_scaling_estimate": 0.24100786447525024
+        },
+        "visual_mask": {
+          "raw": 0.12803411483764648,
+          "linear_scaling_estimate": 0.12803411483764648
+        },
+        "fusion_adapter_gate": {
+          "raw": 0.2657068073749542,
+          "linear_scaling_estimate": 0.2657068073749542
+        }
+      }
+    }
+  },
+  "group_diagnostics": {
+    "native_text_backbone": {
+      "cosine_hierarchy_sparsity": null,
+      "cosine_hierarchy_alignment": null,
+      "cosine_alignment_sparsity": null,
+      "weighted_cosine_hierarchy_sparsity": null,
+      "raw_alignment_norm": 4.272817611694336,
+      "raw_sparsity_norm": 0.0,
+      "raw_hierarchy_norm": 0.0,
+      "weighted_alignment_norm": 42.731773376464844,
+      "weighted_sparsity_norm": 0.0,
+      "weighted_hierarchy_norm": 0.0,
+      "total_norm": 42.731773376464844
+    },
+    "native_visual_backbone": {
+      "cosine_hierarchy_sparsity": null,
+      "cosine_hierarchy_alignment": null,
+      "cosine_alignment_sparsity": null,
+      "weighted_cosine_hierarchy_sparsity": null,
+      "raw_alignment_norm": 6.742592811584473,
+      "raw_sparsity_norm": 0.0,
+      "raw_hierarchy_norm": 0.0,
+      "weighted_alignment_norm": 67.3309326171875,
+      "weighted_sparsity_norm": 0.0,
+      "weighted_hierarchy_norm": 0.0,
+      "total_norm": 67.3309326171875
+    },
+    "text_mask_shared_pool": {
+      "cosine_hierarchy_sparsity": 0.3819614052772522,
+      "cosine_hierarchy_alignment": -0.026225920766592026,
+      "cosine_alignment_sparsity": -0.11685603857040405,
+      "weighted_cosine_hierarchy_sparsity": 0.38196149468421936,
+      "raw_alignment_norm": 0.06963422149419785,
+      "raw_sparsity_norm": 0.1802987903356552,
+      "raw_hierarchy_norm": 0.011759527958929539,
+      "weighted_alignment_norm": 0.6963421702384949,
+      "weighted_sparsity_norm": 0.21635855734348297,
+      "weighted_hierarchy_norm": 0.010583577677607536,
+      "total_norm": 0.7056671977043152
+    },
+    "visual_mask": {
+      "cosine_hierarchy_sparsity": 0.21675392985343933,
+      "cosine_hierarchy_alignment": 0.017471859231591225,
+      "cosine_alignment_sparsity": -0.18110401928424835,
+      "weighted_cosine_hierarchy_sparsity": 0.21675394475460052,
+      "raw_alignment_norm": 0.041398294270038605,
+      "raw_sparsity_norm": 0.10251804441213608,
+      "raw_hierarchy_norm": 0.0010484993690624833,
+      "weighted_alignment_norm": 0.41398289799690247,
+      "weighted_sparsity_norm": 0.12302164733409882,
+      "weighted_hierarchy_norm": 0.0009436494437977672,
+      "total_norm": 0.4100416898727417
+    },
+    "fusion_adapter_gate": {
+      "cosine_hierarchy_sparsity": 0.17725402116775513,
+      "cosine_hierarchy_alignment": 0.037282418459653854,
+      "cosine_alignment_sparsity": -0.16419589519500732,
+      "weighted_cosine_hierarchy_sparsity": 0.17725402116775513,
+      "raw_alignment_norm": 0.07985183596611023,
+      "raw_sparsity_norm": 0.17605546116828918,
+      "raw_hierarchy_norm": 0.0035817138850688934,
+      "weighted_alignment_norm": 0.7985183596611023,
+      "weighted_sparsity_norm": 0.21126654744148254,
+      "weighted_hierarchy_norm": 0.0032235425896942616,
+      "total_norm": 0.7920284867286682
+    }
+  },
+  "gradient_additivity": {
+    "native_text_backbone": {
+      "relative_L2_error": 0.0,
+      "tolerance": 0.0003,
+      "precision_note": "Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates"
+    },
+    "native_visual_backbone": {
+      "relative_L2_error": 0.0,
+      "tolerance": 0.0003,
+      "precision_note": "Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates"
+    },
+    "text_mask_shared_pool": {
+      "relative_L2_error": 3.59532582647034e-05,
+      "tolerance": 0.0003,
+      "precision_note": "Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates"
+    },
+    "visual_mask": {
+      "relative_L2_error": 2.685411001434416e-06,
+      "tolerance": 0.0003,
+      "precision_note": "Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates"
+    },
+    "fusion_adapter_gate": {
+      "relative_L2_error": 1.4972998383188532e-06,
+      "tolerance": 0.0003,
+      "precision_note": "Sum of independently differentiated actual weighted components, not raw-gradient scaling estimates"
+    }
+  },
+  "view_gradients": {
+    "native_text_backbone": {
+      "F": {
+        "raw_norm": 4.358301162719727,
+        "weighted_norm": 19.60826301574707
+      },
+      "Dall": {
+        "raw_norm": 5.879965305328369,
+        "weighted_norm": 26.4621524810791
+      },
+      "D3": {
+        "raw_norm": 13.879866600036621,
+        "weighted_norm": 13.879866600036621
+      },
+      "weighted_D3_Dall_ratio": 0.5245176553726196,
+      "cosine_F_Dall": 0.4110521376132965,
+      "cosine_Dall_D3": 0.12244907766580582,
+      "cosine_F_D3": 0.05898076295852661
+    },
+    "native_visual_backbone": {
+      "F": {
+        "raw_norm": 7.703792095184326,
+        "weighted_norm": 34.4903564453125
+      },
+      "Dall": {
+        "raw_norm": 8.390177726745605,
+        "weighted_norm": 37.686580657958984
+      },
+      "D3": {
+        "raw_norm": 19.09617042541504,
+        "weighted_norm": 19.09617042541504
+      },
+      "weighted_D3_Dall_ratio": 0.5067101120948792,
+      "cosine_F_Dall": 0.663261353969574,
+      "cosine_Dall_D3": -0.0032704430632293224,
+      "cosine_F_D3": -0.1437620371580124
+    },
+    "text_mask_shared_pool": {
+      "F": {
+        "raw_norm": 0.07387226819992065,
+        "weighted_norm": 0.33242523670196533
+      },
+      "Dall": {
+        "raw_norm": 0.1091860756278038,
+        "weighted_norm": 0.4913373589515686
+      },
+      "D3": {
+        "raw_norm": 0.24100786447525024,
+        "weighted_norm": 0.24100786447525024
+      },
+      "weighted_D3_Dall_ratio": 0.49051401019096375,
+      "cosine_F_Dall": 0.1286035031080246,
+      "cosine_Dall_D3": 0.12109861522912979,
+      "cosine_F_D3": 0.026200609281659126
+    },
+    "visual_mask": {
+      "F": {
+        "raw_norm": 0.04341805353760719,
+        "weighted_norm": 0.1953812539577484
+      },
+      "Dall": {
+        "raw_norm": 0.061733659356832504,
+        "weighted_norm": 0.2778014540672302
+      },
+      "D3": {
+        "raw_norm": 0.12803411483764648,
+        "weighted_norm": 0.12803411483764648
+      },
+      "weighted_D3_Dall_ratio": 0.4608835279941559,
+      "cosine_F_Dall": 0.18474899232387543,
+      "cosine_Dall_D3": 0.2693368196487427,
+      "cosine_F_D3": 0.00853002816438675
+    },
+    "fusion_adapter_gate": {
+      "F": {
+        "raw_norm": 0.09216249734163284,
+        "weighted_norm": 0.4147312641143799
+      },
+      "Dall": {
+        "raw_norm": 0.1222403421998024,
+        "weighted_norm": 0.5500815510749817
+      },
+      "D3": {
+        "raw_norm": 0.2657068073749542,
+        "weighted_norm": 0.2657068073749542
+      },
+      "weighted_D3_Dall_ratio": 0.48303166031837463,
+      "cosine_F_Dall": -0.005732162389904261,
+      "cosine_Dall_D3": 0.24815309047698975,
+      "cosine_F_D3": 0.10215578973293304
+    }
+  },
+  "fixed_state_coefficient_controls": {},
+  "checkpoint": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-retry-v2/step4868/training/step004868.pt",
+    "sha256": "cc3bbc112a492c41e6204572018f2fddc3923898febc24f7e91f4e4816e91a6d",
+    "unchanged": true,
+    "uploaded": false
+  },
+  "no_parameter_updates": true,
+  "state_digest_before": "33c4ab4a7446b86eb643befbc980051a99e35e423185e21640447ff721960afe",
+  "state_digest_after": "33c4ab4a7446b86eb643befbc980051a99e35e423185e21640447ff721960afe",
+  "local_only": true,
+  "NFS_fallback": false,
+  "telemetry": {
+    "HNS_enabled": true,
+    "HNS_align": 1.4047714471817017,
+    "HNS_original_sparse": 0.9598647356033325,
+    "V_DF_hard": 0.07947921752929688,
+    "V_3D_hard": 0.09497833251953125,
+    "HNS_surcharge": 0.11630503833293915,
+    "HNS_regularizer": 1.076169729232788,
+    "lambda_h": 1.0,
+    "macro_raw_align": 0.14047715067863464,
+    "macro_raw_sparse": 0.9598647356033325,
+    "macro_raw_hierarchy": 0.11630503833293915,
+    "macro_weighted_align": 1.4047714471817017,
+    "macro_weighted_sparse": 1.151837706565857,
+    "macro_weighted_hierarchy": 0.10467453300952911,
+    "macro_lambda_align": 10.0,
+    "macro_lambda_sparse": 1.2,
+    "macro_lambda_hierarchy": 0.9,
+    "HNS_sparse_raw_F": 0.5600490570068359,
+    "HNS_sparse_raw_Dall": 0.58538818359375,
+    "HNS_sparse_raw_D3": 0.5823192596435547,
+    "HNS_sparse_weighted_F": 0.3733660578727722,
+    "HNS_sparse_weighted_Dall": 0.3902587890625,
+    "HNS_sparse_weighted_D3": 0.3882128596305847,
+    "HNS_sparse_coeff_F": 1.6666666666666667,
+    "HNS_sparse_coeff_Dall": 1.6666666666666667,
+    "HNS_sparse_coeff_D3": 1.6666666666666667,
+    "HNS_mask_width": 512,
+    "HNS_valid_count": 1024,
+    "HNS_DF_violation_count": 41670.0,
+    "HNS_DF_child_only_count": 41670.0,
+    "HNS_DF_parent_only_count": 28385.0,
+    "HNS_DF_intersection_count": 265242.0,
+    "HNS_DF_hard_violation_ratio": 0.07947921752929688,
+    "HNS_DF_IoU": 0.789608895778656,
+    "HNS_DF_exact_equality_ratio": 0.0,
+    "HNS_DF_coordinate_equality_ratio": 0.8663806915283203,
+    "HNS_3D_violation_count": 49796.0,
+    "HNS_3D_child_only_count": 49796.0,
+    "HNS_3D_parent_only_count": 51405.0,
+    "HNS_3D_intersection_count": 255507.0,
+    "HNS_3D_hard_violation_ratio": 0.09497833251953125,
+    "HNS_3D_IoU": 0.7190590500831604,
+    "HNS_3D_exact_equality_ratio": 0.0,
+    "HNS_3D_coordinate_equality_ratio": 0.8069744110107422,
+    "HNS_F_keep": 0.5600490570068359,
+    "HNS_Dall_keep": 0.58538818359375,
+    "HNS_D3_keep": 0.5823192596435547,
+    "HNS_gap_F_D": -0.025339126586914062,
+    "HNS_gap_D_D3": 0.0030689239501953125,
+    "HNS_triple_exact_equality_ratio": 0.0,
+    "HNS_triple_coordinate_equality_ratio": 0.72479248046875,
+    "inc": 0.014119282364845276,
+    "inclusion_loss": 0.0,
+    "F_Dall_mask_iou": 0.789608895778656,
+    "Dall_Ds_mask_iou": 0.7190590500831604,
+    "Dall_F_hard_violation": 0.07947921752929688,
+    "Ds_Dall_hard_violation": 0.09497833251953125,
+    "inc_weight": 0.0
+  },
+  "hierarchy_method": "HNS",
+  "inherited_hidden_detach": "Regularizers have zero native-backbone gradient; no mask-to-mask stop-gradient",
+  "started_utc": "2026-10-10T16:51:39.096640+00:00",
+  "ended_utc": "2026-10-10T16:52:49.382645+00:00"
+}
