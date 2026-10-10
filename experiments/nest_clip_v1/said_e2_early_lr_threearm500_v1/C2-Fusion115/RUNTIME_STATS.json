@@ -1,0 +1,129 @@
+{
+  "cycle_seconds": {
+    "count": 500,
+    "median": 2.1231813430786133,
+    "p95": 2.3075301408767697,
+    "p99": 2.3963501477241516,
+    "max": 42.112648010253906
+  },
+  "peak_allocated_GiB": {
+    "0": 27.760395050048828,
+    "1": 27.760395050048828,
+    "2": 27.760395050048828,
+    "3": 27.760395050048828
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.said_e2_early_lr_threearm500",
+        "--arm",
+        "C2-Fusion115",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/early-lr-threearm500/experiments/nest_clip_v1/said_e2_early_lr_threearm500_v1/C2-Fusion115/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/early-lr-threearm500/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T04:03:23.937818+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/train500.log",
+      "ended_utc": "2026-10-10T04:23:13.452013+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/early-lr-threearm500/experiments/nest_clip_v1/said_e2_early_lr_threearm500_v1/C2-Fusion115/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-10T04:23:15.752266+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/gradient-audit500.log",
+      "ended_utc": "2026-10-10T04:24:16.897965+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T04:24:22.970997+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/export500.log",
+      "ended_utc": "2026-10-10T04:24:44.116947+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-10T04:24:44.128186+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/verify500.log",
+      "ended_utc": "2026-10-10T04:25:02.178980+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/evaluations"
+      ],
+      "started_utc": "2026-10-10T04:25:02.206045+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-early-lr-threearm500-v1/C2-Fusion115/five-eval500.log",
+      "ended_utc": "2026-10-10T04:33:24.182290+00:00",
+      "returncode": 0
+    }
+  ],
+  "source": "actual four-rank global1024 formal500"
+}
