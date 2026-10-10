@@ -40,6 +40,27 @@ ORIGINAL_IDENTITY = protocol.identity
 ORIGINAL_RESUME_GATE = protocol.resume_gate
 
 
+def normalize_json(value):
+    """Normalize JSON representation without losing colliding object keys.
+
+    Numeric histogram keys become strings in historical logs. Detect any
+    collisions before serialization; values and fields remain exact.
+    """
+    def check_keys(item, path='$'):
+        if isinstance(item, dict):
+            seen = set()
+            for key, child in item.items():
+                encoded = next(iter(json.loads(json.dumps({key: None}, ensure_ascii=False, allow_nan=False))))
+                if encoded in seen:
+                    raise ValueError(f'JSON key collision at {path}/{encoded}')
+                seen.add(encoded)
+                check_keys(child, path+'/'+encoded)
+        elif isinstance(item, (list, tuple)):
+            for index, child in enumerate(item):check_keys(child, path+'/'+str(index))
+    check_keys(value)
+    return json.loads(json.dumps(value, ensure_ascii=False, allow_nan=False))
+
+
 def segment(target):
     assert target == 4868
     return RUN/'step4868'
@@ -210,7 +231,13 @@ def worker(target):
         assert {int(v['step']) for v in opt.state.values()} == {step}, 'Optimizer counter discontinuity'
         value=old_observe(batch)
         ref=next(h for h in references[step]['rank_health'] if h['rank']==dist.get_rank())
-        assert value == ref['sampling'], 'Full-stage K/detail/token sampling mismatch'
+        try:
+            assert normalize_json(value) == normalize_json(ref['sampling']), 'Full-stage K/detail/token sampling mismatch'
+        except (AssertionError, ValueError, TypeError) as error:
+            dump(segment(target)/f'sampling-failure-{step}-rank{dist.get_rank()}.json',
+                 dict(step=step,rank=dist.get_rank(),error=repr(error),
+                      actual_repr=repr(value),reference=ref['sampling'],passed=False))
+            raise
         if step<=505 or step%1217==0:
             difference=trainer.parameter_agreement(module)
             receipt=dict(passed=difference==0,step=step,rank=dist.get_rank(),optimizer_counters=[step],
