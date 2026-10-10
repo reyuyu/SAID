@@ -1,0 +1,129 @@
+{
+  "cycle_seconds": {
+    "count": 500,
+    "median": 2.124426007270813,
+    "p95": 2.2877462029457094,
+    "p99": 2.393353133201597,
+    "max": 42.34149932861328
+  },
+  "peak_allocated_GiB": {
+    "0": 27.760395050048828,
+    "1": 27.760395050048828,
+    "2": 27.760395050048828,
+    "3": 27.760395050048828
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.said_e2_regular_hparam_fourarm500",
+        "--arm",
+        "P2-Temp105",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/regular-hparam-fourarm500/experiments/nest_clip_v1/said_e2_regular_hparam_fourarm500_v1/P2-Temp105/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/regular-hparam-fourarm500/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T06:32:02.290884+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/train500.log",
+      "ended_utc": "2026-10-10T06:51:52.681033+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.said_e2_regular_hparam_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/regular-hparam-fourarm500/experiments/nest_clip_v1/said_e2_regular_hparam_fourarm500_v1/P2-Temp105/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-10T06:51:54.833571+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/gradient-audit500.log",
+      "ended_utc": "2026-10-10T06:53:17.051053+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T06:53:22.854697+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/export500.log",
+      "ended_utc": "2026-10-10T06:53:46.991934+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-10T06:53:47.005074+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/verify500.log",
+      "ended_utc": "2026-10-10T06:54:07.059173+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/evaluations"
+      ],
+      "started_utc": "2026-10-10T06:54:07.091794+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-regular-hparam-fourarm500-v1/P2-Temp105/five-eval500.log",
+      "ended_utc": "2026-10-10T07:02:32.199939+00:00",
+      "returncode": 0
+    }
+  ],
+  "source": "actual four-rank global1024 formal500"
+}
