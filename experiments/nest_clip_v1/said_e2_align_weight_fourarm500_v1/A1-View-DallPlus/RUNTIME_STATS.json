@@ -1,0 +1,129 @@
+{
+  "cycle_seconds": {
+    "count": 500,
+    "median": 2.122236728668213,
+    "p95": 2.2856519937515256,
+    "p99": 2.429935939311981,
+    "max": 40.22681427001953
+  },
+  "peak_allocated_GiB": {
+    "0": 27.760395050048828,
+    "1": 27.760395050048828,
+    "2": 27.760395050048828,
+    "3": 27.760395050048828
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.said_e2_align_weight_fourarm500",
+        "--arm",
+        "A1-View-DallPlus",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/align-weight-fourarm500/experiments/nest_clip_v1/said_e2_align_weight_fourarm500_v1/A1-View-DallPlus/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/align-weight-fourarm500/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T08:55:08.120637+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/train500.log",
+      "ended_utc": "2026-10-10T09:14:49.641277+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/align-weight-fourarm500/experiments/nest_clip_v1/said_e2_align_weight_fourarm500_v1/A1-View-DallPlus/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-10T09:14:51.742922+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/gradient-audit500.log",
+      "ended_utc": "2026-10-10T09:16:06.914497+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T09:16:12.307777+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/export500.log",
+      "ended_utc": "2026-10-10T09:16:29.424432+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-10T09:16:29.438078+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/verify500.log",
+      "ended_utc": "2026-10-10T09:16:48.487873+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/evaluations"
+      ],
+      "started_utc": "2026-10-10T09:16:48.512611+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-align-weight-fourarm500-v1/A1-View-DallPlus/five-eval500.log",
+      "ended_utc": "2026-10-10T09:25:10.438850+00:00",
+      "returncode": 0
+    }
+  ],
+  "source": "actual four-rank global1024 formal500"
+}

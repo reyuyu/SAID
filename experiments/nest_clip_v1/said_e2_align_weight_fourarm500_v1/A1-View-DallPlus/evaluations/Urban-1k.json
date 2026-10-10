@@ -1,0 +1,31 @@
+{
+  "protocol": "urban1k-native-cls-v1",
+  "root": "/opt/data/private/lklk/SAID/local_assets/evaluation/Urban1k/Urban1k",
+  "n_images": 1000,
+  "n_captions": 1000,
+  "image_representation": "legacy_cls",
+  "global_pool": "n/a",
+  "similarity": "normalized features, plain inner product, full 1000-item pool",
+  "positive": "diagonal",
+  "image2text": {
+    "R1": 0.9110000729560852,
+    "R5": 0.9860000610351562,
+    "R10": 0.9960000514984131
+  },
+  "text2image": {
+    "R1": 0.8970000147819519,
+    "R5": 0.987000048160553,
+    "R10": 0.9950000643730164
+  },
+  "checkpoint_sha256": "35ad8925555361e0259c26f56a03793d0845b1957831eb1e62d910fb3ce3ec2c",
+  "upstream_reference": "eval/retrieval/Urban1k.py (Mid-Push/SmartCLIP)",
+  "upstream_metrics_reproduced": [
+    "T2I R@1",
+    "I2T R@1"
+  ],
+  "added_here": [
+    "R@5",
+    "R@10"
+  ],
+  "native_only": true
+}
