@@ -1,0 +1,129 @@
+{
+  "cycle_seconds": {
+    "count": 500,
+    "median": 2.130015015602112,
+    "p95": 2.2665383934974668,
+    "p99": 2.361799366474151,
+    "max": 42.73984909057617
+  },
+  "peak_allocated_GiB": {
+    "0": 27.760395050048828,
+    "1": 27.760395050048828,
+    "2": 27.760395050048828,
+    "3": 27.760395050048828
+  },
+  "commands": [
+    {
+      "name": "train500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.said_e2_hierarchy090_500",
+        "--arm",
+        "E2-Hierarchy090",
+        "--worker",
+        "--config",
+        "/opt/data/private/lklk/said-e2-worktrees/hierarchy090-500/experiments/nest_clip_v1/said_e2_hierarchy090_500_v1/E2-Hierarchy090/config.json",
+        "--init-state",
+        "/opt/data/private/lklk/said-e2-worktrees/hierarchy090-500/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500",
+        "--run-type",
+        "formal",
+        "--max-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T11:47:44.931411+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/train500.log",
+      "ended_utc": "2026-10-10T12:07:32.614305+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "gradient-audit500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/torchrun",
+        "--standalone",
+        "--nproc-per-node=4",
+        "--max-restarts=0",
+        "-m",
+        "recovery.hns_macro_gradient",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/said-e2-worktrees/hierarchy090-500/experiments/nest_clip_v1/said_e2_hierarchy090_500_v1/E2-Hierarchy090/GRADIENT_AUDIT.json"
+      ],
+      "started_utc": "2026-10-10T12:07:34.713771+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/gradient-audit500.log",
+      "ended_utc": "2026-10-10T12:08:35.856414+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "export500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500/step000500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/evaluations/student_step500.pt",
+        "--expect-updates",
+        "500"
+      ],
+      "started_utc": "2026-10-10T12:08:41.125204+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/export500.log",
+      "ended_utc": "2026-10-10T12:08:59.322106+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "verify500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.nest_clip",
+        "verify-export",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500/step000500.pt",
+        "--bare",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/evaluations/student_step500.pt",
+        "--output",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/evaluations/export-check.json",
+        "--index-dir",
+        "/root/said_s02_stage500/data_index",
+        "--image-root",
+        "/root/said_s02_stage500/ShareGPT4V"
+      ],
+      "started_utc": "2026-10-10T12:08:59.335529+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/verify500.log",
+      "ended_utc": "2026-10-10T12:09:17.392457+00:00",
+      "returncode": 0
+    },
+    {
+      "name": "five-eval500",
+      "command": [
+        "/opt/data/private/lklk/SAID/.venv/bin/python",
+        "-m",
+        "tools.eval_five_parallel",
+        "--checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/evaluations/student_step500.pt",
+        "--training-checkpoint",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500/step000500.pt",
+        "--output-dir",
+        "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/evaluations"
+      ],
+      "started_utc": "2026-10-10T12:09:17.425501+00:00",
+      "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/five-eval500.log",
+      "ended_utc": "2026-10-10T12:17:34.399648+00:00",
+      "returncode": 0
+    }
+  ],
+  "source": "actual four-rank global1024 formal500"
+}
