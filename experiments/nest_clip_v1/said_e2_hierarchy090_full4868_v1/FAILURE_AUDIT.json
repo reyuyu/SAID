@@ -1,0 +1,117 @@
+{
+  "status": "ENGINEERING_FAILURE_STOPPED",
+  "classification": "AUDIT_DICTIONARY_SERIALIZATION_MISMATCH",
+  "first_failed_update": 501,
+  "optimizer_update501_executed_in_memory": true,
+  "optimizer_counters501_inferred_from_passed_preceding_assert": true,
+  "durable_new_checkpoint": false,
+  "last_verified_recoverable_update": 500,
+  "target4868_reached": false,
+  "strict_export_run": false,
+  "five_set_evaluation_run": false,
+  "root_cause": "In-memory histogram dictionaries have integer keys; historical JSON logs have string keys. Raw dict equality is false while JSON-normalized equality is true.",
+  "root_cause_scope": "New isolated audit controller; production model/loss/data/LR unchanged",
+  "live_restore_audit": {
+    "passed": true,
+    "next_update": 501,
+    "ranks": [
+      {
+        "rank": 0,
+        "model_adapter_optimizer_exact": true,
+        "RNG_exact": true,
+        "loader_generator_exact": true,
+        "parameter_difference": 0.0,
+        "data_cursor": {
+          "next_epoch": 0,
+          "next_batch": 500
+        },
+        "optimizer_counters": [
+          500
+        ]
+      },
+      {
+        "rank": 1,
+        "model_adapter_optimizer_exact": true,
+        "RNG_exact": true,
+        "loader_generator_exact": true,
+        "parameter_difference": 0.0,
+        "data_cursor": {
+          "next_epoch": 0,
+          "next_batch": 500
+        },
+        "optimizer_counters": [
+          500
+        ]
+      },
+      {
+        "rank": 2,
+        "model_adapter_optimizer_exact": true,
+        "RNG_exact": true,
+        "loader_generator_exact": true,
+        "parameter_difference": 0.0,
+        "data_cursor": {
+          "next_epoch": 0,
+          "next_batch": 500
+        },
+        "optimizer_counters": [
+          500
+        ]
+      },
+      {
+        "rank": 3,
+        "model_adapter_optimizer_exact": true,
+        "RNG_exact": true,
+        "loader_generator_exact": true,
+        "parameter_difference": 0.0,
+        "data_cursor": {
+          "next_epoch": 0,
+          "next_batch": 500
+        },
+        "optimizer_counters": [
+          500
+        ]
+      }
+    ]
+  },
+  "CPU_tests": {
+    "passed": true,
+    "returncode": 0,
+    "command": [
+      "/opt/data/private/lklk/SAID/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_said_e2_hierarchy090_full4868.py",
+      "tests/test_said_e2_hierarchy090.py",
+      "tests/test_hns_s12_2434_validation.py"
+    ],
+    "summary": "...........................................                              [100%]\n=============================== warnings summary ===============================\nmodel/longclip.py:6\n  /opt/data/private/lklk/said-e2-worktrees/hierarchy090-full4868/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.\n    from pkg_resources import packaging\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n43 passed, 1 warning in 39.43s\n",
+    "utc": "2026-10-10T13:07:07.951977+00:00"
+  },
+  "readonly_diagnosis": "READONLY_SAMPLING_DIAGNOSIS.json",
+  "protected_artifacts_unchanged": {
+    "passed": true,
+    "files": [
+      {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-500-v1/E2-Hierarchy090/step500/step000500.pt",
+        "sha256": "1e71b433b4dd49977be701fc269f9852e023443560b23c2d88d80e111773fd90"
+      },
+      {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/training/step004868.pt",
+        "sha256": "cc4fb207598a321d491dcafc164756710c38648c7ccf7df178b5d8c35a11d02e"
+      },
+      {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+        "sha256": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e"
+      }
+    ]
+  },
+  "training_log": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hierarchy090-full4868-v1/step4868/train.log",
+    "sha256": "e4c765da892be0dfe48bb8ca4d37b0393c2b0db990e6689fe8b0f965ea963a84"
+  },
+  "original_failed_controller_sha256": "b284d2f2fa23f017ab02a5386c8561326a3c7e747bc454d64c3597c0f4f2a918",
+  "automatic_retry": false,
+  "GPU_compute_processes": [],
+  "utc": "2026-10-10T13:22:45.868911+00:00"
+}
