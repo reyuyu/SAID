@@ -1,0 +1,13 @@
+{
+  "initial_adhoc_suite": {
+    "passed": 80,
+    "failed": 1,
+    "seconds": 21.29
+  },
+  "failing_test": "test_hns_s12_sparse_ratio_twoarm500.py::test_commands_are_fresh_common0_and_local_only",
+  "observed": "Expected recovery.hns_s12_sparse_ratio_twoarm500, observed recovery.said_e2_align_weight_fourarm500",
+  "root_cause": "New command test called configure in the shared pytest process; mutable helper bindings leaked into a later historical test",
+  "fix": "Run new controller command checks in an isolated subprocess",
+  "production_math_or_experiment_config_changed": false,
+  "GPU_tasks_started_before_fix": false
+}

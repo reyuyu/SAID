@@ -84,7 +84,9 @@ class BalancedSearch(NestedFusionMask):
             assert inclusion_hierarchy == 'detail_chain'
             assert self.search_hparams['inclusion_max'] == 0.
             assert self.search_hparams['sparsity_scale'] == 1.
-            assert self.search_hparams['view_weights'] == [1.35,1.35,.30]
+            assert self.search_hparams['view_weights'] in (
+                [1.35,1.35,.30], [1.30,1.40,.30], [1.40,1.30,.30]
+            ), 'Unreviewed HNS alignment allocation'
         self.view_sparsity_weights = [float(v) for v in view_sparsity_weights]
         assert len(self.view_sparsity_weights)==3
         assert all(math.isfinite(v) and v>0 for v in self.view_sparsity_weights)

@@ -319,7 +319,7 @@ def main():
     if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3','nested_detail_kr234','nested_detail_kr2m1'):
         assert cfg.get('inclusion_hierarchy') == 'detail_chain'
         allowed = (([1.,1.,1.], [1.35,1.35,.30], [1.4,1.4,.20], [1.375,1.375,.25],
-                    [1.325,1.325,.35], [1.3,1.3,.40]) if cfg['sampling_mode']=='nested_detail_d3'
+                    [1.325,1.325,.35], [1.3,1.3,.40], [1.30,1.40,.30], [1.40,1.30,.30]) if cfg['sampling_mode']=='nested_detail_d3'
                    else ([1.35,1.35,.30],) if cfg['sampling_mode'] in ('nested_detail_kr234','nested_detail_kr2m1')
                    else ([1.4,1.4,.2], [1.,1.,1.]))
         assert cfg['view_weights'] in allowed, 'Only reviewed Nested Detail weights are authorized'
