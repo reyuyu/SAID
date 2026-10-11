@@ -99,6 +99,17 @@ class FusionBranch(nn.Module):
 
 
 def pair_logits(module, visual, text, paired=False):
+    # Isolated component ablation D: mask logits are generated from the text
+    # condition only.  The image embedding still participates in masked
+    # similarity, but replacing the image cannot alter the mask.
+    if getattr(module, 'text_only_mask', False):
+        assert module.fusion == 'balanced_stack'
+        width = module.fusion_branch.gate.out_features
+        logits = F.linear(text[1], module.fusion_branch.gate.weight[:, :width])
+        # The unpaired score path expects an explicit text-by-image pair
+        # matrix.  Expansion preserves identical logits for every image while
+        # keeping the original block statistics and broadcasting semantics.
+        return logits if paired else logits[:, None, :].expand(-1, visual[1].shape[0], -1)
     if module.fusion == 'stack_pool':
         return stack_logits(visual, text, paired)
     if module.fusion == 'balanced_stack':

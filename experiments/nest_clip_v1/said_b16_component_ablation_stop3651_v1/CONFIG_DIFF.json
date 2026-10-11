@@ -1,0 +1,10 @@
+{
+  "base_model": "ViT-B/16",
+  "common_step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "training": {"epochs": 4, "scheduler_horizon": 4868, "max_updates": 3651, "batches_per_epoch": 1217, "world_size": 4, "batch_size_per_rank": 256, "seed": 0, "sampling_mode": "nested_detail_d3", "sampling_seed": 0, "shuffle_seed": 0},
+  "B": {"ablation_mode": "joint_mask_only", "condition_mode": "dual_branch", "fusion": "balanced_stack", "visual": "patch", "hns_enabled": false, "disabled": ["Dall_alignment", "D3_alignment", "HNS", "inclusion"]},
+  "C": {"ablation_mode": "nested_alignment_only", "condition_mode": "native", "disabled": ["joint_mask", "text_mask", "fusion", "sparsity", "HNS", "inclusion"]},
+  "D": {"ablation_mode": "text_mask_full", "condition_mode": "dual_branch", "fusion": "balanced_stack", "visual": "patch", "hns_enabled": true, "mask_condition": "text_only"},
+  "production_parameter_changes": ["model/nested_fusion_mask.py dispatch for text-only mask", "trainer and isolated ablation modules"]
+}

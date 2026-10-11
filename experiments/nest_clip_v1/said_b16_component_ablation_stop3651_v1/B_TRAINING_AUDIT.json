@@ -1,0 +1,26 @@
+{
+  "status": "ENGINEERING_FAILURE",
+  "arm": "B",
+  "ablation_mode": "joint_mask_only",
+  "source_step0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+  "source_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "smoke_passed": true,
+  "resource_probe_passed": true,
+  "resource_probe": {"warmup_steps": 5, "measured_steps": 30, "p95_seconds": 1.9215947031974783, "max_seconds": 2.3960072994232178, "peak_allocated_gib": 13.252440452575684},
+  "formal_run": {
+    "output": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-stop3651-v1/B/formal3651-v2",
+    "completed_updates": 2261,
+    "target_updates": 3651,
+    "checkpoint_1217_sha256": "4edecc441f3ba593c305daca530268dd892ce42d73e4e6fb643b9deddc4b124f",
+    "checkpoint_2261_sha256": "1b0e6e0566e2de0845ababb7876aa186a2e2c0cb19cac20cf9c94cbed2cdb3ba",
+    "last_epoch": 1,
+    "last_valid_global": 1024,
+    "sample_log_rows": 2261,
+    "optimizer_lr": "fusion_adapter peak 2e-4; 4868 horizon",
+    "failure": "three consecutive full cycles exceeded the trainer's 3-second stop gate at steps 2259-2261; DataLoader worker abort during teardown caused torchrun exit 1"
+  },
+  "final_checkpoint_valid": false,
+  "bare_export": false,
+  "native_evaluation": false,
+  "C_and_D_started": false
+}

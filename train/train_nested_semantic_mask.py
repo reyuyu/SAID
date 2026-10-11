@@ -25,6 +25,7 @@ from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_b
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
+from model.component_ablation import JointMaskOnly, NestedAlignmentOnly, TextOnlySmartMask
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -44,6 +45,8 @@ def auxiliary_module(module):
 
 
 def build_optimizer(module):
+    if getattr(module, 'ablation_mode', None) == 'nested_alignment_only':
+        return torch.optim.AdamW(module.optimizer_groups(), betas=(.9, .999), eps=1e-8)
     if isinstance(module, BalancedSearch):
         return torch.optim.AdamW(module.optimizer_groups(),betas=(.9,.999),eps=1e-8)
     mask_parameters = (module.mask_parameters() if hasattr(module, 'mask_parameters')
@@ -76,6 +79,8 @@ def learning_rates(s, horizon, include_adapter=False):
 
 
 def optimizer_learning_rates(module, s, horizon):
+    if getattr(module, 'ablation_mode', None) == 'nested_alignment_only':
+        return (learning_rates(s, horizon)[0],)
     if not isinstance(module, BalancedSearch):
         return learning_rates(s,horizon,auxiliary_module(module) is not None)
     backbone=learning_rates(s,horizon)[0]
@@ -89,9 +94,10 @@ def training_horizon(config, batches_per_epoch):
     epochs = config['epochs']
     assert epochs in (3,4), 'Only three epochs or the authorized four-epoch Balanced followup'
     if epochs == 4:
-        assert config.get('four_epoch_followup') and config.get('hparam_search')
-        assert config.get('condition_mode') == 'dual_branch'
-        assert config.get('fusion') == 'balanced_stack' and config.get('visual') == 'patch'
+        assert config.get('four_epoch_followup') and (config.get('hparam_search') or config.get('ablation_mode'))
+        if not config.get('ablation_mode'):
+            assert config.get('condition_mode') == 'dual_branch'
+            assert config.get('fusion') == 'balanced_stack' and config.get('visual') == 'patch'
     else:
         assert not config.get('four_epoch_followup'), 'Four-epoch configuration must use four epochs'
     return epochs * batches_per_epoch
@@ -230,7 +236,7 @@ def save_emergency(module, optimizer, config, completed, output):
 
 def code_manifest():
     root = Path(__file__).resolve().parents[1]
-    paths = ['model/nested_semantic_mask.py', 'model/nested_vcp_mask.py', 'model/nested_fusion_mask.py', 'train/nested_semantic_data.py',
+    paths = ['model/nested_semantic_mask.py', 'model/nested_vcp_mask.py', 'model/nested_fusion_mask.py', 'model/component_ablation.py', 'train/nested_semantic_data.py',
              'train/train_nested_semantic_mask.py', 'train/random_detail_observer.py', 'model/model_longclip.py',
              'model/longclip.py', 'model/said_cls_cvssl.py']
     if (root/'model/balanced_hparam_search.py').exists():
@@ -327,7 +333,7 @@ def main():
     if cfg['sampling_mode'] in ('summary_random_detail', 'summary_contiguous_detail', 'summary_all_detail'):
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
-    assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch')
+    assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch', 'native')
     assert cfg['full_native_mix'] == 0
     assert int(cfg['checkpoint_interval']) > 0
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates == 35 if args.run_type == 'probe' else args.max_updates > 0)
@@ -366,10 +372,18 @@ def main():
     construction_rng = rng_state()
     module_class = (NestedFusionMask if cfg['condition_mode'] == 'dual_branch' else
                     NestedVCPMask if cfg['condition_mode'] == 'vcp_mask' else NestedSemanticMask)
+    ablation_mode = cfg.get('ablation_mode')
+    if ablation_mode == 'joint_mask_only':
+        module_class = JointMaskOnly
+    elif ablation_mode == 'text_mask_full':
+        module_class = TextOnlySmartMask
+    elif ablation_mode == 'nested_alignment_only':
+        module_class = NestedAlignmentOnly
     model_options = ({'fusion': cfg['fusion'], 'visual': cfg['visual']}
                      if cfg['condition_mode'] == 'dual_branch' else {})
     if cfg.get('hparam_search'):
-        module_class=BalancedSearch
+        if not ablation_mode:
+            module_class=BalancedSearch
         model_options['search_hparams']=hparams(cfg)
         if 'inclusion_hierarchy' in cfg:
             model_options['inclusion_hierarchy']=cfg['inclusion_hierarchy']
@@ -381,12 +395,15 @@ def main():
             model_options['hns_beta']=cfg['hns_beta']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
-    module = module_class(clip.float(), arm=cfg['arm'],
-                          checkpoint_encoders=cfg['checkpoint_encoders'],
-                          image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
-                          condition_mode=cfg['condition_mode'],
-                          shuffle_seed=cfg['shuffle_seed'],
-                          checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'], **model_options)
+    if ablation_mode == 'nested_alignment_only':
+        module = module_class(clip.float(), checkpoint_encoders=cfg['checkpoint_encoders'])
+    else:
+        module = module_class(clip.float(), arm=cfg['arm'],
+                              checkpoint_encoders=cfg['checkpoint_encoders'],
+                              image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
+                              condition_mode=cfg['condition_mode'],
+                              shuffle_seed=cfg['shuffle_seed'],
+                              checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'], **model_options)
     restore_rng_state(construction_rng)
     encoder_checkpoint_active = all(
         getattr(transformer.forward, '__func__', None) is _checkpoint_blocks
@@ -414,9 +431,10 @@ def main():
     ddp = DDP(module, device_ids=[local], output_device=local,
               find_unused_parameters=True, static_graph=False)
     optimizer = build_optimizer(module)
-    if cfg.get('hparam_search'):
-        module._loader_generator=loader.generator
-        module._loader_epoch_generator_state=loader.generator.get_state()
+    # Preserve the DataLoader generator for every ablation mode, including the
+    # native alignment-only arm whose optimizer has no mask groups.
+    module._loader_generator=loader.generator
+    module._loader_epoch_generator_state=loader.generator.get_state()
     assert not optimizer.state
     del initial
     config = dict(**cfg, **vars(args), horizon=horizon, batches_per_epoch=full_batches_per_epoch,

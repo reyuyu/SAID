@@ -10,6 +10,7 @@ from model.nested_semantic_mask import NestedSemanticMask
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch,hparams
+from model.component_ablation import JointMaskOnly, NestedAlignmentOnly, TextOnlySmartMask
 from train.nested_semantic_data import prepare_index, file_sha
 from train.train_nested_semantic_mask import (seed_all, build_optimizer, atomic_save,
                                                 auxiliary_module)
@@ -69,10 +70,18 @@ def main():
         module_class = (NestedFusionMask if config.get('condition_mode') == 'dual_branch' else
                         NestedVCPMask if config.get('condition_mode') == 'vcp_mask'
                         else NestedSemanticMask)
+        ablation_mode = config.get('ablation_mode')
+        if ablation_mode == 'joint_mask_only':
+            module_class = JointMaskOnly
+        elif ablation_mode == 'text_mask_full':
+            module_class = TextOnlySmartMask
+        elif ablation_mode == 'nested_alignment_only':
+            module_class = NestedAlignmentOnly
         model_options = ({'fusion': config['fusion'], 'visual': config['visual']}
                          if config.get('condition_mode') == 'dual_branch' else {})
         if config.get('hparam_search'):
-            module_class=BalancedSearch
+            if not ablation_mode:
+                module_class=BalancedSearch
             model_options['search_hparams']=hparams(config)
             if 'inclusion_hierarchy' in config:
                 model_options['inclusion_hierarchy']=config['inclusion_hierarchy']
@@ -82,13 +91,16 @@ def main():
                 model_options['hns_enabled']=config['hns_enabled']
             if 'hns_beta' in config:
                 model_options['hns_beta']=config['hns_beta']
-        module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
-                              image_chunk=config.get('image_chunk', 32),
-                              text_chunk=config.get('text_chunk', 64),
-                              condition_mode=config.get('condition_mode', 'text_only'),
-                              shuffle_seed=config.get('shuffle_seed', 0),
-                              checkpoint_pair_blocks=config.get(
-                                  'checkpoint_pair_blocks', True), **model_options).eval()
+        if ablation_mode == 'nested_alignment_only':
+            module = module_class(model, checkpoint_encoders=False).eval()
+        else:
+            module = module_class(model, arm=config['arm'], checkpoint_encoders=False,
+                                  image_chunk=config.get('image_chunk', 32),
+                                  text_chunk=config.get('text_chunk', 64),
+                                  condition_mode=config.get('condition_mode', 'text_only'),
+                                  shuffle_seed=config.get('shuffle_seed', 0),
+                                  checkpoint_pair_blocks=config.get(
+                                      'checkpoint_pair_blocks', True), **model_options).eval()
         auxiliary = auxiliary_module(module)
         if auxiliary is None:
             assert payload.get('adapter') is None
