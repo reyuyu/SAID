@@ -25,6 +25,7 @@ from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_b
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
+from model.backbone import validate_backbone
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -316,6 +317,9 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
+    cfg.setdefault('max_update_seconds', 5.)
+    cfg.setdefault('base_model', 'ViT-B/16')
+    assert cfg['base_model'] in ('ViT-B/16', 'ViT-L/14')
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'nested_detail_kr2m1', 'interior_random_k', 'summary_contiguous_detail')
     if cfg['sampling_mode'] in ('nested_detail', 'nested_detail_d3','nested_detail_kr234','nested_detail_kr2m1'):
         assert cfg.get('inclusion_hierarchy') == 'detail_chain'
@@ -358,9 +362,10 @@ def main():
     assert len(dataset) == 1245901, f'Unexpected dataset size {len(dataset)}; investigate before training'
     assert len(loader) == min(args.max_updates, full_batches_per_epoch)
     assert args.max_updates <= horizon, 'Stopping point must not exceed the configured horizon'
-    clip, _ = longclip.load_from_clip('ViT-B/16', device='cpu', args=argparse.Namespace())
+    clip, _ = longclip.load_from_clip(cfg['base_model'], device='cpu', args=argparse.Namespace())
     initial = torch.load(args.init_state, map_location='cpu', weights_only=False)
     assert initial['completed_steps'] == 0 and initial['provenance']['source'] == 'OpenAI CLIP + original random MaskNetwork'
+    assert initial['provenance'].get('base_model', 'ViT-B/16') == cfg['base_model']
     assert not initial['optimizer']['state']
     clip.load_state_dict(initial['model'], strict=True)
     construction_rng = rng_state()
@@ -387,6 +392,7 @@ def main():
                           condition_mode=cfg['condition_mode'],
                           shuffle_seed=cfg['shuffle_seed'],
                           checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'], **model_options)
+    backbone_dimensions = validate_backbone(clip, cfg['base_model'])
     restore_rng_state(construction_rng)
     encoder_checkpoint_active = all(
         getattr(transformer.forward, '__func__', None) is _checkpoint_blocks
@@ -427,6 +433,7 @@ def main():
                   init_sha256=file_sha(args.init_state), data=dataset.metadata,
                   code_sha256=code_manifest(),
                   runtime_model=runtime_model,
+                  backbone_dimensions=backbone_dimensions,
                   adapter_initialization=adapter_initialization,
                   git_head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                   torch=torch.__version__, cuda=torch.version.cuda, nccl=torch.cuda.nccl.version(),
@@ -602,8 +609,8 @@ def main():
                                                 four_rank_max_seconds=float(full)))+'\n')
                 cycle_seconds = float(full)
                 if args.run_type == 'probe':
-                    if updates_here > 5 and cycle_seconds > 3:
-                        resource_failure = 'measured full update exceeded 3 seconds'
+                    if updates_here > 5 and cycle_seconds > cfg['max_update_seconds']:
+                        resource_failure = f"measured full update exceeded {cfg['max_update_seconds']:g} seconds"
                     elif updates_here >= 2 and cycle_seconds > cfg.get('feasibility_abort_seconds', float('inf')):
                         resource_failure = 'limited full-update feasibility probe exceeded its abort threshold'
                 elif cfg.get('resource_policy') in ('nfs_reproduction500', 'local_reproduction500'):
@@ -620,9 +627,9 @@ def main():
                         resource_failure = ('single full update exceeded 60 seconds' if cfg['resource_policy'] == 'local_reproduction500'
                                             else 'five consecutive full updates exceeded 30 seconds')
                 elif updates_here > 1:
-                    consecutive_slow = consecutive_slow + 1 if cycle_seconds > 3 else 0
+                    consecutive_slow = consecutive_slow + 1 if cycle_seconds > cfg['max_update_seconds'] else 0
                     if consecutive_slow >= 3:
-                        resource_failure = 'three consecutive full updates exceeded 3 seconds'
+                        resource_failure = f"three consecutive full updates exceeded {cfg['max_update_seconds']:g} seconds"
                 if cfg.get('resource_policy') not in ('nfs_reproduction500', 'local_reproduction500') and torch.cuda.max_memory_allocated() / 2**30 > 65:
                     resource_failure = 'peak allocated memory exceeded 65 GiB'
                 saturation_limit = cfg.get('saturation_abort_fraction')
@@ -684,11 +691,11 @@ def main():
                 median_seconds=float(values.median()) if len(values) else None,
                 p95_seconds=float(torch.quantile(values, .95)) if len(values) else None,
                 max_seconds=float(values.max()) if len(values) else None,
-                all_steps_at_most_3s=bool((values <= 3.).all()) if len(values) == 30 else False,
+                all_steps_at_most_limit=bool((values <= cfg['max_update_seconds']).all()) if len(values) == 30 else False,
                 allocated_limit_gib=65.,
                 every_rank_peak_allocated_at_most_65gib=all(
                     x['peak_allocated_gib'] <= 65. for x in results))
-            passed = (passed and speed_gate['all_steps_at_most_3s'] and
+            passed = (passed and speed_gate['all_steps_at_most_limit'] and
                       speed_gate['every_rank_peak_allocated_at_most_65gib'])
         (output / 'acceptance.json').write_text(json.dumps(
             dict(passed=passed, ranks=results, speed_gate=speed_gate,

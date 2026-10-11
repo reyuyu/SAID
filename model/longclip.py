@@ -229,26 +229,21 @@ def load_from_clip(name: str, device: Union[str, torch.device] = "cuda" if torch
     model = build_model(state_dict or model.state_dict(), load_from_clip = True, args=args).to(device)
         
     positional_embedding_pre = model.positional_embedding.type(model.dtype)
-            
     length, dim = positional_embedding_pre.shape
     keep_len = 20
-    posisitonal_embedding_new = torch.zeros([4*length-3*keep_len, dim], dtype=model.dtype)
-    for i in range(keep_len):
-        posisitonal_embedding_new[i] = positional_embedding_pre[i]
+    positional_embedding_new = torch.zeros([4*length-3*keep_len, dim], dtype=model.dtype)
+    positional_embedding_new[:keep_len] = positional_embedding_pre[:keep_len]
     for i in range(length-1-keep_len):
-        posisitonal_embedding_new[4*i + keep_len] = positional_embedding_pre[i + keep_len]
-        posisitonal_embedding_new[4*i + 1 + keep_len] = 3*positional_embedding_pre[i + keep_len]/4 + 1*positional_embedding_pre[i+1+keep_len]/4
-        posisitonal_embedding_new[4*i + 2+keep_len] = 2*positional_embedding_pre[i+keep_len]/4 + 2*positional_embedding_pre[i+1+keep_len]/4
-        posisitonal_embedding_new[4*i + 3+keep_len] = 1*positional_embedding_pre[i+keep_len]/4 + 3*positional_embedding_pre[i+1+keep_len]/4
-
-    posisitonal_embedding_new[4*length -3*keep_len - 4] = positional_embedding_pre[length-1] + 0*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
-    posisitonal_embedding_new[4*length -3*keep_len - 3] = positional_embedding_pre[length-1] + 1*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
-    posisitonal_embedding_new[4*length -3*keep_len - 2] = positional_embedding_pre[length-1] + 2*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
-    posisitonal_embedding_new[4*length -3*keep_len - 1] = positional_embedding_pre[length-1] + 3*(positional_embedding_pre[length-1] - positional_embedding_pre[length-2])/4
-            
-    positional_embedding_res = posisitonal_embedding_new.clone()
-            
-    model.positional_embedding = nn.Parameter(posisitonal_embedding_new, requires_grad=False)
+        start = 4*i + keep_len
+        positional_embedding_new[start] = positional_embedding_pre[i+keep_len]
+        positional_embedding_new[start+1] = 3*positional_embedding_pre[i+keep_len]/4 + positional_embedding_pre[i+1+keep_len]/4
+        positional_embedding_new[start+2] = positional_embedding_pre[i+keep_len]/2 + positional_embedding_pre[i+1+keep_len]/2
+        positional_embedding_new[start+3] = positional_embedding_pre[i+keep_len]/4 + 3*positional_embedding_pre[i+1+keep_len]/4
+    tail = 4*length - 3*keep_len - 4
+    for offset in range(4):
+        positional_embedding_new[tail+offset] = positional_embedding_pre[-1] + offset*(positional_embedding_pre[-1]-positional_embedding_pre[-2])/4
+    positional_embedding_res = positional_embedding_new.clone()
+    model.positional_embedding = nn.Parameter(positional_embedding_new, requires_grad=False)
     model.positional_embedding_res = nn.Parameter(positional_embedding_res, requires_grad=True)
 
     if str(device) == "cpu":
