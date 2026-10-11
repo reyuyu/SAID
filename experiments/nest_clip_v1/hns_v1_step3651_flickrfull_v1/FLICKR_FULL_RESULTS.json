@@ -1,0 +1,121 @@
+{
+  "dataset": "Flickr30k-Full",
+  "protocol": "Flickr30k-Full-official-token-31783x158915",
+  "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+  "started_utc": "2026-10-11T01:19:51.705160+00:00",
+  "device": "cuda:0",
+  "physical_gpu": 0,
+  "checkpoint_sha256": "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44",
+  "status": "COMPLETED",
+  "state_sha256_before": "3f051d4a2fc2a53ce60ed78cdb2b20e6e7ae6dcbf22dd6d8c4efe3e9067491e1",
+  "text_encoding_seconds": 246.09637866914272,
+  "image_encoding_seconds": 75.92595524340868,
+  "scoring_seconds": 9.661207616329193,
+  "state_sha256_after": "3f051d4a2fc2a53ce60ed78cdb2b20e6e7ae6dcbf22dd6d8c4efe3e9067491e1",
+  "metrics": {
+    "I2T": {
+      "query_count": 31783,
+      "candidate_count": 158915,
+      "correct": {
+        "1": 18106,
+        "5": 25115,
+        "10": 27288
+      },
+      "recall_percent": {
+        "1": 56.96756127489538,
+        "5": 79.02023094106913,
+        "10": 85.85721926816223
+      },
+      "boundary_audit": {
+        "1": {
+          "exact_ties": 16,
+          "near_ties_le_1e-6": 17,
+          "minimum_margin": 0.0
+        },
+        "5": {
+          "exact_ties": 28,
+          "near_ties_le_1e-6": 40,
+          "minimum_margin": 0.0
+        },
+        "10": {
+          "exact_ties": 69,
+          "near_ties_le_1e-6": 104,
+          "minimum_margin": 0.0
+        }
+      }
+    },
+    "T2I": {
+      "query_count": 158915,
+      "candidate_count": 31783,
+      "correct": {
+        "1": 58444,
+        "5": 94211,
+        "10": 108689
+      },
+      "recall_percent": {
+        "1": 36.77689330774313,
+        "5": 59.28389390554699,
+        "10": 68.39442469244565
+      },
+      "boundary_audit": {
+        "1": {
+          "exact_ties": 29,
+          "near_ties_le_1e-6": 44,
+          "minimum_margin": 0.0
+        },
+        "5": {
+          "exact_ties": 9,
+          "near_ties_le_1e-6": 60,
+          "minimum_margin": 0.0
+        },
+        "10": {
+          "exact_ties": 18,
+          "near_ties_le_1e-6": 121,
+          "minimum_margin": 0.0
+        }
+      }
+    }
+  },
+  "identity": {
+    "checkpoint_sha256": "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44",
+    "manifest_sha256": "bfed72a299e4d8cbfef817c13c836cd5aa189e18dd2fd29b632f5808e8dd12bc",
+    "record_sha256": "5e80d06747e21ddf1c2aabd3fdf744d6b506a9473eb769d4d3567adb7e99e34c",
+    "image_ids_paths_sha256": "27ad197845327d1fcb58fc6e3f65bd17358e6e155c14694c41605c4765df54a3",
+    "image_content_sha256": "e4fef70dd3f73034970b1ec0e20d81a4b421d1871e350e3266e41b744d3ab159",
+    "tokenizer": "model.longclip.tokenize(truncate=True)",
+    "context_length": 248,
+    "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+    "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+    "backend_flags": {
+      "cudnn_allow_tf32": true,
+      "cuda_matmul_allow_tf32": false
+    },
+    "torch": "2.5.1+cu124",
+    "normalization": "gpu",
+    "encoder_sources": {
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+      "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+      "tools/eval_hyfl_native.py": "09c634564209c9b7e71545243e3537638095af94b6bd6eb5e28c21f1969f2cab",
+      "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088",
+      "tools/eval_hns_v1_flickrfull.py": "83237afe3a12ce6b61407be7104560652dcb6c655d956164811e8e8341f026f7"
+    },
+    "image_batch": 64,
+    "text_batch": 64
+  },
+  "n_images": 31783,
+  "n_captions": 158915,
+  "image_batch": 64,
+  "text_batch": 64,
+  "query_chunk": 256,
+  "gallery_chunk": 4096,
+  "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+  "encoding_seconds": 333.8960698544979,
+  "returncode": 0,
+  "ended_utc": "2026-10-11T01:25:37.156526+00:00",
+  "elapsed_seconds": 345.4514715448022,
+  "cpu_peak_rss_bytes": 3279527936,
+  "peak_cuda_allocated": 1586150912,
+  "peak_cuda_reserved": 2610954240
+}
