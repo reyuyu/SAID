@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "command": [
+    "/opt/data/private/lklk/said-e2-worktrees/hns-v1-pure3epoch3651-v1/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_hns_v1_pure3.py",
+    "tests/test_nested_d3_hns500.py",
+    "tests/test_hns_full.py",
+    "tests/test_nested_detail_d3.py",
+    "tests/test_nested_resume.py",
+    "tests/test_retrieval_bounded.py",
+    "tests/test_hns_pure3_full_identity.py"
+  ],
+  "returncode": 0,
+  "output": "........................................................................ [ 60%]\n...............................................                          [100%]\n=============================== warnings summary ===============================\nmodel/longclip.py:6\n  /opt/data/private/lklk/said-e2-worktrees/hns-v1-pure3epoch3651-v1/model/longclip.py:6: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.\n    from pkg_resources import packaging\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n119 passed, 1 warning in 11.33s\n",
+  "raw_log": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-v1-pure3epoch3651-v1/CPU_TESTS.log",
+  "log_sha256": "a516b2b288ce489cb718d7f95a50d63e77d4c48027ab0625dc01b7f6238b4ea2",
+  "utc": "2026-10-11T01:47:14.684542+00:00",
+  "original_cpu4rank_DDP": {
+    "passed": true,
+    "world": 4,
+    "backend": "gloo",
+    "production_objective": true,
+    "global_batch": 8,
+    "valid_counts": [
+      0,
+      2,
+      1,
+      1
+    ],
+    "global_valid": 4,
+    "completed_updates": 199,
+    "lambda_h": 0.995,
+    "beta": [
+      2.0,
+      2.0
+    ],
+    "loss_matches_global_reference": true,
+    "all_trainable_gradients_match_global_reference": true,
+    "one_AdamW_update_all_ranks_exact": true,
+    "all_rank_parameters_exact": true,
+    "max_rank_difference": 0.0,
+    "global_reference_scope": "Loss and every parameter gradient; cross-partition AdamW is not compared because near-zero reduction roundoff can be magnified by epsilon. Separate lambda0 equivalence tests compare the identical-partition AdamW update exactly.",
+    "max_gradient_difference": 3.0517578125e-05,
+    "gradient_tolerance": {
+      "atol": 0.0008,
+      "rtol": 8e-05
+    },
+    "no_double_world_scaling": true,
+    "single_process_loss": 521.9046630859375,
+    "distributed_loss": 521.9046020507812
+  },
+  "suite_sources": {
+    "tests/test_hns_v1_pure3.py": "6f668c5341e1fd1e4182a90c18f6116391d1b0e5a71078a62af4ed014e44c868",
+    "tests/test_nested_d3_hns500.py": "afa41263abc67b11289d97edb4d1b23707f64ba641bb07bd565586cd21f494a6",
+    "tests/test_hns_full.py": "cfff477c7a8e94d5ba3e323b27ca978393456a0f3ff72078beab4f81b3a367b1",
+    "tests/test_nested_detail_d3.py": "5b77e227ddf2588654ec141c2549fffcb845b929429b82b77e1665e050526c93",
+    "tests/test_nested_resume.py": "f96d62b8b5b9edb28bc6f5f6a55bb2338225624b3b394be92ae459a72fd9ec70",
+    "tests/test_retrieval_bounded.py": "676a125e324f666d3e77f8594fd31f8422a102fb4009386177a0f3718d0bd8e5",
+    "tests/test_hns_pure3_full_identity.py": "e95982774339d07919eefb8215a4baf49a9a70ba464b597c17bbe99e13f5d841"
+  }
+}

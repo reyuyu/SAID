@@ -1,0 +1,40 @@
+{
+  "model": "HNS-v1 Pure3",
+  "branch": "experiment/hns-v1-pure3epoch3651-v1",
+  "common0": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+  "common0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "one_seed": 0,
+  "one_training_arm": true,
+  "epochs": 3,
+  "scheduler_horizon": 3651,
+  "max_updates": 3651,
+  "resume": null,
+  "updates": [
+    1,
+    3651
+  ],
+  "checkpoints": [
+    0,
+    500,
+    1217,
+    2434,
+    3651
+  ],
+  "smoke": "Independent common0 smoke5; then restart common0",
+  "evaluation": [
+    "COCO-Val5K",
+    "Flickr30k-Test1K",
+    "DOCCI",
+    "Long-DCI",
+    "Urban-1k",
+    "Flickr30k-Full"
+  ],
+  "DCI_excluded": true,
+  "intermediate_public_evaluation": false,
+  "production_mathematics": "Historical HNS-v1: alignment10/sum(w)*weighted symmetric CE; sparse(F+2Dall+2D3)/3; ramp*(2V_DF+2V_3D)/3",
+  "original_detach": true,
+  "no_soft_inclusion": true,
+  "stop_after_final_evaluation": true,
+  "automatic_retry": false,
+  "automatic_next_experiment": false
+}

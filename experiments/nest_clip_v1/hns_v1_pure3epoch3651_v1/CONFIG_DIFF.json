@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "differences": {
+    "epochs": {
+      "before": 4,
+      "after": 3
+    },
+    "save_initial_checkpoint": {
+      "before": false,
+      "after": true
+    },
+    "four_epoch_followup": {
+      "before": true,
+      "after": false
+    }
+  },
+  "mathematical_changes": [
+    "epochs4->3",
+    "derived scheduler horizon4868->3651"
+  ],
+  "control_only_changes": [
+    "four_epoch_followup=False",
+    "save_initial_checkpoint=True"
+  ],
+  "preserved_legacy_experiment_name": "ArmB-Summary0.2-4epoch",
+  "identity": "HNS-v1-Pure3",
+  "effective_view_sparsity_weights": [
+    1,
+    2,
+    2
+  ],
+  "HNS_beta": [
+    2,
+    2
+  ],
+  "HNS_ramp": 200
+}
