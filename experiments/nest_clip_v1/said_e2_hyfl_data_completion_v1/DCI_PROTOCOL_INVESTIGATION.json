@@ -1,0 +1,101 @@
+{
+  "status": "PROTOCOL_UNVERIFIED",
+  "reason": "No HyFL-author DCI_test.json or precise generation rule found in inspected public sources.",
+  "hyfl_public_commits": [
+    "e0fcacceea751d95b36893d0758c808dd34e0c4d",
+    "76ba0a8649f523802273f9ba68f63f5bdb6fcc17",
+    "882a751ed4096455836ed96deec0defc9dc4149d",
+    "25037e2d49effef90a8d2814525d73ea2b4ac83a",
+    "a6e884ef1ec8aecf39ed2875d653f7c094ad58f3"
+  ],
+  "hyfl_eval_files": [
+    "eval/retrieval/unified_eval.py"
+  ],
+  "eval_blob_identical_initial_and_latest": true,
+  "middle_commit_changed_paths": {
+    "76ba0a8649f523802273f9ba68f63f5bdb6fcc17": [
+      "README.md"
+    ],
+    "882a751ed4096455836ed96deec0defc9dc4149d": [
+      "README.md"
+    ],
+    "25037e2d49effef90a8d2814525d73ea2b4ac83a": [
+      "README.md"
+    ]
+  },
+  "direct_annotation_files_in_tree": [],
+  "loader_evidence": {
+    "file": "eval/retrieval/unified_eval.py",
+    "class": "DCIDataset",
+    "read": "DCI_test.json",
+    "fields": [
+      "filename",
+      "caption"
+    ],
+    "sort": "filename",
+    "caption_generation_rule": null
+  },
+  "readme_ambiguity": "Calls dci Long-DCI; paper Table1 has separate DCI and Long-DCI columns.",
+  "goal_candidate": {
+    "repo": "PerceptualAI-Lab/GOAL",
+    "commit": "fd3ea90b63f9c7fd8c3231018a57bd0ad84ac888",
+    "json_sha256": "35227d8dfe02eccfff44947ecd0c265fb20ce3c03a59c85f062356b7c15165ae",
+    "records": 1999,
+    "said_records": 7805,
+    "common_images": 1999,
+    "missing_from_goal_count": 5806,
+    "goal_not_in_said_count": 0,
+    "matched_image_raw_caption_equal": 1,
+    "matched_image_strip_caption_equal": 1,
+    "matched_image_token_equal": 1,
+    "candidate_set_status": "PROTOCOL_MISMATCH",
+    "used_for_evaluation": false
+  },
+  "token_lengths_without_sot_eot": {
+    "said_mean": 172.18744394618835,
+    "said_max": 1181,
+    "said_over_246_count": 1383,
+    "goal_mean": 149.5447723861931,
+    "limitation": "Descriptive only; averages and shared subset do not identify HyFL inputs."
+  },
+  "saids_caption_rule": "(short_caption + space + extra_caption).strip(), 7805, filename sort",
+  "author_contact_sent": false,
+  "evidence_files": {
+    "GOAL_DCI_test.json": "35227d8dfe02eccfff44947ecd0c265fb20ce3c03a59c85f062356b7c15165ae",
+    "GOAL_DCI_test_pinned.json": "35227d8dfe02eccfff44947ecd0c265fb20ce3c03a59c85f062356b7c15165ae",
+    "author_repos.json": "73e181d8628cb884b91f38b9cdde28eca852cd26181fbeae5acd84e27917de9e",
+    "flickr_README.md": "6a76fa20a5b7ce7633c48c60c11c16129030b7439fe930978afb3f6644edc329",
+    "flickr_mirror_api.json": "b0449b6b276abbeb8ebe378336ac99f3fcade28e938c22d6d748b56436db1683",
+    "goal_commit.json": "3bceb766a9e8c1a4274a22e11838b93518e0bec225ac6bce29b58322153e8e67",
+    "goal_context_search.json": "c30781b18c8e73f7afb693100fb5b315a69d633a85bcf30a275672e73ade5b0f",
+    "goal_dci_search.json": "7d09741e2bcc7551df4f9f9df1f6b3ac4f80e1668ba5305a531aa1dca504068a",
+    "goal_name_search.json": "af7e553748e6c852001a4e3120803d9d074a80238a274c84f35ee9364dfea38d",
+    "goal_python_search.json": "90c6fb7a462f0871f78776684e350e4a47dc11a0b9e3aeb353cc3713de62ca97",
+    "goal_readme.md": "c65bb80bfdd213aec5d1d72b243ddddecba2ef960e51cb7f1a7bcb1a1bd2368e",
+    "goal_search.json": "dfcf48339305ad2c29c769791c744b182953975f70a608b3f2c32819c630964b",
+    "goal_search_specific.json": "4d3cd43c746470625eff0e06841346270cd0513568b1a82cedbecb2d1a2b4bc4",
+    "goal_tree.json": "c9939783cc1711570647d29d6dd31ff510e74c9b6d5f22c4172ef7be57482af6",
+    "goal_vision_search.json": "1620bcb98d9c65c51120861c6a2002f0b03d2b26ef3e83d0f2c598dd9788b6ff",
+    "hf_dci_search.json": "163d80d07f41f6a176d90c6cc3844aeaef6b550a2615a6197a125890c704198a",
+    "hyfl_change_2503.json": "9c9a31899ad8b056f53a1470410b3547b4dc32553e8aaa2bf51219c6376fe6a2",
+    "hyfl_change_76ba.json": "24ca00bfaf9f276eaba52174612c547565cba998652486f1b8451df48d7e2c81",
+    "hyfl_change_882a.json": "264af1a1de15b6512f5268b4d3296a2217ef797eaf7d01029769c401beeb46cb",
+    "hyfl_commits.json": "a31c47c52aa5106b761c42f4d4d09498734069388bb6fc5d289e7c533525a280",
+    "hyfl_hf_model.json": "57834891f56528e8911ae8693f46a26237370f091b7c4df48aa395874fe8f30a",
+    "hyfl_initial_eval.py": "c0289240af3c1f1dac386295a22e81d0190c4a25b5b66c43237f6986846a1ac0",
+    "hyfl_initial_tree.json": "0483ae27b9efd3bd1176ddd6053113536bee75ff52032611f2cf6032663fd6b7",
+    "hyfl_issues.json": "2ba33ca0557f1bb5b7ba88d67f9d0093c7185a36ec51fe2b7bd9372d3e001d6d",
+    "hyfl_readme.md": "cf753522177ea2d93c895d7e9c403621b6d8a4c081d8376935b4c5a7468beae7",
+    "hyfl_root.json": "fefc25c3932704ed996c38d44fda91a401fa44d5f10aed0734fb1caa37e2503f",
+    "hyfl_tree.json": "acf35e24566dc223b69f95c52f890063a42409d0621ea2116651f7e8cafb3a30",
+    "janeyeon_datasets.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "jeeit17_datasets.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "jeeit17_repos.json": "75fbbace2c530a527b652dab7dfb63704eea7f23776277bc11c6cb87e4a2fa5d",
+    "long_mirror_api.json": "69b900c57bd468b2488371b9671b622ad2ce0972e8ce68b5666fda30f1901e1d",
+    "signalee95_repos.json": "2ba33ca0557f1bb5b7ba88d67f9d0093c7185a36ec51fe2b7bd9372d3e001d6d",
+    "uncha_evaluation.py": "c29b2b4551df1f770cf1229cf863652e97ab75f7b88a451100fb6ddb6d57af4c",
+    "uncha_retrieval_config.py": "ddc3090c3ceb1693d6bc116ebe90cf9390ab59217c55d6526c59dfc0ce8c4c3a",
+    "uncha_tree.json": "434a52441bc61bdd6744f1283559166db4cc2a51316eb0f4e8070f8a6f6e99a4"
+  },
+  "said_manifest_sha256": "b98c254f956e88dde9b3611df4db68c9a37cb4ee7d0eca488e1be342e759273a"
+}

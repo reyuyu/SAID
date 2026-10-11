@@ -1,0 +1,101 @@
+{
+  "device": "cuda:0",
+  "physical_gpu": 0,
+  "image_batch": 64,
+  "text_batch": 64,
+  "query_chunk": 256,
+  "gallery_chunk": 4096,
+  "image_encoding_seconds": 76.05048188567162,
+  "text_encoding_seconds": 246.45325822383165,
+  "scoring_seconds": 9.50667767971754,
+  "elapsed_seconds": 346.3063050955534,
+  "cpu_peak_rss_bytes": 3238187008,
+  "peak_cuda_allocated": 1586150912,
+  "peak_cuda_reserved": 2610954240,
+  "queue": {
+    "plan_sha256": "3d9e693b4f9b27da346cdda84ed7bb4551d511478ae4bde1fedbb21c37229559",
+    "status": "COMPLETED",
+    "jobs": {
+      "Flickr30k-Full": {
+        "name": "Flickr30k-Full",
+        "attempt": 1,
+        "gpu": 0,
+        "pid": 1303373,
+        "status": "COMPLETED",
+        "started_utc": "2026-10-11T00:27:40.333685+00:00",
+        "start_monotonic": 46085261.10437401,
+        "output": "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-data-completion-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_data_completion_v1/full_eval/cache/Flickr30k-Full",
+          "--device",
+          "cuda:0"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 0,
+        "ended_utc": "2026-10-11T00:33:29.776028+00:00",
+        "elapsed_seconds": 349.4423446506262,
+        "output_sha256": "c9c2bc97c52e1a120035b9c81d3f7dd1f4b6628eeeebde94a64eeaf7234ef0eb"
+      }
+    },
+    "started_utc": "2026-10-11T00:27:40.133241+00:00",
+    "attempts": [
+      {
+        "name": "Flickr30k-Full",
+        "attempt": 1,
+        "gpu": 0,
+        "pid": 1303373,
+        "status": "COMPLETED",
+        "started_utc": "2026-10-11T00:27:40.333685+00:00",
+        "start_monotonic": 46085261.10437401,
+        "output": "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/RESULT.json",
+        "log": "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/worker.log",
+        "command": [
+          "/opt/data/private/lklk/said-e2-worktrees/hyfl-data-completion-v1/.venv/bin/python",
+          "-m",
+          "tools.eval_hyfl_native",
+          "--job",
+          "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/JOB.json",
+          "--checkpoint",
+          "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+          "--output",
+          "/root/said_hyfl_data_completion_v1/full_eval/Flickr30k-Full/attempt1/RESULT.json",
+          "--cache-dir",
+          "/root/said_hyfl_data_completion_v1/full_eval/cache/Flickr30k-Full",
+          "--device",
+          "cuda:0"
+        ],
+        "prior_attempt_status": null,
+        "returncode": 0,
+        "ended_utc": "2026-10-11T00:33:29.776028+00:00",
+        "elapsed_seconds": 349.4423446506262,
+        "output_sha256": "c9c2bc97c52e1a120035b9c81d3f7dd1f4b6628eeeebde94a64eeaf7234ef0eb"
+      }
+    ],
+    "blocked": {},
+    "preflight": {
+      "mem_available_bytes": 930620170240,
+      "disk_free_bytes": 639070478336,
+      "cpu_count": 144,
+      "gpu_listing": "0, GPU-6810482c-0a4f-2547-407d-7b11db16655d, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n1, GPU-a85d54c4-620e-6813-9176-ed449a61c7a4, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n2, GPU-251127fd-2cb2-c90d-6151-54360a5fcb82, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n3, GPU-cea2e93a-3a77-7373-2c22-cfc59c5094e8, NVIDIA A100 80GB PCIe, 81920 MiB, 1 MiB\n",
+      "utc": "2026-10-11T00:27:40.329522+00:00"
+    },
+    "ended_utc": "2026-10-11T00:33:29.777243+00:00",
+    "wall_seconds": 349.4466251283884
+  },
+  "oom": false,
+  "nonfinite": false,
+  "image_read_error": false,
+  "parallelism": "Single Full Flickr worker on GPU0. No internal multiGPU shards.",
+  "timing_scope": "Encoding includes tokenize/load/cache IO; scoring includes feature transfer. No warm-cache reuse."
+}

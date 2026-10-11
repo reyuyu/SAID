@@ -85,7 +85,7 @@ def identity(job, checkpoint, rows, images, pre):
 
 @torch.inference_mode()
 def encode(model, pre, rows, images, root, cache, device, image_batch=64, text_batch=64,
-           workers=4, normalization='gpu'):
+           workers=4, normalization='gpu', timings=None):
     from model import longclip
     def norm(x):
         if normalization == 'cpu_raw_for_legacy':
@@ -95,6 +95,9 @@ def encode(model, pre, rows, images, root, cache, device, image_batch=64, text_b
         return (x.float() / x.float().norm(dim=-1, keepdim=True)).cpu()
     image_bank, text_bank = [], []
     for kind, records, batch in [('text', rows, text_batch), ('image', images, image_batch)]:
+        if torch.device(device).type == 'cuda':
+            torch.cuda.synchronize(device)
+        kind_started = time.monotonic()
         bank = text_bank if kind == 'text' else image_bank
         loader = None
         if kind == 'image':
@@ -115,6 +118,10 @@ def encode(model, pre, rows, images, root, cache, device, image_batch=64, text_b
             bank.append(x)
             if start % (batch * 20) == 0:
                 print(f'{kind}: {start + len(subset)}/{len(records)}', flush=True)
+        if torch.device(device).type == 'cuda':
+            torch.cuda.synchronize(device)
+        if timings is not None:
+            timings[kind + '_encoding_seconds'] = time.monotonic() - kind_started
     return torch.cat(image_bank), torch.cat(text_bank)
 
 
@@ -171,21 +178,32 @@ def run(job, checkpoint, output, cache_dir, device):
         if sha(job['manifest']) != job['manifest_sha256']:
             raise ValueError('manifest changed since preflight')
         model, pre = load_model(checkpoint, device)
+        from tools.validate_hyfl_inference import parameter_sha
+        receipt['state_sha256_before'] = parameter_sha(model)
         ident = identity(job, checkpoint, rows, images, pre)
         cache = ShardCache(cache_dir, ident)
+        timings = {}
         imf, tf = encode(model, pre, rows, images, job['image_root'], cache, device,
                          job.get('image_batch', 64), job.get('text_batch', 64),
-                         job.get('workers', 4), job.get('normalization', 'gpu'))
+                         job.get('workers', 4), job.get('normalization', 'gpu'), timings=timings)
+        receipt.update(timings)
         enc_seconds = time.monotonic() - started
         norm_im, norm_tx = imf, tf
         if job.get('normalization') == 'cpu_raw_for_legacy':
             norm_im = torch.nn.functional.normalize(imf, dim=-1)
             norm_tx = torch.nn.functional.normalize(tf, dim=-1)
         # Normalized feature banks fit comfortably; only scoring blocks are materialized.
+        torch.cuda.synchronize(device)
+        scoring_started = time.monotonic()
         metrics, detail = retrieval(norm_im.to(device), norm_tx.to(device), [i[0] for i in images],
                                     [r['caption_id'] for r in rows], [r['positive_image_id'] for r in rows],
                                     query_chunk=job.get('query_chunk', 256),
                                     gallery_chunk=job.get('gallery_chunk', 4096))
+        torch.cuda.synchronize(device)
+        receipt['scoring_seconds'] = time.monotonic() - scoring_started
+        receipt['state_sha256_after'] = parameter_sha(model)
+        if receipt['state_sha256_before'] != receipt['state_sha256_after']:
+            raise ValueError('model state changed during inference')
         torch.save(detail, output.with_suffix('.queries.pt'))
         receipt.update(metrics=metrics, identity=ident, n_images=len(images), n_captions=len(rows),
                        image_batch=job.get('image_batch', 64), text_batch=job.get('text_batch', 64),

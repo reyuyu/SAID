@@ -1,0 +1,72 @@
+{
+  "base_commit": "ccb07f45ad52463d3e739878db44864dfd6d4059",
+  "branch": "experiment/said-e2-hyfl-data-completion-v1",
+  "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-s12-uniform-full4868-v1/step4868/evaluations/student_step4868.pt",
+  "checkpoint_sha256_before": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+  "checkpoint_sha256_after": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+  "flickr": {
+    "repo": "nlphuji/flickr30k",
+    "revision": "006d3058228379086e8ea76b2b12959d21b168f8",
+    "download_host": "hf-mirror.com; redirect to HF cas-bridge.xethub.hf.co",
+    "zip": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hyfl-data-completion-v1/downloads/flickr30k-images.zip",
+    "zip_bytes": 4390240817,
+    "zip_sha256": "2ce2420c0d17f0531deaa89ac657b4d5067ec519da16ff1ea12acbf5619c7391",
+    "official_token_sha256": "fad17aa6894489708a31f67d6055a6935fc5d0e3bc632ff45f5bbba6924bf9ee",
+    "readme_sha256": "6a76fa20a5b7ce7633c48c60c11c16129030b7439fe930978afb3f6644edc329",
+    "official_homepage_sha256": "7145c3c0acf11447f33d963e9064f62e9a3c60fad47c9d1ddeb056c201351d6a",
+    "license_review": "Illinois homepage permits non-commercial research/education and notes image copyright belongs to owners. No redistribution of images.",
+    "image_csv_used": false,
+    "annotation_source": "Frozen Illinois official results_20130124.token"
+  },
+  "long_dci": {
+    "repo": "mderakhshani/Long-DCI",
+    "revision": "95daae6e4b0b078f9af5fb7fcd8e95ab2201dc0a",
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e2-hyfl-data-completion-v1/downloads/dci_long.csv",
+    "sha256": "019cfee5d9d1bf2ae10689628eb6a08f148efef65a15402420a1b0e195c940df",
+    "bytes": 5409968,
+    "records": 7602,
+    "license": "cc-by-nc-4.0; research only, CSV not uploaded"
+  },
+  "download_evidence": {
+    "flickr_download.log": "0d5f85a1b76e93ecd9e8d0fbfa6d1470a6f47638498f747ad11defde3e30bb1f",
+    "flickr_download_headers.txt": "a5a3a0dbfbe178382fe4a496a235c55ec1a70b70e5a95ffce248588ed16dbb1c",
+    "long_mirror_api_headers.txt": "f46c27145aee65ac3bd04b50cff68343876439e5de9d1b8ba682a934e48e3ad2",
+    "hf_long_headers.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "hf_flickr_headers.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "flickr_mirror_resolve_headers.txt": "7ca38565afab95d1447b66fda8a7877a8c5941c7f2ef76f7078f9d2f71b9d404",
+    "long_resolve_headers.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "long_pinned_headers.txt": "8519d77b67989dc244e95afb838846cbfbbdaf0665f22788062976a04b1d691c",
+    "hf_download.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "flickr_resolve_headers.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "network": "HF direct DNS/IP connections timed out/reset. Mirror API and pinned resolve succeeded. hf CLI stalled before bytes; bounded curl download used instead. No alternate image mirror or mixed sources.",
+  "network_attempt_receipt_sha256": "bc012228a35f5929c71b4d3a7be232d9748c5c4b8cd8ed39a5f626a0319037d2",
+  "frozen_inference": {
+    "precision": "FP32",
+    "autocast": false,
+    "cuda_matmul_tf32": false,
+    "cudnn_tf32": true,
+    "context_length": 248,
+    "image_batch": 64,
+    "text_batch": 64,
+    "query_chunk": 256,
+    "gallery_chunk": 4096
+  },
+  "historical_results_sha256": "793cbdfed4cde0d2df7407db83cfe4abb7d0f00bceabd119d13ecbce23b9600c",
+  "code_changes": "New source audit/report tools and CPU tests; worker only adds timing/state receipts. Model, loss, sampler, tokenizer/preprocess and retrieval mathematics unchanged.",
+  "training_executed": false,
+  "zip_metadata_classification": {
+    "apple_double_files": 31785,
+    "verified_magic_version": "00051607/00020000",
+    "initial_failed_classification_receipt_sha256": "6ac74f21d1bd663159c7a7e768213cefe4782cd973916054979e9492d866777d",
+    "initial_failure_retained": true,
+    "explanation": "Initial minimal parser counted resource forks by JPEG suffix. Confirmed every AppleDouble header; corrected metadata classification before any image extraction/evaluation. No real images excluded."
+  },
+  "probe_initialization_failure": {
+    "receipt_sha256": "8b834dfefe4abc24620bc3c0177155b6385eb69b551e7f645fea73a9ba32722f",
+    "error": "reset_peak_memory_stats before CUDA initialization: Invalid device argument",
+    "model_loaded_or_inferred": false,
+    "failure_preserved": true,
+    "fix": "Call torch.cuda.set_device(0) before peak reset, as existing formal worker does."
+  }
+}

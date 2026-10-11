@@ -1,0 +1,56 @@
+{
+  "cpu_tests": {
+    "status": "PASS",
+    "tests": 21,
+    "log_sha256": "99eeb3541d08cc752d7b63a8ad30e2178ccc25b3cada431ada8b1e221cb70d2c",
+    "command": ".venv/bin/python -m unittest tests.test_hyfl_data_completion tests.test_retrieval_bounded -v"
+  },
+  "gpu_same_batch64": {
+    "status": "PASS",
+    "checkpoint_sha256_before": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e",
+    "max_abs": 0.0,
+    "tolerance": 5e-06,
+    "exact_query_hits": true,
+    "batch": 64,
+    "direct_counts": {
+      "I2T": {
+        "1": 13,
+        "5": 13,
+        "10": 13
+      },
+      "T2I": {
+        "1": 63,
+        "5": 64,
+        "10": 64
+      }
+    },
+    "worker_counts": {
+      "I2T": {
+        "1": 13,
+        "5": 13,
+        "10": 13
+      },
+      "T2I": {
+        "1": 63,
+        "5": 64,
+        "10": 64
+      }
+    },
+    "state_sha256_before": "952a143fde7a54bdce2cfa69cd0d4b86eea46e171c467d77589440247dbeb8c0",
+    "state_sha256_after": "952a143fde7a54bdce2cfa69cd0d4b86eea46e171c467d77589440247dbeb8c0",
+    "timings": {
+      "text_encoding_seconds": 0.09698418527841568,
+      "image_encoding_seconds": 0.5562446191906929
+    },
+    "peak_cuda_allocated": 1285143552,
+    "peak_cuda_reserved": 1530920960,
+    "device": "cuda:0",
+    "checkpoint_sha256_after": "50634512e226e79d526e269ba1a6ca75d7248f47e75417537f1605ca71ac2a0e"
+  },
+  "flickr_image_acceptance": "PASS",
+  "overlap": "PASS",
+  "long_csv": "VERIFIED_EXACT",
+  "historical_long_tokens": "VERIFIED_TOKEN_EQUIVALENT",
+  "dci_protocol": "UNVERIFIED, not claimed as a test PASS",
+  "retrieval_math": "Existing tests cover explicit positives, shuffled IDs, tails, cross-block TopK, exact/near ties, NaN/Inf, cache SHA/identity, overwrite and queue failure/cancellation."
+}
