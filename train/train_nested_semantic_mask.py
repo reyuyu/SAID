@@ -318,6 +318,7 @@ def main():
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
     cfg.setdefault('max_update_seconds', 5.)
+    cfg.setdefault('p95_limit_seconds', 5.)
     cfg.setdefault('base_model', 'ViT-B/16')
     assert cfg['base_model'] in ('ViT-B/16', 'ViT-L/14')
     assert cfg['sampling_mode'] in ('fixed_first', 'random_k', 'summary_detail', 'summary_random_detail', 'summary_all_detail', 'nested_detail', 'nested_detail_d3', 'nested_detail_kr234', 'nested_detail_kr2m1', 'interior_random_k', 'summary_contiguous_detail')
@@ -505,7 +506,9 @@ def main():
             if consumed_batch(epoch, batch_index, full_batches_per_epoch, completed):
                 cycle_start = time.perf_counter()
                 continue
-            tick = time.perf_counter()
+            batch_ready = time.perf_counter()
+            data_wait_s = batch_ready - cycle_start
+            tick = batch_ready
             for k in ('image', 'tokens_f', 'tokens_o', 'tokens_e', 'valid'):
                 batch[k] = batch[k].cuda(non_blocking=True)
             lrs = optimizer_learning_rates(module,completed,horizon)
@@ -550,8 +553,10 @@ def main():
             stream = json.dumps(dict(sample_ids=batch['sample_id'].tolist(), views=batch['views'],
                                      tokens=[batch[k].cpu().tolist() for k in ('tokens_f','tokens_o','tokens_e')]),
                                 ensure_ascii=False, separators=(',', ':')).encode()
+            update_done = time.perf_counter()
             health = dict(rank=rank, updates=updates_here, batch=len(batch['image']),
                           valid=int(batch['valid'].sum()), seconds=time.perf_counter()-tick,
+                          phase_timing=dict(data_wait_s=data_wait_s, update_compute_s=update_done-tick),
                           peak_allocated_gib=torch.cuda.max_memory_allocated()/2**30,
                           peak_reserved_gib=torch.cuda.max_memory_reserved()/2**30,
                           stream_sha256=hashlib.sha256(stream).hexdigest(),
@@ -596,10 +601,19 @@ def main():
             if args.run_type == 'probe' or cfg.get('monitor_resources', False):
                 # End-to-end cycle: real DataLoader wait, transfer, update, communication,
                 # ordinary logging, then synchronization on the slowest rank.
+                pre_barrier = time.perf_counter()
                 dist.barrier(device_ids=[local])
                 torch.cuda.synchronize(local)
+                barrier_s = time.perf_counter() - pre_barrier
                 full = torch.tensor(time.perf_counter() - cycle_start, device='cuda')
                 dist.all_reduce(full, op=dist.ReduceOp.MAX)
+                monitor_s = time.perf_counter() - pre_barrier - barrier_s
+                if rank == 0:
+                    with (output / 'phase_timing.jsonl').open('a') as timing_out:
+                        timing_out.write(json.dumps(dict(step=completed, rank=rank,
+                            data_wait_s=data_wait_s, update_compute_s=update_done-tick,
+                            post_update_logging_s=pre_barrier-update_done, barrier_sync_s=barrier_s,
+                            monitor_reduce_s=monitor_s, cycle_s=float(full)))+'\n')
                 if args.run_type == 'probe' and updates_here > 5:
                     probe_max_seconds.append(float(full))
                 if rank == 0:
@@ -686,16 +700,18 @@ def main():
             values = torch.tensor(probe_max_seconds, dtype=torch.float64)
             assert len(values) == 30 or resource_failure is not None
             speed_gate = dict(
-                warmup_steps=5, measured_steps=len(values), threshold_seconds=3.,
+                warmup_steps=5, measured_steps=len(values), threshold_seconds=cfg['p95_limit_seconds'],
+                max_single_seconds=cfg['max_update_seconds'],
                 mean_seconds=float(values.mean()) if len(values) else None,
                 median_seconds=float(values.median()) if len(values) else None,
                 p95_seconds=float(torch.quantile(values, .95)) if len(values) else None,
                 max_seconds=float(values.max()) if len(values) else None,
                 all_steps_at_most_limit=bool((values <= cfg['max_update_seconds']).all()) if len(values) == 30 else False,
+                p95_at_most_limit=(float(torch.quantile(values, .95)) <= cfg['p95_limit_seconds']) if len(values) == 30 else False,
                 allocated_limit_gib=65.,
                 every_rank_peak_allocated_at_most_65gib=all(
                     x['peak_allocated_gib'] <= 65. for x in results))
-            passed = (passed and speed_gate['all_steps_at_most_limit'] and
+            passed = (passed and speed_gate['all_steps_at_most_limit'] and speed_gate['p95_at_most_limit'] and
                       speed_gate['every_rank_peak_allocated_at_most_65gib'])
         (output / 'acceptance.json').write_text(json.dumps(
             dict(passed=passed, ranks=results, speed_gate=speed_gate,
