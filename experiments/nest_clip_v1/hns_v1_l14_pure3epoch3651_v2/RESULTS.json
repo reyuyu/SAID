@@ -1,0 +1,18 @@
+{
+  "status": "COMPLETED",
+  "model": "HNS-v1 ViT-L/14 Pure3",
+  "step": 3651,
+  "scheduler_horizon": 3651,
+  "checkpoint_sha256": "b5024cedf0f3ddceb72d59c81d809026b54bc36ef344b3e9925842ac767c5417",
+  "bare_student_sha256": "7a55b8e190ceae1bcf54a850a3452e2299fdfa4dc30f8e5c4cdb504309a9b731",
+  "metrics_percent": {
+    "COCO": {"I2T": {"R@1": 64.88, "R@5": 86.26, "R@10": 91.40}, "T2I": {"R@1": 48.496, "R@5": 73.148, "R@10": 81.84}},
+    "Flickr30k-Test1K": {"I2T": {"R@1": 91.6, "R@5": 99.2, "R@10": 99.7}, "T2I": {"R@1": 78.58, "R@5": 94.66, "R@10": 96.98}},
+    "DOCCI": {"I2T": {"R@1": 85.04, "R@5": 97.52, "R@10": 98.94}, "T2I": {"R@1": 84.90, "R@5": 97.36, "R@10": 98.94}},
+    "Long-DCI": {"I2T": {"R@1": 63.7463825309, "R@5": 80.8602999211, "R@10": 86.3456985004}, "T2I": {"R@1": 64.9302815049, "R@5": 81.1365430150, "R@10": 85.6879768482}},
+    "Urban-1k": {"I2T": {"R@1": 94.8, "R@5": 99.6, "R@10": 99.7}, "T2I": {"R@1": 94.7, "R@5": 99.0, "R@10": 99.6}}
+  },
+  "aggregates_percent": {"Score5": 77.1672664036, "J_long3": 81.3527773393, "J_long": 89.86, "Short4": 70.889, "Urban_I2T": 94.8, "Urban_T2I": 94.7, "Urban_Mean": 94.75},
+  "raw_evaluation_receipts": ["coco.json", "flickr_test1k.json", "docci.json", "long_dci.json", "urban.json"],
+  "protocol": "native FP32 normalized full-image/full-caption embeddings; no mask inference, rerank, ensemble or TTA; DCI excluded"
+}

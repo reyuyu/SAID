@@ -1,0 +1,30 @@
+{
+  "model": "HNS-v1 ViT-L/14 Pure3",
+  "branch": "experiment/hns-v1-l14-pure3epoch3651-v2",
+  "parent_v1_branch": "experiment/hns-v1-l14-pure3epoch3651-v1",
+  "base_model": "OpenAI CLIP ViT-L/14@224",
+  "official_weight_sha256": "b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836",
+  "step0_sha256": "8fa8f7819f41f01635b95c0c7aed3c2a51f8dd58317666cacd74d3bc162fc912",
+  "epochs": 3,
+  "scheduler_horizon": 3651,
+  "max_updates": 3651,
+  "sampling_mode": "nested_detail_d3",
+  "view_sparsity_weights": [1, 2, 2],
+  "hns_beta": [2, 2],
+  "resource_gate": {
+    "warmup_updates": 5,
+    "measured_updates": 30,
+    "p95_seconds": 5,
+    "max_single_seconds": 6,
+    "max_peak_allocated_gib": 65
+  },
+  "evaluation": ["COCO-Val5K", "Flickr30k-Test1K", "DOCCI", "Long-DCI", "Urban-1k", "Flickr30k-Full"],
+  "exclude": ["DCI"],
+  "automatic_retry": false,
+  "automatic_extra_training": false,
+  "status": "COMPLETED",
+  "completed_updates": 3651,
+  "bare_student_sha256": "7a55b8e190ceae1bcf54a850a3452e2299fdfa4dc30f8e5c4cdb504309a9b731",
+  "flickr_full_evaluation": "COMPLETED",
+  "dci_evaluation": "EXCLUDED"
+}
