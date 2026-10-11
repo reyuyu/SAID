@@ -2,7 +2,7 @@
 
 ## HNS-v1 model release
 
-The reproducibility kit for HNS-v1 ViT-B/16 Epoch3 (step 3651, horizon 4868) is in [docs/model_release/hns_v1_b16_epoch3/README.md](docs/model_release/hns_v1_b16_epoch3/README.md). It includes native inference, explicit local-root evaluation, provenance and controlled ablation instructions. The intended private ModelScope repository is `hongchenyang0814/SAID-HNS-v1-ViT-B16-Epoch3`; authentication status is recorded in the release documentation.
+The reproducibility kit for HNS-v1 ViT-B/16 Epoch3 (step 3651, horizon 4868) is in [docs/model_release/hns_v1_b16_epoch3/README.md](docs/model_release/hns_v1_b16_epoch3/README.md). It includes native inference, explicit local-root evaluation, provenance and controlled ablation instructions. The private ModelScope repository is `hongchenyang/SAID-HNS-v1-ViT-B16-Epoch3`; authentication and readback status are recorded in the release documentation.
 
 由 [reyuyu](https://github.com/reyuyu) 维护的视觉–语言检索实验仓库。SAID 基于 SmartCLIP / LongCLIP，研究用描述前缀选择视觉特征，并利用剩余后缀补充监督。这里保存我的实验实现、固定训练配置、检查点校验信息和原生检索评测结果。
 

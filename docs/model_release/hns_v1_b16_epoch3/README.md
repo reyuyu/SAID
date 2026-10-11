@@ -2,7 +2,7 @@
 
 This release identifies the third epoch endpoint (step 3651) of the four-epoch HNS-v1 ViT-B/16 schedule (native cosine horizon 4868). It uses 248-token LongCLIP text encoding and produces 512-dimensional native CLIP embeddings. MaskNet, FusionBranch and HNS are training-time mechanisms; default retrieval uses the exported student CLIP encoder only.
 
-The intended ModelScope repository is `hongchenyang0814/SAID-HNS-v1-ViT-B16-Epoch3`. It is private until authentication and redistribution rights are verified. The account owner must configure a fresh `MODELSCOPE_API_TOKEN`; the current server has no token, so no remote upload is claimed by this commit.
+The ModelScope repository is `hongchenyang/SAID-HNS-v1-ViT-B16-Epoch3` and is currently private. Access requires a ModelScope token with permission to read the repository.
 
 ## Quick start
 
@@ -10,7 +10,7 @@ From a clone of the matching GitHub release branch:
 
 ```bash
 python -m pip install -r requirements-inference.txt
-ms-hub download hongchenyang0814/SAID-HNS-v1-ViT-B16-Epoch3 inference/student_step3651.pt --local-dir checkpoints/hns_v1_b16
+ms-hub download hongchenyang/SAID-HNS-v1-ViT-B16-Epoch3 inference/student_step3651.pt --local-dir checkpoints/hns_v1_b16
 sha256sum checkpoints/hns_v1_b16/inference/student_step3651.pt
 python scripts/infer_hns_v1_b16.py --checkpoint checkpoints/hns_v1_b16/inference/student_step3651.pt --image examples/demo.jpg --texts "A person riding a bicycle." "A dog running."
 ```
