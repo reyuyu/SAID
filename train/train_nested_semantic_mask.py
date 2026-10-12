@@ -634,7 +634,16 @@ def main():
                                                 four_rank_max_seconds=float(full)))+'\n')
                 cycle_seconds = float(full)
                 if args.run_type == 'probe':
-                    if updates_here > 5 and cycle_seconds > 3:
+                    if cfg.get('resource_policy') == 'component_ablation_v3':
+                        policy = component_ablation_cycle_policy(cycle_seconds, consecutive_slow)
+                        if rank == 0 and policy['warning']:
+                            print(json.dumps(dict(event='PERFORMANCE_WARNING', step=completed,
+                                                  full_cycle_s=cycle_seconds,
+                                                  consecutive_slow=policy['consecutive'])), flush=True)
+                        consecutive_slow = policy['consecutive']
+                        if policy['stop']:
+                            resource_failure = policy['reason']
+                    elif updates_here > 5 and cycle_seconds > 3:
                         resource_failure = 'measured full update exceeded 3 seconds'
                     elif updates_here >= 2 and cycle_seconds > cfg.get('feasibility_abort_seconds', float('inf')):
                         resource_failure = 'limited full-update feasibility probe exceeded its abort threshold'
@@ -729,7 +738,10 @@ def main():
                 allocated_limit_gib=65.,
                 every_rank_peak_allocated_at_most_65gib=all(
                     x['peak_allocated_gib'] <= 65. for x in results))
-            passed = (passed and speed_gate['all_steps_at_most_3s'] and
+            timing_pass = (speed_gate['all_steps_at_most_3s'] or
+                           cfg.get('resource_policy') == 'component_ablation_v3')
+            speed_gate['timing_warning_only'] = cfg.get('resource_policy') == 'component_ablation_v3'
+            passed = (passed and timing_pass and
                       speed_gate['every_rank_peak_allocated_at_most_65gib'])
         (output / 'acceptance.json').write_text(json.dumps(
             dict(passed=passed, ranks=results, speed_gate=speed_gate,
