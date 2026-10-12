@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import torch
 from torch import nn
 
+from model.component_ablation import native_clip_logits
 from model.nested_fusion_mask import pair_logits
 
 
@@ -40,3 +41,30 @@ def test_common_step0_and_historical_reference_are_immutable_inputs():
     plan = (ROOT / 'experiments/nest_clip_v1/said_b16_component_ablation_stop3651_v1/CONFIG_DIFF.json').read_text()
     assert '54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6' in plan
     assert 'max_updates' in plan and '4868' in plan
+
+
+def test_native_logits_match_independent_normalized_clip_formula():
+    torch.manual_seed(0)
+    image = torch.randn(4, 8)
+    text = torch.randn(6, 8)
+    expected = 100 * torch.nn.functional.normalize(image.float(), dim=-1) @ \
+        torch.nn.functional.normalize(text.float(), dim=-1).T
+    assert torch.allclose(native_clip_logits(image, text), expected, atol=1e-6, rtol=1e-6)
+
+
+def test_native_logits_are_invariant_to_positive_feature_scaling():
+    torch.manual_seed(1)
+    image = torch.randn(4, 8)
+    text = torch.randn(6, 8)
+    reference = native_clip_logits(image, text)
+    scaled = native_clip_logits(image * torch.tensor([.2, 3., 17., 2.]).unsqueeze(1),
+                                text * torch.tensor([2., .5, 4., 9., .1, 7.]).unsqueeze(1))
+    assert torch.allclose(reference, scaled, atol=1e-5, rtol=1e-5)
+
+
+def test_native_ablation_source_has_no_mask_or_sparsity_objective():
+    source = (ROOT / 'model/component_ablation.py').read_text()
+    native = source[source.index('class NestedAlignmentOnly'):source.index('class TextOnlySmartMask')]
+    assert 'mask_net.requires_grad_(False)' in native
+    assert 'F_sparse=0.' in native and 'O_sparse=0.' in native and 'E_sparse=0.' in native
+    assert 'hns_' not in native

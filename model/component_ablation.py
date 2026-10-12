@@ -13,15 +13,24 @@ from model.balanced_hparam_search import BalancedSearch
 from model.nested_semantic_mask import gather, global_sum, world_rank
 
 
+def native_clip_logits(image_features, text_features):
+    """CLIP cosine logits used by the native alignment-only ablation."""
+    image_features = F.normalize(image_features.float(), dim=-1, eps=1e-6)
+    text_features = F.normalize(text_features.float(), dim=-1, eps=1e-6)
+    return 100 * image_features @ text_features.T
+
+
 def _native_terms(module, z, tokens, valid, valid_global, global_z):
     """Native CLIP bidirectional CE over the complete global candidate pool."""
     with torch.autocast('cuda', dtype=torch.bfloat16, enabled=tokens.is_cuda):
         text = module.clip.encode_text(tokens)
-    text = text.float()
+    text = F.normalize(text.float(), dim=-1, eps=1e-6)
+    z = F.normalize(z.float(), dim=-1, eps=1e-6)
+    global_z = F.normalize(global_z.float(), dim=-1, eps=1e-6)
     global_text = gather(text)
     labels = world_rank()[1] * len(z) + torch.arange(len(z), device=z.device)
-    qi = 100 * (z @ global_text.T)
-    qt = (100 * (global_z @ text.T)).T
+    qi = native_clip_logits(z, global_text)
+    qt = native_clip_logits(global_z, text).T
     zero = (z.sum() + global_z.sum() + text.sum() + global_text.sum()) * 0
     if bool(valid.any()):
         ci = F.cross_entropy(qi[valid].masked_fill(~valid_global[None], -torch.inf),
@@ -93,7 +102,7 @@ class NestedAlignmentOnly(nn.Module):
     def forward(self, images, tokens_f, tokens_o, tokens_e, valid, completed=0):
         with torch.autocast('cuda', dtype=torch.bfloat16, enabled=images.is_cuda):
             z = self.clip.encode_image(images)
-        z = z.float()
+        z = F.normalize(z.float(), dim=-1, eps=1e-6)
         global_z = gather(z)
         all_valid = torch.ones_like(valid)
         vf, lf = _native_terms(self, z, tokens_f, all_valid,
