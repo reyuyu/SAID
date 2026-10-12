@@ -25,7 +25,8 @@ from model.nested_semantic_mask import NestedSemanticMask, gather, _checkpoint_b
 from model.nested_vcp_mask import NestedVCPMask
 from model.nested_fusion_mask import NestedFusionMask
 from model.balanced_hparam_search import BalancedSearch, hparams, migrate_legacy_optimizer
-from model.component_ablation import JointMaskOnly, NestedAlignmentOnly, TextOnlySmartMask
+from model.component_ablation import (JointMaskOnly, NestedAlignmentOnly,
+                                       TextOnlySmartMask, VanillaLongCaption)
 from train.nested_semantic_data import NestedDataset, collate, file_sha, sampling_diagnostics
 
 
@@ -45,7 +46,7 @@ def auxiliary_module(module):
 
 
 def build_optimizer(module):
-    if getattr(module, 'ablation_mode', None) == 'nested_alignment_only':
+    if getattr(module, 'ablation_mode', None) in ('nested_alignment_only', 'vanilla_long_caption'):
         return torch.optim.AdamW(module.optimizer_groups(), betas=(.9, .999), eps=1e-8)
     if isinstance(module, BalancedSearch):
         return torch.optim.AdamW(module.optimizer_groups(),betas=(.9,.999),eps=1e-8)
@@ -79,7 +80,7 @@ def learning_rates(s, horizon, include_adapter=False):
 
 
 def optimizer_learning_rates(module, s, horizon):
-    if getattr(module, 'ablation_mode', None) == 'nested_alignment_only':
+    if getattr(module, 'ablation_mode', None) in ('nested_alignment_only', 'vanilla_long_caption'):
         return (learning_rates(s, horizon)[0],)
     if not isinstance(module, BalancedSearch):
         return learning_rates(s,horizon,auxiliary_module(module) is not None)
@@ -393,6 +394,8 @@ def main():
         module_class = TextOnlySmartMask
     elif ablation_mode == 'nested_alignment_only':
         module_class = NestedAlignmentOnly
+    elif ablation_mode == 'vanilla_long_caption':
+        module_class = VanillaLongCaption
     model_options = ({'fusion': cfg['fusion'], 'visual': cfg['visual']}
                      if cfg['condition_mode'] == 'dual_branch' else {})
     if cfg.get('hparam_search'):
@@ -409,7 +412,7 @@ def main():
             model_options['hns_beta']=cfg['hns_beta']
         if 'summary_t2i_weight' in cfg:
             model_options['search_hparams']['summary_t2i_weight']=cfg['summary_t2i_weight']
-    if ablation_mode == 'nested_alignment_only':
+    if ablation_mode in ('nested_alignment_only', 'vanilla_long_caption'):
         module = module_class(clip.float(), checkpoint_encoders=cfg['checkpoint_encoders'])
     else:
         module = module_class(clip.float(), arm=cfg['arm'],
@@ -591,7 +594,7 @@ def main():
             duplicates = unique[counts>1].cpu().tolist()
             if rank == 0:
                 row = dict(step=completed, s=completed-1, epoch=epoch,
-                           lr_backbone=lrs[0], lr_mask=lrs[1],
+                           lr_backbone=lrs[0], lr_mask=lrs[1] if len(lrs) >= 2 else 0.,
                            lr_adapter=lrs[-1] if len(lrs) >= 3 else 0.,
                            actual_lrs={g['name']:g['lr'] for g in optimizer.param_groups},
                            rank_health=rank_health, duplicate_image_ids=duplicates,

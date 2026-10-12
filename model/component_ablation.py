@@ -127,6 +127,38 @@ class NestedAlignmentOnly(nn.Module):
                       for key, value in logs.items()}
 
 
+class VanillaLongCaption(NestedAlignmentOnly):
+    """E: native CLIP fine-tuning on the complete F caption only.
+
+    The common step0 mask network is retained for checkpoint identity but is
+    frozen and never called.  Dall/D3, masks, fusion, sparsity and HNS are
+    deliberately absent from this objective.
+    """
+
+    ablation_mode = 'vanilla_long_caption'
+
+    def forward(self, images, tokens_f, tokens_o, tokens_e, valid, completed=0):
+        with torch.autocast('cuda', dtype=torch.bfloat16, enabled=images.is_cuda):
+            z = self.clip.encode_image(images)
+        z = F.normalize(z.float(), dim=-1, eps=1e-6)
+        global_z = gather(z)
+        all_valid = torch.ones_like(valid)
+        vf, lf = _native_terms(self, z, tokens_f, all_valid,
+                               torch.ones_like(gather(valid, False)), global_z)
+        loss = 10 * vf
+        logs = dict(F_i2t=lf[0], F_t2i=lf[1],
+                    O_i2t=0., O_t2i=0., E_i2t=0., E_t2i=0.,
+                    F_sparse=0., O_sparse=0., E_sparse=0.,
+                    loss=global_sum(loss) / world_rank()[0],
+                    valid_global=int(gather(valid, False).sum()),
+                    inc=0., inc_weight=0., hard_inclusion_violation=0., oe_iou=0.,
+                    fusion='none', visual='none', condition_mode='native',
+                    ablation_mode=self.ablation_mode,
+                    nonfinite=global_sum((~torch.isfinite(loss)).sum()))
+        return loss, {key: value.detach() if torch.is_tensor(value) else value
+                      for key, value in logs.items()}
+
+
 class TextOnlySmartMask(BalancedSearch):
     """D: full HNS objective with mask logits conditioned only on text."""
 
