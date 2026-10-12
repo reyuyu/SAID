@@ -591,7 +591,7 @@ def main():
             duplicates = unique[counts>1].cpu().tolist()
             if rank == 0:
                 row = dict(step=completed, s=completed-1, epoch=epoch,
-                           lr_backbone=lrs[0], lr_mask=lrs[1],
+                           lr_backbone=lrs[0], lr_mask=lrs[1] if len(lrs) >= 2 else 0.,
                            lr_adapter=lrs[-1] if len(lrs) >= 3 else 0.,
                            actual_lrs={g['name']:g['lr'] for g in optimizer.param_groups},
                            rank_health=rank_health, duplicate_image_ids=duplicates,
