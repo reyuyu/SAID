@@ -1,0 +1,70 @@
+{
+  "status": "BLOCKED_CODE_IDENTITY",
+  "arm": "B",
+  "ablation_mode": "joint_mask_only",
+  "parent_run": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-stop3651-v1/B/formal3651-v2",
+  "recovery_branch": "experiment/said-b16-component-ablation-recovery-v2",
+  "recovery_commit": "3dd2e1ab8f4998b78a1ba2a55f99fad3e005ce92",
+  "resource_policy_change": {
+    "three_second_rule": "warning_only",
+    "single_update_hard_stop_seconds": 60,
+    "memory_limit_gib_per_rank": 65,
+    "nonfinite_oom_ddp_data_errors": "hard_stop"
+  },
+  "cpu_tests": {
+    "component_ablation": "6 passed",
+    "resource_policy": "passed"
+  },
+  "smoke": {
+    "status": "PASS",
+    "updates": 5,
+    "peak_allocated_gib_per_rank": 13.252440452575684,
+    "max_parameter_difference": 0.0,
+    "final_nccl_all_reduce": 10.0,
+    "performance_warning_seconds": 31.470272064208984,
+    "resource_failure": null
+  },
+  "checkpoint_identity": {
+    "step2261": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-stop3651-v1/B/formal3651-v2/step002261.pt",
+      "sha256": "1b0e6e0566e2de0845ababb7876aa186a2e2c0cb19cac20cf9c94cbed2cdb3ba",
+      "completed_steps": 2261,
+      "scheduler_horizon": 4868,
+      "stop_updates": 3651,
+      "next_epoch": 1,
+      "next_batch": 1044,
+      "optimizer_step": 2261,
+      "rng_ranks": 4,
+      "all_tensors_finite": true
+    },
+    "step1217": {
+      "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-stop3651-v1/B/formal3651-v2/step001217.pt",
+      "sha256": "4edecc441f3ba593c305daca530268dd892ce42d73e4e6fb643b9deddc4b124f",
+      "completed_steps": 1217,
+      "scheduler_horizon": 4868,
+      "stop_updates": 3651,
+      "next_epoch": 1,
+      "next_batch": 0,
+      "optimizer_step": 1217,
+      "rng_ranks": 4,
+      "all_tensors_finite": true
+    }
+  },
+  "code_manifest_comparison": {
+    "model/nested_fusion_mask.py": {
+      "checkpoint_sha256": "87e7ac3a77f4ff20f89a9a551aaeba689d0d67e9d817fe05cb16544e61617bfb",
+      "recovery_source_sha256": "5503cfca470b7ae35e59783ffe0c04fae35fc29f3cb9dee82fe0203ddbc70562",
+      "status": "MISMATCH",
+      "effect": "resume gate refused before update 2262"
+    },
+    "other_manifest_entries": "MATCH",
+    "trainer_sha256": {
+      "checkpoint_parent": "d1f1a79a694e6057d23970aea650f5e34c72373287a63566856b0b56a6cccb",
+      "recovery_source": "8834b1dec088d0e2fe7cd7cabedcf764c2cf441aa47a8d24ba37c1c82f491523",
+      "status": "EXPECTED_CONTROLLER_ONLY_CHANGE"
+    }
+  },
+  "decision": "STOP_WITHOUT_TRAINING",
+  "reason": "The exact model source recorded by the parent checkpoint cannot be independently recovered. Other code SHA checks must not be disabled.",
+  "c_and_d_started": false
+}
