@@ -61,7 +61,7 @@ class JointMaskOnly(BalancedSearch):
             global_z, global_visual, completed in (0, 99, 199, 299, 399, 499))
         loss = 10 * af + sf
         logs = {'F_' + key: value for key, value in logs_f.items()
-                if key != '_diagnostic_gate'}
+                if key not in ('_diagnostic_gate', '_diagnostic_mask_signal')}
         logs.update(loss=global_sum(loss) / world_rank()[0], valid_global=int(valid_global.sum()),
                     inc=0., inc_weight=0., hard_inclusion_violation=0., oe_iou=0.,
                     fusion=self.fusion, visual=self.visual, condition_mode=self.condition_mode,

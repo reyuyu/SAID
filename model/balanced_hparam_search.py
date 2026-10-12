@@ -5,7 +5,7 @@ import json
 import math
 
 import torch
-from model.nested_fusion_mask import NestedFusionMask, fusion_view_terms
+from model.nested_fusion_mask import NestedFusionMask, fusion_view_terms, pair_logits
 from model.hard_nested_sparsity import hns_terms,hard_telemetry,hierarchy_weight
 from model.nested_semantic_mask import gather, global_sum, inclusion, inclusion_weight, world_rank
 
@@ -92,24 +92,26 @@ class BalancedSearch(NestedFusionMask):
                                        **({"t2i_weight": t2i_weight} if t2i_weight != 1. else {}))
             logs = values[-1]
             if self.inclusion_hierarchy == 'detail_chain':
-                # Read-only gate moments on every update, including last50.
+                # Read-only moments of the actual selected mask-logit rule.
                 with torch.no_grad():
-                    g = self.fusion_branch.balanced_gate(visual[1].detach(), condition[1].detach(), paired=True)[enabled]
-                    moments = global_sum(torch.stack((g.sum(), g.square().sum(),
-                        ((g<.05)|(g>.95)).float().sum()))) / (int(enabled_global.sum())*g.shape[-1])
-                    logs.update(g_mean=moments[0],g_variance=moments[1]-moments[0].square(),g_saturation=moments[2])
+                    signal = pair_logits(self, visual, condition, paired=True).detach()[enabled]
+                    moments = global_sum(torch.stack((signal.sum(), signal.square().sum(),
+                        ((signal.sigmoid()<.01)|(signal.sigmoid()>.99)).float().sum()))) / (int(enabled_global.sum())*signal.shape[-1])
+                    logs.update(mask_logits_mean=moments[0],
+                                mask_logits_variance=moments[1]-moments[0].square(),
+                                mask_sigmoid_saturation=moments[2])
             if diagnostics:
-                gate=logs['_diagnostic_gate']
+                signal=logs['_diagnostic_mask_signal']
                 ut,uv = condition[1].detach(),visual[1].detach()
-                statistics = torch.stack((((gate<.05)|(gate>.95)).float().mean(-1)[enabled].sum(),
+                statistics = torch.stack((((signal.sigmoid()<.01)|(signal.sigmoid()>.99)).float().mean(-1)[enabled].sum(),
                                           ut.norm(dim=-1)[enabled].sum(),uv.norm(dim=-1)[enabled].sum(),
                                           (ut-uv).norm(dim=-1)[enabled].sum()))
                 statistics=global_sum(statistics)/int(enabled_global.sum())
-                logs.update(g_saturation=statistics[0],u_T_norm=statistics[1],u_V_norm=statistics[2],
+                logs.update(mask_sigmoid_saturation=statistics[0],u_T_norm=statistics[1],u_V_norm=statistics[2],
                             u_T_minus_u_V_norm=statistics[3])
             return values
         af,sf,mf,pf,lf=terms(tokens_f,torch.ones_like(valid),torch.ones_like(valid_global))
-        gate_f=lf.pop('_diagnostic_gate',None)
+        signal_f=lf.pop('_diagnostic_mask_signal',None)
         logs={'F_'+key:value for key,value in lf.items()}
         hp=self.search_hparams
         inclusion_enabled=hp['inclusion_max']>0
@@ -117,12 +119,12 @@ class BalancedSearch(NestedFusionMask):
         if valid_count>=2:
             ao,so,mo,po,lo=terms(tokens_o,valid,valid_global,self.summary_t2i_weight)
             ae,se,me,pe,le=terms(tokens_e,valid,valid_global)
-            gate_o,gate_e=lo.pop('_diagnostic_gate',None),le.pop('_diagnostic_gate',None)
-            if gate_f is not None:
-                values=global_sum(torch.stack(((gate_f-gate_o).abs().mean(-1)[valid].sum(),
-                                              (gate_f-gate_e).abs().mean(-1)[valid].sum(),
-                                              (gate_o-gate_e).abs().mean(-1)[valid].sum())))/valid_count
-                logs.update(g_F_P_abs_difference=values[0],g_F_R_abs_difference=values[1],g_P_R_abs_difference=values[2])
+            signal_o,signal_e=lo.pop('_diagnostic_mask_signal',None),le.pop('_diagnostic_mask_signal',None)
+            if signal_f is not None:
+                values=global_sum(torch.stack(((signal_f-signal_o).abs().mean(-1)[valid].sum(),
+                                              (signal_f-signal_e).abs().mean(-1)[valid].sum(),
+                                              (signal_o-signal_e).abs().mean(-1)[valid].sum())))/valid_count
+                logs.update(mask_F_P_abs_difference=values[0],mask_F_R_abs_difference=values[1],mask_P_R_abs_difference=values[2])
             if inclusion_enabled:
                 inc_sum=(detail_chain_inclusion(pf,po,pe) if self.inclusion_hierarchy == 'detail_chain'
                          else inclusion(pf,po,pe))[valid].sum()

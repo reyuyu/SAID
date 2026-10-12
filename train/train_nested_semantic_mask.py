@@ -146,7 +146,8 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old[key] == current[key], f'Resume mismatch: {key}'
     for key, default in (('image_chunk', 32), ('text_chunk', 64),
                          ('condition_mode', 'text_only'), ('shuffle_seed', 0),
-                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False)):
+                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False),
+                         ('joint_mask_mode', 'matched')):
         assert old.get(key, default) == current.get(key, default), f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
@@ -333,6 +334,7 @@ def main():
     cfg.setdefault('image_chunk', 32)
     cfg.setdefault('text_chunk', 64)
     cfg.setdefault('checkpoint_pair_blocks', True)
+    cfg.setdefault('joint_mask_mode', 'matched')
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
@@ -348,6 +350,7 @@ def main():
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch', 'native')
+    assert cfg['joint_mask_mode'] in ('matched', 'J1', 'J2', 'J3', 'J4')
     assert cfg['full_native_mix'] == 0
     assert int(cfg['checkpoint_interval']) > 0
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates == 35 if args.run_type == 'probe' else args.max_updates > 0)
@@ -393,7 +396,8 @@ def main():
         module_class = TextOnlySmartMask
     elif ablation_mode == 'nested_alignment_only':
         module_class = NestedAlignmentOnly
-    model_options = ({'fusion': cfg['fusion'], 'visual': cfg['visual']}
+    model_options = ({'fusion': cfg['fusion'], 'visual': cfg['visual'],
+                      'joint_mask_mode': cfg['joint_mask_mode']}
                      if cfg['condition_mode'] == 'dual_branch' else {})
     if cfg.get('hparam_search'):
         if not ablation_mode:
@@ -426,12 +430,14 @@ def main():
                          checkpoint_pair_blocks=module.checkpoint_pair_blocks,
                          checkpoint_encoders=module.checkpoint_encoders,
                          encoder_checkpoint_active=encoder_checkpoint_active,
-                         condition_mode=module.condition_mode, arm=module.arm)
+                         condition_mode=module.condition_mode, arm=module.arm,
+                         joint_mask_mode=getattr(module, 'joint_mask_mode', 'matched'))
     assert runtime_model == dict(image_chunk=cfg['image_chunk'], text_chunk=cfg['text_chunk'],
                                  checkpoint_pair_blocks=cfg['checkpoint_pair_blocks'],
                                  checkpoint_encoders=cfg['checkpoint_encoders'],
                                  encoder_checkpoint_active=cfg['checkpoint_encoders'],
-                                 condition_mode=cfg['condition_mode'], arm=cfg['arm'])
+                                 condition_mode=cfg['condition_mode'], arm=cfg['arm'],
+                                 joint_mask_mode=cfg['joint_mask_mode'])
     adapter_initialization = None
     auxiliary = auxiliary_module(module)
     if auxiliary is not None:

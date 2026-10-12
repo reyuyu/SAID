@@ -65,6 +65,37 @@ class FusionBranch(nn.Module):
         visual_part = F.linear(visual, self.gate.weight[:, width:])
         return torch.sigmoid(text_part + visual_part if paired else text_part[:, None] + visual_part[None])
 
+    def joint_mask_logits(self, visual, text, paired=False):
+        """Return mask logits for the selected BalancedStack joint rule.
+
+        ``matched`` is the historical gate. J1--J4 are isolated alternatives
+        that only replace this logits generator; sigmoid, Hard-ST, CE,
+        sparsity, HNS and sampling remain unchanged downstream.
+        """
+        width = self.gate.out_features
+        a = F.linear(text, self.gate.weight[:, :width])
+        b = F.linear(visual, self.gate.weight[:, width:])
+        if paired:
+            a_pair, b_pair = a, b
+            text_pair, visual_pair = text, visual
+        else:
+            a_pair, b_pair = a[:, None], b[None]
+            text_pair, visual_pair = text[:, None], visual[None]
+        mode = getattr(self, 'joint_mask_mode', 'matched')
+        if mode == 'matched':
+            g = torch.sigmoid(a_pair + b_pair)
+            return g * text_pair + (1 - g) * visual_pair
+        if mode == 'J1':
+            g = torch.sigmoid(a_pair + b_pair + math.log(3.0))
+            return g * text_pair + (1 - g) * visual_pair
+        if mode == 'J2':
+            return a_pair + 0.5 * b_pair
+        if mode == 'J3':
+            return a_pair + 0.5 * torch.tanh(b_pair)
+        if mode == 'J4':
+            return a_pair + 0.5 * b_pair - 0.25 * (a_pair - b_pair).abs()
+        raise AssertionError(f'Unknown joint_mask_mode: {mode}')
+
     def encode_visual(self, hidden):
         tokens = self.visual_adapter(hidden.detach().float())
         return self.visual_blocks(tokens.permute(1, 0, 2)).permute(1, 0, 2)
@@ -113,9 +144,7 @@ def pair_logits(module, visual, text, paired=False):
     if module.fusion == 'stack_pool':
         return stack_logits(visual, text, paired)
     if module.fusion == 'balanced_stack':
-        gate = module.fusion_branch.balanced_gate(visual[1], text[1], paired)
-        return (gate * text[1] + (1 - gate) * visual[1] if paired else
-                gate * text[1][:, None] + (1 - gate) * visual[1][None])
+        return module.fusion_branch.joint_mask_logits(visual[1], text[1], paired)
     return module.fusion_branch.cross_logits(visual[0], text[0], paired)
 
 
@@ -239,26 +268,41 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
                 torch.distributed.all_reduce(bound, op=torch.distributed.ReduceOp.MAX)
             logs['qk_abs_max'] = bound
         elif module.fusion == 'balanced_stack':
-            gate = module.fusion_branch.balanced_gate(visual[1], condition[1], paired=True).detach()
-            global_gate, enabled = gather(gate, False), gather(valid, False)
-            selected_gates = global_gate[enabled].flatten()
-            logs.update(g_mean=selected_gates.mean(), g_variance=selected_gates.var(unbiased=False))
-            quantiles = torch.quantile(selected_gates, gate.new_tensor([0., .05, .25, .5, .75, .95, 1.]))
-            logs.update({f'g_q{q}': value for q, value in zip(('00', '05', '25', '50', '75', '95', '100'), quantiles)})
-            logs['_diagnostic_gate'] = gate
+            signal = pair_logits(module, visual, condition, paired=True)
+            global_signal, enabled = gather(signal.detach(), False), gather(valid, False)
+            selected_signal = global_signal[enabled].flatten()
+            logs.update(mask_rule=module.fusion_branch.joint_mask_mode,
+                        mask_logits_mean=selected_signal.mean(),
+                        mask_logits_variance=selected_signal.var(unbiased=False))
+            quantiles = torch.quantile(selected_signal, signal.new_tensor([0., .05, .25, .5, .75, .95, 1.]))
+            logs.update({f'mask_logits_q{q}': value for q, value in zip(('00', '05', '25', '50', '75', '95', '100'), quantiles)})
+            if module.fusion_branch.joint_mask_mode in ('matched', 'J1'):
+                width = module.fusion_branch.gate.out_features
+                a = F.linear(condition[1], module.fusion_branch.gate.weight[:, :width])
+                b = F.linear(visual[1], module.fusion_branch.gate.weight[:, width:])
+                offset = 0. if module.fusion_branch.joint_mask_mode == 'matched' else math.log(3.0)
+                gate = torch.sigmoid(a + b + offset).detach()
+                selected_gates = gather(gate, False)[enabled].flatten()
+                logs.update(g_mean=selected_gates.mean(), g_variance=selected_gates.var(unbiased=False))
+            logs['_diagnostic_mask_signal'] = signal
         with torch.no_grad():
             replacement = tuple(x.roll(1, 0) for x in global_visual)
             replacement_local = tuple(x[rank * len(z):(rank + 1) * len(z)] for x in replacement)
-            alternate = pair_logits(module, replacement_local, condition, paired=True) >= 0
+            alternate_logits = pair_logits(module, replacement_local, condition, paired=True)
+            alternate = alternate_logits >= 0
             switch = ((positive.detach() >= .5) != alternate).float().mean(-1)
             logs['replaced_image_mask_switch'] = global_sum(switch[valid].sum()) / n
+            logs['replaced_image_logit_abs_difference'] = global_sum(
+                (pair_logits(module, visual, condition, paired=True).detach() - alternate_logits.detach()).abs()[valid].sum()
+            ) / (n * positive.shape[-1])
     return world / n * directional_ce(ci, ct, zero, t2i_weight), world / n * sparse, positive, probability, logs
 
 
 class NestedFusionMask(nn.Module):
     def __init__(self, clip, arm='A3', checkpoint_encoders=True, image_chunk=128,
                  text_chunk=128, condition_mode='dual_branch', shuffle_seed=0,
-                 checkpoint_pair_blocks=False, fusion='stack_pool', visual='cls', text_tokens=248):
+                 checkpoint_pair_blocks=False, fusion='stack_pool', visual='cls', text_tokens=248,
+                 joint_mask_mode='matched'):
         super().__init__()
         assert arm == 'A3' and condition_mode == 'dual_branch'
         assert fusion in ('stack_pool', 'crossscore_flat', 'balanced_stack', 'cosine_crossscore') and visual in ('cls', 'patch')
@@ -266,6 +310,8 @@ class NestedFusionMask(nn.Module):
         assert fusion != 'cosine_crossscore' or visual == 'cls'
         self.clip, self.arm, self.condition_mode = clip, arm, condition_mode
         self.fusion, self.visual = fusion, visual
+        self.joint_mask_mode = str(joint_mask_mode)
+        assert self.joint_mask_mode in ('matched', 'J1', 'J2', 'J3', 'J4')
         self.image_chunk, self.text_chunk = int(image_chunk), int(text_chunk)
         self.checkpoint_pair_blocks = bool(checkpoint_pair_blocks)
         self.checkpoint_encoders = bool(checkpoint_encoders)
@@ -273,6 +319,7 @@ class NestedFusionMask(nn.Module):
         width = int(clip.text_projection.shape[0])
         self.fusion_branch = FusionBranch(clip.mask_net.resblocks, int(clip.visual.proj.shape[0]),
                                           width, fusion, 1 if visual == 'cls' else 196, text_tokens)
+        self.fusion_branch.joint_mask_mode = self.joint_mask_mode
         if fusion in ('crossscore_flat', 'cosine_crossscore'):
             clip.mask_net.attn_pool.requires_grad_(False)
         if checkpoint_encoders:
@@ -320,20 +367,20 @@ class NestedFusionMask(nn.Module):
             return fusion_view_terms(self, z, text, visual, condition, enabled, enabled_global,
                                      global_z, global_visual, diagnostics)
         af, sf, mf, pf, lf = terms(tokens_f, torch.ones_like(valid), torch.ones_like(valid_global))
-        gate_f = lf.pop('_diagnostic_gate', None)
+        signal_f = lf.pop('_diagnostic_mask_signal', None)
         logs = {'F_' + key: value for key, value in lf.items()}
         weight = inclusion_weight(self.arm, completed) if valid_count >= 2 else 0.
         if valid_count >= 2:
             ao, so, mo, po, lo = terms(tokens_o, valid, valid_global)
             ae, se, me, pe, le = terms(tokens_e, valid, valid_global)
-            gate_o, gate_e = lo.pop('_diagnostic_gate', None), le.pop('_diagnostic_gate', None)
-            if gate_f is not None:
-                differences = torch.stack(((gate_f - gate_o).abs().mean(-1)[valid].sum(),
-                                           (gate_f - gate_e).abs().mean(-1)[valid].sum(),
-                                           (gate_o - gate_e).abs().mean(-1)[valid].sum()))
+            signal_o, signal_e = lo.pop('_diagnostic_mask_signal', None), le.pop('_diagnostic_mask_signal', None)
+            if signal_f is not None:
+                differences = torch.stack(((signal_f - signal_o).abs().mean(-1)[valid].sum(),
+                                           (signal_f - signal_e).abs().mean(-1)[valid].sum(),
+                                           (signal_o - signal_e).abs().mean(-1)[valid].sum()))
                 differences = global_sum(differences) / valid_count
-                logs.update(g_F_P_abs_difference=differences[0], g_F_R_abs_difference=differences[1],
-                            g_P_R_abs_difference=differences[2])
+                logs.update(mask_F_P_abs_difference=differences[0], mask_F_R_abs_difference=differences[1],
+                            mask_P_R_abs_difference=differences[2])
             inc_sum = inclusion(pf, po, pe)[valid].sum()
             loss = 10 / 3 * (af + ao + ae) + (sf + 2 * so + 2 * se) / 3 + weight * world_rank()[0] / valid_count * inc_sum
             violation = .5 * ((mo.detach() > mf.detach()).float().mean(-1) +
@@ -348,5 +395,6 @@ class NestedFusionMask(nn.Module):
             logs.update(inc=0., hard_inclusion_violation=0., oe_iou=0., O_candidates=0, E_candidates=0)
         logs.update(loss=global_sum(loss) / world_rank()[0], inc_weight=weight, valid_global=valid_count,
                     fusion=self.fusion, visual=self.visual, condition_mode=self.condition_mode,
+                    joint_mask_mode=self.fusion_branch.joint_mask_mode,
                     shuffle_shift=0, nonfinite=global_sum((~torch.isfinite(loss)).sum()))
         return loss, {key: value.detach() if torch.is_tensor(value) else value for key, value in logs.items()}
