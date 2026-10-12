@@ -77,7 +77,8 @@ def main():
             module_class = TextOnlySmartMask
         elif ablation_mode == 'nested_alignment_only':
             module_class = NestedAlignmentOnly
-        model_options = ({'fusion': config['fusion'], 'visual': config['visual']}
+        model_options = ({'fusion': config['fusion'], 'visual': config['visual'],
+                          'joint_mask_mode': config.get('joint_mask_mode', 'matched')}
                          if config.get('condition_mode') == 'dual_branch' else {})
         if config.get('hparam_search'):
             if not ablation_mode:
