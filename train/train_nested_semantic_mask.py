@@ -111,6 +111,22 @@ def gradient_norm(parameters):
     return torch.stack(squares).sum().sqrt()
 
 
+def component_ablation_cycle_policy(cycle_seconds, consecutive_slow):
+    """Resource policy for the B recovery controller.
+
+    The historical 3 s boundary remains telemetry only.  A single complete
+    update over 60 s is the hard timing stop; callers still apply the common
+    memory and numerical-finiteness gates.
+    """
+    slow = int(consecutive_slow) + 1 if float(cycle_seconds) > 3.0 else 0
+    return dict(
+        warning=bool(float(cycle_seconds) > 3.0),
+        consecutive=slow,
+        stop=bool(float(cycle_seconds) > 60.0),
+        reason='single full update exceeded 60 seconds' if float(cycle_seconds) > 60.0 else None,
+    )
+
+
 def validate_resume_payload(previous, current, expected_parent_trainer_sha256=None, allow_legacy_b0=False):
     """Permit a longer stop within the SAME horizon; pin a trainer-only migration.
 
@@ -550,7 +566,7 @@ def main():
                     save_emergency(module, optimizer, config, completed, output)
                 raise FloatingPointError('Nonfinite parameter gradient on at least one rank')
             optimizer.step()
-            if cfg.get('resource_policy') in ('nfs_reproduction500', 'local_reproduction500'):
+            if cfg.get('resource_policy') in ('nfs_reproduction500', 'local_reproduction500', 'component_ablation'):
                 finite = torch.stack([torch.isfinite(p).all() for p in module.parameters()]).all().int()
                 dist.all_reduce(finite, op=dist.ReduceOp.MIN)
                 if not finite.item():
@@ -624,6 +640,18 @@ def main():
                         resource_failure = 'measured full update exceeded 3 seconds'
                     elif updates_here >= 2 and cycle_seconds > cfg.get('feasibility_abort_seconds', float('inf')):
                         resource_failure = 'limited full-update feasibility probe exceeded its abort threshold'
+                elif cfg.get('resource_policy') == 'component_ablation':
+                    # Component-ablation runs retain the 3 s figure as a
+                    # diagnostic warning.  Transient loader/scheduling jitter
+                    # must not terminate an otherwise healthy continuation.
+                    policy = component_ablation_cycle_policy(cycle_seconds, consecutive_slow)
+                    if rank == 0 and policy['warning']:
+                        print(json.dumps(dict(event='PERFORMANCE_WARNING', step=completed,
+                                              full_cycle_s=cycle_seconds,
+                                              consecutive_slow=policy['consecutive'])), flush=True)
+                    consecutive_slow = policy['consecutive']
+                    if policy['stop']:
+                        resource_failure = policy['reason']
                 elif cfg.get('resource_policy') in ('nfs_reproduction500', 'local_reproduction500'):
                     if cfg['resource_policy'] == 'local_reproduction500':
                         from recovery.local500_policy import cycle_state
