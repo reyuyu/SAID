@@ -1,0 +1,20 @@
+{
+  "preserved_failures": [
+    {
+      "stage": "smoke5",
+      "cause": "initial worktree invocation lacked PYTHONPATH and could not import model",
+      "training_updates_started": false,
+      "checkpoint_written": false
+    },
+    {
+      "stage": "smoke5-r1",
+      "cause": "single-group E optimizer exposed an existing trainer log access to lrs[1]",
+      "classification": "controller_logging_bug",
+      "model_loss_data_and_optimizer_math_affected": false,
+      "preserved_output": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/smoke5"
+    }
+  ],
+  "repair": "guarded single-group LR telemetry with lr_mask=0 when no mask group exists",
+  "formal_run": "formal3651",
+  "formal_status": "passed"
+}

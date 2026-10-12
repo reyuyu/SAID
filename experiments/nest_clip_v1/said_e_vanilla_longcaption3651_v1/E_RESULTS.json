@@ -1,0 +1,499 @@
+{
+  "schema_version": 1,
+  "trial_id": "e-vanilla-longcaption3651-v1",
+  "source_commit": "60873ce6b29dd8347c9d99c73f34a4112e4729cb",
+  "common_step0": {
+    "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+    "sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6"
+  },
+  "objective": "10 * native bidirectional CLIP InfoNCE(F), L2-normalized embeddings; no masks/fusion/O/D3/HNS/sparsity/inclusion",
+  "training": {
+    "config": {
+      "trial_id": "e-vanilla-longcaption3651-v1",
+      "arm": "A3",
+      "experiment_name": "e-vanilla-longcaption3651-v1",
+      "ablation_mode": "vanilla_long_caption",
+      "condition_mode": "native",
+      "full_native_mix": 0,
+      "sampling_mode": "nested_detail_d3",
+      "inclusion_hierarchy": "detail_chain",
+      "sampling_seed": 0,
+      "shuffle_seed": 0,
+      "world_size": 4,
+      "batch_size": 256,
+      "accumulation": 1,
+      "epochs": 4,
+      "seed": 0,
+      "workers": 8,
+      "checkpoint_encoders": true,
+      "checkpoint_pair_blocks": false,
+      "image_chunk": 128,
+      "text_chunk": 128,
+      "score_chunk": 64,
+      "checkpoint_interval": 1217,
+      "save_initial_checkpoint": true,
+      "monitor_resources": true,
+      "four_epoch_followup": true,
+      "feasibility_abort_seconds": 15,
+      "view_weights": [
+        1.35,
+        1.35,
+        0.3
+      ],
+      "view_sparsity_weights": [
+        1.0,
+        2.0,
+        2.0
+      ],
+      "base_model": "ViT-B/16",
+      "resource_policy": "component_ablation_v3",
+      "config": "experiments/nest_clip_v1/said_e_vanilla_longcaption3651_v1/E_CONFIG.json",
+      "init_state": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/shared/step000000.pt",
+      "index_dir": "/root/said_s02_stage500/data_index",
+      "image_root": "/root/said_s02_stage500/ShareGPT4V",
+      "output_dir": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/formal3651",
+      "run_type": "formal",
+      "max_updates": 3651,
+      "resume": null,
+      "legacy_b0": false,
+      "expected_parent_trainer_sha256": null,
+      "horizon": 4868,
+      "batches_per_epoch": 1217,
+      "loader_batches_this_epoch": 1217,
+      "training_records": 1245901,
+      "sampler_num_samples": 311476,
+      "sampler_padding": 3,
+      "tail_batch": 180,
+      "init_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+      "data": {
+        "annotation": "/opt/data/private/lklk/SAID/local_assets/training/ShareGPT4V/share-captioner_coco_lcs_sam_1246k_1107.json",
+        "annotation_sha256": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+        "original_records": 1246901,
+        "training_records": 1245901,
+        "skip": 1000,
+        "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+        "text_rule": "newline->space; strip; literal . split; nonempty; longest consecutive prefix; independent F/O/E <=248 incl SOT/EOT"
+      },
+      "code_sha256": {
+        "model/nested_semantic_mask.py": "dc76647cbda55c8381942855eb1c8b84be1b22dae598381eb78fa8db169e7dfe",
+        "model/nested_vcp_mask.py": "13795aa47e6c3bdf9d41a6c223165d372efba2e6a9b831d6a446fbb9789909fe",
+        "model/nested_fusion_mask.py": "5503cfca470b7ae35e59783ffe0c04fae35fc29f3cb9dee82fe0203ddbc70562",
+        "model/component_ablation.py": "273037f607aaa51ad5fe656105860c52c46e44c36e5a31f7f157aabf91fb31fb",
+        "train/nested_semantic_data.py": "a83d104ced976b10a2c0c593bb1d4b8fc1b0650bb12331ddf600dc63fff73fba",
+        "train/train_nested_semantic_mask.py": "77fd07da234e39e53fa09e79c2fe9d01b7b6080e1fd96f9d6ad94c8beff5455f",
+        "train/random_detail_observer.py": "ece6d2b4726b9c928a50784219fa3fd497b6d0da636c8dfc0000f636dfd61f8f",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/said_cls_cvssl.py": "14b94425ae195f406fe2fbc55248947ff450090f559de300f484916b04c0363e",
+        "model/balanced_hparam_search.py": "b500febecdf8eff6d7a90f4020c6808a70a04ccebc63ecddd0d6565d28808d8e",
+        "model/hard_nested_sparsity.py": "3f63db56c683faf7102793fa1f3a6f62430a20eaa0a67c094380afd4397f696f"
+      },
+      "runtime_model": {
+        "image_chunk": 128,
+        "text_chunk": 128,
+        "checkpoint_pair_blocks": false,
+        "checkpoint_encoders": true,
+        "encoder_checkpoint_active": true,
+        "condition_mode": "native",
+        "arm": "A3"
+      },
+      "adapter_initialization": null,
+      "git_head": "60873ce6b29dd8347c9d99c73f34a4112e4729cb",
+      "torch": "2.5.1+cu124",
+      "cuda": "12.4",
+      "nccl": [
+        2,
+        21,
+        5
+      ],
+      "environment": {},
+      "ranks": [
+        {
+          "rank": 0,
+          "local_rank": 0,
+          "pid": 1545383,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "6810482c-0a4f-2547-407d-7b11db16655d",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7385048195719719
+        },
+        {
+          "rank": 1,
+          "local_rank": 1,
+          "pid": 1545384,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "a85d54c4-620e-6813-9176-ed449a61c7a4",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.9677934125065804
+        },
+        {
+          "rank": 2,
+          "local_rank": 2,
+          "pid": 1545385,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "251127fd-2cb2-c90d-6151-54360a5fcb82",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7274843826889992
+        },
+        {
+          "rank": 3,
+          "local_rank": 3,
+          "pid": 1545386,
+          "hostname": "interactive93293",
+          "gpu_name": "NVIDIA A100 80GB PCIe",
+          "uuid": "cea2e93a-3a77-7373-2c22-cfc59c5094e8",
+          "total_memory": 84974239744,
+          "nccl_all_reduce": 10.0,
+          "nccl_seconds": 0.7677172049880028
+        }
+      ],
+      "gather_gradient_test": {
+        "expected": 10.0,
+        "actual": 10.0,
+        "passed": true
+      },
+      "start_updates": 0,
+      "updates_planned_this_run": 3651
+    },
+    "acceptance": {
+      "passed": true,
+      "ranks": [
+        {
+          "rank": 0,
+          "completed_updates": 3651,
+          "updates_this_run": 3651,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 4615.44555208832,
+          "peak_allocated_gib": 6.854091644287109,
+          "peak_reserved_gib": 8.029296875,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 1,
+          "completed_updates": 3651,
+          "updates_this_run": 3651,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 4615.446429237723,
+          "peak_allocated_gib": 6.854091644287109,
+          "peak_reserved_gib": 8.029296875,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 2,
+          "completed_updates": 3651,
+          "updates_this_run": 3651,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 4615.447035565972,
+          "peak_allocated_gib": 6.854091644287109,
+          "peak_reserved_gib": 8.029296875,
+          "final_nccl_all_reduce": 10.0
+        },
+        {
+          "rank": 3,
+          "completed_updates": 3651,
+          "updates_this_run": 3651,
+          "max_parameter_difference_from_rank0": 0.0,
+          "seconds": 4615.447104811668,
+          "peak_allocated_gib": 6.854091644287109,
+          "peak_reserved_gib": 8.029296875,
+          "final_nccl_all_reduce": 10.0
+        }
+      ],
+      "speed_gate": null,
+      "resource_failure": null
+    },
+    "checkpoint_sha256": "1b53391b2f9fef0a9ba68cab42d539f56d7647902a5378a534f850bf96d89cd6",
+    "bare_student_sha256": "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62",
+    "checkpoint_paths": {
+      "1217": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/formal3651/step001217.pt",
+      "2434": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/formal3651/step002434.pt",
+      "3651": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/formal3651/step003651.pt"
+    },
+    "checkpoint_shas": {
+      "1217": "e8095a6fccd7a79dd927270ea56df093a6c76126fa6ef6833627c2599c9f7b70",
+      "2434": "249ab71425227d20577aff9aa92188a0b6ff9fd911e25d1c6004f704172054ca",
+      "3651": "1b53391b2f9fef0a9ba68cab42d539f56d7647902a5378a534f850bf96d89cd6"
+    },
+    "export": {
+      "checkpoint": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/formal3651/step003651.pt",
+      "checkpoint_sha256": "1b53391b2f9fef0a9ba68cab42d539f56d7647902a5378a534f850bf96d89cd6",
+      "completed_steps": 3651,
+      "scheduler_horizon": 4868,
+      "optimizer_steps": [
+        3651
+      ],
+      "bare_student": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/student_step3651.pt",
+      "bare_student_sha256": "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62",
+      "state_tensor_count": 317,
+      "strict_load": true,
+      "image_max_abs": 0.0,
+      "text_max_abs": 0.0,
+      "passed": true
+    }
+  },
+  "metrics": {
+    "COCO": {
+      "I2T": {
+        "R@1": 0.6076,
+        "R@5": 0.8302,
+        "R@10": 0.8976
+      },
+      "T2I": {
+        "R@1": 0.41852,
+        "R@5": 0.67668,
+        "R@10": 0.77212
+      }
+    },
+    "Urban-1k": {
+      "I2T": {
+        "R@1": 0.9270000457763672,
+        "R@5": 0.9890000224113464,
+        "R@10": 0.9970000386238098
+      },
+      "T2I": {
+        "R@1": 0.9110000729560852,
+        "R@5": 0.984000027179718,
+        "R@10": 0.9910000562667847
+      }
+    },
+    "Flickr30k-test1k": {
+      "I2T": {
+        "R@1": 0.886,
+        "R@5": 0.977,
+        "R@10": 0.991
+      },
+      "T2I": {
+        "R@1": 0.7254,
+        "R@5": 0.9128,
+        "R@10": 0.9506
+      }
+    },
+    "DOCCI": {
+      "I2T": {
+        "R@1": 0.789,
+        "R@5": 0.9608,
+        "R@10": 0.9836
+      },
+      "T2I": {
+        "R@1": 0.7918,
+        "R@5": 0.955,
+        "R@10": 0.9814
+      }
+    },
+    "Long-DCI": {
+      "I2T": {
+        "R@1": 0.5784004209418574,
+        "R@5": 0.7595369639568534,
+        "R@10": 0.818863456985004
+      },
+      "T2I": {
+        "R@1": 0.5609050249934228,
+        "R@5": 0.7453301762694028,
+        "R@10": 0.8017626940278874
+      }
+    }
+  },
+  "scores": {
+    "Score5": 71.95625564667732,
+    "J_long3": 75.96842607779554,
+    "J_long": 85.4700029683113,
+    "Short4": 65.938,
+    "Urban_Mean": 91.90000593662262
+  },
+  "flickr30k_full": {
+    "dataset": "Flickr30k-Full",
+    "protocol": "Flickr30k-Full-official-token-31783x158915",
+    "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+    "started_utc": "2026-10-12T21:24:18.308613+00:00",
+    "device": "cuda:0",
+    "physical_gpu": 0,
+    "checkpoint_sha256": "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62",
+    "status": "COMPLETED",
+    "state_sha256_before": "f7517ff8e4271d03499d3c3229cbbb98b16afa3ee82457b486e4409ffb69185c",
+    "text_encoding_seconds": 248.65276611596346,
+    "image_encoding_seconds": 76.28811122477055,
+    "scoring_seconds": 10.765944056212902,
+    "state_sha256_after": "f7517ff8e4271d03499d3c3229cbbb98b16afa3ee82457b486e4409ffb69185c",
+    "metrics": {
+      "I2T": {
+        "query_count": 31783,
+        "candidate_count": 158915,
+        "correct": {
+          "1": 17334,
+          "5": 24643,
+          "10": 26906
+        },
+        "recall_percent": {
+          "1": 54.538589812163735,
+          "5": 77.53516030582387,
+          "10": 84.65531888116288
+        },
+        "boundary_audit": {
+          "1": {
+            "exact_ties": 29,
+            "near_ties_le_1e-6": 31,
+            "minimum_margin": 0.0
+          },
+          "5": {
+            "exact_ties": 49,
+            "near_ties_le_1e-6": 57,
+            "minimum_margin": 0.0
+          },
+          "10": {
+            "exact_ties": 93,
+            "near_ties_le_1e-6": 111,
+            "minimum_margin": 0.0
+          }
+        }
+      },
+      "T2I": {
+        "query_count": 158915,
+        "candidate_count": 31783,
+        "correct": {
+          "1": 55676,
+          "5": 91246,
+          "10": 105818
+        },
+        "recall_percent": {
+          "1": 35.03508164742158,
+          "5": 57.41811660321556,
+          "10": 66.5877985086367
+        },
+        "boundary_audit": {
+          "1": {
+            "exact_ties": 36,
+            "near_ties_le_1e-6": 52,
+            "minimum_margin": 0.0
+          },
+          "5": {
+            "exact_ties": 19,
+            "near_ties_le_1e-6": 69,
+            "minimum_margin": 0.0
+          },
+          "10": {
+            "exact_ties": 7,
+            "near_ties_le_1e-6": 108,
+            "minimum_margin": 0.0
+          }
+        }
+      }
+    },
+    "identity": {
+      "checkpoint_sha256": "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62",
+      "manifest_sha256": "bfed72a299e4d8cbfef817c13c836cd5aa189e18dd2fd29b632f5808e8dd12bc",
+      "record_sha256": "5e80d06747e21ddf1c2aabd3fdf744d6b506a9473eb769d4d3567adb7e99e34c",
+      "image_ids_paths_sha256": "27ad197845327d1fcb58fc6e3f65bd17358e6e155c14694c41605c4765df54a3",
+      "image_content_sha256": "e4fef70dd3f73034970b1ec0e20d81a4b421d1871e350e3266e41b744d3ab159",
+      "tokenizer": "model.longclip.tokenize(truncate=True)",
+      "context_length": 248,
+      "preprocess": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    <function _convert_image_to_rgb>\n    ToTensor()\n    Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))\n)",
+      "precision": "FP32 model/input/features; autocast off; native cuDNN TF32 True; matmul TF32 False",
+      "backend_flags": {
+        "cudnn_allow_tf32": true,
+        "cuda_matmul_allow_tf32": false
+      },
+      "torch": "2.5.1+cu124",
+      "normalization": "gpu",
+      "encoder_sources": {
+        "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+        "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+        "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad",
+        "model/bpe_simple_vocab_16e6.txt.gz": "924691ac288e54409236115652ad4aa250f48203de50a9e4722a6ecd48d6804a",
+        "tools/eval_hyfl_native.py": "09c634564209c9b7e71545243e3537638095af94b6bd6eb5e28c21f1969f2cab",
+        "tools/retrieval_bounded.py": "be043a1fe98f79936c31062f37ce1406332475a5d17c5c15c5e57fc79918b088"
+      },
+      "image_batch": 64,
+      "text_batch": 64
+    },
+    "n_images": 31783,
+    "n_captions": 158915,
+    "image_batch": 64,
+    "text_batch": 64,
+    "query_chunk": 256,
+    "gallery_chunk": 4096,
+    "tie_rule": "exact ties: ascending manifest index; near ties: FP32 score without rounding",
+    "encoding_seconds": 338.60158161073923,
+    "returncode": 0,
+    "ended_utc": "2026-10-12T21:30:09.950264+00:00",
+    "elapsed_seconds": 351.6467334255576,
+    "cpu_peak_rss_bytes": 3234914304,
+    "peak_cuda_allocated": 1586150912,
+    "peak_cuda_reserved": 2610954240
+  },
+  "historical_abcd_e_comparison": {
+    "A.Full": {
+      "Score5": 73.774418,
+      "J_long3": 78.188029,
+      "J_long": 87.040003,
+      "Short4": 67.154,
+      "Urban_I2T": 94.1,
+      "Urban_T2I": 92.6
+    },
+    "B.Joint-Mask Only": {
+      "Score5": 72.849872,
+      "J_long3": 76.78912,
+      "J_long": 86.165001,
+      "Short4": 66.941,
+      "Urban_I2T": 93.3,
+      "Urban_T2I": 91.5
+    },
+    "C.Nested Alignment Only": {
+      "Score5": 73.232981,
+      "J_long3": 77.618968,
+      "J_long": 86.535003,
+      "Short4": 66.654,
+      "Urban_I2T": 93.5,
+      "Urban_T2I": 91.8
+    },
+    "D.Text-only SmartMask": {
+      "Score5": 73.749518,
+      "J_long3": 78.126531,
+      "J_long": 86.905003,
+      "Short4": 67.184,
+      "Urban_I2T": 94.0,
+      "Urban_T2I": 92.2
+    },
+    "E.Vanilla Long-Caption": {
+      "Score5": 71.95625564667732,
+      "J_long3": 75.96842607779554,
+      "J_long": 85.4700029683113,
+      "Short4": 65.938,
+      "Urban_Mean": 91.90000593662262,
+      "Urban_I2T": 92.70000457763672,
+      "Urban_T2I": 91.10000729560852
+    }
+  },
+  "evaluation_protocol": {
+    "native_only": true,
+    "datasets": [
+      "COCO-Val5K",
+      "Flickr30k-Test1K",
+      "DOCCI",
+      "Long-DCI",
+      "Urban-1k",
+      "Flickr30k-Full"
+    ],
+    "no_rerank_ensemble_tta": true,
+    "long_dci_pairs": 7602,
+    "public_benchmarks_exploratory": true
+  },
+  "data_provenance": {
+    "nfs_index": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/data_index",
+    "local_index": "/root/said_s02_stage500/data_index",
+    "nfs_records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "local_records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "training_image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "root_nfs_equivalence": "pre-audited metadata/offsets/records byte equality plus 950 image SHA checks"
+  },
+  "limitations": [
+    "A/B/C/D historical aggregate values are imported from their audited Clean V3 report; E was evaluated in this run.",
+    "Public five-set and Urban results have been repeatedly observed and are exploratory, not unbiased SOTA evidence.",
+    "One seed and Epoch3 stop under a Full4 scheduler do not establish full four-epoch behavior."
+  ]
+}
