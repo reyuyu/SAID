@@ -1,0 +1,189 @@
+{
+  "input_features": "analysis/modality_gap_docci_b16_v2_first_sentence/features.npz",
+  "input_features_sha256": "cadfe86bfdb83d4791f444da78749f0ae6fcc0d15becdebee61f15b306121008",
+  "input_provenance": "analysis/modality_gap_docci_b16_v2_first_sentence/provenance.json",
+  "input_provenance_sha256": "363e431264964cd1e51951c4a1ca874addc3f6c55d46625f66cf4f86b04ef0dd",
+  "sample_count": 1000,
+  "models": [
+    "longclip",
+    "ours_masked"
+  ],
+  "captions": [
+    "full",
+    "prefix50",
+    "first_sentence"
+  ],
+  "pca": {
+    "solver": "full",
+    "random_state": 0,
+    "input_normalization": "per-row L2 normalization in original 512-D space",
+    "shared_fit": "Long-CLIP and Ours Masked, all three captions, image/text; 12000 points",
+    "per_model_fit": "one fit for all three captions and image/text within each row model; 6000 points per model",
+    "sensitivity_projection": "PC2-PC3; no result hidden"
+  },
+  "explained_variance": {
+    "shared__pc1_pc2": {
+      "components": [
+        0,
+        1
+      ],
+      "explained_variance_ratio": [
+        0.23136830554007023,
+        0.09636183941364797,
+        0.03937517910950846
+      ],
+      "fit_point_count": 12000,
+      "fit_arrays": [
+        "longclip_full_image",
+        "longclip_full_text",
+        "longclip_prefix50_image",
+        "longclip_prefix50_text",
+        "longclip_first_sentence_image",
+        "longclip_first_sentence_text",
+        "ours_masked_full_image",
+        "ours_masked_full_text",
+        "ours_masked_prefix50_image",
+        "ours_masked_prefix50_text",
+        "ours_masked_first_sentence_image",
+        "ours_masked_first_sentence_text"
+      ]
+    },
+    "shared__pc2_pc3": {
+      "components": [
+        1,
+        2
+      ],
+      "explained_variance_ratio": [
+        0.23136830554007023,
+        0.09636183941364797,
+        0.03937517910950846
+      ],
+      "fit_point_count": 12000,
+      "fit_arrays": [
+        "longclip_full_image",
+        "longclip_full_text",
+        "longclip_prefix50_image",
+        "longclip_prefix50_text",
+        "longclip_first_sentence_image",
+        "longclip_first_sentence_text",
+        "ours_masked_full_image",
+        "ours_masked_full_text",
+        "ours_masked_prefix50_image",
+        "ours_masked_prefix50_text",
+        "ours_masked_first_sentence_image",
+        "ours_masked_first_sentence_text"
+      ]
+    },
+    "per_model_longclip__pc1_pc2": {
+      "components": [
+        0,
+        1
+      ],
+      "explained_variance_ratio": [
+        0.49080491837878654,
+        0.019858908806757777,
+        0.019518552351225196
+      ],
+      "fit_point_count": 6000,
+      "fit_arrays": [
+        "longclip_full_image",
+        "longclip_full_text",
+        "longclip_prefix50_image",
+        "longclip_prefix50_text",
+        "longclip_first_sentence_image",
+        "longclip_first_sentence_text"
+      ]
+    },
+    "per_model_longclip__pc2_pc3": {
+      "components": [
+        1,
+        2
+      ],
+      "explained_variance_ratio": [
+        0.49080491837878654,
+        0.019858908806757777,
+        0.019518552351225196
+      ],
+      "fit_point_count": 6000,
+      "fit_arrays": [
+        "longclip_full_image",
+        "longclip_full_text",
+        "longclip_prefix50_image",
+        "longclip_prefix50_text",
+        "longclip_first_sentence_image",
+        "longclip_first_sentence_text"
+      ]
+    },
+    "per_model_ours_masked__pc1_pc2": {
+      "components": [
+        0,
+        1
+      ],
+      "explained_variance_ratio": [
+        0.1612498805811753,
+        0.03410276236411763,
+        0.031454569992269636
+      ],
+      "fit_point_count": 6000,
+      "fit_arrays": [
+        "ours_masked_full_image",
+        "ours_masked_full_text",
+        "ours_masked_prefix50_image",
+        "ours_masked_prefix50_text",
+        "ours_masked_first_sentence_image",
+        "ours_masked_first_sentence_text"
+      ]
+    },
+    "per_model_ours_masked__pc2_pc3": {
+      "components": [
+        1,
+        2
+      ],
+      "explained_variance_ratio": [
+        0.1612498805811753,
+        0.03410276236411763,
+        0.031454569992269636
+      ],
+      "fit_point_count": 6000,
+      "fit_arrays": [
+        "ours_masked_full_image",
+        "ours_masked_full_text",
+        "ours_masked_prefix50_image",
+        "ours_masked_prefix50_text",
+        "ours_masked_first_sentence_image",
+        "ours_masked_first_sentence_text"
+      ]
+    }
+  },
+  "plot": {
+    "scatter_size": 3,
+    "scatter_alpha": 0.12,
+    "kde": "scipy gaussian_kde over all 1000 image or text points per panel",
+    "colors": {
+      "image": "#2166ac",
+      "text": "#d95f02"
+    },
+    "background": "white",
+    "centroids": "mean of all projected points; high-dimensional gap label uses original 512-D normalized features"
+  },
+  "software": {
+    "python": "3.13.12",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "outputs": [
+    "ARTIFACT_SHA256SUMS.txt",
+    "PCA_PARAMETERS_AND_VARIANCE.json",
+    "PCA_VISUALIZATION_REPORT.md",
+    "pca_analysis.py",
+    "pca_per_model_main_2x3.pdf",
+    "pca_per_model_main_2x3.png",
+    "pca_per_model_pc2_pc3_2x3.pdf",
+    "pca_per_model_pc2_pc3_2x3.png",
+    "pca_quantitative_metrics.csv",
+    "pca_shared_main_2x3.pdf",
+    "pca_shared_main_2x3.png",
+    "pca_shared_pc2_pc3_2x3.pdf",
+    "pca_shared_pc2_pc3_2x3.png"
+  ]
+}
