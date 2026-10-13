@@ -1,0 +1,99 @@
+{
+  "umap": {
+    "n_neighbors": 30,
+    "min_dist": 0.15,
+    "metric": "cosine",
+    "random_state": 0,
+    "transform_seed": 0,
+    "n_jobs": 1,
+    "fit_scope": "one fit per model over image/text features for Full, 50% Prefix, First Sentence"
+  },
+  "bootstrap": {
+    "reps": 2000,
+    "seed": 0,
+    "ci": "percentile 2.5/97.5",
+    "unit": "paired sample index"
+  },
+  "sample_count": 1000,
+  "paired_link_count": 50,
+  "paired_sample_indices": [
+    2,
+    5,
+    8,
+    15,
+    21,
+    28,
+    32,
+    39,
+    72,
+    79,
+    87,
+    123,
+    168,
+    172,
+    257,
+    269,
+    293,
+    296,
+    384,
+    399,
+    418,
+    475,
+    484,
+    487,
+    524,
+    526,
+    533,
+    541,
+    542,
+    584,
+    606,
+    611,
+    615,
+    624,
+    645,
+    652,
+    667,
+    704,
+    715,
+    748,
+    780,
+    793,
+    808,
+    830,
+    836,
+    849,
+    878,
+    907,
+    936,
+    998
+  ],
+  "feature_source": {
+    "path": "analysis/modality_gap_docci_b16_v2_first_sentence/features.npz",
+    "sha256": "cadfe86bfdb83d4791f444da78749f0ae6fcc0d15becdebee61f15b306121008",
+    "provenance_sha256": "363e431264964cd1e51951c4a1ca874addc3f6c55d46625f66cf4f86b04ef0dd",
+    "samples_sha256": "e015b1fe30e03e7b4fcf1cbc26b3f8004b75fc0c232d21e010ff0c8c89bfa30b"
+  },
+  "mask_source": {
+    "path": "/opt/data/private/lklk/worktrees/modality-gap-docci-b16-diagnostic-v1/analysis/modality_gap_docci_b16_diagnostic_v1/mask_arrays.npz",
+    "sha256": "86b593b893780399f915cc84493c9c2a9071cf6dffc417e73e023e08312ebdb7",
+    "identity": "mask means match v2 provenance exactly for all three caption settings"
+  },
+  "feature_dim": 512,
+  "models": [
+    "longclip",
+    "ours_masked",
+    "ours_native"
+  ],
+  "captions": [
+    "full",
+    "prefix50",
+    "first_sentence"
+  ],
+  "software": {
+    "python": "3.13.12",
+    "numpy": "2.5.4",
+    "umap_learn": "0.5.12",
+    "matplotlib": "3.11.2"
+  }
+}
