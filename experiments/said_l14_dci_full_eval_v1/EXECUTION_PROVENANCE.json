@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "command": "CUDA_VISIBLE_DEVICES=0 PYTHONPATH=<worktree>:<SAID> <venv>/python recovery/eval_l14_native.py --dataset manifest --model ViT-L/14 --batch-size 64",
+  "gpu_binding": "GPU0",
+  "gpu_before_after": "GPU0 was idle before; released after evaluation; GPUs1-3 remained idle",
+  "batch_size": 64,
+  "n_images": 7805,
+  "n_captions": 7805,
+  "elapsed_seconds": 921.9837188720703,
+  "checkpoint_sha256": "4a1e5ed69b7aa728d7189518b9f285052e8293290963e079d886ddcab5fe819e",
+  "manifest_sha256": "14530fb8bf3c7b4a75bb451412d4562c548f9ca1bdbe1fdbf39d6ee30fb4de24",
+  "other_experiment": "Random Caption process remained CPU-only and was not modified",
+  "oom": false,
+  "training_started": false
+}
