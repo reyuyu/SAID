@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-10-13T06:28:18.185494+00:00",
+  "step": 3651,
+  "status": "PASS_ALL_FIVE_STANDARD_AND_FULL",
+  "units": "percent",
+  "protocols": {
+    "standard_five": {
+      "datasets": [
+        "COCO-Val5K",
+        "Flickr30k-Test1K",
+        "DOCCI",
+        "Long-DCI",
+        "Urban-1k"
+      ],
+      "retrieval": "native full-image/full-caption embeddings; L2 normalization and inner-product retrieval; no mask inference/rerank/ensemble/TTA",
+      "accepted_bare_student_sha_required": true
+    },
+    "flickr30k_full": {
+      "name": "Flickr30k-Full-official-token-31783x158915",
+      "n_images": 31783,
+      "n_captions": 158915,
+      "manifest_sha256": "bfed72a299e4d8cbfef817c13c836cd5aa189e18dd2fd29b632f5808e8dd12bc",
+      "record_sha256": "5e80d06747e21ddf1c2aabd3fdf744d6b506a9473eb769d4d3567adb7e99e34c",
+      "image_ids_paths_sha256": "27ad197845327d1fcb58fc6e3f65bd17358e6e155c14694c41605c4765df54a3",
+      "image_content_sha256": "e4fef70dd3f73034970b1ec0e20d81a4b421d1871e350e3266e41b744d3ab159",
+      "precision": "FP32 model/input/features; autocast off; cuDNN TF32 true; matmul TF32 false",
+      "tie_rule": "exact ties ascending manifest index; near ties FP32 score without rounding"
+    }
+  },
+  "evaluator_source_sha256": {
+    "standard_evaluator": {
+      "tools/eval_nest_native.py": "a69f4fc55ddfaa49f402aca32cb91a624b6ae3f6d6af25ce99ee9a910febcee1",
+      "experiments/s0_dualmask_full_v01/evidence/step2000/new_evaluations/eval_extended_real.py": "5942fe84cb1befe68019d6344d7ae9fede8d453d34c9283cfafe1796ee660319"
+    },
+    "flickr_full_encoder": {
+      "model/longclip.py": "cb34aa8b672fd4999e03db9d3b7293a8133aa8b55f0ad612db75f422b720ffb0",
+      "model/model_longclip.py": "4ff824f026ed75d4070ef4889130ac14466f72b86bc3eb8575ee7ea8388ff4e9",
+      "model/simple_tokenizer.py": "d1b09f10ed3d1e2c343619cb98cbfacb92363dd8607526a43aa7fe2d60d15bad"
+    }
+  },
+  "models": {
+    "A": {
+      "label": "A.Full",
+      "audit_status": "PASS",
+      "step": 3651,
+      "bare_student": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/student_step3651.pt",
+        "sha256": "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44"
+      },
+      "training_checkpoint": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-full-v1/step4868/step003651.pt",
+        "sha256": "83a47256442547a24b91f2be18e61c33d28fe252eee0106e79e104a57c722e07"
+      },
+      "standard_five_results": {
+        "source_root": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651",
+        "files": {
+          "COCO": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/coco_native.json",
+          "Flickr30k-Test1K": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/flickr_test1k/flickr_test1k.json",
+          "DOCCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/docci/docci.json",
+          "Long-DCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/long_dci/long_dci.json",
+          "Urban-1k": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/urban_native.json"
+        },
+        "file_sha256": {
+          "COCO": "4620e1992d50e513f0031f94ed178c58c7f40561e9331fc66b48a71e9d0bac06",
+          "Flickr30k-Test1K": "e9a528c8f67b2f665933ca1fb98509276e1e259d62644094fccfa2b33e3f8ec3",
+          "DOCCI": "4f9d64bd6d3a1a1069dc12a9f8ab356b75e89561a6b897649be96b7d288f752b",
+          "Long-DCI": "14aa48998d84e64b8c2e587e3e84a595cc8a239ddeb81683ce293fefc6685809",
+          "Urban-1k": "1cf9084a96923dec3f35df381ed2aa0c71761feeb0a64533401bf22868b00f26"
+        },
+        "checkpoint_sha256_in_results": [
+          "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44"
+        ]
+      },
+      "flickr30k_full_result": {
+        "source": "git:origin/experiment/hns-v1-step3651-flickrfull-eval-v1@34a8c64:experiments/nest_clip_v1/hns_v1_step3651_flickrfull_v1/FLICKR_FULL_RESULTS.json",
+        "file_sha256": "32b98bb366e77e9838447a04b8f39ec892ddb58ddc40e3b3fb1e17219aae1122",
+        "checkpoint_sha256": "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44",
+        "protocol": "Flickr30k-Full-official-token-31783x158915",
+        "status": "COMPLETED"
+      },
+      "identity_match": true
+    },
+    "B": {
+      "label": "B.Joint-Mask Only",
+      "audit_status": "PASS",
+      "step": 3651,
+      "bare_student": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/flickr_full_bcde/B/student_step3651.pt",
+        "sha256": "68716f0d106eaeca97b854990c1c526b46b9f01c08d1a7c84e6e34e6d2080d2c"
+      },
+      "training_checkpoint": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/formal3651-recovery-v1/step003651.pt",
+        "sha256": "8439637dc7a41451757b91e6b98b2e65553f59bf69ec60908b6af0a6febf9d59"
+      },
+      "standard_five_results": {
+        "source_root": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/eval3651-recovered-v1",
+        "files": {
+          "COCO": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/eval3651-recovered-v1/coco_native.json",
+          "Flickr30k-Test1K": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/eval3651-recovered-v1/flickr_test1k/flickr_test1k.json",
+          "DOCCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/eval3651-recovered-v1/docci/docci.json",
+          "Long-DCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/eval3651-recovered-v1/long_dci/long_dci.json",
+          "Urban-1k": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/B/eval3651-recovered-v1/urban_native.json"
+        },
+        "file_sha256": {
+          "COCO": "d69b1dc6d4af2183dcead35443c7d29b2b9740746e3866c8389474c78ab1b6f0",
+          "Flickr30k-Test1K": "30598c09a791dea1af06f6e846279957c814cc63b4ae98c0fe90ad978eafadff",
+          "DOCCI": "e34a76b45c6e0abddfe9c3e85656baf1e90b1443e7c0fdca5c9cf1b2cf0b6229",
+          "Long-DCI": "3d5734a8e5a6f861ac13ac7419a49ca6521e6bc0749ec6cc2f891ea0e7f26ecc",
+          "Urban-1k": "9847728c2bd5f558ec3669aa77f13c9090deef7547c9ac89a83f9fbdaab4bdaa"
+        },
+        "checkpoint_sha256_in_results": [
+          "68716f0d106eaeca97b854990c1c526b46b9f01c08d1a7c84e6e34e6d2080d2c"
+        ],
+        "evaluation_note": "Recovered read-only evaluation after confirming the original Clean V3 B eval3651 directory contained only an empty eval.log; accepted outputs are in the independent eval3651-recovered-v1 directory.",
+        "failed_attempts_preserved": true
+      },
+      "flickr30k_full_result": {
+        "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/flickr_full_bcde/B/FLICKR_FULL_RESULTS_R2.json",
+        "file_sha256": "0274ccb1b960ae071d119b8b86e64adc6ff380d53194b7a640cc4a53467f0529",
+        "checkpoint_sha256": "68716f0d106eaeca97b854990c1c526b46b9f01c08d1a7c84e6e34e6d2080d2c",
+        "protocol": "Flickr30k-Full-official-token-31783x158915",
+        "status": "COMPLETED"
+      },
+      "identity_match": true
+    },
+    "C": {
+      "label": "C.Nested Alignment Only",
+      "audit_status": "PASS",
+      "step": 3651,
+      "bare_student": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/formal3651-recovery-v1/student_step3651.pt",
+        "sha256": "e3a859f173ec5912f948041a200ee90bb43bdeff0097dddc0118700f2a63f742"
+      },
+      "training_checkpoint": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/formal3651-recovery-v1/step003651.pt",
+        "sha256": "4159fc12f92d75991dc4c654be8444fd03b09583862a45c253f0811e985fe935"
+      },
+      "standard_five_results": {
+        "source_root": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/eval3651",
+        "files": {
+          "COCO": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/eval3651/coco_native.json",
+          "Flickr30k-Test1K": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/eval3651/flickr_test1k/flickr_test1k.json",
+          "DOCCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/eval3651/docci/docci.json",
+          "Long-DCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/eval3651/long_dci/long_dci.json",
+          "Urban-1k": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/C/eval3651/urban_native.json"
+        },
+        "file_sha256": {
+          "COCO": "1e7f431af64b658a1dc6ec5b15e766abdd2ef91a41493685087a6fb301f754ff",
+          "Flickr30k-Test1K": "49160775398331058a1379b60283d3c0ffe357614b30e738f99ab9bbe8703607",
+          "DOCCI": "6d29b0ef4ecc5e75e40bfd7714c52a55ac31b9f5eec213193f7429ebcf48ac51",
+          "Long-DCI": "f3bce048d4200227af5f246066169dbf3e140dcd356dbc937fdaf558600a72c2",
+          "Urban-1k": "43571976d990446db8182e9d6f59f89c639dba43895632f05cce17a8125b8ac3"
+        },
+        "checkpoint_sha256_in_results": [
+          "e3a859f173ec5912f948041a200ee90bb43bdeff0097dddc0118700f2a63f742"
+        ]
+      },
+      "flickr30k_full_result": {
+        "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/flickr_full_bcde/C/FLICKR_FULL_RESULTS_R2.json",
+        "file_sha256": "04daf8f25c139c8da28c6c65a526cd973127adb5d42b96dac7e2f6f908c4723f",
+        "checkpoint_sha256": "e3a859f173ec5912f948041a200ee90bb43bdeff0097dddc0118700f2a63f742",
+        "protocol": "Flickr30k-Full-official-token-31783x158915",
+        "status": "COMPLETED"
+      },
+      "identity_match": true
+    },
+    "D": {
+      "label": "D.Text-only SmartMask",
+      "audit_status": "PASS",
+      "step": 3651,
+      "bare_student": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/student_step3651.pt",
+        "sha256": "cdaf413f810898e2b71da2255f5a189bfb128a7f441524fbc2b942c2b4949e91"
+      },
+      "training_checkpoint": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/formal3651-root-resume-v3/step003651.pt",
+        "sha256": "1947e6ff399047762df9bd5bf2a760d9b8080de40df4891427bbcdfd24788f01"
+      },
+      "standard_five_results": {
+        "source_root": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/native_five",
+        "files": {
+          "COCO": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/native_five/coco_native.json",
+          "Flickr30k-Test1K": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/native_five/flickr_test1k/flickr_test1k.json",
+          "DOCCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/native_five/docci/docci.json",
+          "Long-DCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/native_five/long_dci/long_dci.json",
+          "Urban-1k": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-b16-component-ablation-clean-v3/D/eval3651-root/native_five/urban_native.json"
+        },
+        "file_sha256": {
+          "COCO": "4388d3c358275c2daef969fb832353a6f5e42335c45a79c9d54901cb1638c195",
+          "Flickr30k-Test1K": "c468ba97f0a38340053786ac961665993d76243c46f821833948161248fddffc",
+          "DOCCI": "531694017cf7b4b24548a639748b700d8fb9a1f19bb836d0f62d45ee33595c54",
+          "Long-DCI": "a5cb818c9bd74cb1f4aa4d8f128fe70fc080c515fec44a6c57d51012ae332980",
+          "Urban-1k": "00f3b5ffb863d864dcf8eb78eb204e4266999a6b63db49bea90fb3fd9256536d"
+        },
+        "checkpoint_sha256_in_results": [
+          "cdaf413f810898e2b71da2255f5a189bfb128a7f441524fbc2b942c2b4949e91"
+        ]
+      },
+      "flickr30k_full_result": {
+        "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/flickr_full_bcde/D/FLICKR_FULL_RESULTS_R2.json",
+        "file_sha256": "92763ac8c7b2bd8e2e4d9770f95974b5147e0394a2f9c5275329159bd5adbc26",
+        "checkpoint_sha256": "cdaf413f810898e2b71da2255f5a189bfb128a7f441524fbc2b942c2b4949e91",
+        "protocol": "Flickr30k-Full-official-token-31783x158915",
+        "status": "COMPLETED"
+      },
+      "identity_match": true
+    },
+    "E": {
+      "label": "E.Vanilla Long-Caption",
+      "audit_status": "PASS",
+      "step": 3651,
+      "bare_student": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/student_step3651.pt",
+        "sha256": "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62"
+      },
+      "training_checkpoint": {
+        "path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/formal3651/step003651.pt",
+        "sha256": "1b53391b2f9fef0a9ba68cab42d539f56d7647902a5378a534f850bf96d89cd6"
+      },
+      "standard_five_results": {
+        "source_root": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/native_five",
+        "files": {
+          "COCO": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/native_five/coco_native.json",
+          "Flickr30k-Test1K": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/native_five/flickr_test1k/flickr_test1k.json",
+          "DOCCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/native_five/docci/docci.json",
+          "Long-DCI": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/native_five/long_dci/long_dci.json",
+          "Urban-1k": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/eval3651/native_five/urban_native.json"
+        },
+        "file_sha256": {
+          "COCO": "2678310fe10ba74a550b2112101fa05c2b210673f2d7dec23f146c45dea22f27",
+          "Flickr30k-Test1K": "ec0f7a0d42b611fbbd9fccec4ef24cc4d0acb1634685a33ac00587a08e000247",
+          "DOCCI": "b5ef5109cf3709e622c2731c4f3c09275c9bfe34a20cd30d0216f229b372590e",
+          "Long-DCI": "7e8eaf42ea99ff14c369284a195c4c6c6efb158b30b617dfb9ad683d6cb91cdd",
+          "Urban-1k": "1fb5d0946773d1649dac2b382dcb23b2f8a3a7d8af985be15ea1654fe13ba1a0"
+        },
+        "checkpoint_sha256_in_results": [
+          "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62"
+        ]
+      },
+      "flickr30k_full_result": {
+        "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/said-e-vanilla-longcaption3651-v1/flickr_full_bcde/E/FLICKR_FULL_RESULTS_R2.json",
+        "file_sha256": "b0ccc37adf8b379bfbe07ee131ced4feab827572077e1ade4ce4302521a75d0e",
+        "checkpoint_sha256": "709b60a5c893229226f8eaa7b7f706f5b0360d632fb64bf991529d67b5d17a62",
+        "protocol": "Flickr30k-Full-official-token-31783x158915",
+        "status": "COMPLETED"
+      },
+      "identity_match": true
+    }
+  }
+}
