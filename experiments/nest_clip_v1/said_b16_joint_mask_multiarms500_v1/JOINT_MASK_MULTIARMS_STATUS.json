@@ -1,0 +1,44 @@
+{
+  "experiment": "said-b16-joint-mask-multiarms500-v1",
+  "status": "PAUSED_AFTER_TOP2_1217",
+  "source_commit": "ae2520d",
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "training_data_index": {
+    "path": "/root/said_s02_stage500/data_index",
+    "records_sha256": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8",
+    "offsets_sha256": "920f55c30969c32dcce829ed60449ec017eac81d95c3fb7b4a946b6353a30218",
+    "records": 1245901,
+    "image_root": "/root/said_s02_stage500/ShareGPT4V",
+    "identity_verified_against_nfs": true
+  },
+  "arms_500": {
+    "A-Matched": {"score5": 71.17374002217481, "j_long3": 75.0095667036247, "j_long": 84.03500251531601, "short4": 65.42, "urban_i2t": 91.30000472068787, "urban_t2i": 89.40000534057617, "checkpoint_sha256": "4441c8dc34a18bae3f1dcb39c7519bbcd2898c35df1382d362a8fc4c1a8a361a", "bare_sha256": "ffe959330145ae40054405ec049b9edc2067e5c915f127fe136e247301813545"},
+    "J1": {"score5": 71.10593849626058, "j_long3": 74.96923082710096, "j_long": 84.06000251531601, "short4": 65.31099999999999, "urban_i2t": 91.2000060081482, "urban_t2i": 89.50000405311584, "checkpoint_sha256": "63fd6267c80a42ea41e0ec5fde6e8ef9e36b300aee25fffe49507d2e5fbc3e53", "bare_sha256": "19921504114f7e73fbccd2849cd019271b881265dc88c039e8831791bcc35c0e"},
+    "J2": {"score5": 70.8690281996259, "j_long3": 74.54838033270984, "j_long": 83.58000275373459, "short4": 65.35, "urban_i2t": 90.40000438690186, "urban_t2i": 89.3000066280365, "checkpoint_sha256": "0324237647bcdb26dae32b85d1ac206b100e2721de2d4a7374bc5f679b323eb1", "bare_sha256": "8e195a05ef341bc18846a29fbc41b349fb8640d100f0be28be75305c2cc2a4f8"},
+    "J3": {"score5": 70.88979519105644, "j_long3": 74.56365865176072, "j_long": 83.69500126361848, "short4": 65.379, "urban_i2t": 90.50000309944153, "urban_t2i": 89.20000195503235, "checkpoint_sha256": "346a0b866bede44d82588cf0805a22978d9d67072983cb77635bdd9cbdaa58c8", "bare_sha256": "b2b978bb9cf89041abda4dd44523235d70c8c7eba383155a54d704449ae2933e"},
+    "J4": {"score5": 71.02164236498905, "j_long3": 74.7320706083151, "j_long": 83.89500146627427, "short4": 65.456, "urban_i2t": 90.40000438690186, "urban_t2i": 89.70000147819519, "checkpoint_sha256": "0063340eb7216d98c3e529cbd86c0cef26de72684542b9bfa4825d4eec74fe84", "bare_sha256": "38cda8864f1fff88cf04cd097743741c159de06e90c640dccd7708ddfb8c3ccd"}
+  },
+  "arms_1217": {
+    "A-Matched": {"score5": 72.8292674138102, "j_long3": 76.98411235635034, "j_long": 85.90500305175782, "short4": 66.597, "urban_i2t": 93.10000538825989, "urban_t2i": 91.60000681877136, "checkpoint_sha256": "e301dd89a942a11a4156eb9ef52d0f8903938bf289265caf941523d01c8f8512", "bare_sha256": "f6cf6812a6a5eea537d9b8c9171003ac414f2a590edb7963b448ba8f4fff6d36"},
+    "J1": {"score5": 72.82464924771264, "j_long3": 76.99308207952107, "j_long": 86.05000196695329, "short4": 66.572, "urban_i2t": 93.7000036239624, "urban_t2i": 91.80000424385071, "checkpoint_sha256": "1c8b6771bb7adafd294f3486378d93fc89c6b356ab4d81c74b0aaf2102d5cdea", "bare_sha256": "da660200b488cae6087703602c9f1f2244c8cb3e3109e4b59de6f515bfaec1f9"}
+  },
+  "selection": {
+    "top2_at_500": ["A-Matched", "J1"],
+    "ranking_rule": "Score5 descending; J_long3 and J_long are tie-breakers",
+    "best_at_1217": "A-Matched",
+    "a_minus_j1_score5_pp": 0.0046181660975583,
+    "j1_is_candidate": true,
+    "continued_to_3651": false
+  },
+  "stopped_run": {
+    "arm": "A-Matched",
+    "target": 3651,
+    "parent_step": 1217,
+    "observed_step_before_stop": 1325,
+    "checkpoint_persisted": false,
+    "reason": "user_requested_pause_before_github_sync",
+    "used_as_result": false
+  },
+  "evaluation_protocol": "native CLIP image/text embeddings; five datasets; no reranking, TTA, ensemble, or inference mask",
+  "gpu_state_after_stop": "idle"
+}
