@@ -79,6 +79,15 @@ class FusionBranch(nn.Module):
         that only replace this logits generator; sigmoid, Hard-ST, CE,
         sparsity, HNS and sampling remain unchanged downstream.
         """
+        if self.joint_mask_mode == 'balanced_rmsnorm':
+            # BalancedStack-RMSNorm: normalize each attention-pooled modality
+            # without affine parameters before applying the historical gate.
+            # Keep the gate and all downstream mask/loss math unchanged.
+            def rmsnorm(value):
+                value = value.float()
+                return value / value.square().mean(dim=-1, keepdim=True).add(1e-6).sqrt()
+            visual = rmsnorm(visual)
+            text = rmsnorm(text)
         if self.joint_mask_mode == 'agreement':
             def rms_tanh(value):
                 value = value.float()
@@ -339,7 +348,7 @@ class NestedFusionMask(nn.Module):
         self.clip, self.arm, self.condition_mode = clip, arm, condition_mode
         self.fusion, self.visual = fusion, visual
         self.joint_mask_mode = str(joint_mask_mode)
-        assert self.joint_mask_mode in ('matched', 'J1', 'J2', 'J3', 'J4', 'agreement')
+        assert self.joint_mask_mode in ('matched', 'J1', 'J2', 'J3', 'J4', 'agreement', 'balanced_rmsnorm')
         self.image_chunk, self.text_chunk = int(image_chunk), int(text_chunk)
         self.checkpoint_pair_blocks = bool(checkpoint_pair_blocks)
         self.checkpoint_encoders = bool(checkpoint_encoders)

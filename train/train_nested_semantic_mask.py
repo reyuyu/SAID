@@ -350,7 +350,7 @@ def main():
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch', 'native')
-    assert cfg['joint_mask_mode'] in ('matched', 'J1', 'J2', 'J3', 'J4', 'agreement')
+    assert cfg['joint_mask_mode'] in ('matched', 'J1', 'J2', 'J3', 'J4', 'agreement', 'balanced_rmsnorm')
     assert cfg['full_native_mix'] == 0
     assert int(cfg['checkpoint_interval']) > 0
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates == 35 if args.run_type == 'probe' else args.max_updates > 0)
