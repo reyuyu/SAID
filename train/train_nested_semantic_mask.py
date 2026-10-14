@@ -487,7 +487,7 @@ def main():
             crossscore_key=state_digest(branch.key.state_dict()) if hasattr(branch, 'key') else None,
             crossscore_readout=state_digest(branch.readout.state_dict()) if hasattr(branch, 'readout') else None,
             channel_gate=state_digest(branch.gate.state_dict()) if hasattr(branch, 'gate') else None,
-            agreement_theta=state_digest(branch.agreement_theta.detach().view(1, -1))
+            agreement_theta=state_digest({'agreement_theta': branch.agreement_theta.detach().view(1, -1)})
             if hasattr(branch, 'agreement_theta') else None)
     completed = 0
     if args.resume:
