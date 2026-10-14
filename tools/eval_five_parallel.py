@@ -1,6 +1,6 @@
 """Schedule unchanged native evaluators; no model loading or metric arithmetic."""
 import argparse
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import ExitStack
 from dataclasses import dataclass
 import datetime as dt
@@ -17,7 +17,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT/'local_assets'
-ORDER = ('coco', 'urban', 'flickr', 'docci', 'long_dci')
+ORDER = ('coco', 'flickr', 'docci', 'long_dci', 'urban')
 EXTENDED = 'experiments.s0_dualmask_full_v01.evidence.step2000.new_evaluations.eval_extended_real'
 EVALUATOR_SOURCES = (
     'tools/eval_nest_native.py', 'tools/urban1k_retrieval.py', 'eval/retrieval/coco_retrieval.py',
@@ -54,7 +54,9 @@ class Job:
 def gpu_mapping(gpus=(0,1,2,3)):
     if len(gpus)!=4 or len(set(gpus))!=4 or any(not isinstance(g,int) or g<0 for g in gpus):
         raise ValueError('Exactly four distinct nonnegative GPU indices required')
-    return dict(coco=gpus[0],docci=gpus[1],long_dci=gpus[2],flickr=gpus[3],urban=gpus[3])
+    # The first four jobs are fixed to the requested lanes.  Urban is assigned
+    # dynamically to whichever of those four GPUs becomes free first.
+    return dict(coco=gpus[0],flickr=gpus[1],docci=gpus[2],long_dci=gpus[3],urban=gpus[0])
 
 
 def build_jobs(checkpoint, output_dir, *, gpus=(0,1,2,3), assets=ASSETS, python=sys.executable, serial=False):
@@ -207,10 +209,32 @@ class Scheduler:
             self.run_record=dict(provenance,status='RUNNING',mode='serial' if self.serial else 'parallel',
                 started_utc=utc(),scheduler_started_monotonic=time.monotonic(),metrics_implemented_here=False)
             self.persist()
-            lanes=[list(ORDER)] if self.serial else [['coco'],['docci'],['long_dci'],['flickr','urban']]
-            with ThreadPoolExecutor(max_workers=len(lanes)) as pool:
-                futures=[pool.submit(self.lane,lane) for lane in lanes]
-                for future in futures:future.result()
+            if self.serial:
+                with ThreadPoolExecutor(max_workers=1) as pool:
+                    pool.submit(self.lane, list(ORDER)).result()
+            else:
+                # Start COCO/Flickr/DOCCI/Long-DCI simultaneously.  As soon
+                # as any one exits, bind Urban to that now-free GPU and start
+                # it without waiting for the other three jobs.
+                first = ('coco', 'flickr', 'docci', 'long_dci')
+                with ThreadPoolExecutor(max_workers=5) as pool:
+                    futures = {pool.submit(self.job, self.jobs[name]): name for name in first}
+                    urban_submitted = False
+                    for future in as_completed(futures):
+                        finished = futures[future]
+                        if not urban_submitted:
+                            urban_gpu = self.jobs[finished].gpu
+                            template = self.jobs['urban']
+                            command = tuple(
+                                f'cuda:{urban_gpu}' if token.startswith('cuda:') else token
+                                for token in template.command
+                            )
+                            self.jobs['urban'] = Job('urban', urban_gpu, command,
+                                                     template.output, template.log)
+                            futures[pool.submit(self.job, self.jobs['urban'])] = 'urban'
+                            urban_submitted = True
+                    for future in futures:
+                        future.result()
             failures={n:r for n,r in self.records.items() if r['status']!='COMPLETED'}
             if self.stop.is_set():failures['scheduler']=dict(status='CANCELLED')
             started=[r['started_monotonic'] for r in self.records.values() if 'started_monotonic' in r]
