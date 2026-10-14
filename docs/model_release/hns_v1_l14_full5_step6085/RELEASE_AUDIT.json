@@ -1,0 +1,66 @@
+{
+  "release_status": "verified",
+  "repo": "hongchenyang/SAID-HNS-v1-ViT-L14-Full5-Step6085",
+  "visibility": "private",
+  "modelscope_revision": "master",
+  "remote_visibility_verified": true,
+  "training_branch": "experiment/hns-v1-l14-full5epoch6085-fromscratch-v1",
+  "training_commit": "8a0b6e8894c166d40bced43625032fa7bbca61fe",
+  "step": 6085,
+  "scheduler_horizon": 6085,
+  "backbone": "ViT-L/14",
+  "context_length": 248,
+  "embedding_dimension": 768,
+  "files": {
+    "inference/student_step6085.pt": {
+      "sha256": "f360465fc02a5465d312c672d5179dcd8991d9c98ffd14325831b9150a8f7da1",
+      "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-v1-l14-full5epoch6085-fromscratch-v1/evaluation_retry/bare_student_step006085.pt"
+    },
+    "training/hns_v1_l14_step6085_full.pt": {
+      "sha256": "8a036746e44a789e69d40987cf6852ee9603b6881e30ef30ab88c8463bcec538",
+      "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-v1-l14-full5epoch6085-fromscratch-v1/formal6085_retry/step006085.pt"
+    },
+    "training/common_step000000.pt": {
+      "sha256": "8fa8f7819f41f01635b95c0c7aed3c2a51f8dd58317666cacd74d3bc162fc912",
+      "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/hns-v1-l14-pure3epoch3651-v1/shared/step000000.pt"
+    }
+  },
+  "native_load": {
+    "strict_state_dict": true,
+    "image_embedding_dimension": 768,
+    "text_embedding_dimension": 768,
+    "context_length": 248,
+    "inference_protocol": "native CLIP image/text encoder, FP32 L2 normalization, inner product",
+    "cpu_smoke": {
+      "passed": true,
+      "embedding_dimension": 768,
+      "context_length": 248,
+      "example_scores": [0.09995672, 0.05526413]
+    }
+  },
+  "remote_download_verification": {
+    "passed": true,
+    "fresh_directory": "/opt/data/private/lklk/modelscope_verify_l14_6085",
+    "files": {
+      "inference/student_step6085.pt": {
+        "size": 1740282600,
+        "sha256": "f360465fc02a5465d312c672d5179dcd8991d9c98ffd14325831b9150a8f7da1"
+      },
+      "training/hns_v1_l14_step6085_full.pt": {
+        "size": 5328147202,
+        "sha256": "8a036746e44a789e69d40987cf6852ee9603b6881e30ef30ab88c8463bcec538"
+      },
+      "training/common_step000000.pt": {
+        "size": 1740312396,
+        "sha256": "8fa8f7819f41f01635b95c0c7aed3c2a51f8dd58317666cacd74d3bc162fc912"
+      }
+    }
+  },
+  "evaluation": {
+    "score5_percent": 77.96831035580755,
+    "urban_i2t_r1_percent": 95.30000686645508,
+    "urban_t2i_r1_percent": 95.70000171661377,
+    "flickr_full_i2t_r1_percent": 64.70125538810056,
+    "flickr_full_t2i_r1_percent": 44.4092753987981
+  }
+}
