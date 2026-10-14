@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "purpose": "Traceability for the CVPR implementation details; source references are read-only and keyed by commit.",
+  "formal_experiments": {
+    "b16_main": {
+      "branch": "experiment/nested-d3-hns-full-v1",
+      "commit": "45468e1",
+      "paper_node": "step3651",
+      "config": "experiments/nest_clip_v1/nested_d3_hns_full_v1/config.json",
+      "results": "experiments/nest_clip_v1/nested_d3_hns_full_v1/FULL_RESULTS.json",
+      "report": "experiments/nest_clip_v1/nested_d3_hns_full_v1/FULL_RESULTS.md",
+      "scheduler_horizon": 4868
+    },
+    "l14_main": {
+      "branch": "experiment/hns-v1-l14-full5epoch6085-fromscratch-v1",
+      "commit": "8a0b6e8",
+      "paper_node": "step6085",
+      "config": "configs/hns_v1_l14_full5epoch6085_v1.json",
+      "report": "experiments/nest_clip_v1/hns_v1_l14_full5epoch6085_fromscratch_v1/FINAL_REPORT.md",
+      "scheduler_horizon": 6085
+    },
+    "abcde": {
+      "branch": "archive/said-abcde-results-v1",
+      "commit": "4ef949c",
+      "paper_node": "step3651",
+      "comparison": "experiments/nest_clip_v1/said_abcde_results_v1/ABCDE_COMPARISON.md",
+      "source_audit": "experiments/nest_clip_v1/said_abcde_results_v1/ABCDE_SOURCE_AUDIT.json",
+      "scheduler_horizon": 4868
+    }
+  },
+  "claims": [
+    {
+      "id": "architecture.clip_initialization",
+      "claim": "OpenAI CLIP initialization is loaded through longclip.load_from_clip.",
+      "sources": [
+        {"commit": "45468e1", "path": "model/model_longclip.py", "location": "model construction and load_from_clip call"},
+        {"commit": "8a0b6e8", "path": "model/model_longclip.py", "location": "same constructor on L/14 branch"}
+      ]
+    },
+    {
+      "id": "architecture.input_and_context",
+      "claim": "CLIP image preprocessing is 224x224 with CLIP normalization, and text context is 248 tokens using the repository OpenAI BPE tokenizer.",
+      "sources": [
+        {"commit": "45468e1", "path": "model/model_longclip.py", "location": "image transform, tokenizer, and context-length declarations"},
+        {"commit": "45468e1", "path": "model/longclip.py", "location": "SimpleTokenizer and CLIP transform implementation"}
+      ]
+    },
+    {
+      "id": "architecture.balanced_stack",
+      "claim": "BalancedStack uses a sigmoid gate over text and visual conditions, with zero-initialized gate weights, Xavier visual adapter, and visual patch detach.",
+      "sources": [
+        {"commit": "45468e1", "path": "model/nested_fusion_mask.py", "location": "lines 29-70: FusionBranch initialization, balanced_gate, encode_visual"},
+        {"commit": "45468e1", "path": "model/nested_fusion_mask.py", "location": "lines 101-107: paired BalancedStack logits"}
+      ]
+    },
+    {
+      "id": "data.sharegpt4v_counts",
+      "claim": "The training stream contains 1,245,901 records after skipping the first 1,000 of 1,246,901 records.",
+      "sources": [
+        {"commit": "45468e1", "path": "train/nested_semantic_data.py", "location": "record loading and deterministic skip"},
+        {"commit": "45468e1", "path": "train/train_nested_semantic_mask.py", "location": "line 386 dataset-size assertion"}
+      ],
+      "sha256": {
+        "annotation": "5c5f0f4ee58d7b7467f9e49eb5b17f930890a8a0c18a4e2a5be6b15714ef8b3c",
+        "training_records": "0fed1fe12b625ba1f8e762b3545eb115ba084fb314743a74f9e90103e57a27c8"
+      }
+    },
+    {
+      "id": "data.views",
+      "claim": "F, Dall, and nested D3 views are built by newline normalization, literal '. ' splitting, token-budget prefixing, and a SHA256-derived seed-0 D3 sampler.",
+      "sources": [
+        {"commit": "45468e1", "path": "train/nested_semantic_data.py", "location": "caption cleaning, context fitting, and nested_detail_d3"},
+        {"commit": "45468e1", "path": "configs/nested_d3_hns500.json", "location": "sampling_mode, sampling_seed, shuffle_seed"}
+      ]
+    },
+    {
+      "id": "optimization.groups",
+      "claim": "AdamW uses four groups with peak LRs 1e-6, 1e-3, 1e-3, and 2e-4; backbone decay is 1e-2 and mask/adapter decay is zero.",
+      "sources": [
+        {"commit": "45468e1", "path": "train/train_nested_semantic_mask.py", "location": "optimizer construction and LR schedule"},
+        {"commit": "45468e1", "path": "configs/nested_d3_hns500.json", "location": "fusion_lr and formal runtime settings"}
+      ]
+    },
+    {
+      "id": "optimization.runtime",
+      "claim": "Formal B/16 and L/14 runs use four ranks, batch 256 per rank, global batch 1024, workers 8, seed 0, BF16/autocast, and encoder checkpointing.",
+      "sources": [
+        {"commit": "45468e1", "path": "configs/nested_d3_hns500.json", "location": "world_size, batch_size, workers, seed, checkpoint flags"},
+        {"commit": "8a0b6e8", "path": "configs/hns_v1_l14_full5epoch6085_v1.json", "location": "world_size, batch_size, workers, seed, checkpoint flags"},
+        {"commit": "45468e1", "path": "experiments/nest_clip_v1/nested_d3_hns_full_v1/FULL_RUNTIME_STATS.json", "location": "four-rank A100 runtime evidence"}
+      ]
+    },
+    {
+      "id": "objectives.alignment_sparsity_hns",
+      "claim": "Alignment weights are [1.35,1.35,0.30], sparsity weights are [1,2,2], HNS beta is [2,2] with a 200-update linear ramp, and ordinary inclusion is disabled by inclusion_max=0.",
+      "sources": [
+        {"commit": "45468e1", "path": "model/balanced_hparam_search.py", "location": "macro_terms, alignment and sparsity terms, inclusion switch"},
+        {"commit": "45468e1", "path": "model/hard_nested_sparsity.py", "location": "lines 6-22: hierarchy_weight and HNS terms"},
+        {"commit": "45468e1", "path": "configs/nested_d3_hns500.json", "location": "view_weights, sparsity_scale, inclusion_max, hns_enabled"}
+      ]
+    },
+    {
+      "id": "evaluation.native",
+      "claim": "Retrieval uses native full-image/full-caption embeddings, L2 normalization, inner-product cosine, and the full candidate pool without inference masks or reranking.",
+      "sources": [
+        {"commit": "45468e1", "path": "tools/eval_nest_native.py", "location": "embedding extraction and retrieval"},
+        {"commit": "4ef949c", "path": "experiments/nest_clip_v1/said_abcde_results_v1/ABCDE_SOURCE_AUDIT.json", "location": "native student-only evaluation audit"}
+      ]
+    },
+    {
+      "id": "evaluation.datasets",
+      "claim": "Long-DCI is a reconstructed 7602-pair protocol; Flickr30k-Full is distinct from Test1K and uses 31,783 images and 158,915 captions; Urban-1k uses 1,000 diagonal pairs.",
+      "sources": [
+        {"commit": "8a0b6e8", "path": "experiments/nest_clip_v1/hns_v1_l14_full5epoch6085_fromscratch_v1/FINAL_REPORT.md", "location": "evaluation protocol and Flickr30k-Full distinction"},
+        {"commit": "4ef949c", "path": "experiments/nest_clip_v1/said_abcde_results_v1/ABCDE_COMPARISON.md", "location": "standard-five versus Flickr-Full protocol note"},
+        {"commit": "45468e1", "path": "docs/extended_retrieval/README.md", "location": "dataset protocol definitions"}
+      ]
+    },
+    {
+      "id": "results.b16",
+      "claim": "The checked-in B/16 FULL_RESULTS.json reports step3651 Score5 73.638084, J_long3 78.014807, J_long 86.915002, and Short4 67.073.",
+      "sources": [
+        {"commit": "45468e1", "path": "experiments/nest_clip_v1/nested_d3_hns_full_v1/FULL_RESULTS.json", "location": "scores_percent and step fields"}
+      ]
+    },
+    {
+      "id": "results.l14",
+      "claim": "The L/14 step6085 report gives Score5 77.968310, J_long3 82.423184, J_long 90.775002, Short4 71.286, and Urban I2T/T2I 95.3/95.7.",
+      "sources": [
+        {"commit": "8a0b6e8", "path": "experiments/nest_clip_v1/hns_v1_l14_full5epoch6085_fromscratch_v1/FINAL_REPORT.md", "location": "summary and five-set R@1 tables"}
+      ]
+    },
+    {
+      "id": "results.abcde",
+      "claim": "The archived ABCDE comparison reports all five component rows at step3651 under the 4868 horizon.",
+      "sources": [
+        {"commit": "4ef949c", "path": "experiments/nest_clip_v1/said_abcde_results_v1/ABCDE_COMPARISON.md", "location": "summary and dataset tables"}
+      ]
+    }
+  ]
+}
