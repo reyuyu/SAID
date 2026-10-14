@@ -109,7 +109,7 @@ class FusionBranch(nn.Module):
             a_pair, b_pair = a[:, None], b[None]
             text_pair, visual_pair = text[:, None], visual[None]
         mode = getattr(self, 'joint_mask_mode', 'matched')
-        if mode == 'matched':
+        if mode in ('matched', 'balanced_rmsnorm'):
             g = torch.sigmoid(a_pair + b_pair)
             return g * text_pair + (1 - g) * visual_pair
         if mode == 'J1':
