@@ -350,7 +350,7 @@ def main():
         from train.random_detail_observer import install
         install()  # Read-only detached telemetry; model/loss source stays unchanged.
     assert cfg['condition_mode'] in ('text_only', 'joint_image', 'joint_shuffled_image', 'vcp_mask', 'dual_branch', 'native')
-    assert cfg['joint_mask_mode'] in ('matched', 'J1', 'J2', 'J3', 'J4')
+    assert cfg['joint_mask_mode'] in ('matched', 'J1', 'J2', 'J3', 'J4', 'agreement')
     assert cfg['full_native_mix'] == 0
     assert int(cfg['checkpoint_interval']) > 0
     assert (args.max_updates == 5 if args.run_type == 'smoke' else args.max_updates == 35 if args.run_type == 'probe' else args.max_updates > 0)
@@ -486,7 +486,9 @@ def main():
             crossscore_query=state_digest(branch.query.state_dict()) if hasattr(branch, 'query') else None,
             crossscore_key=state_digest(branch.key.state_dict()) if hasattr(branch, 'key') else None,
             crossscore_readout=state_digest(branch.readout.state_dict()) if hasattr(branch, 'readout') else None,
-            channel_gate=state_digest(branch.gate.state_dict()) if hasattr(branch, 'gate') else None)
+            channel_gate=state_digest(branch.gate.state_dict()) if hasattr(branch, 'gate') else None,
+            agreement_theta=state_digest(branch.agreement_theta.detach().view(1, -1))
+            if hasattr(branch, 'agreement_theta') else None)
     completed = 0
     if args.resume:
         previous = torch.load(args.resume, map_location='cpu', weights_only=False)

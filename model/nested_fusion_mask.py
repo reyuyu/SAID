@@ -27,17 +27,24 @@ def stack_logits(visual_summary, text_summary, paired=False):
 
 
 class FusionBranch(nn.Module):
-    def __init__(self, source_blocks, visual_width, width, fusion, visual_tokens, text_tokens=248, rank=64):
+    def __init__(self, source_blocks, visual_width, width, fusion, visual_tokens, text_tokens=248,
+                 rank=64, joint_mask_mode='matched'):
         super().__init__()
         self.visual_blocks = copy.deepcopy(source_blocks)
         self.fusion, self.visual_tokens, self.text_tokens, self.rank = fusion, visual_tokens, text_tokens, rank
+        self.joint_mask_mode = str(joint_mask_mode)
         with torch.random.fork_rng(devices=[]):
             torch.manual_seed(1763)
             self.visual_adapter = nn.Linear(visual_width, width, bias=False)
             nn.init.xavier_uniform_(self.visual_adapter.weight)
-            if fusion == 'balanced_stack':
+            if fusion == 'balanced_stack' and self.joint_mask_mode != 'agreement':
                 self.gate = nn.Linear(width * 2, width, bias=False)
                 nn.init.zeros_(self.gate.weight)
+            if fusion == 'balanced_stack' and self.joint_mask_mode == 'agreement':
+                # Unconstrained parameter with a bounded contribution in the
+                # logits.  Zero initialization makes the initial rule exactly
+                # the normalized feature product without a random offset.
+                self.agreement_theta = nn.Parameter(torch.zeros(width))
             if fusion in ('crossscore_flat', 'cosine_crossscore'):
                 torch.manual_seed(1787)
                 self.query = nn.Linear(width, rank, bias=False)
@@ -72,6 +79,17 @@ class FusionBranch(nn.Module):
         that only replace this logits generator; sigmoid, Hard-ST, CE,
         sparsity, HNS and sampling remain unchanged downstream.
         """
+        if self.joint_mask_mode == 'agreement':
+            def rms_tanh(value):
+                value = value.float()
+                rms = value.square().mean(dim=-1, keepdim=True).add(1e-6).sqrt()
+                return torch.tanh(value / rms)
+            visual_pair = rms_tanh(visual)
+            text_pair = rms_tanh(text)
+            if not paired:
+                visual_pair, text_pair = visual_pair[None], text_pair[:, None]
+            bounded_bias = 0.2 * torch.tanh(self.agreement_theta)
+            return 5.0 * (visual_pair * text_pair + bounded_bias)
         width = self.gate.out_features
         a = F.linear(text, self.gate.weight[:, :width])
         b = F.linear(visual, self.gate.weight[:, width:])
@@ -284,6 +302,16 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
                 gate = torch.sigmoid(a + b + offset).detach()
                 selected_gates = gather(gate, False)[enabled].flatten()
                 logs.update(g_mean=selected_gates.mean(), g_variance=selected_gates.var(unbiased=False))
+            elif module.fusion_branch.joint_mask_mode == 'agreement':
+                theta = module.fusion_branch.agreement_theta.detach()
+                logs.update(
+                    agreement_theta_mean=theta.mean(),
+                    agreement_theta_abs_max=theta.abs().max(),
+                    agreement_bias_mean=(0.2 * theta.tanh()).mean(),
+                    agreement_bias_abs_max=(0.2 * theta.tanh()).abs().max(),
+                    agreement_sigmoid_saturation=((selected_signal.sigmoid() < .01) |
+                                                  (selected_signal.sigmoid() > .99)).float().mean(),
+                )
             logs['_diagnostic_mask_signal'] = signal
         with torch.no_grad():
             replacement = tuple(x.roll(1, 0) for x in global_visual)
@@ -311,15 +339,15 @@ class NestedFusionMask(nn.Module):
         self.clip, self.arm, self.condition_mode = clip, arm, condition_mode
         self.fusion, self.visual = fusion, visual
         self.joint_mask_mode = str(joint_mask_mode)
-        assert self.joint_mask_mode in ('matched', 'J1', 'J2', 'J3', 'J4')
+        assert self.joint_mask_mode in ('matched', 'J1', 'J2', 'J3', 'J4', 'agreement')
         self.image_chunk, self.text_chunk = int(image_chunk), int(text_chunk)
         self.checkpoint_pair_blocks = bool(checkpoint_pair_blocks)
         self.checkpoint_encoders = bool(checkpoint_encoders)
         self.shuffle_seed = shuffle_seed
         width = int(clip.text_projection.shape[0])
         self.fusion_branch = FusionBranch(clip.mask_net.resblocks, int(clip.visual.proj.shape[0]),
-                                          width, fusion, 1 if visual == 'cls' else 196, text_tokens)
-        self.fusion_branch.joint_mask_mode = self.joint_mask_mode
+                                          width, fusion, 1 if visual == 'cls' else 196, text_tokens,
+                                          joint_mask_mode=self.joint_mask_mode)
         if fusion in ('crossscore_flat', 'cosine_crossscore'):
             clip.mask_net.attn_pool.requires_grad_(False)
         if checkpoint_encoders:
