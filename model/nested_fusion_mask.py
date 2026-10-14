@@ -35,9 +35,26 @@ class FusionBranch(nn.Module):
             torch.manual_seed(1763)
             self.visual_adapter = nn.Linear(visual_width, width, bias=False)
             nn.init.xavier_uniform_(self.visual_adapter.weight)
-            if fusion == 'balanced_stack':
+            if fusion in ('balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3'):
                 self.gate = nn.Linear(width * 2, width, bias=False)
                 nn.init.zeros_(self.gate.weight)
+            self.interaction_mode = fusion if fusion.startswith('cross_modal_') else None
+            if self.interaction_mode is not None:
+                torch.manual_seed(1793)
+                if self.interaction_mode == 'cross_modal_x2':
+                    self.wq = nn.Linear(width, rank, bias=False)
+                    self.wk = nn.Linear(width, rank, bias=False)
+                    self.wv = nn.Linear(width, rank, bias=False)
+                    for layer in (self.wq, self.wk, self.wv):
+                        nn.init.xavier_uniform_(layer.weight)
+                else:
+                    self.pt = nn.Linear(width, rank, bias=False)
+                    self.pv = nn.Linear(width, rank, bias=False)
+                    nn.init.xavier_uniform_(self.pt.weight)
+                    nn.init.xavier_uniform_(self.pv.weight)
+                self.wo = nn.Linear(rank, width, bias=True)
+                nn.init.zeros_(self.wo.weight)
+                nn.init.zeros_(self.wo.bias)
             if fusion in ('crossscore_flat', 'cosine_crossscore'):
                 torch.manual_seed(1787)
                 self.query = nn.Linear(width, rank, bias=False)
@@ -98,13 +115,53 @@ class FusionBranch(nn.Module):
         return F.linear(relations.flatten(-2), self.readout.weight, self.readout.bias)
 
 
+def _interaction_regions(tokens, region_tokens=16):
+    n, width = tokens.shape[-2:]
+    side = int(math.sqrt(n))
+    region_side = int(math.sqrt(region_tokens))
+    if side * side != n or region_side * region_side != region_tokens:
+        raise ValueError((tuple(tokens.shape), region_tokens))
+    grid = tokens.reshape(-1, side, side, width).permute(0, 3, 1, 2)
+    pooled = F.adaptive_avg_pool2d(grid, (region_side, region_side))
+    return pooled.permute(0, 2, 3, 1).reshape(*tokens.shape[:-2], region_tokens, width)
+
+
+def interaction_delta(module, visual, text, paired=False):
+    branch = module.fusion_branch
+    mode = branch.interaction_mode
+    if mode is None:
+        return 0.
+    tv, tt = visual[1], text[1]
+    if mode == 'cross_modal_x1':
+        qt, qv = branch.pt(tt), branch.pv(tv)
+        hidden = qt * qv if paired else qt[:, None] * qv[None]
+    elif mode == 'cross_modal_x2':
+        q = branch.wq(tt)
+        regions = visual[2]
+        keys, values = branch.wk(regions), branch.wv(regions)
+        if paired:
+            weights = torch.softmax(torch.einsum('bd,brd->br', q, keys) / math.sqrt(branch.rank), -1)
+            context = torch.einsum('br,brd->bd', weights, values)
+        else:
+            weights = torch.softmax(torch.einsum('td,ird->tir', q, keys) / math.sqrt(branch.rank), -1)
+            context = torch.einsum('tir,ird->tid', weights, values)
+        hidden = q * context if paired else q[:, None] * context
+    elif mode == 'cross_modal_x3':
+        qt, qv = branch.pt(tt), branch.pv(tv)
+        hidden = torch.sigmoid(qt) * qv if paired else torch.sigmoid(qt[:, None]) * qv[None] + torch.sigmoid(qv[None]) * qt[:, None]
+    else:
+        raise ValueError(mode)
+    return branch.wo(hidden)
+
+
 def pair_logits(module, visual, text, paired=False):
     if module.fusion == 'stack_pool':
         return stack_logits(visual, text, paired)
-    if module.fusion == 'balanced_stack':
+    if module.fusion in ('balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3'):
         gate = module.fusion_branch.balanced_gate(visual[1], text[1], paired)
-        return (gate * text[1] + (1 - gate) * visual[1] if paired else
+        base = (gate * text[1] + (1 - gate) * visual[1] if paired else
                 gate * text[1][:, None] + (1 - gate) * visual[1][None])
+        return base + interaction_delta(module, visual, text, paired)
     return module.fusion_branch.cross_logits(visual[0], text[0], paired)
 
 
@@ -227,7 +284,7 @@ def fusion_view_terms(module, z, text, visual, condition, valid, valid_global,
             if world > 1:
                 torch.distributed.all_reduce(bound, op=torch.distributed.ReduceOp.MAX)
             logs['qk_abs_max'] = bound
-        elif module.fusion == 'balanced_stack':
+        elif module.fusion in ('balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3'):
             gate = module.fusion_branch.balanced_gate(visual[1], condition[1], paired=True).detach()
             global_gate, enabled = gather(gate, False), gather(valid, False)
             selected_gates = global_gate[enabled].flatten()
@@ -250,8 +307,9 @@ class NestedFusionMask(nn.Module):
                  checkpoint_pair_blocks=False, fusion='stack_pool', visual='cls', text_tokens=248):
         super().__init__()
         assert arm == 'A3' and condition_mode == 'dual_branch'
-        assert fusion in ('stack_pool', 'crossscore_flat', 'balanced_stack', 'cosine_crossscore') and visual in ('cls', 'patch')
-        assert fusion != 'balanced_stack' or visual == 'patch'
+        assert fusion in ('stack_pool', 'crossscore_flat', 'balanced_stack', 'cosine_crossscore',
+                          'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3') and visual in ('cls', 'patch')
+        assert fusion not in ('balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3') or visual == 'patch'
         assert fusion != 'cosine_crossscore' or visual == 'cls'
         self.clip, self.arm, self.condition_mode = clip, arm, condition_mode
         self.fusion, self.visual = fusion, visual
@@ -263,8 +321,10 @@ class NestedFusionMask(nn.Module):
         positions = getattr(clip.visual, 'positional_embedding', None)
         patches = int(positions.shape[0])-1 if positions is not None else 196
         assert int(clip.text_projection.shape[1]) == width
+        interaction_rank = 32 if fusion.startswith('cross_modal_') else 64
         self.fusion_branch = FusionBranch(clip.mask_net.resblocks, int(clip.visual.proj.shape[0]),
-                                          width, fusion, 1 if visual == 'cls' else patches, text_tokens)
+                                          width, fusion, 1 if visual == 'cls' else patches,
+                                          text_tokens, rank=interaction_rank)
         if fusion in ('crossscore_flat', 'cosine_crossscore'):
             clip.mask_net.attn_pool.requires_grad_(False)
         if checkpoint_encoders:
@@ -273,7 +333,7 @@ class NestedFusionMask(nn.Module):
     def mask_parameters(self):
         yield from self.clip.mask_net.resblocks.parameters()
         yield from self.fusion_branch.visual_blocks.parameters()
-        if self.fusion in ('stack_pool', 'balanced_stack'):
+        if self.fusion in ('stack_pool', 'balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3'):
             yield from self.clip.mask_net.attn_pool.parameters()
 
     def encode_visual(self, images):
@@ -281,18 +341,21 @@ class NestedFusionMask(nn.Module):
             z, hidden = self.clip.encode_image(images, return_token_hidden=True)
         source = hidden[:, :1] if self.visual == 'cls' else hidden[:, 1:]
         transformed = self.fusion_branch.encode_visual(source)
-        if self.fusion in ('stack_pool', 'balanced_stack'):
+        if self.fusion in ('stack_pool', 'balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3'):
             pool = self.clip.mask_net.attn_pool.attention
             condition = pool_summary(transformed, pool.weight, pool.bias)
         else:
             condition = (self.fusion_branch.projected_queries(transformed),)
+        if self.fusion_branch.interaction_mode is not None:
+            condition = (condition[0], condition[1], _interaction_regions(transformed))
         return z.float(), condition
 
     def encode_view(self, tokens):
         with torch.autocast('cuda', dtype=torch.bfloat16, enabled=tokens.is_cuda):
             text, hidden = self.clip.encode_text(tokens, return_full=True)
         transformed = self.clip.mask_net.resblocks(hidden.detach().float().permute(1, 0, 2)).permute(1, 0, 2)
-        if self.fusion in ('stack_pool', 'balanced_stack'):
+        if self.fusion in ('stack_pool', 'balanced_stack',
+                           'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3'):
             pool = self.clip.mask_net.attn_pool.attention
             condition = pool_summary(transformed, pool.weight, pool.bias)
         else:

@@ -1,0 +1,51 @@
+{
+  "arm": "A3",
+  "experiment_name": "CrossModal-JointMask-X3",
+  "condition_mode": "dual_branch",
+  "fusion": "cross_modal_x3",
+  "visual": "patch",
+  "full_native_mix": 0,
+  "sampling_mode": "nested_detail_d3",
+  "inclusion_hierarchy": "detail_chain",
+  "sampling_seed": 0,
+  "shuffle_seed": 0,
+  "world_size": 4,
+  "batch_size": 256,
+  "accumulation": 1,
+  "epochs": 4,
+  "seed": 0,
+  "workers": 8,
+  "checkpoint_encoders": true,
+  "checkpoint_pair_blocks": false,
+  "image_chunk": 128,
+  "text_chunk": 128,
+  "score_chunk": 64,
+  "checkpoint_interval": 500,
+  "save_initial_checkpoint": true,
+  "monitor_resources": true,
+  "feasibility_abort_seconds": 15,
+  "fusion_lr": 0.0002,
+  "visual_mask_lr_scale": 1,
+  "view_weights": [
+    1.35,
+    1.35,
+    0.3
+  ],
+  "sparsity_scale": 1,
+  "inclusion_max": 0,
+  "hparam_search": true,
+  "trial_id": "cross-modal-joint-mask-x3-500-v1",
+  "base_model": "ViT-B/16",
+  "resource_policy": "local_reproduction500",
+  "hns_enabled": true,
+  "hns_beta": [
+    2,
+    2
+  ],
+  "view_sparsity_weights": [
+    1,
+    2,
+    2
+  ],
+  "four_epoch_followup": true
+}

@@ -41,7 +41,7 @@ class BalancedSearch(NestedFusionMask):
     def __init__(self, clip, *, search_hparams=None, inclusion_hierarchy='siblings',
                  view_sparsity_weights=(1.,2.,2.), hns_enabled=False, hns_beta=(2.,2.), **options):
         super().__init__(clip, **options)
-        assert self.fusion=='balanced_stack' and self.visual=='patch'
+        assert self.fusion in ('balanced_stack', 'cross_modal_x1', 'cross_modal_x2', 'cross_modal_x3') and self.visual=='patch'
         self.search_hparams = hparams(search_hparams or {})
         self.summary_t2i_weight = float((search_hparams or {}).get("summary_t2i_weight", 1.))
         assert 0 < self.summary_t2i_weight <= 1.

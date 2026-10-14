@@ -92,7 +92,8 @@ def training_horizon(config, batches_per_epoch):
     if epochs == 4:
         assert config.get('four_epoch_followup') and config.get('hparam_search')
         assert config.get('condition_mode') == 'dual_branch'
-        assert config.get('fusion') == 'balanced_stack' and config.get('visual') == 'patch'
+        assert config.get('fusion') in ('balanced_stack', 'cross_modal_x1',
+                                        'cross_modal_x2', 'cross_modal_x3') and config.get('visual') == 'patch'
     else:
         assert not config.get('four_epoch_followup'), 'Four-epoch configuration must use four epochs'
     return epochs * batches_per_epoch
