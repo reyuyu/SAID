@@ -5,7 +5,7 @@
 ## 训练与身份
 
 - 分支：`experiment/said-b16-agreement-mask500-v1`
-- 最终 commit：`f144e5d2d670f7834807d701b4b02ca830c1600f`
+- 训练与评测源码提交：`2320136bd733094fb0812682a6671bd2fea0021f`
 - common Step0 SHA256：`54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6`
 - 完整 Step500 checkpoint SHA256：`4908184d40c2db5886a9169dd57ac7698de8e617b58851cd76b5ad390ccc2b76`
 - 裸学生 SHA256：`090a515270e5f4b1ffc690969a7483f839797d0bfb690ae1296dfaed3938c813`
