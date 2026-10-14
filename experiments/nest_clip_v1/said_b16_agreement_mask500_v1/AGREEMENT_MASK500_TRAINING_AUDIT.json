@@ -1,0 +1,61 @@
+{
+  "experiment": "said-b16-agreement-mask500-v1",
+  "config": "experiments/nest_clip_v1/said_b16_agreement_mask500_v1.json",
+  "branch_commit": "2320136bd733094fb0812682a6671bd2fea0021f",
+  "common_step0_sha256": "54f8a6e3600a8cbe46a385d1f211a952686ff58f602703ceba87c301bfbbe4e6",
+  "run_type": "formal500-r4",
+  "updates": 500,
+  "scheduler_horizon": 4868,
+  "global_batch": 1024,
+  "world_size": 4,
+  "rank_batch": 256,
+  "sample_positions": 512000,
+  "training_checkpoint": "/opt/data/private/lklk/SAID/runtime/said_b16_agreement_mask500_v1/formal500-r4/step000500.pt",
+  "training_checkpoint_sha256": "4908184d40c2db5886a9169dd57ac7698de8e617b58851cd76b5ad390ccc2b76",
+  "bare_student": "/opt/data/private/lklk/SAID/runtime/said_b16_agreement_mask500_v1/formal500-r4/student_step000500.pt",
+  "bare_student_sha256": "090a515270e5f4b1ffc690969a7483f839797d0bfb690ae1296dfaed3938c813",
+  "export_verification": {"strict_load": true, "optimizer_steps": [500], "image_max_abs": 0.0, "text_max_abs": 0.0},
+  "smoke": {
+    "updates": 5,
+    "directory": "/opt/data/private/lklk/SAID/runtime/said_b16_agreement_mask500_v1/smoke5-r4-v4",
+    "passed": true,
+    "max_parameter_difference": 0.0,
+    "nccl_all_reduce": 10.0,
+    "peak_allocated_gib": 24.772881507873535,
+    "agreement_theta_gradient_nonzero": true,
+    "visual_mask_gradient_nonzero": true,
+    "text_mask_gradient_nonzero": true,
+    "resource_failure": null
+  },
+  "formal_acceptance": {
+    "passed": true,
+    "per_rank_updates": [500, 500, 500, 500],
+    "max_parameter_difference_from_rank0": 0.0,
+    "final_nccl_all_reduce": 10.0,
+    "seconds": 1109.0953279659152,
+    "peak_allocated_gib": 24.772881507873535,
+    "resource_failure": null,
+    "nonfinite_or_oom": false
+  },
+  "last_step": {
+    "loss": 4.225089073181152,
+    "valid_global": 1024,
+    "HNS_F_keep": 0.8445377349853516,
+    "HNS_Dall_keep": 0.8418617248535156,
+    "HNS_D3_keep": 0.8375110626220703,
+    "hard_inclusion_violation": 0.037713050842285156,
+    "F_Dall_mask_iou": 0.9200166463851929,
+    "Dall_Ds_mask_iou": 0.9024574756622314,
+    "Dall_F_hard_violation": 0.03412628173828125,
+    "Ds_Dall_hard_violation": 0.04129981994628906,
+    "gradient_norms": {"backbone": 130.70277404785156, "text_mask_and_shared_pool": 0.536516010761261, "visual_mask": 0.22305245697498322, "fusion_adapter": 0.10305437445640564},
+    "adapter_gradient_norms": {"agreement_theta": 0.06563060730695724, "visual_adapter": 0.07945331186056137},
+    "agreement_theta_abs_max": 0.007046752143651247,
+    "agreement_sigmoid_saturation": {"F": 0.03129386901855469, "Dall": 0.031406402587890625, "D3": 0.031497955322265625}
+  },
+  "negative_attempts": [
+    {"directory": "smoke5-r4-v1", "result": "startup/module-resolution failure; no update"},
+    {"directory": "smoke5-r4-v2", "result": "output-dir pre-existed; no update"},
+    {"directory": "smoke5-r4-v3", "result": "receipt initialization failure; no update"}
+  ]
+}

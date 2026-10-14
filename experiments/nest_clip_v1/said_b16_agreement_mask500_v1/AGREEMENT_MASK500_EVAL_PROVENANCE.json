@@ -1,0 +1,34 @@
+{
+  "status": "COMPLETED",
+  "mode": "four_gpu_parallel_then_first_freed_gpu",
+  "scheduler": "tools/eval_five_parallel.py",
+  "student_sha256": "090a515270e5f4b1ffc690969a7483f839797d0bfb690ae1296dfaed3938c813",
+  "training_checkpoint_sha256": "4908184d40c2db5886a9169dd57ac7698de8e617b58851cd76b5ad390ccc2b76",
+  "wall_seconds": 689.2115055918694,
+  "initial_failed_attempt": {
+    "directory": "results/native_parallel",
+    "reason": "worktree did not contain local_assets; no scores were produced",
+    "scores_used": false
+  },
+  "successful_run": {
+    "directory": "results/native_parallel_retry-v2",
+    "assets_root": "/opt/data/private/lklk/SAID/local_assets",
+    "jobs": {
+      "COCO": {"gpu": 0, "returncode": 0, "duration_seconds": 313.8834652528167},
+      "Flickr30k-Test1K": {"gpu": 1, "returncode": 0, "duration_seconds": 94.47362120449543},
+      "DOCCI": {"gpu": 2, "returncode": 0, "duration_seconds": 488.9681892544031},
+      "Long-DCI": {"gpu": 3, "returncode": 0, "duration_seconds": 689.2094656154513},
+      "Urban-1k": {"gpu": 1, "started_after": "Flickr30k-Test1K released GPU1", "returncode": 0, "duration_seconds": 108.1458107829094}
+    },
+    "native_only": true,
+    "mask_or_fusion_inference": false,
+    "reranking_or_tta": false
+  },
+  "dataset_outputs": {
+    "coco": "results/native_parallel_retry-v2/coco_native.json",
+    "flickr30k_test1k": "results/native_parallel_retry-v2/flickr_test1k/flickr_test1k.json",
+    "docci": "results/native_parallel_retry-v2/docci/docci.json",
+    "long_dci": "results/native_parallel_retry-v2/long_dci/long_dci.json",
+    "urban": "results/native_parallel_retry-v2/urban_native.json"
+  }
+}
