@@ -88,13 +88,22 @@ def optimizer_learning_rates(module, s, horizon):
 def training_horizon(config, batches_per_epoch):
     assert batches_per_epoch == 1217
     epochs = config['epochs']
-    assert epochs in (3,4), 'Only three epochs or the authorized four-epoch Balanced followup'
+    assert epochs in (3,4,5), 'Only three epochs or the authorized four/five-epoch Balanced followup'
     if epochs == 4:
         assert config.get('four_epoch_followup') and config.get('hparam_search')
+        assert not config.get('five_epoch_followup', False)
         assert config.get('condition_mode') == 'dual_branch'
         assert config.get('fusion') == 'balanced_stack' and config.get('visual') == 'patch'
+    elif epochs == 5:
+        assert config.get('five_epoch_followup') and config.get('hparam_search')
+        assert not config.get('four_epoch_followup', False)
+        assert config.get('base_model') == 'ViT-L/14'
+        assert config.get('condition_mode') == 'dual_branch'
+        assert config.get('fusion') == 'balanced_stack' and config.get('visual') == 'patch'
+        assert config.get('experiment_name') == 'HNS-v1-ViT-L14-Full5'
+        assert config.get('trial_id') == 'hns-v1-l14-full5epoch6085-fromscratch-v1'
     else:
-        assert not config.get('four_epoch_followup'), 'Four-epoch configuration must use four epochs'
+        assert not config.get('four_epoch_followup') and not config.get('five_epoch_followup'), 'Followup configuration must use its declared epoch count'
     return epochs * batches_per_epoch
 
 
@@ -127,7 +136,8 @@ def validate_resume_payload(previous, current, expected_parent_trainer_sha256=No
         assert old[key] == current[key], f'Resume mismatch: {key}'
     for key, default in (('image_chunk', 32), ('text_chunk', 64),
                          ('condition_mode', 'text_only'), ('shuffle_seed', 0),
-                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False)):
+                         ('checkpoint_pair_blocks', True), ('four_epoch_followup', False),
+                         ('five_epoch_followup', False)):
         assert old.get(key, default) == current.get(key, default), f'Resume mismatch: {key}'
     assert old['run_type'] == current['run_type'] == 'formal', 'Only formal checkpoints may continue formally'
     for key, default in (('sampling_mode', 'fixed_first'), ('sampling_seed', 0)):
@@ -317,6 +327,7 @@ def main():
     cfg.setdefault('full_native_mix', 0.)
     cfg.setdefault('checkpoint_interval', 100)
     cfg.setdefault('save_initial_checkpoint', True)
+    cfg.setdefault('five_epoch_followup', False)
     cfg.setdefault('max_update_seconds', 5.)
     cfg.setdefault('p95_limit_seconds', 5.)
     cfg.setdefault('base_model', 'ViT-B/16')
