@@ -1,0 +1,39 @@
+{
+  "dataset": "Flickr30k-Full",
+  "protocol": "Flickr30k-Full-official-token-31783x158915",
+  "protocol_status": "VERIFIED_SOURCE_PROTOCOL",
+  "manifest": "/root/said_hyfl_data_completion_v1/full_protocol/FULL_MANIFEST.jsonl",
+  "manifest_sha256": "bfed72a299e4d8cbfef817c13c836cd5aa189e18dd2fd29b632f5808e8dd12bc",
+  "image_root": "/root/said_hyfl_data_completion_v1/flickr_images",
+  "image_content_sha256": "e4fef70dd3f73034970b1ec0e20d81a4b421d1871e350e3266e41b744d3ab159",
+  "n_images": 31783,
+  "n_captions": 158915,
+  "models": {
+    "step4868": {
+      "checkpoint_sha256": "09de4d57837c84089eb7d571c21b37882a900bc293a0433adbc6ccc98b0cd108",
+      "bare_student_sha256": "6dd6ccd249f9c6da0a8b07c0a82f5715ac3ff125399b0d00caf2597a27f6c409",
+      "result_sha256": "13b47d9de93f0e58dd927bcc8898253cfdedeae0a5b7dee394587f75ef163852",
+      "metrics": {
+        "I2T": {"R@1": 64.71069439637542, "R@5": 84.6112701758802, "R@10": 90.35333354308908},
+        "T2I": {"R@1": 44.405499795488154, "R@5": 67.08554887833118, "R@10": 75.34908598936538}
+      },
+      "elapsed_seconds": 952.9666331410408
+    },
+    "step6085": {
+      "checkpoint_sha256": "8a036746e44a789e69d40987cf6852ee9603b6881e30ef30ab88c8463bcec538",
+      "bare_student_sha256": "f360465fc02a5465d312c672d5179dcd8991d9c98ffd14325831b9150a8f7da1",
+      "result_sha256": "690b929a17d962b2f0f7e62759eada4ba314e85aa71c0023ca79078d6eb6b2c6",
+      "metrics": {
+        "I2T": {"R@1": 64.70125538810056, "R@5": 84.6112701758802, "R@10": 90.37535789573042},
+        "T2I": {"R@1": 44.4092753987981, "R@5": 67.10002202435264, "R@10": 75.36041279929522}
+      },
+      "elapsed_seconds": 954.8574113994837
+    }
+  },
+  "evaluator": "recovery/eval_l14_bounded.py",
+  "device": "cuda:0",
+  "batch_size": 64,
+  "query_chunk": 256,
+  "gallery_chunk": 4096,
+  "state_unchanged": true
+}

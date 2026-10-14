@@ -18,6 +18,8 @@
 
 完整 30 项 Recall 位于 `RESULTS_4868.json` 和 `RESULTS_6085.json`。其中 Full5@6085 的主要 R@1 为：COCO I2T/T2I 64.620/48.764，Flickr30k-Test1K 92.700/79.060，DOCCI 85.840/86.260，Long-DCI 重建版 65.022/66.417，Urban-1k 95.300/95.700。Long-DCI 是固定 7602 对重建协议，不等同于 DCI-full。
 
+补充的 Flickr30k-Full 官方 token 评测结果见 `FLICKR_FULL_RESULTS.json` 和 `FLICKR_FULL_EVALUATION.md`。Full5@6085 的 Flickr-Full I2T R@1/5/10 为 64.701255/84.611270/90.375358，T2I R@1/5/10 为 44.409275/67.100022/75.360413；Full5@4868 的对应结果为 64.710694/84.611270/90.353334 与 44.405500/67.085549/75.349086。该 Full 协议与 Test1K 是不同数据集范围，不能互相替代。
+
 ## 结论与限制
 
 第五 Epoch 没有带来 J_long3 或 Short4 的改善；它保持了总体 Score5 和 Urban Mean，并使 Urban T2I 相对历史 Full4 上升 0.5 pp，但 Urban I2T 没有同步上升。该单 seed、公开测试集反复观察的结果不足以证明第五 Epoch 优于 Full4，也不足以支持继续第六 Epoch。训练、评测和审计进程已经退出，四张 GPU 已释放。
