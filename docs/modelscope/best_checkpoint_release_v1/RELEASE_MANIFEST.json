@@ -1,0 +1,81 @@
+{
+  "status": "PREPARED_AUTH_REQUIRED",
+  "account_display": "hongchenyang0814",
+  "repositories": {
+    "ViT-B/16": "SAID-HNS-v1-ViT-B16-BestStep3651",
+    "ViT-L/14": "SAID-HNS-v1-ViT-L14-BestStep4651"
+  },
+  "models": {
+    "ViT-B/16": {
+      "backbone": "ViT-B/16",
+      "step": 3651,
+      "scheduler_horizon": 4868,
+      "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/nested-d3-hns-full-v1/step4868/step003651.pt",
+      "bare_student_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/epoch-curve-eval-v1/HNS_v1/step3651/student_step3651.pt",
+      "checkpoint_sha256": "83a47256442547a24b91f2be18e61c33d28fe252eee0106e79e104a57c722e07",
+      "bare_student_sha256": "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44",
+      "source_branch": "experiment/nested-d3-hns-full-v1",
+      "source_commit": "45468e1",
+      "summary_percent": {
+        "Score5": 73.77441765717163,
+        "J_long3": 78.18802942861939,
+        "J_long": 87.04000257492066,
+        "Short4": 67.15400000000001,
+        "Urban_I2T": 94.10000443458557,
+        "Urban_T2I": 92.60000586509705,
+        "Urban_Mean": 93.35000514984131
+      },
+      "flickr30k_full": {
+        "checkpoint_sha256": "a60150575f7e8f7b41effb730c0f9d866757954833a240813d4695d9a1cfcb44",
+        "I2T": [
+          56.96441493880376,
+          79.02337727716075,
+          85.85721926816223
+        ],
+        "T2I": [
+          36.77752257496146,
+          59.28326463832867,
+          68.39442469244565
+        ],
+        "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/best-checkpoint-sweep-v1/B16_3651_flickr_full/RESULT.json"
+      }
+    },
+    "ViT-L/14": {
+      "backbone": "ViT-L/14",
+      "step": 4651,
+      "scheduler_horizon": 6085,
+      "checkpoint_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/best-checkpoint-sweep-v1/L14_4651_exact/step004651.pt",
+      "bare_student_path": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/best-checkpoint-sweep-v1/L14_4651_exact/student_step4651.pt",
+      "checkpoint_sha256": "9a773bfb54e3dde33ae724e4e3a13a0614381050ac5b9aa29939d54198c1639b",
+      "bare_student_sha256": "a5e8ab9efde4f1e1796d89d8a629201ad4ad669c231cfd19d61b2b0c4d21b0f0",
+      "source_branch": "experiment/hns-v1-l14-full5epoch6085-fromscratch-v1",
+      "source_commit": "8a0b6e8",
+      "summary_percent": {
+        "Score5": 78.00372821672931,
+        "J_long3": 82.4275470278822,
+        "J_long": 90.65000246763229,
+        "Short4": 71.368,
+        "Urban_I2T": 95.30000686645508,
+        "Urban_T2I": 95.6000030040741,
+        "Urban_Mean": 95.45000493526459
+      },
+      "flickr30k_full": {
+        "checkpoint_sha256": "a5e8ab9efde4f1e1796d89d8a629201ad4ad669c231cfd19d61b2b0c4d21b0f0",
+        "I2T": [
+          64.73586508510839,
+          84.74970896391153,
+          90.37535789573042
+        ],
+        "T2I": [
+          44.47283138784885,
+          67.14344146241702,
+          75.37362741088003
+        ],
+        "source": "/opt/data/private/lklk/SAID/runtime/SAID-nest-clip-v1/best-checkpoint-sweep-v1/L14_4651_flickr_full/RESULT.json"
+      }
+    }
+  },
+  "token_source": "MODELSCOPE_API_TOKEN",
+  "token_embedded": false,
+  "flickr30k_full_used_for_selection": true
+}
