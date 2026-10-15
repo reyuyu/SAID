@@ -1,0 +1,128 @@
+{
+  "dataset": "DOCCI test",
+  "caption": "Full",
+  "sample_count": 1000,
+  "feature_dimension": 512,
+  "source_feature_file": "D:\\E\\OneDrive\\\u684c\u9762\\\u9879\u76ee\u4e8c\\analysis_modality_gap_paper_v1\\input\\features.npz",
+  "source_sha256": "cadfe86bfdb83d4791f444da78749f0ae6fcc0d15becdebee61f15b306121008",
+  "source_commit": "124e89574d6ec586f5eaf4f5ff63f9679b3c89ff",
+  "sample_ids_sha256": "c0f9757b25c61f5131d93cc5696d35e473eec450c1596b7a8d224efc18796733",
+  "sample_order_verification": "One shared samples.json and source provenance; unchanged row order; caption_lengths IDs match; Native/Masked text arrays identical",
+  "seed": 20261013,
+  "pca": {
+    "fit": "Full image+text concatenation, independently per model",
+    "components": [
+      "PC1",
+      "PC2"
+    ],
+    "svd_solver": "full",
+    "details": {
+      "longclip": {
+        "explained_variance_ratio": [
+          0.5618377337072021,
+          0.020402796422448164
+        ],
+        "projected_centroid_gap": 1.0489861147805484
+      },
+      "ours_native": {
+        "explained_variance_ratio": [
+          0.19614616182295314,
+          0.0367252213306846
+        ],
+        "projected_centroid_gap": 0.7782742611158072
+      },
+      "ours_masked": {
+        "explained_variance_ratio": [
+          0.15378914386421433,
+          0.041198143810847236
+        ],
+        "projected_centroid_gap": 0.6842915258289236
+      }
+    }
+  },
+  "gap_axis": "(mean(image)-mean(text))/centroid_gap; raw dot-product projection, no translation",
+  "histogram": {
+    "bins": 50,
+    "shared_bin_edges": [
+      -0.74015681187472,
+      -0.7098930560221128,
+      -0.6796293001695055,
+      -0.6493655443168983,
+      -0.6191017884642911,
+      -0.5888380326116838,
+      -0.5585742767590766,
+      -0.5283105209064693,
+      -0.4980467650538621,
+      -0.4677830092012548,
+      -0.4375192533486476,
+      -0.40725549749604034,
+      -0.3769917416434331,
+      -0.34672798579082587,
+      -0.3164642299382186,
+      -0.2862004740856114,
+      -0.2559367182330041,
+      -0.2256729623803969,
+      -0.1954092065277896,
+      -0.16514545067518238,
+      -0.13488169482257517,
+      -0.10461793896996785,
+      -0.07435418311736064,
+      -0.04409042726475343,
+      -0.013826671412146108,
+      0.016437084440461103,
+      0.04670084029306831,
+      0.07696459614567552,
+      0.10722835199828284,
+      0.13749210785089006,
+      0.16775586370349727,
+      0.1980196195561046,
+      0.2282833754087118,
+      0.258547131261319,
+      0.2888108871139262,
+      0.31907464296653354,
+      0.34933839881914086,
+      0.37960215467174796,
+      0.4098659105243553,
+      0.4401296663769626,
+      0.4703934222295697,
+      0.500657178082177,
+      0.5309209339347843,
+      0.5611846897873914,
+      0.5914484456399988,
+      0.6217122014926061,
+      0.6519759573452132,
+      0.6822397131978205,
+      0.7125034690504278,
+      0.7427672249030349,
+      0.7730309807556422
+    ],
+    "density": true,
+    "alpha_image": 0.34,
+    "alpha_text": 0.3
+  },
+  "kde": {
+    "bandwidth_rule": "Scott",
+    "evaluation_points": 1000
+  },
+  "limits": {
+    "pca": "shared global min/max + 7% padding, equal aspect, all points included",
+    "gap_axis": "shared global min/max + 7% padding",
+    "density": "per-panel ymax to show distribution shape; compare separation along common x scale"
+  },
+  "scatter": {
+    "size": 12,
+    "alpha": 0.38
+  },
+  "colors": {
+    "image": "#2F5D8A",
+    "text": "#D9822B",
+    "image_centroid": "#173A5E",
+    "text_centroid": "#9A4E00"
+  },
+  "figure_inches": [
+    11.7,
+    6.5
+  ],
+  "png_dpi": 400,
+  "annotation_space": "original 512D; Full gap-axis centroid separation equals 512D gap analytically"
+}

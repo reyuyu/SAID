@@ -1,0 +1,34 @@
+% Formal DOCCI modality-gap table.
+% Source: SAID commit 691f0bbe5bfb46eebc2fbab52b5282d4cf873bba, analysis/random_caption_gap_v1/results/DOCCI_LONG_DCI_COMPARISON.csv
+% Directly insertable with \input{tables/modality_gap_docci}.
+\definecolor{GapNavy}{HTML}{213C5A}
+\definecolor{GapAccent}{HTML}{194F78}
+\definecolor{GapTint}{HTML}{EDF3F8}
+\begin{table}[t]
+\centering
+\caption{\textbf{Modality gap under different caption completeness levels on DOCCI.} The gap is measured by the Euclidean distance between image and text centroids in the original 512-dimensional embedding space. Lower is better.}
+\label{tab:modality_gap}
+\vspace{2pt}
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.19}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}l*{3}{c}@{}}
+\toprule[1pt]
+\textbf{Model} & \multicolumn{3}{c}{\textbf{Modality Gap $\downarrow$}} \\
+\cmidrule(lr){2-4}
+& \textbf{Full} & \textbf{Random 50\%} & \textbf{Random 10\%} \\
+\midrule[0.55pt]
+Long-CLIP & 1.0490 & 1.0395 & 1.0131 \\
+Sema-CLIP (Global) & 0.7784 & 0.7704 & 0.9094 \\
+\addlinespace[1pt]
+\rowcolor{GapTint}
+\textbf{Sema-CLIP (Masked)} & \textcolor{GapAccent}{\textbf{0.6864}} & \textcolor{GapAccent}{\textbf{0.7267}} & \textcolor{GapAccent}{\textbf{0.9039}} \\
+\bottomrule[1pt]
+\end{tabular}}
+\endgroup
+
+\vspace{2pt}
+\parbox{\columnwidth}{\scriptsize\emph{Note.} Random 50\% and Random 10\% use the mean over five random seeds under the \texttt{random\_distributed} strategy. Full uses the historical fixed-sample result.}
+\end{table}

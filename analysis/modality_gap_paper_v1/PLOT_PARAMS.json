@@ -1,0 +1,66 @@
+{
+  "seed": 20261013,
+  "input_branch": "analysis/modality-gap-docci-b16-v1",
+  "input_commit": "124e89574d6ec586f5eaf4f5ff63f9679b3c89ff",
+  "reference_commits": {
+    "pca_v2": "ad5fc58c60a8c5ff5eb3a0788a7c3f832ec61e34",
+    "umap_v1": "69f60d92174f22b2c91396cc5acd18abe84037a1"
+  },
+  "input_directory": "input",
+  "feature_dimension": 512,
+  "sample_count_per_condition": 1000,
+  "caption_order": [
+    "full",
+    "prefix50",
+    "first_sentence"
+  ],
+  "models": [
+    "longclip",
+    "ours_native",
+    "ours_masked"
+  ],
+  "pca": {
+    "solver": "full",
+    "shared_fit": "all image/text arrays for selected models and captions",
+    "component_pairs": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "random_state": 20261013,
+    "point_alpha": 0.18,
+    "point_size": 6
+  },
+  "gap_axis": {
+    "axis_definition": "normalized Full-caption (image centroid - text centroid) per model",
+    "hist_bins": 45,
+    "density": true,
+    "kde_bw_method": 0.3,
+    "centroid_lines": true
+  },
+  "similarity": {
+    "positive": "paired image/text dot product",
+    "negative": "text shifted by 137 samples (fixed, all 1000 samples)",
+    "hist_bins": 44,
+    "kde_bw_method": 0.3
+  },
+  "mask_displacement": {
+    "vector": "Ours Masked image - Ours Native image",
+    "axis": "Ours Full-caption gap axis",
+    "violin": true,
+    "box_overlay": true
+  },
+  "bootstrap": {
+    "enabled": true,
+    "reps": 200,
+    "ci": 0.95,
+    "seed": 20261013
+  },
+  "raw_metrics_reference": "input/modality_gap_metrics.csv",
+  "max_metric_consistency_error": 8.069016121936556e-09
+}
